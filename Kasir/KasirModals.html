@@ -1,0 +1,148 @@
+<!-- ==================== MODAL COMPONENTS ==================== -->
+
+<!-- Modal Konfirmasi Transaksi -->
+<dialog id="modal_konfirmasi_transaksi" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box max-w-2xl">
+    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-warning" viewBox="0 0 20 20" fill="currentColor">
+        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+      </svg>
+      Konfirmasi Transaksi
+    </h3>
+
+    <div class="alert alert-info mb-4">
+      <svg xmlns="http://www.w3.org/2000/svg" class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+      </svg>
+      <span>Pastikan data transaksi sudah benar sebelum diproses!</span>
+    </div>
+
+    <div class="space-y-4">
+      <!-- Data Pelanggan -->
+      <div class="card bg-base-200">
+        <div class="card-body p-4">
+          <h4 class="font-semibold text-sm mb-2 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+            </svg>
+            Data Pelanggan
+          </h4>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <span class="opacity-70">Nama:</span>
+              <p class="font-semibold" id="modal_pelanggan_nama">-</p>
+            </div>
+            <div>
+              <span class="opacity-70">No. HP:</span>
+              <p class="font-semibold" id="modal_pelanggan_nohp">-</p>
+            </div>
+            <div class="col-span-2">
+              <span class="opacity-70">Email:</span>
+              <p class="font-semibold" id="modal_pelanggan_email">-</p>
+            </div>
+            <div class="col-span-2">
+              <span class="opacity-70">Alamat:</span>
+              <p class="font-semibold" id="modal_pelanggan_alamat">-</p>
+            </div>
+          </div>
+          <div class="badge badge-sm badge-info mt-2" id="modal_pelanggan_status">Pelanggan Baru</div>
+        </div>
+      </div>
+
+      <!-- Detail Transaksi -->
+      <div class="card bg-base-200">
+        <div class="card-body p-4">
+          <h4 class="font-semibold text-sm mb-2 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+            </svg>
+            Detail Transaksi
+          </h4>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <span class="opacity-70">Tanggal Masuk:</span>
+              <p class="font-semibold" id="modal_transaksi_tanggal">-</p>
+            </div>
+            <div>
+              <span class="opacity-70">Layanan:</span>
+              <p class="font-semibold" id="modal_transaksi_layanan">-</p>
+            </div>
+            <div>
+              <span class="opacity-70">Berat:</span>
+              <p class="font-semibold" id="modal_transaksi_berat">-</p>
+            </div>
+            <div>
+              <span class="opacity-70">Harga/Kg:</span>
+              <p class="font-semibold" id="modal_transaksi_harga">-</p>
+            </div>
+            <div class="col-span-2">
+              <span class="opacity-70">Estimasi Selesai:</span>
+              <p class="font-semibold text-info" id="modal_transaksi_estimasi">-</p>
+            </div>
+            <div class="col-span-2" id="modal_catatan_container">
+              <span class="opacity-70">Catatan:</span>
+              <p class="font-semibold" id="modal_transaksi_catatan">-</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pembayaran -->
+      <div class="card bg-base-200">
+        <div class="card-body p-4">
+          <h4 class="font-semibold text-sm mb-2 flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+              <path fill-rule="evenodd" d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z" clip-rule="evenodd" />
+            </svg>
+            Pembayaran
+          </h4>
+          <div class="grid grid-cols-2 gap-2 text-sm">
+            <div>
+              <span class="opacity-70">Metode:</span>
+              <p class="font-semibold" id="modal_pembayaran_metode">-</p>
+            </div>
+            <div>
+              <span class="opacity-70">Diskon:</span>
+              <p class="font-semibold text-warning" id="modal_pembayaran_diskon">Rp 0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total -->
+      <div class="card bg-primary text-primary-content">
+        <div class="card-body p-4">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm opacity-90">Subtotal:</p>
+              <p class="font-semibold" id="modal_pembayaran_subtotal">Rp 0</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm opacity-90">TOTAL BAYAR:</p>
+              <p class="text-2xl font-bold" id="modal_pembayaran_total">Rp 0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-action">
+      <button class="btn" onclick="modal_konfirmasi_transaksi.close()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+        </svg>
+        Batal
+      </button>
+      <button class="btn btn-primary" onclick="confirmAndSubmitTransaksi()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
+        </svg>
+        Ya, Proses Transaksi
+      </button>
+    </div>
+  </div>
+  <form method="dialog" class="modal-backdrop">
+    <button>close</button>
+  </form>
+</dialog>

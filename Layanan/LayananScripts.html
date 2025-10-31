@@ -1,0 +1,590 @@
+<!-- ==================== MODAL COMPONENTS ==================== -->
+
+<!-- Modal Detail Layanan -->
+<dialog id="modal_detail_layanan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Detail Layanan</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="font-semibold">ID Layanan:</label>
+        <p id="detail_id" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Nama Layanan:</label>
+        <p id="detail_nama" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Harga per Kg:</label>
+        <p id="detail_harga" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Durasi:</label>
+        <p id="detail_durasi" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Deskripsi:</label>
+        <p id="detail_deskripsi" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Status:</label>
+        <p id="detail_status" class="text-base-content/70"></p>
+      </div>
+    </div>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn">Tutup</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<!-- Modal Edit Layanan -->
+<dialog id="modal_edit_layanan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Edit Layanan</h3>
+    <form id="form_edit_layanan" class="space-y-4">
+      <input type="hidden" id="edit_id">
+
+      <div>
+        <label class="label">
+          <span class="label-text">Nama Layanan</span>
+        </label>
+        <input type="text" id="edit_nama" placeholder="Nama layanan" class="input input-bordered w-full" required />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Harga per Kg</span>
+        </label>
+        <input type="number" id="edit_harga" placeholder="0" class="input input-bordered w-full" required min="1" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Durasi (Jam)</span>
+        </label>
+        <input type="number" id="edit_durasi" placeholder="0" class="input input-bordered w-full" required min="1" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Deskripsi</span>
+        </label>
+        <textarea id="edit_deskripsi" class="textarea textarea-bordered w-full" placeholder="Deskripsi layanan"></textarea>
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Status</span>
+        </label>
+        <select id="edit_status" class="select select-bordered w-full" required>
+          <option value="">Pilih status</option>
+          <option value="Aktif">Aktif</option>
+          <option value="Tidak Aktif">Tidak Aktif</option>
+        </select>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn" onclick="modal_edit_layanan.close()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- Modal Tambah Layanan -->
+<dialog id="modal_tambah_layanan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Tambah Layanan</h3>
+    <form id="form_tambah_layanan" class="space-y-4">
+
+      <div>
+        <label class="label">
+          <span class="label-text">Nama Layanan</span>
+        </label>
+        <input type="text" id="tambah_nama" placeholder="Nama layanan" class="input input-bordered w-full" required />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Harga per Kg</span>
+        </label>
+        <input type="number" id="tambah_harga" placeholder="0" class="input input-bordered w-full" required min="1" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Durasi (Jam)</span>
+        </label>
+        <input type="number" id="tambah_durasi" placeholder="0" class="input input-bordered w-full" required min="1" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Deskripsi</span>
+        </label>
+        <textarea id="tambah_deskripsi" class="textarea textarea-bordered w-full" placeholder="Deskripsi layanan"></textarea>
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Status</span>
+        </label>
+        <select id="tambah_status" class="select select-bordered w-full" required>
+          <option value="">Pilih status</option>
+          <option value="Aktif" selected>Aktif</option>
+          <option value="Tidak Aktif">Tidak Aktif</option>
+        </select>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn" onclick="modal_tambah_layanan.close()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- Modal Konfirmasi Hapus -->
+<dialog id="modal_delete_layanan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+    <p class="py-4">Apakah Anda yakin ingin menghapus layanan <strong id="delete_nama"></strong>?</p>
+    <input type="hidden" id="delete_id">
+    <div class="modal-action">
+      <button class="btn" onclick="modal_delete_layanan.close()">Batal</button>
+      <button class="btn btn-error" onclick="confirmDeleteLayanan()">Hapus</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- ==================== JAVASCRIPT FUNCTIONS ==================== -->
+
+<script>
+  /**
+   * Frontend JavaScript untuk halaman Layanan
+   * Handles UI interactions, modal, dan form submissions
+   */
+
+  // ==================== MODAL FUNCTIONS ====================
+
+  // View Detail - menggunakan data attributes dari button
+  window.viewLayananData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('detail_id').textContent = data.id;
+    document.getElementById('detail_nama').textContent = data.nama;
+    document.getElementById('detail_harga').textContent = 'Rp ' + Number(data.harga).toLocaleString('id-ID');
+    document.getElementById('detail_durasi').textContent = data.durasi + ' jam';
+    document.getElementById('detail_deskripsi').textContent = data.deskripsi || '-';
+    document.getElementById('detail_status').textContent = data.status;
+
+    modal_detail_layanan.showModal();
+  };
+
+  // Edit Layanan - menggunakan data attributes dari button
+  window.editLayananData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('edit_id').value = data.id;
+    document.getElementById('edit_nama').value = data.nama;
+    document.getElementById('edit_harga').value = data.harga;
+    document.getElementById('edit_durasi').value = data.durasi;
+    document.getElementById('edit_deskripsi').value = data.deskripsi || '';
+    document.getElementById('edit_status').value = data.status;
+
+    modal_edit_layanan.showModal();
+  };
+
+  // Delete Confirmation - menggunakan data attributes dari button
+  window.deleteLayananConfirmData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('delete_id').value = data.id;
+    document.getElementById('delete_nama').textContent = data.nama;
+    modal_delete_layanan.showModal();
+  };
+
+  // Confirm Delete - Eksekusi hapus layanan
+  window.confirmDeleteLayanan = function() {
+    var id = document.getElementById('delete_id').value;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_delete_layanan.close();
+          navigateTo('Layanan');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .deleteLayanan(id);
+  };
+
+  // ==================== FORM SUBMIT HANDLERS ====================
+
+  // Handle Form Edit Submit
+  function handleEditLayananFormSubmit(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var data = {
+      nama: document.getElementById('edit_nama').value,
+      harga: document.getElementById('edit_harga').value,
+      durasi: document.getElementById('edit_durasi').value,
+      deskripsi: document.getElementById('edit_deskripsi').value,
+      status: document.getElementById('edit_status').value
+    };
+
+    var id = document.getElementById('edit_id').value;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_edit_layanan.close();
+          navigateTo('Layanan');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .editLayanan(id, data);
+
+    return false;
+  }
+
+  // Handle Form Tambah Submit
+  function handleTambahLayananFormSubmit(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var data = {
+      nama: document.getElementById('tambah_nama').value,
+      harga: document.getElementById('tambah_harga').value,
+      durasi: document.getElementById('tambah_durasi').value,
+      deskripsi: document.getElementById('tambah_deskripsi').value,
+      status: document.getElementById('tambah_status').value
+    };
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_tambah_layanan.close();
+          document.getElementById('form_tambah_layanan').reset();
+          navigateTo('Layanan');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .createLayanan(data);
+
+    return false;
+  }
+
+  // ==================== PAGINATION, SEARCH & FILTER ====================
+
+  // Pagination state
+  var currentPage = 1;
+  var itemsPerPage = 10;
+  var totalItems = 0;
+  var totalPages = 1;
+  var allRows = [];
+
+  // Clear search and filter - Defined early to avoid "not defined" error
+  window.clearSearchFilter = function() {
+    var searchInput = document.getElementById('search_layanan');
+    var filterSelect = document.getElementById('filter_status');
+
+    if (searchInput) searchInput.value = '';
+    if (filterSelect) filterSelect.value = '';
+
+    initializePagination(); // Reset to original data
+  };
+
+  // Search and Filter - WITH PAGINATION - Defined early
+  window.searchAndFilter = function() {
+    var searchQuery = document.getElementById('search_layanan').value.toLowerCase();
+    var statusFilter = document.getElementById('filter_status').value;
+    var tbody = document.getElementById('layananTableBody');
+    if (!tbody) return;
+
+    var rows = tbody.querySelectorAll('tr');
+
+    // Filter rows and store visible ones
+    var filteredRows = [];
+    rows.forEach(function(row) {
+      // Skip empty row
+      if (row.cells.length <= 1) return;
+
+      // Get cell values for search
+      var nama = row.cells[1].textContent.toLowerCase();
+      var harga = row.cells[2].textContent.toLowerCase();
+      var durasi = row.cells[3].textContent.toLowerCase();
+
+      // Get status from badge
+      var statusCell = row.cells[4];
+      var statusBadge = statusCell ? statusCell.querySelector('.badge') : null;
+      var status = statusBadge ? statusBadge.textContent.trim() : '';
+
+      // Check if search query matches
+      var searchMatch = !searchQuery ||
+        nama.includes(searchQuery) ||
+        harga.includes(searchQuery) ||
+        durasi.includes(searchQuery);
+
+      // Check if status filter matches
+      var statusMatch = !statusFilter || statusFilter === '' || status === statusFilter;
+
+      // Store matching rows
+      if (searchMatch && statusMatch) {
+        filteredRows.push(row);
+      }
+    });
+
+    // Update allRows with filtered results
+    allRows = filteredRows;
+    totalItems = allRows.length;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+    currentPage = 1; // Reset to first page
+
+    // Hide all rows first
+    rows.forEach(function(row) {
+      row.style.display = 'none';
+    });
+
+    // Update pagination with filtered data
+    updatePagination();
+  };
+
+  // Initialize pagination on page load
+  function initializePagination() {
+    var tbody = document.getElementById('layananTableBody');
+    if (!tbody) return;
+
+    allRows = Array.from(tbody.querySelectorAll('tr')).filter(function(row) {
+      return row.cells.length > 1; // Skip empty rows
+    });
+
+    totalItems = allRows.length;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+    currentPage = 1;
+
+    updatePagination();
+  }
+
+  // Show rows for current page
+  function showCurrentPage() {
+    var start = (currentPage - 1) * itemsPerPage;
+    var end = start + itemsPerPage;
+
+    allRows.forEach(function(row, index) {
+      if (index >= start && index < end) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  // Update pagination display
+  function updatePagination() {
+    // Update info text
+    var start = (currentPage - 1) * itemsPerPage + 1;
+    var end = Math.min(currentPage * itemsPerPage, totalItems);
+
+    // Update desktop info
+    document.getElementById('showing_start').textContent = totalItems > 0 ? start : 0;
+    document.getElementById('showing_end').textContent = end;
+    document.getElementById('total_items').textContent = totalItems;
+
+    // Update mobile info
+    var showingStartMobile = document.getElementById('showing_start_mobile');
+    var showingEndMobile = document.getElementById('showing_end_mobile');
+    var totalItemsMobile = document.getElementById('total_items_mobile');
+
+    if (showingStartMobile) showingStartMobile.textContent = totalItems > 0 ? start : 0;
+    if (showingEndMobile) showingEndMobile.textContent = end;
+    if (totalItemsMobile) totalItemsMobile.textContent = totalItems;
+
+    // Update mobile page info
+    var mobileInfo = document.getElementById('page_info_mobile');
+    if (mobileInfo) {
+      mobileInfo.textContent = 'Page ' + currentPage;
+    }
+
+    // Update desktop pagination with page numbers
+    renderDesktopPagination();
+
+    // Show/hide rows based on current page
+    showCurrentPage();
+  }
+
+  // Render desktop pagination with page numbers
+  function renderDesktopPagination() {
+    var container = document.getElementById('pagination_desktop');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    // First page button
+    var firstBtn = document.createElement('button');
+    firstBtn.className = 'join-item btn btn-sm';
+    firstBtn.textContent = '«';
+    firstBtn.onclick = goToFirstPage;
+    if (currentPage === 1) firstBtn.disabled = true;
+    container.appendChild(firstBtn);
+
+    // Calculate page range to show
+    var maxButtons = 5; // Show max 5 page numbers
+    var startPage = Math.max(1, currentPage - 2);
+    var endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    // Add ellipsis if needed at start
+    if (startPage > 1) {
+      var btn1 = document.createElement('button');
+      btn1.className = 'join-item btn btn-sm';
+      btn1.textContent = '1';
+      btn1.onclick = function() { goToPage(1); };
+      container.appendChild(btn1);
+
+      if (startPage > 2) {
+        var ellipsis1 = document.createElement('button');
+        ellipsis1.className = 'join-item btn btn-sm btn-disabled';
+        ellipsis1.textContent = '...';
+        container.appendChild(ellipsis1);
+      }
+    }
+
+    // Page number buttons
+    for (var i = startPage; i <= endPage; i++) {
+      var pageBtn = document.createElement('button');
+      pageBtn.className = 'join-item btn btn-sm';
+      if (i === currentPage) {
+        pageBtn.className += ' btn-active';
+      }
+      pageBtn.textContent = i;
+      pageBtn.onclick = (function(page) {
+        return function() { goToPage(page); };
+      })(i);
+      container.appendChild(pageBtn);
+    }
+
+    // Add ellipsis if needed at end
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        var ellipsis2 = document.createElement('button');
+        ellipsis2.className = 'join-item btn btn-sm btn-disabled';
+        ellipsis2.textContent = '...';
+        container.appendChild(ellipsis2);
+      }
+
+      var btnLast = document.createElement('button');
+      btnLast.className = 'join-item btn btn-sm';
+      btnLast.textContent = totalPages;
+      btnLast.onclick = function() { goToPage(totalPages); };
+      container.appendChild(btnLast);
+    }
+
+    // Last page button
+    var lastBtn = document.createElement('button');
+    lastBtn.className = 'join-item btn btn-sm';
+    lastBtn.textContent = '»';
+    lastBtn.onclick = goToLastPage;
+    if (currentPage === totalPages) lastBtn.disabled = true;
+    container.appendChild(lastBtn);
+  }
+
+  // Go to specific page
+  function goToPage(page) {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      currentPage = page;
+      updatePagination();
+    }
+  }
+
+  window.goToFirstPage = function() {
+    if (currentPage > 1) {
+      currentPage = 1;
+      updatePagination();
+    }
+  };
+
+  window.goToLastPage = function() {
+    if (currentPage < totalPages) {
+      currentPage = totalPages;
+      updatePagination();
+    }
+  };
+
+  window.goToPrevPage = function() {
+    if (currentPage > 1) {
+      currentPage--;
+      updatePagination();
+    }
+  };
+
+  window.goToNextPage = function() {
+    if (currentPage < totalPages) {
+      currentPage++;
+      updatePagination();
+    }
+  };
+
+  window.changeItemsPerPage = function() {
+    // Get value from desktop or mobile dropdown
+    var desktopSelect = document.getElementById('items_per_page');
+    var mobileSelect = document.getElementById('items_per_page_mobile');
+
+    var newValue;
+    if (window.innerWidth < 768) {
+      // Mobile
+      newValue = parseInt(mobileSelect.value);
+      // Sync to desktop
+      if (desktopSelect) desktopSelect.value = newValue;
+    } else {
+      // Desktop
+      newValue = parseInt(desktopSelect.value);
+      // Sync to mobile
+      if (mobileSelect) mobileSelect.value = newValue;
+    }
+
+    itemsPerPage = newValue;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+    currentPage = 1; // Reset to first page
+    updatePagination();
+  };
+
+  // ==================== INITIALIZATION ====================
+
+  // Initialize Layanan page - Attach event listeners
+  (function() {
+    setTimeout(function() {
+      // Initialize pagination
+      initializePagination();
+
+      var formEdit = document.getElementById('form_edit_layanan');
+      var formTambah = document.getElementById('form_tambah_layanan');
+
+      if (formEdit) {
+        formEdit.onsubmit = handleEditLayananFormSubmit;
+      }
+
+      if (formTambah) {
+        formTambah.onsubmit = handleTambahLayananFormSubmit;
+      }
+    }, 100);
+  })();
+</script>

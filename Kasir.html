@@ -1,0 +1,418 @@
+<!-- Include Kasir Modals & Scripts FIRST -->
+<?!= includeKasirModals() ?>
+<?!= includeKasirScripts() ?>
+
+<div class="space-y-4">
+  <!-- Header -->
+  <div class="card">
+    <div class="card-body">
+      <h2 class="card-title text-lg md:text-2xl lg:text-3xl font-bold">
+        Kasir - Transaksi Baru
+      </h2>
+      <p class="text-sm opacity-70 mb-4">
+        Buat transaksi laundry baru untuk pelanggan
+      </p>
+
+      <!-- Form Transaksi -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <!-- Left Column: Form Input -->
+        <div class="lg:col-span-2 space-y-4">
+          <!-- Card 1: Data Pelanggan -->
+          <div class="card bg-base-100 border border-base-content/5">
+            <div class="card-body">
+              <h3 class="card-title text-base md:text-lg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Data Pelanggan
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                  <div class="flex justify-between items-center mb-2">
+                    <span class="label-text font-semibold">Mode Pelanggan</span>
+                    <label class="label cursor-pointer gap-2">
+                      <span class="label-text text-sm">Pilih Pelanggan</span>
+                      <input
+                        type="checkbox"
+                        id="toggle_new_customer"
+                        class="toggle toggle-info"
+                        onchange="toggleNewCustomer()"
+                      />
+                      <span class="label-text text-sm font-semibold"
+                        >Pelanggan Baru</span
+                      >
+                    </label>
+                  </div>
+                  <select
+                    id="kasir_pelanggan"
+                    class="select select-bordered w-full"
+                    onchange="onPelangganChange()"
+                  >
+                    <option value="">Pilih Pelanggan</option>
+                    <!-- Will be populated from server -->
+                  </select>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="label">
+                    <span class="label-text">Nama Pelanggan</span>
+                    <span class="label-text-alt text-error" id="nama_required"
+                      >*</span
+                    >
+                  </label>
+                  <input
+                    type="text"
+                    id="kasir_nama"
+                    class="input input-bordered w-full"
+                    placeholder="Nama lengkap pelanggan"
+                  />
+                </div>
+
+                <div>
+                  <label class="label">
+                    <span class="label-text">No. HP</span>
+                    <span class="label-text-alt text-error" id="nohp_required"
+                      >*</span
+                    >
+                  </label>
+                  <input
+                    type="text"
+                    id="kasir_nohp"
+                    class="input input-bordered w-full"
+                    placeholder="8xxx (tanpa 0 atau +62)"
+                    pattern="^8[0-9]{8,12}$"
+                    oninput="validatePhoneNumber()"
+                  />
+                  <label class="label">
+                    <span class="label-text-alt text-info" id="phone_hint"
+                      >Format: 8xxxxxxxxx (dimulai dari 8)</span
+                    >
+                  </label>
+                </div>
+
+                <div>
+                  <label class="label">
+                    <span class="label-text">Email</span>
+                  </label>
+                  <input
+                    type="email"
+                    id="kasir_email"
+                    class="input input-bordered w-full"
+                    placeholder="email@example.com"
+                  />
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="label">
+                    <span class="label-text">Alamat</span>
+                  </label>
+                  <textarea
+                    id="kasir_alamat"
+                    class="textarea textarea-bordered w-full"
+                    rows="2"
+                    placeholder="Alamat lengkap"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 2: Detail Transaksi -->
+          <div class="card bg-base-100 border border-base-content/5">
+            <div class="card-body">
+              <h3 class="card-title text-base md:text-lg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fill-rule="evenodd"
+                    d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Detail Transaksi
+              </h3>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="label">
+                    <span class="label-text">Tanggal Masuk</span>
+                    <span class="label-text-alt text-error">*</span>
+                  </label>
+                  <input
+                    type="date"
+                    id="kasir_tanggal"
+                    class="input input-bordered w-full"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label class="label">
+                    <span class="label-text">Layanan</span>
+                    <span class="label-text-alt text-error">*</span>
+                  </label>
+                  <select
+                    id="kasir_layanan"
+                    class="select select-bordered w-full"
+                    required
+                    onchange="onLayananChange()"
+                  >
+                    <option value="">Pilih Layanan</option>
+                    <!-- Will be populated from server -->
+                  </select>
+                </div>
+
+                <div>
+                  <label class="label">
+                    <span class="label-text">Berat (Kg)</span>
+                    <span class="label-text-alt text-error">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="kasir_berat"
+                    class="input input-bordered w-full"
+                    placeholder="0"
+                    min="0.5"
+                    step="0.5"
+                    required
+                    oninput="calculateTotal()"
+                  />
+                  <label class="label">
+                    <span class="label-text-alt text-info">Minimal 0.5 kg</span>
+                  </label>
+                </div>
+
+                <div>
+                  <label class="label">
+                    <span class="label-text">Diskon (Rp)</span>
+                  </label>
+                  <input
+                    type="number"
+                    id="kasir_diskon"
+                    class="input input-bordered w-full"
+                    placeholder="0"
+                    min="0"
+                    value="0"
+                    oninput="calculateTotal()"
+                  />
+                  <label class="label">
+                    <span class="label-text-alt text-info">Opsional</span>
+                  </label>
+                </div>
+
+                <div class="md:col-span-2">
+                  <label class="label">
+                    <span class="label-text">Catatan</span>
+                  </label>
+                  <textarea
+                    id="kasir_catatan"
+                    class="textarea textarea-bordered w-full"
+                    rows="2"
+                    placeholder="Catatan tambahan (opsional)"
+                  ></textarea>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card 3: Pembayaran -->
+          <div class="card bg-base-100 border border-base-content/5">
+            <div class="card-body">
+              <h3 class="card-title text-base md:text-lg">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  class="h-5 w-5"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4z" />
+                  <path
+                    fill-rule="evenodd"
+                    d="M18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"
+                    clip-rule="evenodd"
+                  />
+                </svg>
+                Metode Pembayaran
+              </h3>
+
+              <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <label class="btn btn-outline">
+                  <input
+                    type="radio"
+                    name="kasir_pembayaran"
+                    class="radio radio-sm mr-2"
+                    value="Tunai"
+                    checked
+                    onchange="updateSummaryPembayaran()"
+                  />
+                  Tunai
+                </label>
+                <label class="btn btn-outline">
+                  <input
+                    type="radio"
+                    name="kasir_pembayaran"
+                    class="radio radio-sm mr-2"
+                    value="Transfer"
+                    onchange="updateSummaryPembayaran()"
+                  />
+                  Transfer
+                </label>
+                <label class="btn btn-outline">
+                  <input
+                    type="radio"
+                    name="kasir_pembayaran"
+                    class="radio radio-sm mr-2"
+                    value="QRIS"
+                    onchange="updateSummaryPembayaran()"
+                  />
+                  QRIS
+                </label>
+                <label class="btn btn-outline">
+                  <input
+                    type="radio"
+                    name="kasir_pembayaran"
+                    class="radio radio-sm mr-2"
+                    value="Debit"
+                    onchange="updateSummaryPembayaran()"
+                  />
+                  Debit
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Summary -->
+        <div class="lg:col-span-1">
+          <div class="card bg-primary text-primary-content sticky top-4">
+            <div class="card-body">
+              <h3 class="card-title text-base md:text-lg">
+                Ringkasan Transaksi
+              </h3>
+
+              <div class="divider my-2"></div>
+
+              <!-- Summary Details -->
+              <div class="space-y-3">
+                <div class="flex justify-between text-sm">
+                  <span class="opacity-90">Pelanggan:</span>
+                  <span class="font-semibold" id="summary_pelanggan">-</span>
+                </div>
+
+                <div class="flex justify-between text-sm">
+                  <span class="opacity-90">Layanan:</span>
+                  <span class="font-semibold" id="summary_layanan">-</span>
+                </div>
+
+                <div class="flex justify-between text-sm">
+                  <span class="opacity-90">Berat:</span>
+                  <span class="font-semibold" id="summary_berat">0 Kg</span>
+                </div>
+
+                <div class="flex justify-between text-sm">
+                  <span class="opacity-90">Harga/Kg:</span>
+                  <span class="font-semibold" id="summary_harga_kg">Rp 0</span>
+                </div>
+
+                <div class="divider my-2"></div>
+
+                <div class="flex justify-between text-sm">
+                  <span class="opacity-90">Subtotal:</span>
+                  <span class="font-semibold" id="summary_subtotal">Rp 0</span>
+                </div>
+
+                <div class="flex justify-between text-sm">
+                  <span class="opacity-90">Diskon:</span>
+                  <span class="font-semibold text-warning" id="summary_diskon"
+                    >Rp 0</span
+                  >
+                </div>
+
+                <div class="divider my-2"></div>
+
+                <div class="flex justify-between text-lg">
+                  <span class="font-bold">TOTAL:</span>
+                  <span class="font-bold text-xl" id="summary_total">Rp 0</span>
+                </div>
+
+                <div class="divider my-2"></div>
+
+                <div class="space-y-2 text-sm opacity-90">
+                  <div class="flex justify-between">
+                    <span>Estimasi Selesai:</span>
+                    <span class="font-semibold" id="summary_estimasi">-</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span>Metode Pembayaran:</span>
+                    <span class="font-semibold" id="summary_pembayaran"
+                      >Tunai</span
+                    >
+                  </div>
+                </div>
+              </div>
+
+              <div class="divider my-2"></div>
+
+              <!-- Action Buttons -->
+              <div class="space-y-2">
+                <button
+                  class="btn btn-accent btn-block"
+                  id="btn_proses_transaksi"
+                  onclick="prosesTransaksi()"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Proses Transaksi
+                </button>
+
+                <button
+                  class="btn btn-ghost btn-block btn-sm"
+                  id="btn_reset_form"
+                  onclick="resetForm()"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-4 w-4"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fill-rule="evenodd"
+                      d="M4 2a1 1 0 011 1v2.101a7.002 7.002 0 0111.601 2.566 1 1 0 11-1.885.666A5.002 5.002 0 005.999 7H9a1 1 0 010 2H4a1 1 0 01-1-1V3a1 1 0 011-1zm.008 9.057a1 1 0 011.276.61A5.002 5.002 0 0014.001 13H11a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0v-2.101a7.002 7.002 0 01-11.601-2.566 1 1 0 01.61-1.276z"
+                      clip-rule="evenodd"
+                    />
+                  </svg>
+                  Reset Form
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,249 @@
+<!-- Include Transaksi Modals & Scripts FIRST -->
+<?!= includeTransaksiScripts() ?>
+<div class="card">
+  <div class="card-body">
+    <h2 class="card-title text-lg md:text-2xl lg:text-3xl font-bold">Data Transaksi</h2>
+    <p class="text-sm opacity-70 mb-4">
+      Kelola semua transaksi laundry pelanggan
+    </p>
+    <div class="space-y-4">
+      <!-- Table Section with Pagination -->
+      <div class="rounded-box border border-base-content/5 bg-base-100">
+        <!-- Header: Button & Search & Filter -->
+        <div class="p-4 border-b border-base-content/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <button
+            class="btn btn-xs md:btn-sm lg:btn-md btn-primary"
+            onclick="modal_tambah_transaksi.showModal()"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              class="h-5 w-5"
+              viewBox="0 0 20 20"
+              fill="currentColor"
+            >
+              <path
+                fill-rule="evenodd"
+                d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                clip-rule="evenodd"
+              />
+            </svg>
+            Transaksi Baru
+          </button>
+
+          <div class="join w-full md:w-auto">
+            <input
+              id="search_transaksi"
+              class="input input-bordered input-xs md:input-sm lg:input-md join-item w-full md:w-64"
+              placeholder="Cari Pelanggan, Layanan..."
+              onkeyup="searchAndFilter()"
+            />
+            <select
+              id="filter_status"
+              class="select select-bordered select-xs md:select-sm lg:select-md join-item w-32 md:w-40"
+              onchange="searchAndFilter()"
+            >
+              <option value="">Semua</option>
+              <option value="Menunggu">Menunggu</option>
+              <option value="Proses">Proses</option>
+              <option value="Selesai">Selesai</option>
+              <option value="Diambil">Diambil</option>
+              <option value="Batal">Batal</option>
+            </select>
+            <button class="btn btn-xs md:btn-sm lg:btn-md join-item" onclick="clearSearchFilter()">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                class="h-4 w-4"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fill-rule="evenodd"
+                  d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                  clip-rule="evenodd"
+                />
+              </svg>
+            </button>
+          </div>
+        </div>
+        <!-- Table -->
+        <div class="overflow-x-auto">
+          <table class="table table-zebra table-sm">
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Tanggal</th>
+                <th>Pelanggan</th>
+                <th>Layanan</th>
+                <th>Berat</th>
+                <th>Total</th>
+                <th>Pembayaran</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="transaksiTableBody">
+              <? if (transaksiData && transaksiData.length >
+              0) { ?>
+              <? for (var i = 0; i < transaksiData.length; i++) { ?>
+              <tr>
+                <td><?= i + 1 ?></td>
+                <td>
+                  <?= Utilities.formatDate(new Date(transaksiData[i].tanggalMasuk), Session.getScriptTimeZone(), 'dd/MM/yyyy') ?>
+                </td>
+                <td>
+                  <div class="font-bold text-xs">
+                    <?= transaksiData[i].namaPelanggan ?>
+                  </div>
+                  <div class="text-xs opacity-50">
+                    <?= transaksiData[i].noHp || transaksiData[i].idPelanggan ?>
+                  </div>
+                </td>
+                <td><?= transaksiData[i].namaLayanan ?></td>
+                <td>
+                  <?= transaksiData[i].berat ?>
+                  Kg
+                </td>
+                <td class="font-bold">
+                  Rp
+                  <?= Number(transaksiData[i].total).toLocaleString('id-ID') ?>
+                </td>
+                <td><?= transaksiData[i].metodePembayaran ?></td>
+                <td>
+                  <? if (transaksiData[i].status === 'Menunggu') { ?>
+                  <span class="badge badge-warning badge-sm">Menunggu</span>
+                  <? } else if (transaksiData[i].status === 'Proses') { ?>
+                  <span class="badge badge-info badge-sm">Proses</span>
+                  <? } else if (transaksiData[i].status === 'Selesai') { ?>
+                  <span class="badge badge-success badge-sm">Selesai</span>
+                  <? } else if (transaksiData[i].status === 'Diambil') { ?>
+                  <span class="badge badge-primary badge-sm">Diambil</span>
+                  <? } else { ?>
+                  <span class="badge badge-error badge-sm">Batal</span>
+                  <? } ?>
+                </td>
+                <td>
+                  <div class="flex gap-1">
+                    <button
+                      class="btn btn-info btn-sm text-info-content"
+                      data-id="<?= transaksiData[i].id ?>"
+                      data-tanggalmasuk="<?= Utilities.formatDate(new Date(transaksiData[i].tanggalMasuk), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') ?>"
+                      data-idpelanggan="<?= transaksiData[i].idPelanggan ?>"
+                      data-namapelanggan="<?= transaksiData[i].namaPelanggan ?>"
+                      data-idlayanan="<?= transaksiData[i].idLayanan ?>"
+                      data-namalayanan="<?= transaksiData[i].namaLayanan ?>"
+                      data-berat="<?= transaksiData[i].berat ?>"
+                      data-hargaperkg="<?= transaksiData[i].hargaPerKg ?>"
+                      data-subtotal="<?= transaksiData[i].subtotal ?>"
+                      data-diskon="<?= transaksiData[i].diskon ?>"
+                      data-total="<?= transaksiData[i].total ?>"
+                      data-metodepembayaran="<?= transaksiData[i].metodePembayaran ?>"
+                      data-tanggalselesai="<?= Utilities.formatDate(new Date(transaksiData[i].tanggalSelesai), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') ?>"
+                      data-status="<?= transaksiData[i].status ?>"
+                      data-catatan="<?= transaksiData[i].catatan || '' ?>"
+                      onclick="viewTransaksiData(this)"
+                    >
+                      Detail
+                    </button>
+                    <button
+                      class="btn btn-success btn-sm text-success-content"
+                      data-id="<?= transaksiData[i].id ?>"
+                      data-tanggalmasuk="<?= Utilities.formatDate(new Date(transaksiData[i].tanggalMasuk), Session.getScriptTimeZone(), 'yyyy-MM-dd') ?>"
+                      data-idpelanggan="<?= transaksiData[i].idPelanggan ?>"
+                      data-idlayanan="<?= transaksiData[i].idLayanan ?>"
+                      data-berat="<?= transaksiData[i].berat ?>"
+                      data-diskon="<?= transaksiData[i].diskon ?>"
+                      data-metodepembayaran="<?= transaksiData[i].metodePembayaran ?>"
+                      data-tanggalselesai="<?= Utilities.formatDate(new Date(transaksiData[i].tanggalSelesai), Session.getScriptTimeZone(), 'yyyy-MM-dd') ?>"
+                      data-status="<?= transaksiData[i].status ?>"
+                      data-catatan="<?= transaksiData[i].catatan || '' ?>"
+                      onclick="editTransaksiData(this)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="btn btn-error btn-sm text-error-content"
+                      data-id="<?= transaksiData[i].id ?>"
+                      data-namapelanggan="<?= transaksiData[i].namaPelanggan ?>"
+                      onclick="deleteTransaksiConfirmData(this)"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <? } ?>
+              <? } else { ?>
+              <tr>
+                <td colspan="9" class="text-center">Belum ada data transaksi</td>
+              </tr>
+              <? } ?>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination (Bottom) -->
+        <div class="p-4 border-t border-base-content/5">
+          <!-- Mobile Layout: Stack vertically -->
+          <div class="flex flex-col gap-3 md:hidden">
+            <!-- Row 1: Pagination Controls -->
+            <div class="join justify-center">
+              <button class="join-item btn btn-xs" onclick="goToPrevPage()">‹</button>
+              <button class="join-item btn btn-xs btn-active" id="page_info_mobile">Page 1</button>
+              <button class="join-item btn btn-xs" onclick="goToNextPage()">›</button>
+            </div>
+
+            <!-- Row 2: Info Text -->
+            <div class="text-sm text-center">
+              Menampilkan <span id="showing_start_mobile">1</span> - <span id="showing_end_mobile">10</span>
+              dari <span id="total_items_mobile">0</span> transaksi
+            </div>
+
+            <!-- Row 3: Items per page -->
+            <div class="flex justify-center">
+              <select
+                id="items_per_page_mobile"
+                class="select select-bordered select-xs w-16"
+                onchange="changeItemsPerPage()"
+              >
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Desktop Layout: Grid with 3 columns -->
+          <div class="hidden md:grid md:grid-cols-3 items-center gap-4">
+            <!-- Start: Info -->
+            <div class="text-sm text-left">
+              Menampilkan <span id="showing_start">1</span> - <span id="showing_end">10</span>
+              dari <span id="total_items">0</span> transaksi
+            </div>
+
+            <!-- Center: Navigation Desktop (With Numbers) -->
+            <div class="join justify-center" id="pagination_desktop">
+              <!-- Will be populated by JavaScript -->
+            </div>
+
+            <!-- End: Items per page -->
+            <div class="flex justify-end">
+              <select
+                id="items_per_page"
+                class="select select-bordered select-sm w-20"
+                onchange="changeItemsPerPage()"
+              >
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="100">100</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
