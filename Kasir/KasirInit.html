@@ -59,7 +59,17 @@
 
   function populatePelangganDropdown() {
     var select = document.getElementById('kasir_pelanggan');
+    if (!select) {
+      console.warn('[Kasir] Element kasir_pelanggan not found - page might have changed');
+      return;
+    }
+
     select.innerHTML = '<option value="">Pilih Pelanggan</option>';
+
+    if (!window.pelangganData || !Array.isArray(window.pelangganData)) {
+      console.warn('[Kasir] pelangganData is not available');
+      return;
+    }
 
     window.pelangganData.forEach(function(item) {
       var option = document.createElement('option');
@@ -75,7 +85,17 @@
 
   function populateLayananDropdown() {
     var select = document.getElementById('kasir_layanan');
+    if (!select) {
+      console.warn('[Kasir] Element kasir_layanan not found - page might have changed');
+      return;
+    }
+
     select.innerHTML = '<option value="">Pilih Layanan</option>';
+
+    if (!window.layananData || !Array.isArray(window.layananData)) {
+      console.warn('[Kasir] layananData is not available');
+      return;
+    }
 
     window.layananData.forEach(function(item) {
       var option = document.createElement('option');

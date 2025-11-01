@@ -134,16 +134,16 @@
     google.script.run
       .withSuccessHandler(function(result) {
         if (result.success) {
-          alert(result.message);
+          showSuccessAlert('Berhasil!', result.message);
           modal_tambah_transaksi.close();
           document.getElementById('form_tambah_transaksi').reset();
           navigateTo('Transaksi');
         } else {
-          alert('Error: ' + result.message);
+          showErrorAlert('Gagal!', result.message);
         }
       })
       .withFailureHandler(function(error) {
-        alert('Error: ' + error.message);
+        showErrorAlert('Kesalahan Server', error.message);
       })
       .createTransaksi(data);
 
@@ -152,8 +152,11 @@
 
   // Override showModal untuk load dropdown saat modal dibuka
   ;(function() {
-    var originalShowModal = modal_tambah_transaksi.showModal;
-    modal_tambah_transaksi.showModal = function() {
+    var modal = document.getElementById('modal_tambah_transaksi');
+    if (!modal) return;
+
+    var originalShowModal = modal.showModal;
+    modal.showModal = function() {
       originalShowModal.call(this);
       // Load dropdown SETELAH modal dibuka
       setTimeout(function() {

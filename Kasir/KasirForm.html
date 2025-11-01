@@ -12,14 +12,14 @@
     var noHp = document.getElementById('kasir_nohp').value.trim();
 
     if (!nama || !noHp) {
-      alert('Nama dan No. HP pelanggan harus diisi!');
+      showErrorAlert('Data Tidak Lengkap', 'Nama dan No. HP pelanggan harus diisi!');
       return;
     }
 
     // Validate No. HP format
     var phoneRegex = /^8[0-9]{8,12}$/;
     if (!phoneRegex.test(noHp)) {
-      alert('Format No. HP salah!\nNo. HP harus dimulai dari angka 8 (tanpa 0 atau +62)\nContoh: 81234567890');
+      showErrorAlert('Format No. HP Salah', 'No. HP harus dimulai dari angka 8 (tanpa 0 atau +62). Contoh: 81234567890');
       return;
     }
 
@@ -28,7 +28,7 @@
     var berat = Number(document.getElementById('kasir_berat').value);
 
     if (!tanggal || !window.selectedLayanan || berat <= 0) {
-      alert('Tanggal, Layanan, dan Berat harus diisi dengan benar!');
+      showErrorAlert('Data Tidak Lengkap', 'Tanggal, Layanan, dan Berat harus diisi dengan benar!');
       return;
     }
 
@@ -151,25 +151,25 @@
         btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Proses Transaksi';
 
         if (!result) {
-          alert('Error: Tidak ada response dari server');
+          showErrorAlert('Kesalahan Server', 'Tidak ada response dari server');
           modal_konfirmasi_transaksi.close();
           return;
         }
 
         if (result.success) {
-          alert('Transaksi berhasil!\n\nID Transaksi: ' + result.data.transaksiId + '\n' + result.message);
+          showSuccessAlert('Transaksi Berhasil!', 'ID Transaksi: ' + result.data.transaksiId + ' - ' + result.message, 5000);
           modal_konfirmasi_transaksi.close();
           resetForm();
           loadPelangganData(); // Reload pelanggan list
         } else {
-          alert('Error: ' + result.message);
+          showErrorAlert('Transaksi Gagal', result.message);
           modal_konfirmasi_transaksi.close();
         }
       })
       .withFailureHandler(function(error) {
         btn.disabled = false;
         btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Proses Transaksi';
-        alert('Error: ' + error.message);
+        showErrorAlert('Kesalahan Server', error.message);
         modal_konfirmasi_transaksi.close();
       })
       .processKasirTransaksi(data);

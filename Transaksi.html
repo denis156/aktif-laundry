@@ -65,9 +65,17 @@
   // Populate Pelanggan dropdown dari cache
   function populatePelangganDropdown(selectId, selectedId) {
     var select = document.getElementById(selectId);
-    if (!select) return;
+    if (!select) {
+      console.warn('Element not found:', selectId);
+      return;
+    }
 
     select.innerHTML = '<option value="">Pilih Pelanggan</option>';
+
+    if (!window.cachedPelanggan || !Array.isArray(window.cachedPelanggan)) {
+      console.warn('cachedPelanggan is not available');
+      return;
+    }
 
     window.cachedPelanggan.forEach(function(item) {
       var option = document.createElement('option');
@@ -91,9 +99,17 @@
   // Populate Layanan dropdown dari array tertentu
   function populateLayananDropdownFromArray(selectId, dataArray, selectedId) {
     var select = document.getElementById(selectId);
-    if (!select) return;
+    if (!select) {
+      console.warn('Element not found:', selectId);
+      return;
+    }
 
     select.innerHTML = '<option value="">Pilih Layanan</option>';
+
+    if (!dataArray || !Array.isArray(dataArray)) {
+      console.warn('dataArray is not available');
+      return;
+    }
 
     dataArray.forEach(function(item) {
       var option = document.createElement('option');
@@ -112,9 +128,16 @@
   }
 
   // Pre-load data saat halaman Transaksi dibuka
-  setTimeout(function() {
-    preloadDropdownData();
-  }, 100);
+  ;(function() {
+    // Wait for DOM to be ready before preloading
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', function() {
+        setTimeout(preloadDropdownData, 300);
+      });
+    } else {
+      setTimeout(preloadDropdownData, 300);
+    }
+  })();
 </script>
 
 <!-- Include semua sub-components -->

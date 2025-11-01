@@ -89,15 +89,15 @@
     google.script.run
       .withSuccessHandler(function(result) {
         if (result.success) {
-          alert(result.message);
+          showSuccessAlert('Berhasil!', result.message);
           modal_edit_pelanggan.close();
           navigateTo('Pelanggan');
         } else {
-          alert('Error: ' + result.message);
+          showErrorAlert('Gagal!', result.message);
         }
       })
       .withFailureHandler(function(error) {
-        alert('Error: ' + error.message);
+        showErrorAlert('Kesalahan Server', error.message);
       })
       .editPelanggan(id, data);
 
