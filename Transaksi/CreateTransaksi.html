@@ -19,19 +19,24 @@
 
         <div>
           <label class="label"><span class="label-text">Layanan</span></label>
-          <select id="tambah_idlayanan" class="select select-bordered w-full select-sm" required>
+          <select id="tambah_idlayanan" class="select select-bordered w-full select-sm" required onchange="calculateTotalTambah()">
             <option value="">Pilih Layanan</option>
           </select>
         </div>
 
         <div>
           <label class="label"><span class="label-text">Berat (Kg)</span></label>
-          <input type="number" id="tambah_berat" placeholder="0" class="input input-bordered w-full input-sm" required min="0.1" step="0.1" />
+          <input type="number" id="tambah_berat" placeholder="0" class="input input-bordered w-full input-sm" required min="0.1" step="0.1" oninput="calculateTotalTambah()" />
         </div>
 
         <div>
           <label class="label"><span class="label-text">Diskon</span></label>
-          <input type="number" id="tambah_diskon" placeholder="0" class="input input-bordered w-full input-sm" min="0" value="0" />
+          <input type="number" id="tambah_diskon" placeholder="0" class="input input-bordered w-full input-sm" min="0" value="0" oninput="calculateTotalTambah()" />
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Total</span></label>
+          <input type="text" id="tambah_total" class="input input-sm font-bold text-success" readonly value="Rp 0" />
         </div>
 
         <div>
@@ -113,6 +118,32 @@
         })
         .getActiveLayanan();
     }
+  }
+
+  // Calculate Total untuk Form Tambah
+  function calculateTotalTambah() {
+    var layananId = document.getElementById('tambah_idlayanan').value;
+    var berat = parseFloat(document.getElementById('tambah_berat').value) || 0;
+    var diskon = parseFloat(document.getElementById('tambah_diskon').value) || 0;
+
+    var hargaPerKg = 0;
+
+    // Cari harga dari cache layanan
+    if (layananId && window.cachedLayanan) {
+      var layanan = window.cachedLayanan.find(function(item) {
+        return item.id === layananId;
+      });
+      if (layanan) {
+        hargaPerKg = layanan.harga;
+      }
+    }
+
+    // Hitung subtotal dan total
+    var subtotal = berat * hargaPerKg;
+    var total = subtotal - diskon;
+
+    // Update input total
+    document.getElementById('tambah_total').value = 'Rp ' + Number(total).toLocaleString('id-ID');
   }
 
   // Handle Form Tambah Submit

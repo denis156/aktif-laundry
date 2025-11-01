@@ -20,19 +20,24 @@
 
         <div>
           <label class="label"><span class="label-text">Layanan</span></label>
-          <select id="edit_idlayanan" class="select select-bordered w-full select-sm" required>
+          <select id="edit_idlayanan" class="select select-bordered w-full select-sm" required onchange="calculateTotalEdit()">
             <option value="">Pilih Layanan</option>
           </select>
         </div>
 
         <div>
           <label class="label"><span class="label-text">Berat (Kg)</span></label>
-          <input type="number" id="edit_berat" placeholder="0" class="input input-bordered w-full input-sm" required min="0.1" step="0.1" />
+          <input type="number" id="edit_berat" placeholder="0" class="input input-bordered w-full input-sm" required min="0.1" step="0.1" oninput="calculateTotalEdit()" />
         </div>
 
         <div>
           <label class="label"><span class="label-text">Diskon</span></label>
-          <input type="number" id="edit_diskon" placeholder="0" class="input input-bordered w-full input-sm" min="0" />
+          <input type="number" id="edit_diskon" placeholder="0" class="input input-bordered w-full input-sm" min="0" oninput="calculateTotalEdit()" />
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Total</span></label>
+          <input type="text" id="edit_total" class="input input-sm font-bold text-success" readonly value="Rp 0" />
         </div>
 
         <div>
@@ -126,12 +131,16 @@
   function loadLayananForEdit(selectedId) {
     if (window.isDataLoaded) {
       populateLayananDropdownFromArray('edit_idlayanan', window.cachedAllLayanan, selectedId);
+      // Calculate after loading
+      setTimeout(calculateTotalEdit, 100);
     } else {
       google.script.run
         .withSuccessHandler(function(result) {
           if (result && result.success && result.data) {
             window.cachedAllLayanan = result.data;
             populateLayananDropdownFromArray('edit_idlayanan', window.cachedAllLayanan, selectedId);
+            // Calculate after loading
+            setTimeout(calculateTotalEdit, 100);
           }
         })
         .withFailureHandler(function(error) {
@@ -139,6 +148,32 @@
         })
         .getAllLayanan();
     }
+  }
+
+  // Calculate Total untuk Form Edit
+  function calculateTotalEdit() {
+    var layananId = document.getElementById('edit_idlayanan').value;
+    var berat = parseFloat(document.getElementById('edit_berat').value) || 0;
+    var diskon = parseFloat(document.getElementById('edit_diskon').value) || 0;
+
+    var hargaPerKg = 0;
+
+    // Cari harga dari cache ALL layanan
+    if (layananId && window.cachedAllLayanan) {
+      var layanan = window.cachedAllLayanan.find(function(item) {
+        return item.id === layananId;
+      });
+      if (layanan) {
+        hargaPerKg = layanan.harga;
+      }
+    }
+
+    // Hitung subtotal dan total
+    var subtotal = berat * hargaPerKg;
+    var total = subtotal - diskon;
+
+    // Update input total
+    document.getElementById('edit_total').value = 'Rp ' + Number(total).toLocaleString('id-ID');
   }
 
   // Handle Form Edit Submit

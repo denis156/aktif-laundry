@@ -13,9 +13,16 @@
   // ==================== INITIALIZATION ====================
 
   ;(function() {
+    // Check if kasir elements exist (only run on Kasir page)
+    var kasirTanggal = document.getElementById('kasir_tanggal');
+    if (!kasirTanggal) {
+      console.log('[Kasir] Not on Kasir page, skipping initialization');
+      return;
+    }
+
     // Set tanggal hari ini sebagai default
     var today = new Date().toISOString().split('T')[0];
-    document.getElementById('kasir_tanggal').value = today;
+    kasirTanggal.value = today;
 
     // Load data pelanggan dan layanan
     loadPelangganData();
@@ -60,14 +67,14 @@
   function populatePelangganDropdown() {
     var select = document.getElementById('kasir_pelanggan');
     if (!select) {
-      console.warn('[Kasir] Element kasir_pelanggan not found - page might have changed');
+      // Silent return - not on Kasir page
       return;
     }
 
     select.innerHTML = '<option value="">Pilih Pelanggan</option>';
 
     if (!window.pelangganData || !Array.isArray(window.pelangganData)) {
-      console.warn('[Kasir] pelangganData is not available');
+      // Silent return - data not yet loaded
       return;
     }
 
@@ -86,14 +93,14 @@
   function populateLayananDropdown() {
     var select = document.getElementById('kasir_layanan');
     if (!select) {
-      console.warn('[Kasir] Element kasir_layanan not found - page might have changed');
+      // Silent return - not on Kasir page
       return;
     }
 
     select.innerHTML = '<option value="">Pilih Layanan</option>';
 
     if (!window.layananData || !Array.isArray(window.layananData)) {
-      console.warn('[Kasir] layananData is not available');
+      // Silent return - data not yet loaded
       return;
     }
 
