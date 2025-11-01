@@ -1,0 +1,194 @@
+<!-- ==================== PAGINATION & FILTER LOGIC ==================== -->
+<script>
+  /**
+   * List Layanan - Pagination & Filter Logic
+   */
+
+  // Pagination state
+  var currentPage = 1;
+  var itemsPerPage = 10;
+  var totalPages = 1;
+  var filteredData = [];
+
+  // Clear Search Filter
+  window.clearSearchFilter = function() {
+    document.getElementById('search_layanan').value = '';
+    document.getElementById('filter_status').value = '';
+    searchAndFilter();
+  };
+
+  // Search and Filter Function
+  window.searchAndFilter = function() {
+    var searchTerm = document.getElementById('search_layanan').value.toLowerCase();
+    var statusFilter = document.getElementById('filter_status').value;
+
+    filteredData = window.layananData.filter(function(item) {
+      var matchSearch = true;
+      var matchStatus = true;
+
+      // Search by nama or deskripsi
+      if (searchTerm) {
+        matchSearch = (item.nama && item.nama.toLowerCase().includes(searchTerm)) ||
+                      (item.deskripsi && item.deskripsi.toLowerCase().includes(searchTerm));
+      }
+
+      // Filter by status
+      if (statusFilter) {
+        matchStatus = item.status === statusFilter;
+      }
+
+      return matchSearch && matchStatus;
+    });
+
+    currentPage = 1;
+    initializePagination();
+  };
+
+  // Initialize Pagination
+  window.initializePagination = function() {
+    if (!window.layananData || window.layananData.length === 0) {
+      filteredData = [];
+      renderEmptyState();
+      return;
+    }
+
+    // If no filter applied, use all data
+    if (filteredData.length === 0 && !document.getElementById('search_layanan').value && !document.getElementById('filter_status').value) {
+      filteredData = window.layananData;
+    }
+
+    totalPages = Math.ceil(filteredData.length / itemsPerPage);
+
+    if (totalPages === 0) {
+      renderEmptyState();
+      return;
+    }
+
+    renderTable();
+    renderPaginationDesktop();
+  };
+
+  // Render Empty State
+  function renderEmptyState() {
+    var tbody = document.getElementById('layanan_table_body');
+    if (tbody) {
+      tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-base-content/50">Tidak ada data layanan</td></tr>';
+    }
+
+    var paginationDesktop = document.getElementById('pagination_desktop');
+    if (paginationDesktop) {
+      paginationDesktop.innerHTML = '';
+    }
+  }
+
+  // Render Table
+  function renderTable() {
+    var tbody = document.getElementById('layanan_table_body');
+    if (!tbody) return;
+
+    var startIndex = (currentPage - 1) * itemsPerPage;
+    var endIndex = startIndex + itemsPerPage;
+    var pageData = filteredData.slice(startIndex, endIndex);
+
+    var html = '';
+    for (var i = 0; i < pageData.length; i++) {
+      var item = pageData[i];
+      var rowNumber = startIndex + i + 1;
+
+      var statusBadge = item.status === 'Aktif'
+        ? '<span class="badge badge-xs md:badge-sm lg:badge-md badge-success">Aktif</span>'
+        : '<span class="badge badge-xs md:badge-sm lg:badge-md badge-error truncate">Tidak Aktif</span>';
+
+      html += '<tr>';
+      html += '<td>' + rowNumber + '</td>';
+      html += '<td>';
+      html += '<div class="font-bold">' + (item.nama || '') + '</div>';
+      html += '<div class="text-sm opacity-50">' + (item.deskripsi || '-') + '</div>';
+      html += '</td>';
+      html += '<td>Rp ' + Number(item.harga || 0).toLocaleString('id-ID') + '</td>';
+      html += '<td>' + (item.durasi || 0) + ' jam</td>';
+      html += '<td>' + statusBadge + '</td>';
+      html += '<td>';
+      html += '<div class="flex gap-2">';
+      html += '<button class="btn btn-info btn-sm text-info-content" onclick="viewLayananData(this)" ';
+      html += 'data-id="' + item.id + '" ';
+      html += 'data-nama="' + item.nama + '" ';
+      html += 'data-harga="' + item.harga + '" ';
+      html += 'data-durasi="' + item.durasi + '" ';
+      html += 'data-deskripsi="' + (item.deskripsi || '') + '" ';
+      html += 'data-status="' + item.status + '">';
+      html += 'Detail';
+      html += '</button>';
+      html += '<button class="btn btn-success btn-sm text-success-content" onclick="editLayananData(this)" ';
+      html += 'data-id="' + item.id + '" ';
+      html += 'data-nama="' + item.nama + '" ';
+      html += 'data-harga="' + item.harga + '" ';
+      html += 'data-durasi="' + item.durasi + '" ';
+      html += 'data-deskripsi="' + (item.deskripsi || '') + '" ';
+      html += 'data-status="' + item.status + '">';
+      html += 'Edit';
+      html += '</button>';
+      html += '<button class="btn btn-error btn-sm text-error-content" onclick="deleteLayananConfirmData(this)" ';
+      html += 'data-id="' + item.id + '" ';
+      html += 'data-nama="' + item.nama + '">';
+      html += 'Hapus';
+      html += '</button>';
+      html += '</div>';
+      html += '</td>';
+      html += '</tr>';
+    }
+
+    tbody.innerHTML = html;
+  }
+
+  // Render Desktop Pagination
+  function renderPaginationDesktop() {
+    var container = document.getElementById('pagination_desktop');
+    if (!container) return;
+
+    if (totalPages <= 1) {
+      container.innerHTML = '';
+      return;
+    }
+
+    var html = '<div class="join">';
+
+    // Previous button
+    if (currentPage > 1) {
+      html += '<button class="join-item btn btn-sm" onclick="goToPage(' + (currentPage - 1) + ')">«</button>';
+    }
+
+    // Page numbers
+    var startPage = Math.max(1, currentPage - 2);
+    var endPage = Math.min(totalPages, currentPage + 2);
+
+    for (var i = startPage; i <= endPage; i++) {
+      var activeClass = i === currentPage ? 'btn-active' : '';
+      html += '<button class="join-item btn btn-sm ' + activeClass + '" onclick="goToPage(' + i + ')">' + i + '</button>';
+    }
+
+    // Next button
+    if (currentPage < totalPages) {
+      html += '<button class="join-item btn btn-sm" onclick="goToPage(' + (currentPage + 1) + ')">»</button>';
+    }
+
+    html += '</div>';
+
+    container.innerHTML = html;
+  }
+
+  // Go to Page
+  window.goToPage = function(page) {
+    if (page < 1 || page > totalPages) return;
+    currentPage = page;
+    renderTable();
+    renderPaginationDesktop();
+  };
+
+  // Initialize on load
+  ;(function() {
+    setTimeout(function() {
+      initializePagination();
+    }, 100);
+  })();
+</script>

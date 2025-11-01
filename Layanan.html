@@ -1,9 +1,14 @@
-<!-- Include Layanan Modals & Scripts FIRST -->
-<?!= includeLayananScripts() ?>
+<!-- Include semua sub-components -->
+<?!= include('Layanan/CreateLayanan') ?>
+<?!= include('Layanan/EditLayanan') ?>
+<?!= include('Layanan/DeleteLayanan') ?>
+<?!= include('Layanan/ListLayanan') ?>
 
 <div class="card">
   <div class="card-body">
-    <h2 class="card-title text-lg md:text-2xl lg:text-3xl font-bold">Data Layanan</h2>
+    <h2 class="card-title text-lg md:text-2xl lg:text-3xl font-bold">
+      Data Layanan
+    </h2>
     <p class="text-sm opacity-70 mb-4">
       Kelola jenis layanan laundry dan harga
     </p>
@@ -11,7 +16,9 @@
       <!-- Table Section with Pagination -->
       <div class="rounded-box border border-base-content/5 bg-base-100">
         <!-- Header: Button & Search & Filter -->
-        <div class="p-4 border-b border-base-content/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div
+          class="p-4 border-b border-base-content/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        >
           <button
             class="btn btn-xs md:btn-sm lg:btn-md btn-primary"
             onclick="modal_tambah_layanan.showModal()"
@@ -47,7 +54,10 @@
               <option value="Aktif">Aktif</option>
               <option value="Tidak Aktif">Tidak Aktif</option>
             </select>
-            <button class="btn btn-xs md:btn-sm lg:btn-md join-item" onclick="clearSearchFilter()">
+            <button
+              class="btn btn-xs md:btn-sm lg:btn-md join-item"
+              onclick="clearSearchFilter()"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-4 w-4"
@@ -76,54 +86,73 @@
                 <th>Aksi</th>
               </tr>
             </thead>
-            <tbody id="layananTableBody">
-              <? if (layananData && layananData.length > 0) { ?>
-                <? for (var i = 0; i < layananData.length; i++) { ?>
-                  <tr>
-                    <td><?= i + 1 ?></td>
-                    <td>
-                      <div class="font-bold"><?= layananData[i].nama ?></div>
-                      <div class="text-sm opacity-50"><?= layananData[i].deskripsi || '-' ?></div>
-                    </td>
-                    <td>Rp <?= Number(layananData[i].harga).toLocaleString('id-ID') ?></td>
-                    <td><?= layananData[i].durasi ?> jam</td>
-                    <td>
-                      <? if (layananData[i].status === 'Aktif') { ?>
-                        <span class="badge badge-xs md:badge-sm lg:badge-md badge-success">Aktif</span>
-                      <? } else { ?>
-                        <span class="badge badge-xs md:badge-sm lg:badge-md badge-error truncate">Tidak Aktif</span>
-                      <? } ?>
-                    </td>
-                    <td>
-                      <div class="flex gap-2">
-                        <button class="btn btn-info btn-sm text-info-content"
-                          data-id="<?= layananData[i].id ?>"
-                          data-nama="<?= layananData[i].nama ?>"
-                          data-harga="<?= layananData[i].harga ?>"
-                          data-durasi="<?= layananData[i].durasi ?>"
-                          data-deskripsi="<?= layananData[i].deskripsi || '' ?>"
-                          data-status="<?= layananData[i].status ?>"
-                          onclick="viewLayananData(this)">Detail</button>
-                        <button class="btn btn-success btn-sm text-success-content"
-                          data-id="<?= layananData[i].id ?>"
-                          data-nama="<?= layananData[i].nama ?>"
-                          data-harga="<?= layananData[i].harga ?>"
-                          data-durasi="<?= layananData[i].durasi ?>"
-                          data-deskripsi="<?= layananData[i].deskripsi || '' ?>"
-                          data-status="<?= layananData[i].status ?>"
-                          onclick="editLayananData(this)">Edit</button>
-                        <button class="btn btn-error btn-sm text-error-content"
-                          data-id="<?= layananData[i].id ?>"
-                          data-nama="<?= layananData[i].nama ?>"
-                          onclick="deleteLayananConfirmData(this)">Hapus</button>
-                      </div>
-                    </td>
-                  </tr>
-                <? } ?>
+            <tbody id="layanan_table_body">
+              <? if (layananData && layananData.length >
+              0) { ?>
+              <? for (var i = 0; i < layananData.length; i++) { ?>
+              <tr>
+                <td><?= i + 1 ?></td>
+                <td>
+                  <div class="font-bold"><?= layananData[i].nama ?></div>
+                  <div class="text-sm opacity-50"><?= layananData[i].deskripsi || '-' ?></div>
+                </td>
+                <td>Rp <?= Number(layananData[i].harga).toLocaleString('id-ID') ?></td>
+                <td><?= layananData[i].durasi ?> jam</td>
+                <td>
+                  <? if (layananData[i].status === 'Aktif') { ?>
+                  <span
+                    class="badge badge-xs md:badge-sm lg:badge-md badge-success"
+                    >Aktif</span
+                  >
+                  <? } else { ?>
+                  <span
+                    class="badge badge-xs md:badge-sm lg:badge-md badge-error truncate"
+                    >Tidak Aktif</span
+                  >
+                  <? } ?>
+                </td>
+                <td>
+                  <div class="flex gap-2">
+                    <button
+                      class="btn btn-info btn-sm text-info-content"
+                      data-id="<?= layananData[i].id ?>"
+                      data-nama="<?= layananData[i].nama ?>"
+                      data-harga="<?= layananData[i].harga ?>"
+                      data-durasi="<?= layananData[i].durasi ?>"
+                      data-deskripsi="<?= layananData[i].deskripsi || '' ?>"
+                      data-status="<?= layananData[i].status ?>"
+                      onclick="viewLayananData(this)"
+                    >
+                      Detail
+                    </button>
+                    <button
+                      class="btn btn-success btn-sm text-success-content"
+                      data-id="<?= layananData[i].id ?>"
+                      data-nama="<?= layananData[i].nama ?>"
+                      data-harga="<?= layananData[i].harga ?>"
+                      data-durasi="<?= layananData[i].durasi ?>"
+                      data-deskripsi="<?= layananData[i].deskripsi || '' ?>"
+                      data-status="<?= layananData[i].status ?>"
+                      onclick="editLayananData(this)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="btn btn-error btn-sm text-error-content"
+                      data-id="<?= layananData[i].id ?>"
+                      data-nama="<?= layananData[i].nama ?>"
+                      onclick="deleteLayananConfirmData(this)"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <? } ?>
               <? } else { ?>
-                <tr>
-                  <td colspan="6" class="text-center">Belum ada data layanan</td>
-                </tr>
+              <tr>
+                <td colspan="6" class="text-center">Belum ada data layanan</td>
+              </tr>
               <? } ?>
             </tbody>
           </table>
@@ -135,15 +164,25 @@
           <div class="flex flex-col gap-3 md:hidden">
             <!-- Row 1: Pagination Controls -->
             <div class="join justify-center">
-              <button class="join-item btn btn-xs" onclick="goToPrevPage()">‹</button>
-              <button class="join-item btn btn-xs btn-active" id="page_info_mobile">Page 1</button>
-              <button class="join-item btn btn-xs" onclick="goToNextPage()">›</button>
+              <button class="join-item btn btn-xs" onclick="goToPrevPage()">
+                ‹
+              </button>
+              <button
+                class="join-item btn btn-xs btn-active"
+                id="page_info_mobile"
+              >
+                Page 1
+              </button>
+              <button class="join-item btn btn-xs" onclick="goToNextPage()">
+                ›
+              </button>
             </div>
 
             <!-- Row 2: Info Text -->
             <div class="text-sm text-center">
-              Menampilkan <span id="showing_start_mobile">1</span> - <span id="showing_end_mobile">10</span>
-              dari <span id="total_items_mobile">0</span> layanan
+              Menampilkan <span id="showing_start_mobile">1</span> -
+              <span id="showing_end_mobile">10</span> dari
+              <span id="total_items_mobile">0</span> layanan
             </div>
 
             <!-- Row 3: Items per page -->
@@ -166,8 +205,9 @@
           <div class="hidden md:grid md:grid-cols-3 items-center gap-4">
             <!-- Start: Info -->
             <div class="text-sm text-left">
-              Menampilkan <span id="showing_start">1</span> - <span id="showing_end">10</span>
-              dari <span id="total_items">0</span> layanan
+              Menampilkan <span id="showing_start">1</span> -
+              <span id="showing_end">10</span> dari
+              <span id="total_items">0</span> layanan
             </div>
 
             <!-- Center: Navigation Desktop (With Numbers) -->

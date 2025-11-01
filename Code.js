@@ -17,16 +17,6 @@ function include(filename) {
 }
 
 /**
- * Fungsi untuk include Layanan Scripts
- * Khusus untuk load JavaScript functions dari Layanan/LayananScripts.html
- */
-function includeLayananScripts() {
-  return HtmlService.createHtmlOutputFromFile('Layanan/LayananScripts').getContent();
-}
-
-
-
-/**
  * Fungsi untuk include Kasir Modals
  * Khusus untuk load modal components dari Kasir/KasirModals.html
  */
@@ -106,22 +96,14 @@ function loadPage(page) {
 
 /**
  * HELPER FUNCTIONS - Dibutuhkan oleh frontend untuk dropdown di modal transaksi
- * Fungsi-fungsi ini dipanggil via google.script.run dari TransaksiScripts.html
+ * Fungsi-fungsi ini dipanggil via google.script.run dari Transaksi/CreateTransaksi.html dan Transaksi/EditTransaksi.html
  */
 
 /**
  * Fungsi untuk mengambil pelanggan aktif saja (untuk dropdown)
- * Dipanggil dari: Transaksi/TransaksiScripts.html
- * RENAMED untuk menghindari konflik dengan file lain
+ * Dipanggil dari: Transaksi/CreateTransaksi.html dan Transaksi/EditTransaksi.html
  */
 function getActivePelanggan() {
-  return fetchActivePelangganList();
-}
-
-/**
- * IMPLEMENTASI SEBENARNYA - Self-contained
- */
-function fetchActivePelangganList() {
   try {
     var ss = SpreadsheetApp.getActiveSpreadsheet();
     var sheet = ss.getSheetByName('Pelanggan');
@@ -148,10 +130,10 @@ function fetchActivePelangganList() {
         activePelanggan.push({
           id: values[i][0] ? String(values[i][0]) : '',
           nama: values[i][1] ? String(values[i][1]) : '',
-          noHp: values[i][2] ? String(values[i][2]) : '',  // Always convert to String
+          noHp: values[i][2] ? String(values[i][2]) : '',
           alamat: values[i][3] ? String(values[i][3]) : '',
           email: values[i][4] ? String(values[i][4]) : '',
-          tanggalDaftar: values[i][5] ? values[i][5].toString() : '',  // Convert Date to String
+          tanggalDaftar: values[i][5] ? values[i][5].toString() : '',
           totalTransaksi: values[i][6] ? Number(values[i][6]) : 0,
           status: values[i][7] ? String(values[i][7]) : ''
         });
@@ -161,14 +143,14 @@ function fetchActivePelangganList() {
     return { success: true, data: activePelanggan };
 
   } catch (error) {
-    Logger.log('ERROR in fetchActivePelangganList: ' + error);
+    Logger.log('ERROR in getActivePelanggan: ' + error);
     return { success: false, message: error.toString() };
   }
 }
 
 /**
  * Fungsi untuk mengambil layanan aktif saja (untuk dropdown)
- * Dipanggil dari: Transaksi/TransaksiScripts.html
+ * Dipanggil dari: Transaksi/CreateTransaksi.html
  */
 function getActiveLayanan() {
   try {

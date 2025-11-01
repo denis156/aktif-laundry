@@ -6,7 +6,9 @@
 
 <div class="card">
   <div class="card-body">
-    <h2 class="card-title text-lg md:text-2xl lg:text-3xl font-bold">Data Pelanggan</h2>
+    <h2 class="card-title text-lg md:text-2xl lg:text-3xl font-bold">
+      Data Pelanggan
+    </h2>
     <p class="text-sm opacity-70 mb-4">
       Kelola data pelanggan dan informasi kontak
     </p>
@@ -14,7 +16,9 @@
       <!-- Table Section with Pagination -->
       <div class="rounded-box border border-base-content/5 bg-base-100">
         <!-- Header: Button & Search & Filter -->
-        <div class="p-4 border-b border-base-content/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div
+          class="p-4 border-b border-base-content/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+        >
           <button
             class="btn btn-xs md:btn-sm lg:btn-md btn-primary"
             onclick="modal_tambah_pelanggan.showModal()"
@@ -50,7 +54,10 @@
               <option value="Aktif">Aktif</option>
               <option value="Tidak Aktif">Tidak Aktif</option>
             </select>
-            <button class="btn btn-xs md:btn-sm lg:btn-md join-item" onclick="clearSearchFilter()">
+            <button
+              class="btn btn-xs md:btn-sm lg:btn-md join-item"
+              onclick="clearSearchFilter()"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 class="h-4 w-4"
@@ -69,72 +76,98 @@
         <!-- Table -->
         <div class="overflow-x-auto">
           <table class="table table-zebra table-sm">
-      <thead>
-        <tr>
-          <th>No</th>
-          <th>Nama</th>
-          <th>No. HP</th>
-          <th>Email</th>
-          <th>Total Transaksi</th>
-          <th>Status</th>
-          <th>Aksi</th>
-        </tr>
-      </thead>
-      <tbody id="pelangganTableBody">
-        <? if (pelangganData && pelangganData.length > 0) { ?>
-          <? for (var i = 0; i < pelangganData.length; i++) { ?>
-            <tr>
-              <td><?= i + 1 ?></td>
-              <td>
-                <div class="font-bold"><?= pelangganData[i].nama ?></div>
-                <div class="text-sm opacity-50"><?= pelangganData[i].alamat || '-' ?></div>
-              </td>
-              <td><?= pelangganData[i].noHp ?></td>
-              <td><?= pelangganData[i].email || '-' ?></td>
-              <td><?= pelangganData[i].totalTransaksi ?> kali</td>
-              <td>
-                <? if (pelangganData[i].status === 'Aktif') { ?>
-                  <span class="badge badge-xs md:badge-sm lg:badge-md badge-success">Aktif</span>
-                <? } else { ?>
-                  <span class="badge badge-xs md:badge-sm lg:badge-md badge-error truncate">Tidak Aktif</span>
-                <? } ?>
-              </td>
-              <td>
-                <div class="flex gap-2">
-                  <button class="btn btn-info btn-sm text-info-content"
-                    data-id="<?= pelangganData[i].id ?>"
-                    data-nama="<?= pelangganData[i].nama ?>"
-                    data-nohp="<?= pelangganData[i].noHp ?>"
-                    data-alamat="<?= pelangganData[i].alamat || '' ?>"
-                    data-email="<?= pelangganData[i].email || '' ?>"
-                    data-tanggaldaftar="<?= Utilities.formatDate(new Date(pelangganData[i].tanggalDaftar), Session.getScriptTimeZone(), 'dd/MM/yyyy') ?>"
-                    data-totaltransaksi="<?= pelangganData[i].totalTransaksi ?>"
-                    data-status="<?= pelangganData[i].status ?>"
-                    onclick="viewPelangganData(this)">Detail</button>
-                  <button class="btn btn-success btn-sm text-success-content"
-                    data-id="<?= pelangganData[i].id ?>"
-                    data-nama="<?= pelangganData[i].nama ?>"
-                    data-nohp="<?= pelangganData[i].noHp ?>"
-                    data-alamat="<?= pelangganData[i].alamat || '' ?>"
-                    data-email="<?= pelangganData[i].email || '' ?>"
-                    data-status="<?= pelangganData[i].status ?>"
-                    onclick="editPelangganData(this)">Edit</button>
-                  <button class="btn btn-error btn-sm text-error-content"
-                    data-id="<?= pelangganData[i].id ?>"
-                    data-nama="<?= pelangganData[i].nama ?>"
-                    onclick="deletePelangganConfirmData(this)">Hapus</button>
-                </div>
-              </td>
-            </tr>
-          <? } ?>
-        <? } else { ?>
-          <tr>
-            <td colspan="7" class="text-center">Belum ada data pelanggan</td>
-          </tr>
-        <? } ?>
-      </tbody>
-    </table>
-  </div>
+            <thead>
+              <tr>
+                <th>No</th>
+                <th>Nama</th>
+                <th>No. HP</th>
+                <th>Email</th>
+                <th>Total Transaksi</th>
+                <th>Status</th>
+                <th>Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="pelangganTableBody">
+              <? if (pelangganData && pelangganData.length >
+              0) { ?>
+              <? for (var i = 0; i < pelangganData.length; i++) { ?>
+              <tr>
+                <td><?= i + 1 ?></td>
+                <td>
+                  <div class="font-bold"><?= pelangganData[i].nama ?></div>
+                  <div class="text-sm opacity-50">
+                    <?= pelangganData[i].alamat || '-' ?>
+                  </div>
+                </td>
+                <td><?= pelangganData[i].noHp ?></td>
+                <td><?= pelangganData[i].email || '-' ?></td>
+                <td>
+                  <?= pelangganData[i].totalTransaksi ?>
+                  kali
+                </td>
+                <td>
+                  <? if (pelangganData[i].status === 'Aktif') { ?>
+                  <span
+                    class="badge badge-xs md:badge-sm lg:badge-md badge-success"
+                    >Aktif</span
+                  >
+                  <? } else { ?>
+                  <span
+                    class="badge badge-xs md:badge-sm lg:badge-md badge-error truncate"
+                    >Tidak Aktif</span
+                  >
+                  <? } ?>
+                </td>
+                <td>
+                  <div class="flex gap-2">
+                    <button
+                      class="btn btn-info btn-sm text-info-content"
+                      data-id="<?= pelangganData[i].id ?>"
+                      data-nama="<?= pelangganData[i].nama ?>"
+                      data-nohp="<?= pelangganData[i].noHp ?>"
+                      data-alamat="<?= pelangganData[i].alamat || '' ?>"
+                      data-email="<?= pelangganData[i].email || '' ?>"
+                      data-tanggaldaftar="<?= Utilities.formatDate(new Date(pelangganData[i].tanggalDaftar), Session.getScriptTimeZone(), 'dd/MM/yyyy') ?>"
+                      data-totaltransaksi="<?= pelangganData[i].totalTransaksi ?>"
+                      data-status="<?= pelangganData[i].status ?>"
+                      onclick="viewPelangganData(this)"
+                    >
+                      Detail
+                    </button>
+                    <button
+                      class="btn btn-success btn-sm text-success-content"
+                      data-id="<?= pelangganData[i].id ?>"
+                      data-nama="<?= pelangganData[i].nama ?>"
+                      data-nohp="<?= pelangganData[i].noHp ?>"
+                      data-alamat="<?= pelangganData[i].alamat || '' ?>"
+                      data-email="<?= pelangganData[i].email || '' ?>"
+                      data-status="<?= pelangganData[i].status ?>"
+                      onclick="editPelangganData(this)"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      class="btn btn-error btn-sm text-error-content"
+                      data-id="<?= pelangganData[i].id ?>"
+                      data-nama="<?= pelangganData[i].nama ?>"
+                      onclick="deletePelangganConfirmData(this)"
+                    >
+                      Hapus
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              <? } ?>
+              <? } else { ?>
+              <tr>
+                <td colspan="7" class="text-center">
+                  Belum ada data pelanggan
+                </td>
+              </tr>
+              <? } ?>
+            </tbody>
+          </table>
+        </div>
 
         <!-- Pagination (Bottom) -->
         <div class="p-4 border-t border-base-content/5">
@@ -142,15 +175,25 @@
           <div class="flex flex-col gap-3 md:hidden">
             <!-- Row 1: Pagination Controls -->
             <div class="join justify-center">
-              <button class="join-item btn btn-xs" onclick="goToPrevPage()">‹</button>
-              <button class="join-item btn btn-xs btn-active" id="page_info_mobile">Page 1</button>
-              <button class="join-item btn btn-xs" onclick="goToNextPage()">›</button>
+              <button class="join-item btn btn-xs" onclick="goToPrevPage()">
+                ‹
+              </button>
+              <button
+                class="join-item btn btn-xs btn-active"
+                id="page_info_mobile"
+              >
+                Page 1
+              </button>
+              <button class="join-item btn btn-xs" onclick="goToNextPage()">
+                ›
+              </button>
             </div>
 
             <!-- Row 2: Info Text -->
             <div class="text-sm text-center">
-              Menampilkan <span id="showing_start_mobile">1</span> - <span id="showing_end_mobile">10</span>
-              dari <span id="total_items_mobile">0</span> pelanggan
+              Menampilkan <span id="showing_start_mobile">1</span> -
+              <span id="showing_end_mobile">10</span> dari
+              <span id="total_items_mobile">0</span> pelanggan
             </div>
 
             <!-- Row 3: Items per page -->
@@ -173,8 +216,9 @@
           <div class="hidden md:grid md:grid-cols-3 items-center gap-4">
             <!-- Start: Info -->
             <div class="text-sm text-left">
-              Menampilkan <span id="showing_start">1</span> - <span id="showing_end">10</span>
-              dari <span id="total_items">0</span> pelanggan
+              Menampilkan <span id="showing_start">1</span> -
+              <span id="showing_end">10</span> dari
+              <span id="total_items">0</span> pelanggan
             </div>
 
             <!-- Center: Navigation Desktop (With Numbers) -->

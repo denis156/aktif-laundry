@@ -1,0 +1,101 @@
+<!-- ==================== MODAL TAMBAH LAYANAN ==================== -->
+<dialog id="modal_tambah_layanan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Tambah Layanan</h3>
+    <form id="form_tambah_layanan" class="space-y-4">
+
+      <div>
+        <label class="label">
+          <span class="label-text">Nama Layanan</span>
+        </label>
+        <input type="text" id="tambah_nama" placeholder="Nama layanan" class="input input-bordered w-full" required />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Harga per Kg</span>
+        </label>
+        <input type="number" id="tambah_harga" placeholder="0" class="input input-bordered w-full" required min="1" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Durasi (Jam)</span>
+        </label>
+        <input type="number" id="tambah_durasi" placeholder="0" class="input input-bordered w-full" required min="1" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Deskripsi</span>
+        </label>
+        <textarea id="tambah_deskripsi" class="textarea textarea-bordered w-full" placeholder="Deskripsi layanan"></textarea>
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Status</span>
+        </label>
+        <select id="tambah_status" class="select select-bordered w-full" required>
+          <option value="">Pilih status</option>
+          <option value="Aktif" selected>Aktif</option>
+          <option value="Tidak Aktif">Tidak Aktif</option>
+        </select>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn" onclick="modal_tambah_layanan.close()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ==================== SCRIPT CREATE LAYANAN ==================== -->
+<script>
+  /**
+   * Create Layanan Logic
+   */
+
+  // Handle Form Tambah Submit
+  function handleTambahLayananFormSubmit(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var data = {
+      nama: document.getElementById('tambah_nama').value,
+      harga: document.getElementById('tambah_harga').value,
+      durasi: document.getElementById('tambah_durasi').value,
+      deskripsi: document.getElementById('tambah_deskripsi').value,
+      status: document.getElementById('tambah_status').value
+    };
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_tambah_layanan.close();
+          document.getElementById('form_tambah_layanan').reset();
+          navigateTo('Layanan');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .createLayanan(data);
+
+    return false;
+  }
+
+  // Attach form submit handler
+  ;(function() {
+    setTimeout(function() {
+      var formTambah = document.getElementById('form_tambah_layanan');
+      if (formTambah) {
+        formTambah.onsubmit = handleTambahLayananFormSubmit;
+      }
+    }, 100);
+  })();
+</script>
