@@ -117,13 +117,12 @@ function insertDummySetting() {
     ['telepon', '021-12345678', 'Nomor telepon toko'],
     ['whatsapp', '81234567890', 'Nomor WhatsApp (format: 8xxx tanpa 0)'],
     ['email', 'info@aktiflaundry.com', 'Email toko'],
-    ['minimal_berat', '3', 'Minimal berat cucian (Kg)'],
-    ['diskon_member', '10', 'Diskon untuk member (%)'],
+    ['minimal_berat', '1', 'Minimal berat cucian (Kg)'],
     ['format_id_transaksi', 'TRX', 'Prefix ID transaksi'],
     ['format_id_pelanggan', 'PLG', 'Prefix ID pelanggan'],
     ['format_id_layanan', 'LYN', 'Prefix ID layanan'],
-    ['jam_buka', '08:00', 'Jam buka toko'],
-    ['jam_tutup', '20:00', 'Jam tutup toko']
+    ['jam_buka', '01:00', 'Jam buka toko'],
+    ['jam_tutup', '24:59', 'Jam tutup toko']
   ];
   
   sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
