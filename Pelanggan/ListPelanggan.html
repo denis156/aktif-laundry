@@ -1,0 +1,296 @@
+<!-- ==================== PAGINATION & FILTER LOGIC ==================== -->
+<script>
+  /**
+   * List Pelanggan - Pagination, Search & Filter Logic
+   */
+
+  // ==================== PAGINATION STATE ====================
+  var currentPage = 1;
+  var itemsPerPage = 10;
+  var totalItems = 0;
+  var totalPages = 1;
+  var allRows = [];
+
+  // ==================== SEARCH & FILTER ====================
+
+  // Clear search and filter
+  window.clearSearchFilter = function() {
+    var searchInput = document.getElementById('search_pelanggan');
+    var filterSelect = document.getElementById('filter_status');
+
+    if (searchInput) searchInput.value = '';
+    if (filterSelect) filterSelect.value = '';
+
+    initializePagination(); // Reset to original data
+  };
+
+  // Search and Filter - WITH PAGINATION
+  window.searchAndFilter = function() {
+    var searchQuery = document.getElementById('search_pelanggan').value.toLowerCase();
+    var statusFilter = document.getElementById('filter_status').value;
+    var tbody = document.getElementById('pelangganTableBody');
+    if (!tbody) return;
+
+    var rows = tbody.querySelectorAll('tr');
+
+    // Filter rows and store visible ones
+    var filteredRows = [];
+    rows.forEach(function(row) {
+      // Skip empty row
+      if (row.cells.length <= 1) return;
+
+      // Get cell values for search
+      var nama = row.cells[1].textContent.toLowerCase();
+      var noHp = row.cells[2].textContent.toLowerCase();
+      var email = row.cells[3].textContent.toLowerCase();
+
+      // Get status from badge
+      var statusCell = row.cells[5];
+      var statusBadge = statusCell ? statusCell.querySelector('.badge') : null;
+      var status = statusBadge ? statusBadge.textContent.trim() : '';
+
+      // Check if search query matches
+      var searchMatch = !searchQuery ||
+        nama.includes(searchQuery) ||
+        noHp.includes(searchQuery) ||
+        email.includes(searchQuery);
+
+      // Check if status filter matches
+      var statusMatch = !statusFilter || statusFilter === '' || status === statusFilter;
+
+      // Store matching rows
+      if (searchMatch && statusMatch) {
+        filteredRows.push(row);
+      }
+    });
+
+    // Update allRows with filtered results
+    allRows = filteredRows;
+    totalItems = allRows.length;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+    currentPage = 1; // Reset to first page
+
+    // Hide all rows first
+    rows.forEach(function(row) {
+      row.style.display = 'none';
+    });
+
+    // Update pagination with filtered data
+    updatePagination();
+  };
+
+  // ==================== PAGINATION FUNCTIONS ====================
+
+  // Initialize pagination on page load
+  function initializePagination() {
+    var tbody = document.getElementById('pelangganTableBody');
+    if (!tbody) return;
+
+    allRows = Array.from(tbody.querySelectorAll('tr')).filter(function(row) {
+      return row.cells.length > 1; // Skip empty rows
+    });
+
+    totalItems = allRows.length;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+    currentPage = 1;
+
+    updatePagination();
+  }
+
+  // Show rows for current page
+  function showCurrentPage() {
+    var start = (currentPage - 1) * itemsPerPage;
+    var end = start + itemsPerPage;
+
+    allRows.forEach(function(row, index) {
+      if (index >= start && index < end) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+  }
+
+  // Update pagination display
+  function updatePagination() {
+    // Update info text
+    var start = (currentPage - 1) * itemsPerPage + 1;
+    var end = Math.min(currentPage * itemsPerPage, totalItems);
+
+    // Update desktop info
+    document.getElementById('showing_start').textContent = totalItems > 0 ? start : 0;
+    document.getElementById('showing_end').textContent = end;
+    document.getElementById('total_items').textContent = totalItems;
+
+    // Update mobile info
+    var showingStartMobile = document.getElementById('showing_start_mobile');
+    var showingEndMobile = document.getElementById('showing_end_mobile');
+    var totalItemsMobile = document.getElementById('total_items_mobile');
+
+    if (showingStartMobile) showingStartMobile.textContent = totalItems > 0 ? start : 0;
+    if (showingEndMobile) showingEndMobile.textContent = end;
+    if (totalItemsMobile) totalItemsMobile.textContent = totalItems;
+
+    // Update mobile page info
+    var mobileInfo = document.getElementById('page_info_mobile');
+    if (mobileInfo) {
+      mobileInfo.textContent = 'Page ' + currentPage;
+    }
+
+    // Update desktop pagination with page numbers
+    renderDesktopPagination();
+
+    // Show/hide rows based on current page
+    showCurrentPage();
+  }
+
+  // Render desktop pagination with page numbers
+  function renderDesktopPagination() {
+    var container = document.getElementById('pagination_desktop');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    // First page button
+    var firstBtn = document.createElement('button');
+    firstBtn.className = 'join-item btn btn-sm';
+    firstBtn.textContent = '«';
+    firstBtn.onclick = goToFirstPage;
+    if (currentPage === 1) firstBtn.disabled = true;
+    container.appendChild(firstBtn);
+
+    // Calculate page range to show
+    var maxButtons = 5; // Show max 5 page numbers
+    var startPage = Math.max(1, currentPage - 2);
+    var endPage = Math.min(totalPages, startPage + maxButtons - 1);
+
+    // Adjust start if we're near the end
+    if (endPage - startPage < maxButtons - 1) {
+      startPage = Math.max(1, endPage - maxButtons + 1);
+    }
+
+    // Add ellipsis if needed at start
+    if (startPage > 1) {
+      var btn1 = document.createElement('button');
+      btn1.className = 'join-item btn btn-sm';
+      btn1.textContent = '1';
+      btn1.onclick = function() { goToPage(1); };
+      container.appendChild(btn1);
+
+      if (startPage > 2) {
+        var ellipsis1 = document.createElement('button');
+        ellipsis1.className = 'join-item btn btn-sm btn-disabled';
+        ellipsis1.textContent = '...';
+        container.appendChild(ellipsis1);
+      }
+    }
+
+    // Page number buttons
+    for (var i = startPage; i <= endPage; i++) {
+      var pageBtn = document.createElement('button');
+      pageBtn.className = 'join-item btn btn-sm';
+      if (i === currentPage) {
+        pageBtn.className += ' btn-active';
+      }
+      pageBtn.textContent = i;
+      pageBtn.onclick = (function(page) {
+        return function() { goToPage(page); };
+      })(i);
+      container.appendChild(pageBtn);
+    }
+
+    // Add ellipsis if needed at end
+    if (endPage < totalPages) {
+      if (endPage < totalPages - 1) {
+        var ellipsis2 = document.createElement('button');
+        ellipsis2.className = 'join-item btn btn-sm btn-disabled';
+        ellipsis2.textContent = '...';
+        container.appendChild(ellipsis2);
+      }
+
+      var btnLast = document.createElement('button');
+      btnLast.className = 'join-item btn btn-sm';
+      btnLast.textContent = totalPages;
+      btnLast.onclick = function() { goToPage(totalPages); };
+      container.appendChild(btnLast);
+    }
+
+    // Last page button
+    var lastBtn = document.createElement('button');
+    lastBtn.className = 'join-item btn btn-sm';
+    lastBtn.textContent = '»';
+    lastBtn.onclick = goToLastPage;
+    if (currentPage === totalPages) lastBtn.disabled = true;
+    container.appendChild(lastBtn);
+  }
+
+  // Go to specific page
+  function goToPage(page) {
+    if (page >= 1 && page <= totalPages && page !== currentPage) {
+      currentPage = page;
+      updatePagination();
+    }
+  }
+
+  // Pagination navigation functions
+  window.goToFirstPage = function() {
+    if (currentPage > 1) {
+      currentPage = 1;
+      updatePagination();
+    }
+  }
+
+  window.goToPrevPage = function() {
+    if (currentPage > 1) {
+      currentPage--;
+      updatePagination();
+    }
+  }
+
+  window.goToNextPage = function() {
+    if (currentPage < totalPages) {
+      currentPage++;
+      updatePagination();
+    }
+  }
+
+  window.goToLastPage = function() {
+    if (currentPage < totalPages) {
+      currentPage = totalPages;
+      updatePagination();
+    }
+  }
+
+  window.changeItemsPerPage = function() {
+    // Get value from desktop or mobile dropdown
+    var desktopSelect = document.getElementById('items_per_page');
+    var mobileSelect = document.getElementById('items_per_page_mobile');
+
+    var newValue;
+    if (window.innerWidth < 768) {
+      // Mobile
+      newValue = parseInt(mobileSelect.value);
+      // Sync to desktop
+      if (desktopSelect) desktopSelect.value = newValue;
+    } else {
+      // Desktop
+      newValue = parseInt(desktopSelect.value);
+      // Sync to mobile
+      if (mobileSelect) mobileSelect.value = newValue;
+    }
+
+    itemsPerPage = newValue;
+    totalPages = Math.ceil(totalItems / itemsPerPage);
+    currentPage = 1; // Reset to first page
+    updatePagination();
+  }
+
+  // ==================== INITIALIZATION ====================
+
+  // Initialize pagination on page load
+  ;(function() {
+    setTimeout(function() {
+      initializePagination();
+    }, 100);
+  })();
+</script>

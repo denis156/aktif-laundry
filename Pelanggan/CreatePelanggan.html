@@ -1,0 +1,101 @@
+<!-- ==================== MODAL TAMBAH PELANGGAN ==================== -->
+<dialog id="modal_tambah_pelanggan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Tambah Pelanggan</h3>
+    <form id="form_tambah_pelanggan" class="space-y-4">
+
+      <div>
+        <label class="label">
+          <span class="label-text">Nama</span>
+        </label>
+        <input type="text" id="tambah_nama" placeholder="Nama pelanggan" class="input input-bordered w-full" required />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">No. HP</span>
+        </label>
+        <input type="tel" id="tambah_nohp" placeholder="08123456789" class="input input-bordered w-full" required />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Alamat</span>
+        </label>
+        <textarea id="tambah_alamat" class="textarea textarea-bordered w-full" placeholder="Alamat lengkap"></textarea>
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Email</span>
+        </label>
+        <input type="email" id="tambah_email" placeholder="email@example.com" class="input input-bordered w-full" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Status</span>
+        </label>
+        <select id="tambah_status" class="select select-bordered w-full" required>
+          <option value="">Pilih status</option>
+          <option value="Aktif" selected>Aktif</option>
+          <option value="Tidak Aktif">Tidak Aktif</option>
+        </select>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn" onclick="modal_tambah_pelanggan.close()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ==================== SCRIPT CREATE PELANGGAN ==================== -->
+<script>
+  /**
+   * Create Pelanggan Logic
+   */
+
+  // Handle Form Tambah Submit
+  function handleTambahPelangganFormSubmit(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var data = {
+      nama: document.getElementById('tambah_nama').value,
+      noHp: document.getElementById('tambah_nohp').value,
+      alamat: document.getElementById('tambah_alamat').value,
+      email: document.getElementById('tambah_email').value,
+      status: document.getElementById('tambah_status').value
+    };
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_tambah_pelanggan.close();
+          document.getElementById('form_tambah_pelanggan').reset();
+          navigateTo('Pelanggan');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .createPelanggan(data);
+
+    return false;
+  }
+
+  // Attach form submit handler
+  ;(function() {
+    setTimeout(function() {
+      var formTambah = document.getElementById('form_tambah_pelanggan');
+      if (formTambah) {
+        formTambah.onsubmit = handleTambahPelangganFormSubmit;
+      }
+    }, 100);
+  })();
+</script>

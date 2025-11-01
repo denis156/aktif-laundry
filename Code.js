@@ -24,13 +24,6 @@ function includeLayananScripts() {
   return HtmlService.createHtmlOutputFromFile('Layanan/LayananScripts').getContent();
 }
 
-/**
- * Fungsi untuk include Pelanggan Scripts
- * Khusus untuk load JavaScript functions dari Pelanggan/PelangganScripts.html
- */
-function includePelangganScripts() {
-  return HtmlService.createHtmlOutputFromFile('Pelanggan/PelangganScripts').getContent();
-}
 
 
 /**

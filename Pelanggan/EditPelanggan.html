@@ -1,0 +1,116 @@
+<!-- ==================== MODAL EDIT PELANGGAN ==================== -->
+<dialog id="modal_edit_pelanggan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Edit Pelanggan</h3>
+    <form id="form_edit_pelanggan" class="space-y-4">
+      <input type="hidden" id="edit_id">
+
+      <div>
+        <label class="label">
+          <span class="label-text">Nama</span>
+        </label>
+        <input type="text" id="edit_nama" placeholder="Nama pelanggan" class="input input-bordered w-full" required />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">No. HP</span>
+        </label>
+        <input type="tel" id="edit_nohp" placeholder="08123456789" class="input input-bordered w-full" required />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Alamat</span>
+        </label>
+        <textarea id="edit_alamat" class="textarea textarea-bordered w-full" placeholder="Alamat lengkap"></textarea>
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Email</span>
+        </label>
+        <input type="email" id="edit_email" placeholder="email@example.com" class="input input-bordered w-full" />
+      </div>
+
+      <div>
+        <label class="label">
+          <span class="label-text">Status</span>
+        </label>
+        <select id="edit_status" class="select select-bordered w-full" required>
+          <option value="">Pilih status</option>
+          <option value="Aktif">Aktif</option>
+          <option value="Tidak Aktif">Tidak Aktif</option>
+        </select>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn" onclick="modal_edit_pelanggan.close()">Batal</button>
+        <button type="submit" class="btn btn-primary">Simpan</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ==================== SCRIPT EDIT PELANGGAN ==================== -->
+<script>
+  /**
+   * Edit Pelanggan Logic
+   */
+
+  // Edit Pelanggan - Open modal with data
+  window.editPelangganData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('edit_id').value = data.id;
+    document.getElementById('edit_nama').value = data.nama;
+    document.getElementById('edit_nohp').value = data.nohp;
+    document.getElementById('edit_alamat').value = data.alamat || '';
+    document.getElementById('edit_email').value = data.email || '';
+    document.getElementById('edit_status').value = data.status;
+
+    modal_edit_pelanggan.showModal();
+  }
+
+  // Handle Form Edit Submit
+  function handleEditPelangganFormSubmit(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var data = {
+      nama: document.getElementById('edit_nama').value,
+      noHp: document.getElementById('edit_nohp').value,
+      alamat: document.getElementById('edit_alamat').value,
+      email: document.getElementById('edit_email').value,
+      status: document.getElementById('edit_status').value
+    };
+
+    var id = document.getElementById('edit_id').value;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_edit_pelanggan.close();
+          navigateTo('Pelanggan');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .editPelanggan(id, data);
+
+    return false;
+  }
+
+  // Attach form submit handler
+  ;(function() {
+    setTimeout(function() {
+      var formEdit = document.getElementById('form_edit_pelanggan');
+      if (formEdit) {
+        formEdit.onsubmit = handleEditPelangganFormSubmit;
+      }
+    }, 100);
+  })();
+</script>

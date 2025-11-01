@@ -1,0 +1,110 @@
+<!-- ==================== MODAL DELETE & DETAIL PELANGGAN ==================== -->
+
+<!-- Modal Konfirmasi Hapus -->
+<dialog id="modal_delete_pelanggan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+    <p class="py-4">Apakah Anda yakin ingin menghapus pelanggan <strong id="delete_nama"></strong>?</p>
+    <input type="hidden" id="delete_id">
+    <div class="modal-action">
+      <button class="btn" onclick="modal_delete_pelanggan.close()">Batal</button>
+      <button class="btn btn-error" onclick="confirmDeletePelanggan()">Hapus</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Modal Detail Pelanggan -->
+<dialog id="modal_detail_pelanggan" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Detail Pelanggan</h3>
+    <div class="space-y-3">
+      <div>
+        <label class="font-semibold">ID Pelanggan:</label>
+        <p id="detail_id" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Nama:</label>
+        <p id="detail_nama" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">No. HP:</label>
+        <p id="detail_nohp" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Alamat:</label>
+        <p id="detail_alamat" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Email:</label>
+        <p id="detail_email" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Tanggal Daftar:</label>
+        <p id="detail_tanggaldaftar" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Total Transaksi:</label>
+        <p id="detail_totaltransaksi" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Status:</label>
+        <p id="detail_status" class="text-base-content/70"></p>
+      </div>
+    </div>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn">Tutup</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<!-- ==================== SCRIPT DELETE & DETAIL PELANGGAN ==================== -->
+<script>
+  /**
+   * Delete & Detail Pelanggan Logic
+   */
+
+  // View Detail Pelanggan
+  window.viewPelangganData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('detail_id').textContent = data.id;
+    document.getElementById('detail_nama').textContent = data.nama;
+    document.getElementById('detail_nohp').textContent = data.nohp;
+    document.getElementById('detail_alamat').textContent = data.alamat || '-';
+    document.getElementById('detail_email').textContent = data.email || '-';
+    document.getElementById('detail_tanggaldaftar').textContent = data.tanggaldaftar;
+    document.getElementById('detail_totaltransaksi').textContent = data.totaltransaksi + ' kali';
+    document.getElementById('detail_status').textContent = data.status;
+
+    modal_detail_pelanggan.showModal();
+  }
+
+  // Delete Confirmation - Open modal
+  window.deletePelangganConfirmData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('delete_id').value = data.id;
+    document.getElementById('delete_nama').textContent = data.nama;
+    modal_delete_pelanggan.showModal();
+  }
+
+  // Confirm Delete - Execute delete
+  window.confirmDeletePelanggan = function() {
+    var id = document.getElementById('delete_id').value;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_delete_pelanggan.close();
+          navigateTo('Pelanggan');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .deletePelanggan(id);
+  }
+</script>
