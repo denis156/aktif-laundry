@@ -1,0 +1,106 @@
+<!-- ==================== KASIR LAYANAN & CALCULATION ==================== -->
+<script>
+  /**
+   * Kasir - Layanan Handling & Calculation
+   */
+
+  // ==================== LAYANAN HANDLING ====================
+
+  window.onLayananChange = function() {
+    var select = document.getElementById('kasir_layanan');
+    var selectedOption = select.options[select.selectedIndex];
+
+    if (select.value === '') {
+      window.selectedLayanan = null;
+      document.getElementById('summary_layanan').textContent = '-';
+      document.getElementById('summary_harga_kg').textContent = 'Rp 0';
+      document.getElementById('summary_estimasi').textContent = '-';
+      calculateTotal();
+      return;
+    }
+
+    // Get layanan data
+    var nama = selectedOption.getAttribute('data-nama');
+    var harga = Number(selectedOption.getAttribute('data-harga'));
+    var durasi = Number(selectedOption.getAttribute('data-durasi'));
+
+    window.selectedLayanan = {
+      id: select.value,
+      nama: nama,
+      harga: harga,
+      durasi: durasi
+    };
+
+    // Update summary
+    document.getElementById('summary_layanan').textContent = nama;
+    document.getElementById('summary_harga_kg').textContent = 'Rp ' + harga.toLocaleString('id-ID');
+
+    // Calculate estimasi selesai
+    calculateEstimasi();
+
+    // Calculate total
+    calculateTotal();
+  };
+
+  // ==================== CALCULATION ====================
+
+  function calculateEstimasi() {
+    if (!window.selectedLayanan) {
+      document.getElementById('summary_estimasi').textContent = '-';
+      return;
+    }
+
+    var tanggalMasuk = document.getElementById('kasir_tanggal').value;
+    if (!tanggalMasuk) {
+      document.getElementById('summary_estimasi').textContent = '-';
+      return;
+    }
+
+    var date = new Date(tanggalMasuk);
+    date.setHours(date.getHours() + window.selectedLayanan.durasi);
+
+    var options = {
+      weekday: 'short',
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    };
+    var estimasiText = date.toLocaleDateString('id-ID', options);
+
+    document.getElementById('summary_estimasi').textContent = estimasiText;
+  }
+
+  window.calculateTotal = function() {
+    if (!window.selectedLayanan) {
+      // Reset summary
+      document.getElementById('summary_berat').textContent = '0 Kg';
+      document.getElementById('summary_subtotal').textContent = 'Rp 0';
+      document.getElementById('summary_diskon').textContent = 'Rp 0';
+      document.getElementById('summary_total').textContent = 'Rp 0';
+      return;
+    }
+
+    var berat = Number(document.getElementById('kasir_berat').value) || 0;
+    var diskon = Number(document.getElementById('kasir_diskon').value) || 0;
+    var harga = window.selectedLayanan.harga;
+
+    var subtotal = berat * harga;
+    var total = subtotal - diskon;
+
+    // Prevent negative total
+    if (total < 0) total = 0;
+
+    // Update summary
+    document.getElementById('summary_berat').textContent = berat + ' Kg';
+    document.getElementById('summary_subtotal').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+    document.getElementById('summary_diskon').textContent = 'Rp ' + diskon.toLocaleString('id-ID');
+    document.getElementById('summary_total').textContent = 'Rp ' + total.toLocaleString('id-ID');
+  };
+
+  window.updateSummaryPembayaran = function() {
+    var pembayaran = document.querySelector('input[name="kasir_pembayaran"]:checked').value;
+    document.getElementById('summary_pembayaran').textContent = pembayaran;
+  };
+</script>

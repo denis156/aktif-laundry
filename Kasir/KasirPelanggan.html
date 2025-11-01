@@ -1,0 +1,117 @@
+<!-- ==================== KASIR PELANGGAN HANDLING ==================== -->
+<script>
+  /**
+   * Kasir - Pelanggan Handling
+   */
+
+  // ==================== PELANGGAN VALIDATION ====================
+
+  window.validatePhoneNumber = function() {
+    var noHp = document.getElementById('kasir_nohp').value.trim();
+    var input = document.getElementById('kasir_nohp');
+    var hint = document.getElementById('phone_hint');
+
+    if (noHp === '') {
+      // Empty, reset to default
+      input.classList.remove('input-error', 'input-success');
+      hint.className = 'label-text-alt text-info';
+      hint.textContent = 'Format: 8xxxxxxxxx (dimulai dari 8)';
+      return;
+    }
+
+    var phoneRegex = /^8[0-9]{8,12}$/;
+
+    if (phoneRegex.test(noHp)) {
+      // Valid
+      input.classList.remove('input-error');
+      input.classList.add('input-success');
+      hint.className = 'label-text-alt text-success';
+      hint.textContent = '✓ Format nomor sudah benar';
+    } else {
+      // Invalid
+      input.classList.remove('input-success');
+      input.classList.add('input-error');
+      hint.className = 'label-text-alt text-error';
+
+      if (!noHp.startsWith('8')) {
+        hint.textContent = '✗ Nomor harus dimulai dari angka 8';
+      } else if (noHp.length < 9) {
+        hint.textContent = '✗ Nomor terlalu pendek (min 9 digit)';
+      } else if (noHp.length > 13) {
+        hint.textContent = '✗ Nomor terlalu panjang (max 13 digit)';
+      } else if (!/^[0-9]+$/.test(noHp)) {
+        hint.textContent = '✗ Nomor hanya boleh berisi angka';
+      }
+    }
+  };
+
+  // ==================== TOGGLE NEW CUSTOMER ====================
+
+  window.toggleNewCustomer = function() {
+    var toggle = document.getElementById('toggle_new_customer');
+    window.isNewCustomer = toggle.checked;
+
+    if (window.isNewCustomer) {
+      // Mode: Pelanggan Baru
+      document.getElementById('kasir_pelanggan').value = '';
+      document.getElementById('kasir_pelanggan').disabled = true;
+      setFieldsReadonly(false);
+      clearPelangganFields();
+
+      // Show required indicators
+      document.getElementById('nama_required').style.display = 'inline';
+      document.getElementById('nohp_required').style.display = 'inline';
+    } else {
+      // Mode: Pilih Pelanggan
+      document.getElementById('kasir_pelanggan').disabled = false;
+      setFieldsReadonly(true);
+
+      // Hide required indicators
+      document.getElementById('nama_required').style.display = 'none';
+      document.getElementById('nohp_required').style.display = 'none';
+    }
+  };
+
+  // ==================== PELANGGAN CHANGE ====================
+
+  window.onPelangganChange = function() {
+    var select = document.getElementById('kasir_pelanggan');
+    var selectedOption = select.options[select.selectedIndex];
+
+    if (select.value === '') {
+      clearPelangganFields();
+      return;
+    }
+
+    // Auto-fill data pelanggan
+    var nama = selectedOption.getAttribute('data-nama');
+    var nohp = selectedOption.getAttribute('data-nohp');
+    var email = selectedOption.getAttribute('data-email');
+    var alamat = selectedOption.getAttribute('data-alamat');
+
+    document.getElementById('kasir_nama').value = nama;
+    document.getElementById('kasir_nohp').value = nohp;
+    document.getElementById('kasir_email').value = email;
+    document.getElementById('kasir_alamat').value = alamat;
+
+    // Update summary
+    document.getElementById('summary_pelanggan').textContent = nama;
+  };
+
+  // ==================== HELPER FUNCTIONS ====================
+
+  function clearPelangganFields() {
+    document.getElementById('kasir_nama').value = '';
+    document.getElementById('kasir_nohp').value = '';
+    document.getElementById('kasir_email').value = '';
+    document.getElementById('kasir_alamat').value = '';
+    document.getElementById('summary_pelanggan').textContent = '-';
+  }
+
+  function setFieldsReadonly(readonly) {
+    document.getElementById('kasir_nama').readOnly = readonly;
+    document.getElementById('kasir_nohp').readOnly = readonly;
+    document.getElementById('kasir_email').readOnly = readonly;
+    document.getElementById('kasir_alamat').readOnly = readonly;
+  }
+</script>

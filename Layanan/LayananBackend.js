@@ -302,3 +302,50 @@ function toggleStatusLayanan(id) {
     return { success: false, message: error.toString() };
   }
 }
+
+/**
+ * Fungsi untuk mengambil layanan aktif saja (untuk dropdown)
+ * Dipanggil dari: Transaksi/CreateTransaksi.html dan Kasir/KasirInit.html
+ */
+function getActiveLayanan() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Layanan');
+
+    if (!sheet) {
+      return { success: false, message: 'Sheet Layanan tidak ditemukan' };
+    }
+
+    var lastRow = sheet.getLastRow();
+
+    // Jika tidak ada data
+    if (lastRow <= 1) {
+      return { success: true, data: [] };
+    }
+
+    // Ambil semua data (skip header)
+    var range = sheet.getRange(2, 1, lastRow - 1, 6);
+    var values = range.getValues();
+
+    // Filter hanya layanan aktif dan convert ke array of objects
+    var activeLayanan = [];
+    for (var i = 0; i < values.length; i++) {
+      if (values[i][5] === 'Aktif') {  // Kolom 6 (index 5) adalah Status
+        activeLayanan.push({
+          id: values[i][0],
+          nama: values[i][1],
+          harga: values[i][2],
+          durasi: values[i][3],
+          deskripsi: values[i][4],
+          status: values[i][5]
+        });
+      }
+    }
+
+    return { success: true, data: activeLayanan };
+
+  } catch (error) {
+    Logger.log('Error getActiveLayanan: ' + error);
+    return { success: false, message: error.toString() };
+  }
+}

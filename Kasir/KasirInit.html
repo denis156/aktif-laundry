@@ -1,0 +1,90 @@
+<!-- ==================== KASIR INITIALIZATION ==================== -->
+<script>
+  /**
+   * Kasir - Initialization & Data Loading
+   */
+
+  // Global variables
+  window.pelangganData = [];
+  window.layananData = [];
+  window.isNewCustomer = false;
+  window.selectedLayanan = null;
+
+  // ==================== INITIALIZATION ====================
+
+  ;(function() {
+    // Set tanggal hari ini sebagai default
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementById('kasir_tanggal').value = today;
+
+    // Load data pelanggan dan layanan
+    loadPelangganData();
+    loadLayananData();
+
+    // Set initial state
+    setFieldsReadonly(false);
+  })();
+
+  // ==================== LOAD DATA FROM SERVER ====================
+
+  function loadPelangganData() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success && result.data) {
+          window.pelangganData = result.data;
+          populatePelangganDropdown();
+        }
+      })
+      .withFailureHandler(function(error) {
+        console.error('Error loading pelanggan:', error);
+      })
+      .getActivePelanggan();
+  }
+
+  function loadLayananData() {
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success && result.data) {
+          window.layananData = result.data;
+          populateLayananDropdown();
+        }
+      })
+      .withFailureHandler(function(error) {
+        console.error('Error loading layanan:', error);
+      })
+      .getActiveLayanan();
+  }
+
+  // ==================== POPULATE DROPDOWNS ====================
+
+  function populatePelangganDropdown() {
+    var select = document.getElementById('kasir_pelanggan');
+    select.innerHTML = '<option value="">Pilih Pelanggan</option>';
+
+    window.pelangganData.forEach(function(item) {
+      var option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.nama + ' - ' + item.noHp;
+      option.setAttribute('data-nama', item.nama);
+      option.setAttribute('data-nohp', item.noHp);
+      option.setAttribute('data-email', item.email || '');
+      option.setAttribute('data-alamat', item.alamat || '');
+      select.appendChild(option);
+    });
+  }
+
+  function populateLayananDropdown() {
+    var select = document.getElementById('kasir_layanan');
+    select.innerHTML = '<option value="">Pilih Layanan</option>';
+
+    window.layananData.forEach(function(item) {
+      var option = document.createElement('option');
+      option.value = item.id;
+      option.textContent = item.nama + ' - Rp ' + Number(item.harga).toLocaleString('id-ID') + '/kg';
+      option.setAttribute('data-nama', item.nama);
+      option.setAttribute('data-harga', item.harga);
+      option.setAttribute('data-durasi', item.durasi);
+      select.appendChild(option);
+    });
+  }
+</script>

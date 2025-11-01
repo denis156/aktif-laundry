@@ -318,3 +318,52 @@ function toggleStatusPelanggan(id) {
     return { success: false, message: error.toString() };
   }
 }
+
+/**
+ * Fungsi untuk mengambil pelanggan aktif saja (untuk dropdown)
+ * Dipanggil dari: Transaksi/CreateTransaksi.html, Transaksi/EditTransaksi.html, dan Kasir/KasirInit.html
+ */
+function getActivePelanggan() {
+  try {
+    var ss = SpreadsheetApp.getActiveSpreadsheet();
+    var sheet = ss.getSheetByName('Pelanggan');
+
+    if (!sheet) {
+      return { success: false, message: 'Sheet Pelanggan tidak ditemukan' };
+    }
+
+    var lastRow = sheet.getLastRow();
+
+    // Jika tidak ada data
+    if (lastRow <= 1) {
+      return { success: true, data: [] };
+    }
+
+    // Ambil semua data (skip header)
+    var range = sheet.getRange(2, 1, lastRow - 1, 8);
+    var values = range.getValues();
+
+    // Filter hanya pelanggan aktif dan convert ke array of objects
+    var activePelanggan = [];
+    for (var i = 0; i < values.length; i++) {
+      if (values[i][7] === 'Aktif') {  // Kolom 8 (index 7) adalah Status
+        activePelanggan.push({
+          id: values[i][0] ? String(values[i][0]) : '',
+          nama: values[i][1] ? String(values[i][1]) : '',
+          noHp: values[i][2] ? String(values[i][2]) : '',
+          alamat: values[i][3] ? String(values[i][3]) : '',
+          email: values[i][4] ? String(values[i][4]) : '',
+          tanggalDaftar: values[i][5] ? values[i][5].toString() : '',
+          totalTransaksi: values[i][6] ? Number(values[i][6]) : 0,
+          status: values[i][7] ? String(values[i][7]) : ''
+        });
+      }
+    }
+
+    return { success: true, data: activePelanggan };
+
+  } catch (error) {
+    Logger.log('ERROR in getActivePelanggan: ' + error);
+    return { success: false, message: error.toString() };
+  }
+}

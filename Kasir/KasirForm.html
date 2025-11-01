@@ -1,0 +1,217 @@
+<!-- ==================== KASIR FORM SUBMISSION ==================== -->
+<script>
+  /**
+   * Kasir - Form Submission & Modal Handling
+   */
+
+  // ==================== FORM VALIDATION & SUBMIT ====================
+
+  window.prosesTransaksi = function() {
+    // Validate pelanggan
+    var nama = document.getElementById('kasir_nama').value.trim();
+    var noHp = document.getElementById('kasir_nohp').value.trim();
+
+    if (!nama || !noHp) {
+      alert('Nama dan No. HP pelanggan harus diisi!');
+      return;
+    }
+
+    // Validate No. HP format
+    var phoneRegex = /^8[0-9]{8,12}$/;
+    if (!phoneRegex.test(noHp)) {
+      alert('Format No. HP salah!\nNo. HP harus dimulai dari angka 8 (tanpa 0 atau +62)\nContoh: 81234567890');
+      return;
+    }
+
+    // Validate transaksi
+    var tanggal = document.getElementById('kasir_tanggal').value;
+    var berat = Number(document.getElementById('kasir_berat').value);
+
+    if (!tanggal || !window.selectedLayanan || berat <= 0) {
+      alert('Tanggal, Layanan, dan Berat harus diisi dengan benar!');
+      return;
+    }
+
+    // Show modal konfirmasi
+    showModalKonfirmasi();
+  };
+
+  // ==================== MODAL KONFIRMASI ====================
+
+  function showModalKonfirmasi() {
+    // Get all form values
+    var nama = document.getElementById('kasir_nama').value.trim();
+    var noHp = document.getElementById('kasir_nohp').value.trim();
+    var email = document.getElementById('kasir_email').value.trim();
+    var alamat = document.getElementById('kasir_alamat').value.trim();
+    var tanggal = document.getElementById('kasir_tanggal').value;
+    var berat = Number(document.getElementById('kasir_berat').value);
+    var diskon = Number(document.getElementById('kasir_diskon').value) || 0;
+    var catatan = document.getElementById('kasir_catatan').value.trim();
+    var pembayaran = document.querySelector('input[name="kasir_pembayaran"]:checked').value;
+
+    // Calculate totals
+    var subtotal = berat * window.selectedLayanan.harga;
+    var total = subtotal - diskon;
+
+    // Format tanggal
+    var tanggalObj = new Date(tanggal);
+    var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+    var tanggalFormatted = tanggalObj.toLocaleDateString('id-ID', options);
+
+    // Get estimasi
+    var estimasi = document.getElementById('summary_estimasi').textContent;
+
+    // Populate modal - Data Pelanggan
+    document.getElementById('modal_pelanggan_nama').textContent = nama;
+    document.getElementById('modal_pelanggan_nohp').textContent = '0' + noHp;
+    document.getElementById('modal_pelanggan_email').textContent = email || '-';
+    document.getElementById('modal_pelanggan_alamat').textContent = alamat || '-';
+
+    // Show badge status
+    var statusBadge = document.getElementById('modal_pelanggan_status');
+    if (window.isNewCustomer || !document.getElementById('kasir_pelanggan').value) {
+      statusBadge.textContent = 'Pelanggan Baru';
+      statusBadge.className = 'badge badge-sm badge-success mt-2';
+    } else {
+      statusBadge.textContent = 'Pelanggan Existing';
+      statusBadge.className = 'badge badge-sm badge-info mt-2';
+    }
+
+    // Populate modal - Detail Transaksi
+    document.getElementById('modal_transaksi_tanggal').textContent = tanggalFormatted;
+    document.getElementById('modal_transaksi_layanan').textContent = window.selectedLayanan.nama;
+    document.getElementById('modal_transaksi_berat').textContent = berat + ' Kg';
+    document.getElementById('modal_transaksi_harga').textContent = 'Rp ' + window.selectedLayanan.harga.toLocaleString('id-ID');
+    document.getElementById('modal_transaksi_estimasi').textContent = estimasi;
+
+    // Catatan (hide if empty)
+    var catatanContainer = document.getElementById('modal_catatan_container');
+    if (catatan) {
+      document.getElementById('modal_transaksi_catatan').textContent = catatan;
+      catatanContainer.style.display = 'block';
+    } else {
+      catatanContainer.style.display = 'none';
+    }
+
+    // Populate modal - Pembayaran
+    document.getElementById('modal_pembayaran_metode').textContent = pembayaran;
+    document.getElementById('modal_pembayaran_diskon').textContent = 'Rp ' + diskon.toLocaleString('id-ID');
+    document.getElementById('modal_pembayaran_subtotal').textContent = 'Rp ' + subtotal.toLocaleString('id-ID');
+    document.getElementById('modal_pembayaran_total').textContent = 'Rp ' + total.toLocaleString('id-ID');
+
+    // Show modal
+    modal_konfirmasi_transaksi.showModal();
+  }
+
+  // ==================== CONFIRM & SUBMIT ====================
+
+  window.confirmAndSubmitTransaksi = function() {
+    // Get all form values
+    var nama = document.getElementById('kasir_nama').value.trim();
+    var noHp = document.getElementById('kasir_nohp').value.trim();
+    var email = document.getElementById('kasir_email').value.trim();
+    var alamat = document.getElementById('kasir_alamat').value.trim();
+    var tanggal = document.getElementById('kasir_tanggal').value;
+    var berat = Number(document.getElementById('kasir_berat').value);
+    var diskon = Number(document.getElementById('kasir_diskon').value) || 0;
+    var catatan = document.getElementById('kasir_catatan').value.trim();
+    var pembayaran = document.querySelector('input[name="kasir_pembayaran"]:checked').value;
+    var idPelanggan = document.getElementById('kasir_pelanggan').value;
+
+    // Disable button
+    var btn = document.getElementById('btn_proses_transaksi');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Memproses...';
+
+    // Prepare data
+    var data = {
+      pelanggan: {
+        id: idPelanggan,
+        nama: nama,
+        noHp: noHp,
+        email: email,
+        alamat: alamat,
+        isNew: window.isNewCustomer || !idPelanggan
+      },
+      transaksi: {
+        tanggalMasuk: tanggal,
+        idLayanan: window.selectedLayanan.id,
+        berat: berat,
+        diskon: diskon,
+        metodePembayaran: pembayaran,
+        catatan: catatan
+      }
+    };
+
+    // Call backend
+    google.script.run
+      .withSuccessHandler(function(result) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Proses Transaksi';
+
+        if (!result) {
+          alert('Error: Tidak ada response dari server');
+          modal_konfirmasi_transaksi.close();
+          return;
+        }
+
+        if (result.success) {
+          alert('Transaksi berhasil!\n\nID Transaksi: ' + result.data.transaksiId + '\n' + result.message);
+          modal_konfirmasi_transaksi.close();
+          resetForm();
+          loadPelangganData(); // Reload pelanggan list
+        } else {
+          alert('Error: ' + result.message);
+          modal_konfirmasi_transaksi.close();
+        }
+      })
+      .withFailureHandler(function(error) {
+        btn.disabled = false;
+        btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg> Proses Transaksi';
+        alert('Error: ' + error.message);
+        modal_konfirmasi_transaksi.close();
+      })
+      .processKasirTransaksi(data);
+  };
+
+  // ==================== RESET FORM ====================
+
+  window.resetForm = function() {
+    // Reset pelanggan
+    document.getElementById('kasir_pelanggan').value = '';
+    document.getElementById('kasir_pelanggan').disabled = false;
+    document.getElementById('toggle_new_customer').checked = false;
+    clearPelangganFields();
+    setFieldsReadonly(true);
+    window.isNewCustomer = false;
+
+    // Hide required indicators
+    document.getElementById('nama_required').style.display = 'none';
+    document.getElementById('nohp_required').style.display = 'none';
+
+    // Reset transaksi
+    var today = new Date().toISOString().split('T')[0];
+    document.getElementById('kasir_tanggal').value = today;
+    document.getElementById('kasir_layanan').value = '';
+    document.getElementById('kasir_berat').value = '';
+    document.getElementById('kasir_diskon').value = '0';
+    document.getElementById('kasir_catatan').value = '';
+
+    // Reset pembayaran
+    document.querySelector('input[name="kasir_pembayaran"][value="Tunai"]').checked = true;
+
+    // Reset summary
+    document.getElementById('summary_pelanggan').textContent = '-';
+    document.getElementById('summary_layanan').textContent = '-';
+    document.getElementById('summary_berat').textContent = '0 Kg';
+    document.getElementById('summary_harga_kg').textContent = 'Rp 0';
+    document.getElementById('summary_subtotal').textContent = 'Rp 0';
+    document.getElementById('summary_diskon').textContent = 'Rp 0';
+    document.getElementById('summary_total').textContent = 'Rp 0';
+    document.getElementById('summary_estimasi').textContent = '-';
+    document.getElementById('summary_pembayaran').textContent = 'Tunai';
+
+    window.selectedLayanan = null;
+  };
+</script>
