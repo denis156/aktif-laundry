@@ -216,14 +216,15 @@
           <table class="table table-zebra table-sm">
             <thead>
               <tr>
-                <th>No</th>
-                <th>Tanggal</th>
+                <th>ID Transaksi</th>
+                <th>Tanggal Masuk</th>
                 <th>Pelanggan</th>
                 <th>Layanan</th>
                 <th>Berat</th>
                 <th>Total</th>
                 <th>Pembayaran</th>
                 <th>Status</th>
+                <th>Tanggal Selesai</th>
                 <th>Aksi</th>
               </tr>
             </thead>
@@ -231,7 +232,7 @@
               <? if (transaksiData && transaksiData.length > 0) { ?>
               <? for (var i = 0; i < transaksiData.length; i++) { ?>
               <tr>
-                <td><?= i + 1 ?></td>
+                <td><span class="font-mono font-bold"><?= transaksiData[i].id ?></span></td>
                 <td>
                   <?= Utilities.formatDate(new Date(transaksiData[i].tanggalMasuk), Session.getScriptTimeZone(), 'dd/MM/yyyy') ?>
                 </td>
@@ -265,6 +266,9 @@
                   <? } else { ?>
                   <span class="badge badge-error badge-sm">Batal</span>
                   <? } ?>
+                </td>
+                <td>
+                  <?= Utilities.formatDate(new Date(transaksiData[i].tanggalSelesai), Session.getScriptTimeZone(), 'dd/MM/yyyy') ?>
                 </td>
                 <td>
                   <div class="flex gap-1">

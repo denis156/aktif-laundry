@@ -78,7 +78,7 @@
           <table class="table table-zebra table-sm">
             <thead>
               <tr>
-                <th>No</th>
+                <th>ID Layanan</th>
                 <th>Nama Layanan</th>
                 <th>Harga per Kg</th>
                 <th>Durasi (Jam)</th>
@@ -91,7 +91,7 @@
               0) { ?>
               <? for (var i = 0; i < layananData.length; i++) { ?>
               <tr>
-                <td><?= i + 1 ?></td>
+                <td><span class="font-mono font-bold"><?= layananData[i].id ?></span></td>
                 <td>
                   <div class="font-bold"><?= layananData[i].nama ?></div>
                   <div class="text-sm opacity-50"><?= layananData[i].deskripsi || '-' ?></div>
