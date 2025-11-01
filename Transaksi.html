@@ -1,5 +1,128 @@
-<!-- Include Transaksi Modals & Scripts FIRST -->
-<?!= includeTransaksiScripts() ?>
+<!-- ==================== GLOBAL VARIABLES & HELPER FUNCTIONS ==================== -->
+<script>
+  /**
+   * Transaksi Scripts - Global Variables & Helper Functions
+   */
+
+  // ==================== GLOBAL CACHE ====================
+  window.cachedPelanggan = [];
+  window.cachedLayanan = [];
+  window.cachedAllLayanan = [];
+  window.isDataLoaded = false;
+
+  // ==================== HELPER FUNCTIONS ====================
+
+  // Pre-load data dari server dan cache
+  function preloadDropdownData() {
+    if (window.isDataLoaded) return;
+
+    // Load pelanggan aktif
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success && result.data) {
+          window.cachedPelanggan = result.data;
+          checkDataLoaded();
+        }
+      })
+      .withFailureHandler(function(error) {
+        console.error('Error pre-loading pelanggan:', error);
+      })
+      .getActivePelanggan();
+
+    // Load layanan aktif (untuk modal tambah)
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success && result.data) {
+          window.cachedLayanan = result.data;
+          checkDataLoaded();
+        }
+      })
+      .withFailureHandler(function(error) {
+        console.error('Error pre-loading layanan aktif:', error);
+      })
+      .getActiveLayanan();
+
+    // Load SEMUA layanan (termasuk tidak aktif, untuk modal edit)
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result && result.success && result.data) {
+          window.cachedAllLayanan = result.data;
+          checkDataLoaded();
+        }
+      })
+      .withFailureHandler(function(error) {
+        console.error('Error pre-loading all layanan:', error);
+      })
+      .getAllLayanan();
+  }
+
+  function checkDataLoaded() {
+    if (window.cachedPelanggan.length > 0 && window.cachedLayanan.length > 0 && window.cachedAllLayanan.length > 0) {
+      window.isDataLoaded = true;
+    }
+  }
+
+  // Populate Pelanggan dropdown dari cache
+  function populatePelangganDropdown(selectId, selectedId) {
+    var select = document.getElementById(selectId);
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Pilih Pelanggan</option>';
+
+    window.cachedPelanggan.forEach(function(item) {
+      var option = document.createElement('option');
+      option.value = item.id;
+      var noHp = item.noHp ? String(item.noHp) : '';
+      option.textContent = item.nama + ' - ' + noHp;
+
+      if (selectedId && String(item.id) === String(selectedId)) {
+        option.selected = true;
+      }
+
+      select.appendChild(option);
+    });
+  }
+
+  // Populate Layanan dropdown dari cache (untuk modal tambah - hanya aktif)
+  function populateLayananDropdown(selectId, selectedId) {
+    populateLayananDropdownFromArray(selectId, window.cachedLayanan, selectedId);
+  }
+
+  // Populate Layanan dropdown dari array tertentu
+  function populateLayananDropdownFromArray(selectId, dataArray, selectedId) {
+    var select = document.getElementById(selectId);
+    if (!select) return;
+
+    select.innerHTML = '<option value="">Pilih Layanan</option>';
+
+    dataArray.forEach(function(item) {
+      var option = document.createElement('option');
+      option.value = item.id;
+
+      // Tambahkan marker untuk layanan tidak aktif
+      var statusLabel = (item.status === 'Tidak Aktif') ? ' [TIDAK AKTIF]' : '';
+      option.textContent = item.nama + ' - Rp ' + Number(item.harga).toLocaleString('id-ID') + statusLabel;
+
+      if (selectedId && String(item.id) === String(selectedId)) {
+        option.selected = true;
+      }
+
+      select.appendChild(option);
+    });
+  }
+
+  // Pre-load data saat halaman Transaksi dibuka
+  setTimeout(function() {
+    preloadDropdownData();
+  }, 100);
+</script>
+
+<!-- Include semua sub-components -->
+<?!= include('Transaksi/CreateTransaksi') ?>
+<?!= include('Transaksi/EditTransaksi') ?>
+<?!= include('Transaksi/DeleteTransaksi') ?>
+<?!= include('Transaksi/ListTransaksi') ?>
+
 <div class="card">
   <div class="card-body">
     <h2 class="card-title text-lg md:text-2xl lg:text-3xl font-bold">Data Transaksi</h2>
@@ -82,8 +205,7 @@
               </tr>
             </thead>
             <tbody id="transaksiTableBody">
-              <? if (transaksiData && transaksiData.length >
-              0) { ?>
+              <? if (transaksiData && transaksiData.length > 0) { ?>
               <? for (var i = 0; i < transaksiData.length; i++) { ?>
               <tr>
                 <td><?= i + 1 ?></td>

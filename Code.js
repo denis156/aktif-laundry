@@ -32,13 +32,6 @@ function includePelangganScripts() {
   return HtmlService.createHtmlOutputFromFile('Pelanggan/PelangganScripts').getContent();
 }
 
-/**
- * Fungsi untuk include Transaksi Scripts
- * Khusus untuk load JavaScript functions dari Transaksi/TransaksiScripts.html
- */
-function includeTransaksiScripts() {
-  return HtmlService.createHtmlOutputFromFile('Transaksi/TransaksiScripts').getContent();
-}
 
 /**
  * Fungsi untuk include Kasir Modals

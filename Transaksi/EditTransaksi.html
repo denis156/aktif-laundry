@@ -1,0 +1,190 @@
+<!-- ==================== MODAL EDIT TRANSAKSI ==================== -->
+<dialog id="modal_edit_transaksi" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box max-w-2xl">
+    <h3 class="text-lg font-bold mb-4">Edit Transaksi</h3>
+    <form id="form_edit_transaksi" class="space-y-4">
+      <input type="hidden" id="edit_id">
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="label"><span class="label-text">Tanggal Masuk</span></label>
+          <input type="date" id="edit_tanggalmasuk" class="input input-bordered w-full input-sm" required />
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Pelanggan</span></label>
+          <select id="edit_idpelanggan" class="select select-bordered w-full select-sm" required>
+            <option value="">Pilih Pelanggan</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Layanan</span></label>
+          <select id="edit_idlayanan" class="select select-bordered w-full select-sm" required>
+            <option value="">Pilih Layanan</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Berat (Kg)</span></label>
+          <input type="number" id="edit_berat" placeholder="0" class="input input-bordered w-full input-sm" required min="0.1" step="0.1" />
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Diskon</span></label>
+          <input type="number" id="edit_diskon" placeholder="0" class="input input-bordered w-full input-sm" min="0" />
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Metode Pembayaran</span></label>
+          <select id="edit_metodepembayaran" class="select select-bordered w-full select-sm" required>
+            <option value="">Pilih Metode</option>
+            <option value="Tunai">Tunai</option>
+            <option value="Transfer">Transfer</option>
+            <option value="QRIS">QRIS</option>
+            <option value="Debit">Debit</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Tanggal Selesai</span></label>
+          <input type="date" id="edit_tanggalselesai" class="input input-bordered w-full input-sm" required />
+        </div>
+
+        <div>
+          <label class="label"><span class="label-text">Status</span></label>
+          <select id="edit_status" class="select select-bordered w-full select-sm" required>
+            <option value="">Pilih Status</option>
+            <option value="Menunggu">Menunggu</option>
+            <option value="Proses">Proses</option>
+            <option value="Selesai">Selesai</option>
+            <option value="Diambil">Diambil</option>
+            <option value="Batal">Batal</option>
+          </select>
+        </div>
+
+        <div class="col-span-2">
+          <label class="label"><span class="label-text">Catatan</span></label>
+          <textarea id="edit_catatan" class="textarea textarea-bordered w-full textarea-sm" placeholder="Catatan transaksi"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-action">
+        <button type="button" class="btn btn-sm" onclick="modal_edit_transaksi.close()">Batal</button>
+        <button type="submit" class="btn btn-primary btn-sm">Simpan</button>
+      </div>
+    </form>
+  </div>
+</dialog>
+
+<!-- ==================== SCRIPT EDIT TRANSAKSI ==================== -->
+<script>
+  /**
+   * Edit Transaksi Logic
+   */
+
+  // Edit Transaksi - Open modal with data
+  window.editTransaksiData = function(btn) {
+    var data = btn.dataset;
+
+    document.getElementById('edit_id').value = data.id;
+    document.getElementById('edit_tanggalmasuk').value = data.tanggalmasuk;
+    document.getElementById('edit_berat').value = data.berat;
+    document.getElementById('edit_diskon').value = data.diskon;
+    document.getElementById('edit_metodepembayaran').value = data.metodepembayaran;
+    document.getElementById('edit_tanggalselesai').value = data.tanggalselesai;
+    document.getElementById('edit_status').value = data.status;
+    document.getElementById('edit_catatan').value = data.catatan || '';
+
+    // Load dropdown pelanggan dan layanan
+    loadPelangganForEdit(data.idpelanggan);
+    loadLayananForEdit(data.idlayanan);
+
+    modal_edit_transaksi.showModal();
+  }
+
+  // Load Pelanggan dropdown untuk Edit (menggunakan cache)
+  function loadPelangganForEdit(selectedId) {
+    if (window.isDataLoaded) {
+      populatePelangganDropdown('edit_idpelanggan', selectedId);
+    } else {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success && result.data) {
+            window.cachedPelanggan = result.data;
+            populatePelangganDropdown('edit_idpelanggan', selectedId);
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error loading pelanggan:', error);
+        })
+        .getActivePelanggan();
+    }
+  }
+
+  // Load Layanan dropdown untuk Edit (menggunakan cache SEMUA layanan)
+  function loadLayananForEdit(selectedId) {
+    if (window.isDataLoaded) {
+      populateLayananDropdownFromArray('edit_idlayanan', window.cachedAllLayanan, selectedId);
+    } else {
+      google.script.run
+        .withSuccessHandler(function(result) {
+          if (result && result.success && result.data) {
+            window.cachedAllLayanan = result.data;
+            populateLayananDropdownFromArray('edit_idlayanan', window.cachedAllLayanan, selectedId);
+          }
+        })
+        .withFailureHandler(function(error) {
+          console.error('Error loading layanan:', error);
+        })
+        .getAllLayanan();
+    }
+  }
+
+  // Handle Form Edit Submit
+  function handleEditTransaksiFormSubmit(e) {
+    e.preventDefault();
+    e.stopPropagation();
+
+    var data = {
+      tanggalMasuk: document.getElementById('edit_tanggalmasuk').value,
+      idPelanggan: document.getElementById('edit_idpelanggan').value,
+      idLayanan: document.getElementById('edit_idlayanan').value,
+      berat: document.getElementById('edit_berat').value,
+      diskon: document.getElementById('edit_diskon').value,
+      metodePembayaran: document.getElementById('edit_metodepembayaran').value,
+      tanggalSelesai: document.getElementById('edit_tanggalselesai').value,
+      status: document.getElementById('edit_status').value,
+      catatan: document.getElementById('edit_catatan').value
+    };
+
+    var id = document.getElementById('edit_id').value;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_edit_transaksi.close();
+          navigateTo('Transaksi');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .editTransaksi(id, data);
+
+    return false;
+  }
+
+  // Attach form submit handler
+  ;(function() {
+    setTimeout(function() {
+      var formEdit = document.getElementById('form_edit_transaksi');
+      if (formEdit) {
+        formEdit.onsubmit = handleEditTransaksiFormSubmit;
+      }
+    }, 100);
+  })();
+</script>

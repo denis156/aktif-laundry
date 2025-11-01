@@ -1,0 +1,133 @@
+<!-- ==================== MODAL DELETE TRANSAKSI ==================== -->
+<dialog id="modal_delete_transaksi" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box">
+    <h3 class="text-lg font-bold mb-4">Konfirmasi Hapus</h3>
+    <p class="py-4">Apakah Anda yakin ingin menghapus transaksi untuk <strong id="delete_namapelanggan"></strong>?</p>
+    <input type="hidden" id="delete_id">
+    <div class="modal-action">
+      <button class="btn" onclick="modal_delete_transaksi.close()">Batal</button>
+      <button class="btn btn-error" onclick="confirmDeleteTransaksi()">Hapus</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- Modal Detail Transaksi -->
+<dialog id="modal_detail_transaksi" class="modal modal-bottom sm:modal-middle">
+  <div class="modal-box max-w-2xl">
+    <h3 class="text-lg font-bold mb-4">Detail Transaksi</h3>
+    <div class="grid grid-cols-2 gap-3">
+      <div>
+        <label class="font-semibold">ID Transaksi:</label>
+        <p id="detail_id" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Tanggal Masuk:</label>
+        <p id="detail_tanggalmasuk" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Pelanggan:</label>
+        <p id="detail_pelanggan" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Layanan:</label>
+        <p id="detail_layanan" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Berat:</label>
+        <p id="detail_berat" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Harga per Kg:</label>
+        <p id="detail_hargaperkg" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Subtotal:</label>
+        <p id="detail_subtotal" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Diskon:</label>
+        <p id="detail_diskon" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Total:</label>
+        <p id="detail_total" class="text-base-content/70 font-bold text-lg"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Metode Pembayaran:</label>
+        <p id="detail_metodepembayaran" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Tanggal Selesai:</label>
+        <p id="detail_tanggalselesai" class="text-base-content/70"></p>
+      </div>
+      <div>
+        <label class="font-semibold">Status:</label>
+        <p id="detail_status" class="text-base-content/70"></p>
+      </div>
+      <div class="col-span-2">
+        <label class="font-semibold">Catatan:</label>
+        <p id="detail_catatan" class="text-base-content/70"></p>
+      </div>
+    </div>
+    <div class="modal-action">
+      <form method="dialog">
+        <button class="btn">Tutup</button>
+      </form>
+    </div>
+  </div>
+</dialog>
+
+<!-- ==================== SCRIPT DELETE & DETAIL TRANSAKSI ==================== -->
+<script>
+  /**
+   * Delete & Detail Transaksi Logic
+   */
+
+  // View Detail Transaksi
+  window.viewTransaksiData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('detail_id').textContent = data.id;
+    document.getElementById('detail_tanggalmasuk').textContent = data.tanggalmasuk;
+    document.getElementById('detail_pelanggan').textContent = data.namapelanggan + ' (' + data.idpelanggan + ')';
+    document.getElementById('detail_layanan').textContent = data.namalayanan + ' (' + data.idlayanan + ')';
+    document.getElementById('detail_berat').textContent = data.berat + ' Kg';
+    document.getElementById('detail_hargaperkg').textContent = 'Rp ' + Number(data.hargaperkg).toLocaleString('id-ID');
+    document.getElementById('detail_subtotal').textContent = 'Rp ' + Number(data.subtotal).toLocaleString('id-ID');
+    document.getElementById('detail_diskon').textContent = 'Rp ' + Number(data.diskon).toLocaleString('id-ID');
+    document.getElementById('detail_total').textContent = 'Rp ' + Number(data.total).toLocaleString('id-ID');
+    document.getElementById('detail_metodepembayaran').textContent = data.metodepembayaran;
+    document.getElementById('detail_tanggalselesai').textContent = data.tanggalselesai;
+    document.getElementById('detail_status').textContent = data.status;
+    document.getElementById('detail_catatan').textContent = data.catatan || '-';
+
+    modal_detail_transaksi.showModal();
+  }
+
+  // Delete Confirmation - Open modal
+  window.deleteTransaksiConfirmData = function(btn) {
+    var data = btn.dataset;
+    document.getElementById('delete_id').value = data.id;
+    document.getElementById('delete_namapelanggan').textContent = data.namapelanggan;
+    modal_delete_transaksi.showModal();
+  }
+
+  // Confirm Delete - Execute delete
+  window.confirmDeleteTransaksi = function() {
+    var id = document.getElementById('delete_id').value;
+
+    google.script.run
+      .withSuccessHandler(function(result) {
+        if (result.success) {
+          alert(result.message);
+          modal_delete_transaksi.close();
+          navigateTo('Transaksi');
+        } else {
+          alert('Error: ' + result.message);
+        }
+      })
+      .withFailureHandler(function(error) {
+        alert('Error: ' + error.message);
+      })
+      .deleteTransaksi(id);
+  }
+</script>
