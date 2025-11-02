@@ -49,6 +49,12 @@ function buildThermalReceiptHTML(data, settings) {
   var email = settings.email || '';
   var whatsapp = settings.whatsapp || '';
 
+  // Konfigurasi ukuran kertas thermal dari settings (default 57mm)
+  var paperWidth = settings.thermal_paper_width || '57';
+  var fontSize = settings.thermal_font_size || '8';
+  var lineHeight = settings.thermal_line_height || '1.1';
+  var padding = settings.thermal_padding || '1.5';
+
   // Format tanggal
   var tanggalMasuk = formatDateTimeForReceipt(data.tanggalMasuk);
   var tanggalSelesai = formatDateTimeForReceipt(data.tanggalSelesai);
@@ -64,41 +70,50 @@ function buildThermalReceiptHTML(data, settings) {
 '<head>' +
 '  <base target="_top">' +
 '  <meta charset="UTF-8">' +
+'  <meta name="viewport" content="width=' + paperWidth + 'mm">' +
 '  <style>' +
 '    * { margin: 0; padding: 0; box-sizing: border-box; }' +
-'    @media print {' +
-'      @page { size: 58mm auto; margin: 0; }' +
-'      html, body { width: 58mm !important; margin: 0 !important; padding: 0 !important; }' +
+'    @page {' +
+'      size: ' + paperWidth + 'mm auto;' +
+'      margin: 0;' +
 '    }' +
-'    html { width: 58mm; }' +
+'    @media print {' +
+'      html, body {' +
+'        width: ' + paperWidth + 'mm !important;' +
+'        margin: 0 !important;' +
+'        padding: 0 !important;' +
+'      }' +
+'      body { page-break-after: avoid; }' +
+'    }' +
+'    html { width: ' + paperWidth + 'mm; }' +
 '    body {' +
 '      font-family: "Courier New", monospace;' +
-'      font-size: 9px;' +
-'      line-height: 1.2;' +
-'      width: 58mm;' +
-'      max-width: 58mm;' +
+'      font-size: ' + fontSize + 'px;' +
+'      line-height: ' + lineHeight + ';' +
+'      width: ' + paperWidth + 'mm;' +
+'      max-width: ' + paperWidth + 'mm;' +
 '      margin: 0;' +
-'      padding: 3mm;' +
+'      padding: ' + padding + 'mm;' +
 '      background: white;' +
 '      color: black;' +
 '    }' +
-'    .header { text-align: center; margin-bottom: 6px; border-bottom: 1px dashed #000; padding-bottom: 6px; }' +
-'    .store-name { font-size: 12px; font-weight: bold; margin-bottom: 3px; text-transform: uppercase; }' +
-'    .store-info { font-size: 8px; line-height: 1.3; }' +
-'    .transaction-info { margin: 6px 0; font-size: 8px; }' +
+'    .header { text-align: center; margin-bottom: 3px; border-bottom: 1px dashed #000; padding-bottom: 3px; }' +
+'    .store-name { font-size: 11px; font-weight: bold; margin-bottom: 2px; text-transform: uppercase; }' +
+'    .store-info { font-size: 7px; line-height: 1.2; }' +
+'    .transaction-info { margin: 3px 0; font-size: 8px; }' +
 '    .info-row { display: flex; justify-content: space-between; margin-bottom: 1px; }' +
 '    .info-label { font-weight: bold; }' +
-'    .separator { border-top: 1px dashed #000; margin: 6px 0; }' +
-'    .separator-double { border-top: 1px solid #000; margin: 6px 0; }' +
-'    .items { margin: 6px 0; }' +
-'    .item-row { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 8px; }' +
+'    .separator { border-top: 1px dashed #000; margin: 3px 0; }' +
+'    .separator-double { border-top: 1px solid #000; margin: 3px 0; }' +
+'    .items { margin: 3px 0; }' +
+'    .item-row { display: flex; justify-content: space-between; margin-bottom: 1px; font-size: 8px; }' +
 '    .item-name { flex: 1; font-weight: bold; }' +
 '    .item-detail { font-size: 8px; margin-left: 2px; color: #333; }' +
-'    .summary { margin-top: 6px; }' +
-'    .summary-row { display: flex; justify-content: space-between; margin-bottom: 2px; font-size: 8px; }' +
-'    .summary-row.total { font-size: 10px; font-weight: bold; margin-top: 3px; padding-top: 3px; border-top: 1px solid #000; }' +
-'    .footer { text-align: center; margin-top: 8px; padding-top: 6px; border-top: 1px dashed #000; font-size: 7px; }' +
-'    .thank-you { font-size: 9px; font-weight: bold; margin-bottom: 3px; }' +
+'    .summary { margin-top: 3px; }' +
+'    .summary-row { display: flex; justify-content: space-between; margin-bottom: 1px; font-size: 8px; }' +
+'    .summary-row.total { font-size: 9px; font-weight: bold; margin-top: 2px; padding-top: 2px; border-top: 1px solid #000; }' +
+'    .footer { text-align: center; margin-top: 3px; padding-top: 3px; border-top: 1px dashed #000; font-size: 7px; }' +
+'    .thank-you { font-size: 8px; font-weight: bold; margin-bottom: 2px; }' +
 '    .bold { font-weight: bold; }' +
 '  </style>' +
 '</head>' +
@@ -147,12 +162,11 @@ function buildThermalReceiptHTML(data, settings) {
 '  <div class="separator-double"></div>' +
 '  <div class="footer">' +
 '    <div class="thank-you">TERIMA KASIH</div>' +
-'    <div>Barang yang sudah dicuci</div>' +
+'    <div style="margin-top: 2px;">Barang yg sudah dicuci</div>' +
 '    <div>tidak dapat dikembalikan</div>' +
-'    <div style="margin-top: 6px;">Simpan struk ini sebagai</div>' +
-'    <div>bukti pengambilan</div>' +
+'    <div style="margin-top: 2px;">Simpan struk sbg bukti</div>' +
 '  </div>' +
-'  <div style="height: 10mm;"></div>' +
+'  <div style="height: 3mm;"></div>' +
 '</body>' +
 '</html>';
 
@@ -229,7 +243,11 @@ function getAllSettings() {
         alamat: 'Jl. Merdeka No. 123, Jakarta',
         telepon: '021-12345678',
         email: 'info@aktiflaundry.com',
-        whatsapp: '81234567890'
+        whatsapp: '81234567890',
+        thermal_paper_width: '57',
+        thermal_font_size: '8',
+        thermal_line_height: '1.1',
+        thermal_padding: '1.5'
       };
     }
 
@@ -253,7 +271,11 @@ function getAllSettings() {
         alamat: 'Jl. Merdeka No. 123, Jakarta',
         telepon: '021-12345678',
         email: 'info@aktiflaundry.com',
-        whatsapp: '81234567890'
+        whatsapp: '81234567890',
+        thermal_paper_width: '57',
+        thermal_font_size: '8',
+        thermal_line_height: '1.1',
+        thermal_padding: '1.5'
       };
     }
 
@@ -267,7 +289,11 @@ function getAllSettings() {
       alamat: 'Jl. Merdeka No. 123, Jakarta',
       telepon: '021-12345678',
       email: 'info@aktiflaundry.com',
-      whatsapp: '81234567890'
+      whatsapp: '81234567890',
+      thermal_paper_width: '57',
+      thermal_font_size: '8',
+      thermal_line_height: '1.1',
+      thermal_padding: '1.5'
     };
   }
 }

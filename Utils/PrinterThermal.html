@@ -2,7 +2,7 @@
 <script>
   /**
    * Thermal Printer - Print Receipt Function
-   * Paper Size: 58mm (standard kasir/mobile printer)
+   * Paper Size: 57mm x 40mm (RP58-Printer)
    */
 
   // Global variable untuk store transaction data
@@ -43,26 +43,58 @@
    * Open print preview in new window
    */
   function openPrintPreview(html) {
-    // Open new window - let browser decide the size
-    var printWindow = window.open("", "_blank");
+    console.log('openPrintPreview: Creating iframe for printing');
 
-    if (!printWindow) {
-      showErrorAlert(
-        "Error",
-        "Pop-up blocker aktif. Mohon izinkan pop-up untuk mencetak."
-      );
-      return;
-    }
+    // Buat iframe tersembunyi untuk print langsung ke printer thermal
+    var iframe = document.createElement('iframe');
+    iframe.style.position = 'absolute';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    iframe.style.visibility = 'hidden';
 
-    // Write HTML to window
-    printWindow.document.open();
-    printWindow.document.write(html);
-    printWindow.document.close();
+    document.body.appendChild(iframe);
+    console.log('openPrintPreview: Iframe appended to body');
 
-    // Auto print setelah load
-    printWindow.onload = function () {
-      setTimeout(function () {
-        printWindow.print();
+    // Write HTML ke iframe
+    var doc = iframe.contentWindow.document;
+    doc.open();
+    doc.write(html);
+    doc.close();
+    console.log('openPrintPreview: HTML written to iframe');
+
+    // Print langsung ke thermal printer setelah load
+    iframe.contentWindow.onload = function() {
+      console.log('openPrintPreview: Iframe loaded, preparing to print');
+      setTimeout(function() {
+        try {
+          console.log('openPrintPreview: Calling print() to RP58-Printer');
+
+          // Tampilkan notifikasi ke user
+          showSuccessAlert(
+            'Siap Cetak!',
+            'Dialog print akan muncul. Tekan ENTER atau klik Print untuk mencetak ke ' +
+            'RP58-Printer. Pastikan printer sudah nyala dan kertas tersedia.'
+          );
+
+          // Print dialog akan muncul (user perlu klik Print atau tekan Enter)
+          iframe.contentWindow.print();
+          console.log('openPrintPreview: Print dialog opened');
+
+          // Hapus iframe setelah print dialog ditutup
+          setTimeout(function() {
+            if (document.body.contains(iframe)) {
+              document.body.removeChild(iframe);
+              console.log('openPrintPreview: Iframe removed from DOM');
+            }
+          }, 3000);
+        } catch(e) {
+          console.error('openPrintPreview ERROR:', e);
+          showErrorAlert('Error', 'Gagal mencetak ke printer: ' + e.message);
+          if (document.body.contains(iframe)) {
+            document.body.removeChild(iframe);
+          }
+        }
       }, 250);
     };
   }
@@ -94,37 +126,41 @@
   <meta charset="UTF-8">
   <title>Struk Thermal Test</title>
   <style>
-    /* Set ukuran kertas thermal */
+    /* Set ukuran kertas thermal - width fixed, height auto (continuous roll) */
     @media print {
-  @page { size: 58mm auto; margin: 0; }
-  body {
-    width: 58mm;
+  @page {
+    size: 57mm auto;
     margin: 0;
+  }
+  body {
+    width: 57mm;
+    margin: 0;
+    padding: 0;
   }
 }
 
     html, body {
-      width: 58mm;
+      width: 57mm;
       margin: 0 auto;
       padding: 0;
       font-family: 'Courier New', monospace;
-      font-size: 9px;
-      line-height: 1.2;
+      font-size: 8px;
+      line-height: 1.1;
       color: #000;
       background: #fff;
     }
 
     .content {
       width: 100%;
-      padding: 2mm;
+      padding: 2mm 1.5mm;
       box-sizing: border-box;
     }
 
     .header {
       text-align: center;
-      margin-bottom: 6px;
+      margin-bottom: 4px;
       border-bottom: 1px dashed #000;
-      padding-bottom: 6px;
+      padding-bottom: 4px;
     }
 
     .store-name {
@@ -147,12 +183,12 @@
 
     .separator {
       border-top: 1px dashed #000;
-      margin: 6px 0;
+      margin: 3px 0;
     }
 
     .separator-double {
       border-top: 1px solid #000;
-      margin: 6px 0;
+      margin: 4px 0;
     }
 
     .summary-row {
@@ -171,16 +207,16 @@
 
     .footer {
       text-align: center;
-      margin-top: 8px;
-      padding-top: 6px;
+      margin-top: 4px;
+      padding-top: 4px;
       border-top: 1px dashed #000;
       font-size: 7px;
     }
 
     .thank-you {
-      font-size: 9px;
+      font-size: 8px;
       font-weight: bold;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
 
     /* Agar preview di layar mendekati ukuran nyata */
@@ -188,7 +224,7 @@
       body {
         transform: scale(1);
         transform-origin: top left;
-        width: 230px; /* sekitar 58mm */
+        width: 215px; /* sekitar 57mm */
         background: #eee;
         margin: 20px auto;
       }
@@ -201,7 +237,7 @@
     /* Saat print */
     @media print {
       html, body {
-        width: 58mm !important;
+        width: 57mm !important;
         margin: 0 !important;
         padding: 0 !important;
       }

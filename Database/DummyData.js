@@ -122,7 +122,11 @@ function insertDummySetting() {
     ['format_id_pelanggan', 'PLG', 'Prefix ID pelanggan'],
     ['format_id_layanan', 'LYN', 'Prefix ID layanan'],
     ['jam_buka', '01:00', 'Jam buka toko'],
-    ['jam_tutup', '24:59', 'Jam tutup toko']
+    ['jam_tutup', '24:59', 'Jam tutup toko'],
+    ['thermal_paper_width', '57', 'Lebar kertas thermal printer (mm)'],
+    ['thermal_font_size', '8', 'Ukuran font struk thermal (px)'],
+    ['thermal_line_height', '1.1', 'Tinggi baris struk thermal'],
+    ['thermal_padding', '1.5', 'Padding kiri-kanan struk (mm)']
   ];
   
   sheet.getRange(2, 1, data.length, data[0].length).setValues(data);
