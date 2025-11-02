@@ -1,0 +1,326 @@
+<!-- ==================== THERMAL PRINTER UTILITY ==================== -->
+<script>
+  /**
+   * Thermal Printer - Print Receipt Function
+   * Paper Size: 58mm (standard kasir/mobile printer)
+   */
+
+  // Global variable untuk store transaction data
+  window.lastTransactionData = null;
+
+  /**
+   * Print thermal receipt
+   * @param {Object} transactionData - Data transaksi yang akan dicetak
+   */
+  window.printThermalReceipt = function (transactionData) {
+    if (!transactionData) {
+      console.error("printThermalReceipt: Data transaksi tidak ditemukan");
+      showErrorAlert("Error", "Data transaksi tidak ditemukan");
+      return;
+    }
+
+    console.log("printThermalReceipt: Starting print process");
+    console.log("Transaction data:", transactionData);
+
+    // Store data untuk reprint
+    window.lastTransactionData = transactionData;
+
+    // Get HTML from server then open print preview
+    google.script.run
+      .withSuccessHandler(function (html) {
+        console.log("Received HTML from server, length:", html.length);
+        openPrintPreview(html);
+      })
+      .withFailureHandler(function (error) {
+        console.error("Error generating receipt HTML:", error);
+        console.error("Error message:", error.message);
+        showErrorAlert("Error", "Gagal membuat struk: " + error.message);
+      })
+      .generateThermalReceiptHTML(transactionData);
+  };
+
+  /**
+   * Open print preview in new window
+   */
+  function openPrintPreview(html) {
+    // Open new window - let browser decide the size
+    var printWindow = window.open("", "_blank");
+
+    if (!printWindow) {
+      showErrorAlert(
+        "Error",
+        "Pop-up blocker aktif. Mohon izinkan pop-up untuk mencetak."
+      );
+      return;
+    }
+
+    // Write HTML to window
+    printWindow.document.open();
+    printWindow.document.write(html);
+    printWindow.document.close();
+
+    // Auto print setelah load
+    printWindow.onload = function () {
+      setTimeout(function () {
+        printWindow.print();
+      }, 250);
+    };
+  }
+
+  /**
+   * Generate HTML untuk thermal printer
+   */
+  function generateThermalHTML(data, settings) {
+    var namaToko = settings.nama_toko || "Aktif Laundry";
+    var alamat = settings.alamat || "";
+    var telepon = settings.telepon || "";
+    var email = settings.email || "";
+    var whatsapp = settings.whatsapp || "";
+
+    // Format tanggal
+    var tanggalMasuk = formatDateTime(data.tanggalMasuk);
+    var tanggalSelesai = formatDateTime(data.tanggalSelesai);
+
+    // Format currency
+    var hargaPerKg = formatCurrency(data.hargaPerKg || 0);
+    var subtotal = formatCurrency(data.subtotal || 0);
+    var diskon = formatCurrency(data.diskon || 0);
+    var total = formatCurrency(data.total || 0);
+
+    var html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Struk Thermal Test</title>
+  <style>
+    /* Set ukuran kertas thermal */
+    @media print {
+  @page { size: 58mm auto; margin: 0; }
+  body {
+    width: 58mm;
+    margin: 0;
+  }
+}
+
+    html, body {
+      width: 58mm;
+      margin: 0 auto;
+      padding: 0;
+      font-family: 'Courier New', monospace;
+      font-size: 9px;
+      line-height: 1.2;
+      color: #000;
+      background: #fff;
+    }
+
+    .content {
+      width: 100%;
+      padding: 2mm;
+      box-sizing: border-box;
+    }
+
+    .header {
+      text-align: center;
+      margin-bottom: 6px;
+      border-bottom: 1px dashed #000;
+      padding-bottom: 6px;
+    }
+
+    .store-name {
+      font-size: 12px;
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 3px;
+    }
+
+    .store-info {
+      font-size: 8px;
+      line-height: 1.3;
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .separator {
+      border-top: 1px dashed #000;
+      margin: 6px 0;
+    }
+
+    .separator-double {
+      border-top: 1px solid #000;
+      margin: 6px 0;
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 2px;
+    }
+
+    .summary-row.total {
+      font-size: 10px;
+      font-weight: bold;
+      margin-top: 3px;
+      padding-top: 3px;
+      border-top: 1px solid #000;
+    }
+
+    .footer {
+      text-align: center;
+      margin-top: 8px;
+      padding-top: 6px;
+      border-top: 1px dashed #000;
+      font-size: 7px;
+    }
+
+    .thank-you {
+      font-size: 9px;
+      font-weight: bold;
+      margin-bottom: 3px;
+    }
+
+    /* Agar preview di layar mendekati ukuran nyata */
+    @media screen {
+      body {
+        transform: scale(1);
+        transform-origin: top left;
+        width: 230px; /* sekitar 58mm */
+        background: #eee;
+        margin: 20px auto;
+      }
+      .content {
+        background: #fff;
+        box-shadow: 0 0 3px rgba(0,0,0,0.2);
+      }
+    }
+
+    /* Saat print */
+    @media print {
+      html, body {
+        width: 58mm !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .content {
+        box-shadow: none;
+        background: #fff;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="content">
+    <div class="header">
+      <div class="store-name">AKTIF LAUNDRY</div>
+      <div class="store-info">
+        Jl. Merdeka No. 123, Jakarta Pusat<br>
+        Telp: 021-12345678<br>
+        WA: 081234567890<br>
+        info@aktiflaundry.com
+      </div>
+    </div>
+
+    <div class="info-row"><span>No. Transaksi</span><span>TRX0010</span></div>
+    <div class="info-row"><span>Tanggal</span><span>29/10/2025</span></div>
+
+    <div class="separator"></div>
+
+    <div class="info-row"><span>Pelanggan</span><span>Budi Santoso</span></div>
+    <div class="info-row"><span>HP</span><span>08123456789</span></div>
+
+    <div class="separator"></div>
+
+    <div class="info-row"><strong>Layanan</strong><strong>Harga</strong></div>
+    <div class="separator"></div>
+    <div class="info-row"><span>Cuci Setrika</span><span>Rp 35.000</span></div>
+
+    <div class="separator"></div>
+
+    <div class="summary-row"><span>Subtotal</span><span>Rp 35.000</span></div>
+    <div class="summary-row total"><span>TOTAL</span><span>Rp 35.000</span></div>
+    <div class="summary-row"><span>Pembayaran</span><span>Tunai</span></div>
+
+    <div class="separator"></div>
+
+    <div class="info-row"><span>Estimasi Selesai</span></div>
+    <div class="info-row"><span>31/10/2025 08:00</span></div>
+
+    <div class="separator-double"></div>
+
+    <div class="footer">
+      <div class="thank-you">TERIMA KASIH</div>
+      <div>Barang yang sudah dicuci</div>
+      <div>tidak dapat dikembalikan</div>
+      <div style="margin-top: 6px;">Simpan struk ini sebagai</div>
+      <div>bukti pengambilan</div>
+    </div>
+  </div>
+</body>
+</html>
+`;
+
+    return html;
+  }
+
+  /**
+   * Format date time untuk struk
+   */
+  function formatDateTime(dateValue) {
+    if (!dateValue) return "-";
+
+    var date;
+    // Handle different date formats
+    if (typeof dateValue === "string") {
+      // Handle format: dd/MM/yyyy HH:mm (from server)
+      if (dateValue.indexOf("/") > -1 && dateValue.indexOf(":") > -1) {
+        var parts = dateValue.split(" ");
+        var dateParts = parts[0].split("/");
+        var timeParts = parts[1].split(":");
+        // Create date from dd/MM/yyyy HH:mm
+        date = new Date(
+          dateParts[2],
+          dateParts[1] - 1,
+          dateParts[0],
+          timeParts[0],
+          timeParts[1]
+        );
+      }
+      // Handle format: yyyy-MM-dd (from input date)
+      else if (dateValue.indexOf("-") > -1 && dateValue.indexOf(":") === -1) {
+        var parts = dateValue.split("-");
+        date = new Date(parts[0], parts[1] - 1, parts[2], 0, 0);
+      }
+      // Try standard parse
+      else {
+        date = new Date(dateValue);
+      }
+    } else if (dateValue instanceof Date) {
+      date = dateValue;
+    } else {
+      return "-";
+    }
+
+    // Check if date is valid
+    if (!date || isNaN(date.getTime())) {
+      return "-";
+    }
+
+    var day = String(date.getDate()).padStart(2, "0");
+    var month = String(date.getMonth() + 1).padStart(2, "0");
+    var year = date.getFullYear();
+    var hours = String(date.getHours()).padStart(2, "0");
+    var minutes = String(date.getMinutes()).padStart(2, "0");
+    return day + "/" + month + "/" + year + " " + hours + ":" + minutes;
+  }
+
+  /**
+   * Format currency
+   */
+  function formatCurrency(amount) {
+    return "Rp " + Number(amount).toLocaleString("id-ID");
+  }
+</script>

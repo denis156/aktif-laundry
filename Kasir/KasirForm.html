@@ -157,8 +157,30 @@
         }
 
         if (result.success) {
-          showSuccessAlert('Transaksi Berhasil!', 'ID Transaksi: ' + result.data.transaksiId + ' - ' + result.message, 5000);
+          // Store transaction data for printing
+          window.lastKasirTransactionData = {
+            id: result.data.transaksiId,
+            tanggalMasuk: tanggal,
+            tanggalSelesai: result.data.tanggalSelesai,
+            namaPelanggan: nama,
+            alamatPelanggan: alamat,
+            noHp: '0' + noHp,
+            namaLayanan: window.selectedLayanan.nama,
+            berat: berat,
+            hargaPerKg: window.selectedLayanan.harga,
+            subtotal: berat * window.selectedLayanan.harga,
+            diskon: diskon,
+            total: (berat * window.selectedLayanan.harga) - diskon,
+            metodePembayaran: pembayaran,
+            status: 'Menunggu',
+            catatan: catatan
+          };
+
           modal_konfirmasi_transaksi.close();
+
+          // Show success modal with print option
+          showTransaksiSuksesModal(result.data.transaksiId, result.message);
+
           resetForm();
           loadPelangganData(); // Reload pelanggan list
         } else {
@@ -173,6 +195,22 @@
         modal_konfirmasi_transaksi.close();
       })
       .processKasirTransaksi(data);
+  };
+
+  // ==================== SUCCESS MODAL & PRINT ====================
+
+  function showTransaksiSuksesModal(transaksiId, message) {
+    document.getElementById('modal_sukses_transaksi_id').textContent = 'ID Transaksi: ' + transaksiId;
+    document.getElementById('modal_sukses_message').textContent = message;
+    modal_transaksi_sukses.showModal();
+  }
+
+  window.printLastKasirTransaksi = function() {
+    if (!window.lastKasirTransactionData) {
+      showErrorAlert('Error', 'Data transaksi tidak ditemukan');
+      return;
+    }
+    window.printThermalReceipt(window.lastKasirTransactionData);
   };
 
   // ==================== RESET FORM ====================

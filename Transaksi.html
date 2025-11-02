@@ -278,6 +278,7 @@
                       data-tanggalmasuk="<?= Utilities.formatDate(new Date(transaksiData[i].tanggalMasuk), Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm') ?>"
                       data-idpelanggan="<?= transaksiData[i].idPelanggan ?>"
                       data-namapelanggan="<?= transaksiData[i].namaPelanggan ?>"
+                      data-nohp="<?= transaksiData[i].noHp || '' ?>"
                       data-idlayanan="<?= transaksiData[i].idLayanan ?>"
                       data-namalayanan="<?= transaksiData[i].namaLayanan ?>"
                       data-berat="<?= transaksiData[i].berat ?>"

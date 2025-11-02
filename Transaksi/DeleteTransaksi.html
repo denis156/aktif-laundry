@@ -70,6 +70,12 @@
       </div>
     </div>
     <div class="modal-action">
+      <button class="btn btn-primary" onclick="printDetailTransaksi()">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd" />
+        </svg>
+        Cetak Struk
+      </button>
       <form method="dialog">
         <button class="btn">Tutup</button>
       </form>
@@ -86,6 +92,26 @@
   // View Detail Transaksi
   window.viewTransaksiData = function(btn) {
     var data = btn.dataset;
+
+    // Store transaction data for printing
+    window.currentDetailTransactionData = {
+      id: data.id,
+      tanggalMasuk: data.tanggalmasuk,
+      tanggalSelesai: data.tanggalselesai,
+      namaPelanggan: data.namapelanggan,
+      alamatPelanggan: data.alamatpelanggan || '',
+      noHp: data.nohp || '',
+      namaLayanan: data.namalayanan,
+      berat: parseFloat(data.berat),
+      hargaPerKg: parseFloat(data.hargaperkg),
+      subtotal: parseFloat(data.subtotal),
+      diskon: parseFloat(data.diskon),
+      total: parseFloat(data.total),
+      metodePembayaran: data.metodepembayaran,
+      status: data.status,
+      catatan: data.catatan || ''
+    };
+
     document.getElementById('detail_id').textContent = data.id;
     document.getElementById('detail_tanggalmasuk').textContent = data.tanggalmasuk;
     document.getElementById('detail_pelanggan').textContent = data.namapelanggan + ' (' + data.idpelanggan + ')';
@@ -101,6 +127,15 @@
     document.getElementById('detail_catatan').textContent = data.catatan || '-';
 
     modal_detail_transaksi.showModal();
+  }
+
+  // Print from Detail Modal
+  window.printDetailTransaksi = function() {
+    if (!window.currentDetailTransactionData) {
+      showErrorAlert('Error', 'Data transaksi tidak ditemukan');
+      return;
+    }
+    window.printThermalReceipt(window.currentDetailTransactionData);
   }
 
   // Delete Confirmation - Open modal
