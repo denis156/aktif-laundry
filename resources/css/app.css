@@ -1,0 +1,162 @@
+@import "tailwindcss";
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+@theme {
+    --font-sans: "Instrument Sans", ui-sans-serif, system-ui, sans-serif,
+        "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol",
+        "Noto Color Emoji";
+}
+
+/**
+    The lines above are intact.
+    The lines below were added by maryUI installer.
+*/
+
+/** daisyUI */
+@plugin "daisyui" {
+    themes: light --default, dark --prefersdark;
+}
+
+/* maryUI */
+@source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
+
+/* Theme toggle */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/**
+* Paginator - Traditional style
+* Because Laravel defaults does not match well the design of daisyUI.
+*/
+
+.mary-table-pagination {
+    button,
+    span {
+        @apply text-xs border-none;
+    }
+
+    button {
+        @apply cursor-pointer;
+    }
+
+    span[aria-current="page"] > span {
+        @apply bg-base-content/5;
+    }
+
+    button,
+    span[aria-current="page"] > span,
+    span[aria-disabled="true"] span {
+        @apply py-1 px-2;
+    }
+}
+
+@plugin "daisyui/theme" {
+    name: "light";
+    default: true;
+    prefersdark: false;
+    color-scheme: "light";
+    /* Base Colors - Clean with Clear Contrast */
+    --color-base-100: oklch(100% 0 0); /* Pure White Background */
+    --color-base-200: oklch(97% 0.003 0); /* Light Gray Background */
+    --color-base-300: oklch(90% 0.006 0); /* Medium Gray Border */
+    --color-base-content: oklch(18% 0.01 0); /* Deep Black Text */
+
+    /* Primary - Deep Soft Red (Laundry Brand Color) */
+    --color-primary: oklch(48% 0.18 25); /* Deep Soft Red */
+    --color-primary-content: oklch(98% 0 0); /* White Text on Primary */
+
+    /* Secondary - Warm Gray (Complementary) */
+    --color-secondary: oklch(60% 0.025 50); /* Warm Gray */
+    --color-secondary-content: oklch(98% 0 0); /* White Text */
+
+    /* Accent - Soft Coral (Friendly Touch) */
+    --color-accent: oklch(65% 0.12 35); /* Soft Coral/Peach */
+    --color-accent-content: oklch(20% 0.02 35); /* Dark Text */
+
+    /* Neutral - Charcoal */
+    --color-neutral: oklch(28% 0.01 0); /* Charcoal Gray */
+    --color-neutral-content: oklch(98% 0 0); /* White Text */
+
+    /* Info - Calm Blue */
+    --color-info: oklch(58% 0.14 240); /* Calm Blue */
+    --color-info-content: oklch(98% 0 0); /* White Text */
+
+    /* Success - Fresh Green */
+    --color-success: oklch(60% 0.16 145); /* Fresh Green */
+    --color-success-content: oklch(98% 0 0); /* White Text */
+
+    /* Warning - Warm Amber */
+    --color-warning: oklch(75% 0.16 80); /* Warm Amber */
+    --color-warning-content: oklch(20% 0.02 80); /* Dark Text */
+
+    /* Error - Vibrant Red */
+    --color-error: oklch(55% 0.2 25); /* Vibrant Red */
+    --color-error-content: oklch(98% 0 0); /* White Text */
+
+    /* Border Radius - Modern & Friendly */
+    --radius-selector: 0.5rem; /* Rounded Buttons */
+    --radius-field: 0.5rem; /* Rounded Inputs */
+    --radius-box: 0.75rem; /* Rounded Cards */
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+}
+
+@plugin "daisyui/theme" {
+    name: "dark";
+    default: false;
+    prefersdark: true;
+    color-scheme: "dark";
+    /* Base Colors - Dark & Comfortable */
+    --color-base-100: oklch(18% 0.01 0); /* Dark Background */
+    --color-base-200: oklch(16% 0.01 0); /* Darker Gray */
+    --color-base-300: oklch(14% 0.01 0); /* Darkest Gray Border */
+    --color-base-content: oklch(90% 0.005 0); /* Light Gray Text */
+
+    /* Primary - Bright Soft Red (Dark Mode) */
+    --color-primary: oklch(55% 0.2 25); /* Brighter Soft Red */
+    --color-primary-content: oklch(98% 0 0); /* White Text */
+
+    /* Secondary - Cool Gray */
+    --color-secondary: oklch(50% 0.02 240); /* Cool Gray */
+    --color-secondary-content: oklch(90% 0 0); /* Light Text */
+
+    /* Accent - Bright Coral */
+    --color-accent: oklch(68% 0.14 35); /* Bright Coral */
+    --color-accent-content: oklch(15% 0.02 35); /* Dark Text */
+
+    /* Neutral - Light Gray */
+    --color-neutral: oklch(35% 0.01 0); /* Light Gray */
+    --color-neutral-content: oklch(90% 0 0); /* Light Text */
+
+    /* Info - Bright Blue */
+    --color-info: oklch(65% 0.16 240); /* Bright Blue */
+    --color-info-content: oklch(15% 0.03 240); /* Dark Text */
+
+    /* Success - Bright Green */
+    --color-success: oklch(65% 0.18 145); /* Bright Green */
+    --color-success-content: oklch(15% 0.03 145); /* Dark Text */
+
+    /* Warning - Bright Amber */
+    --color-warning: oklch(75% 0.16 80); /* Bright Amber */
+    --color-warning-content: oklch(15% 0.03 80); /* Dark Text */
+
+    /* Error - Bright Red */
+    --color-error: oklch(60% 0.22 25); /* Bright Red */
+    --color-error-content: oklch(98% 0 0); /* White Text */
+
+    /* Border Radius - Modern & Friendly */
+    --radius-selector: 0.5rem;
+    --radius-field: 0.75rem;
+    --radius-box: 1rem;
+    --size-selector: 0.25rem;
+    --size-field: 0.25rem;
+    --border: 1px;
+    --depth: 0;
+    --noise: 0;
+}

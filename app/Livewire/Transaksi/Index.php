@@ -1,0 +1,110 @@
+<?php
+
+namespace App\Livewire\Transaksi;
+
+use App\Models\Transaksi;
+use Livewire\Component;
+use Livewire\Attributes\Title;
+use Livewire\WithPagination;
+use Mary\Traits\Toast;
+
+#[Title('Daftar Transaksi')]
+class Index extends Component
+{
+    use Toast, WithPagination;
+
+    public string $search = '';
+    public bool $drawer = false;
+    public bool $deleteModal = false;
+    public int $deleteId = 0;
+    public string $deleteName = '';
+    public array $sortBy = ['column' => 'kode_transaksi', 'direction' => 'desc'];
+    public string $statusFilter = '';
+    public string $metodePembayaranFilter = '';
+    public string $tanggalMulai = '';
+    public string $tanggalAkhir = '';
+    public int $perPage = 10;
+
+    public function clear(): void
+    {
+        $this->reset(['search', 'statusFilter', 'metodePembayaranFilter', 'tanggalMulai', 'tanggalAkhir']);
+        $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
+    }
+
+    public function confirmDelete($id, $kode): void
+    {
+        $this->deleteId = $id;
+        $this->deleteName = $kode;
+        $this->deleteModal = true;
+    }
+
+    public function delete(): void
+    {
+        try {
+            $transaksi = Transaksi::findOrFail($this->deleteId);
+
+            // Kurangi total transaksi pelanggan
+            if ($transaksi->pelanggan) {
+                $transaksi->pelanggan->decrement('total_transaksi');
+            }
+
+            $transaksi->delete();
+
+            $this->success("Transaksi {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
+            $this->deleteModal = false;
+            $this->reset(['deleteId', 'deleteName']);
+        } catch (\Exception $e) {
+            $this->error('Gagal menghapus transaksi: ' . $e->getMessage(), position: 'toast-bottom');
+        }
+    }
+
+    public function headers(): array
+    {
+        return [
+            ['key' => 'kode_transaksi', 'label' => 'Kode', 'class' => 'w-28'],
+            ['key' => 'kasir', 'label' => 'Kasir', 'class' => 'w-32'],
+            ['key' => 'tanggal_masuk', 'label' => 'Tgl Masuk', 'class' => 'w-36'],
+            ['key' => 'nama_pelanggan', 'label' => 'Pelanggan', 'class' => 'w-40'],
+            ['key' => 'nama_layanan', 'label' => 'Layanan', 'class' => 'w-32'],
+            ['key' => 'berat_kg', 'label' => 'Berat (Kg)', 'class' => 'w-24'],
+            ['key' => 'total', 'label' => 'Total', 'class' => 'w-32'],
+            ['key' => 'metode_pembayaran', 'label' => 'Pembayaran', 'class' => 'w-28'],
+            ['key' => 'status', 'label' => 'Status', 'class' => 'w-28'],
+        ];
+    }
+
+    public function transaksi()
+    {
+        return Transaksi::query()
+            ->with(['pelanggan', 'layanan'])
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('kode_transaksi', 'like', "%{$this->search}%")
+                      ->orWhere('nama_pelanggan', 'like', "%{$this->search}%")
+                      ->orWhere('nama_layanan', 'like', "%{$this->search}%");
+                });
+            })
+            ->when($this->statusFilter, function ($query) {
+                $query->where('status', $this->statusFilter);
+            })
+            ->when($this->metodePembayaranFilter, function ($query) {
+                $query->where('metode_pembayaran', $this->metodePembayaranFilter);
+            })
+            ->when($this->tanggalMulai, function ($query) {
+                $query->whereDate('tanggal_masuk', '>=', $this->tanggalMulai);
+            })
+            ->when($this->tanggalAkhir, function ($query) {
+                $query->whereDate('tanggal_masuk', '<=', $this->tanggalAkhir);
+            })
+            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
+            ->paginate($this->perPage);
+    }
+
+    public function render()
+    {
+        return view('livewire.transaksi.index', [
+            'transaksi' => $this->transaksi(),
+            'headers' => $this->headers()
+        ]);
+    }
+}
