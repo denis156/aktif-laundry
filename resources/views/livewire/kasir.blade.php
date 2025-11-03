@@ -31,15 +31,23 @@
                     </div>
                 </div>
 
-                <!-- Dropdown Pelanggan - Always Visible -->
-                <x-select
+                <!-- Select Pelanggan - Always Visible -->
+                <x-choices
+                    label="Pilih Pelanggan"
                     wire:model.live="formData.pelanggan_id"
                     :options="$pelangganOptions"
-                    option-value="id"
-                    option-label="name"
+                    option-label="nama"
+                    option-sub-label="no_hp"
+                    placeholder="Cari pelanggan ..."
+                    single
+                    searchable
+                    clearable
                     icon="o-user"
-                    placeholder="Pilih Pelanggan"
-                    :disabled="$isPelangganBaru" />
+                    height="max-h-86"
+                    hint="Ketik nama atau nomor HP untuk mencari"
+                    :disabled="$isPelangganBaru"
+                />
+
 
                 <!-- Form Detail Pelanggan - Always Visible -->
                 <div class="space-y-4 mt-4">

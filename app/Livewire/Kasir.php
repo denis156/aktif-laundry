@@ -2,13 +2,14 @@
 
 namespace App\Livewire;
 
-use App\Models\Transaksi;
-use App\Models\Pelanggan;
+use Mary\Traits\Toast;
 use App\Models\Layanan;
 use App\Models\Setting;
 use Livewire\Component;
+use App\Models\Pelanggan;
+use App\Models\Transaksi;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
+use Illuminate\Support\Facades\Auth;
 
 #[Title('Kasir')]
 class Kasir extends Component
@@ -18,7 +19,7 @@ class Kasir extends Component
     public array $formData = [
         'kode_transaksi' => '',
         'tanggal_masuk' => '',
-        'kasir_id' => 1,
+        'kasir_id' => null,
         'pelanggan_id' => '',
         'nama_pelanggan' => '',
         'layanan_id' => '',
@@ -37,6 +38,7 @@ class Kasir extends Component
 
     public string $lastTransactionId = '';
     public bool $showReceipt = false;
+    public array $pelangganOptions = [];
 
     // Toggle antara pilih pelanggan existing atau input pelanggan baru
     public bool $isPelangganBaru = false;
@@ -60,6 +62,7 @@ class Kasir extends Component
     public function mount()
     {
         $this->resetForm();
+        $this->search();
     }
 
     protected function resetForm()
@@ -67,7 +70,7 @@ class Kasir extends Component
         $this->formData = [
             'kode_transaksi' => $this->generateKode(),
             'tanggal_masuk' => now()->format('Y-m-d\TH:i'),
-            'kasir_id' => 1,
+            'kasir_id' => Auth::id(),
             'pelanggan_id' => '',
             'nama_pelanggan' => '',
             'layanan_id' => '',
@@ -109,6 +112,26 @@ class Kasir extends Component
         $newNumber = $lastNumber + 1;
 
         return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+    }
+
+    public function search(string $term = '')
+    {
+        $selected = Pelanggan::where('id', $this->formData['pelanggan_id'])->get();
+
+        $this->pelangganOptions = Pelanggan::query()
+            ->where('nama', 'like', "%{$term}%")
+            ->orWhere('no_hp', 'like', "%{$term}%")
+            ->take(10)
+            ->orderBy('nama')
+            ->get()
+            ->merge($selected)
+            ->map(fn($p) => [
+                'id' => (string) $p->id,
+                'nama' => $p->nama,
+                'no_hp' => $p->no_hp,
+            ])
+            ->values()
+            ->toArray();
     }
 
     public function updatedFormDataPelangganId($value)
@@ -211,7 +234,6 @@ class Kasir extends Component
     {
         // Jika mode pelanggan baru, simpan pelanggan dulu
         if ($this->isPelangganBaru) {
-            // Validasi pelanggan baru
             if (empty($this->pelangganBaru['nama'])) {
                 $this->error('Nama pelanggan wajib diisi!', position: 'toast-bottom');
                 return;
@@ -222,12 +244,10 @@ class Kasir extends Component
                 return;
             }
 
-            // Simpan pelanggan baru terlebih dahulu
             $this->savePelangganBaru();
 
-            // Jika gagal simpan pelanggan, stop proses transaksi
             if ($this->isPelangganBaru) {
-                return; // Masih dalam mode pelanggan baru = gagal simpan
+                return;
             }
         }
 
@@ -253,6 +273,10 @@ class Kasir extends Component
         }
 
         try {
+            // ID Kasir
+            $this->formData['kasir_id'] = Auth::id() ?? 1;
+
+            // Simpan transaksi
             Transaksi::create($this->formData);
 
             // Update total transaksi pelanggan
@@ -261,7 +285,7 @@ class Kasir extends Component
                 $pelanggan->increment('total_transaksi');
             }
 
-            // Save last transaction ID untuk print struk
+            // Simpan kode transaksi terakhir untuk struk
             $this->lastTransactionId = $this->formData['kode_transaksi'];
 
             $this->success('Transaksi berhasil disimpan!', position: 'toast-bottom');
@@ -269,13 +293,13 @@ class Kasir extends Component
             // Reset form untuk transaksi baru
             $this->resetForm();
 
-            // Show receipt option
+            // Tampilkan pilihan cetak struk
             $this->showReceipt = true;
-
         } catch (\Exception $e) {
-            $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), position: 'toast-bottom');
+            $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), timeout: 10000, position: 'toast-bottom');
         }
     }
+
 
     public function printReceipt($transactionId = null)
     {
@@ -331,7 +355,7 @@ class Kasir extends Component
                 'no_hp' => $this->pelangganBaru['no_hp'],
                 'alamat' => $this->pelangganBaru['alamat'] ?? '',
                 'email' => $this->pelangganBaru['email'] ?? '',
-                'tanggal_daftar' => now(),
+                'tanggal_daftar' => $this->formData['tanggal_masuk'] ?? now(),
                 'total_transaksi' => 0,
                 'status' => 'Aktif',
             ]);
@@ -352,7 +376,6 @@ class Kasir extends Component
 
             // Switch kembali ke mode pilih pelanggan existing
             $this->isPelangganBaru = false;
-
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
         }
@@ -363,7 +386,11 @@ class Kasir extends Component
         return Pelanggan::where('status', 'Aktif')
             ->orderBy('nama')
             ->get()
-            ->map(fn($p) => ['id' => $p->id, 'name' => $p->nama . ' (' . $p->no_hp . ')'])
+            ->map(fn($p) => [
+                'id' => (string) $p->id,
+                'nama' => $p->nama,
+                'no_hp' => $p->no_hp,
+            ])
             ->toArray();
     }
 
