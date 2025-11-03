@@ -67,14 +67,14 @@
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <x-input
+                            <x-datetime
                                 label="Jam Buka"
                                 type="time"
                                 wire:model="settings.jam_buka"
                                 icon="o-sun"
                                 required />
 
-                            <x-input
+                            <x-datetime
                                 label="Jam Tutup"
                                 type="time"
                                 wire:model="settings.jam_tutup"
