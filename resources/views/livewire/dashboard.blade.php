@@ -46,7 +46,7 @@
         </div>
 
         <!-- CALENDAR -->
-        <x-card title="Kalender Transaksi" class="shadow-sm">
+        <x-card title="Kalender Transaksi" class="shadow-sm" body-class="flex items-center justify-center">
             <x-calendar :events="$events" weekend-highlight months="4" :selected-date="now()->subMonths(3)->toDateString()" />
         </x-card>
 
