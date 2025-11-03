@@ -297,6 +297,13 @@
         <p style="font-style: italic; margin: 2px 0;">Tetap Aktif, Tetap Bersih</p>
     </div>
 
+    <!-- Qris -->
+    <div class="center" style="margin-top: 28px;">
+        <img src="{{ asset('images/Qris.png') }}"
+             alt="QRIS"
+             style="max-width: 140px; max-height: 140px; margin: 0 auto; display: block; filter: grayscale(100%) contrast(3) brightness(0.3);">
+    </div>
+
     <script>
         // Auto print saat halaman dimuat
         window.onload = function() {
