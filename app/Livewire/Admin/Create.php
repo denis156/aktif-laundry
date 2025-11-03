@@ -43,7 +43,7 @@ class Create extends Component
                 'password' => Hash::make($this->password),
             ]);
 
-            $this->success('User berhasil ditambahkan!', redirectTo: route('admin.index'));
+            $this->success('User berhasil ditambahkan!', redirectTo: route('admin.index'), position: 'toast-bottom');
         } catch (\Exception $e) {
             $this->error('Gagal menambahkan user: ' . $e->getMessage(), position: 'toast-bottom');
         }

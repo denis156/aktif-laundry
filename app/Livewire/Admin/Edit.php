@@ -3,9 +3,10 @@
 namespace App\Livewire\Admin;
 
 use App\Models\User;
+use Mary\Traits\Toast;
 use Livewire\Component;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 #[Title('Edit User')]
@@ -56,7 +57,7 @@ class Edit extends Component
             $user = User::findOrFail($this->userId);
 
             // Cek jika mengedit diri sendiri
-            if ($user->id === auth()->id() && $user->email !== $this->email) {
+            if ($user->id === Auth::id() && $user->email !== $this->email) {
                 $this->error('Anda tidak dapat mengubah email akun Anda sendiri!', position: 'toast-bottom');
                 return;
             }
@@ -74,7 +75,7 @@ class Edit extends Component
 
             $user->update($data);
 
-            $this->success('User berhasil diperbarui!', redirectTo: route('admin.index'));
+            $this->success('User berhasil diperbarui!', redirectTo: route('admin.index'), position: 'toast-bottom');
         } catch (\Exception $e) {
             $this->error('Gagal memperbarui user: ' . $e->getMessage(), position: 'toast-bottom');
         }
