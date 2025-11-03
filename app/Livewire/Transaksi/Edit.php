@@ -2,12 +2,13 @@
 
 namespace App\Livewire\Transaksi;
 
-use App\Models\Transaksi;
-use App\Models\Pelanggan;
+use Mary\Traits\Toast;
 use App\Models\Layanan;
 use Livewire\Component;
+use App\Models\Pelanggan;
+use App\Models\Transaksi;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
+use Illuminate\Support\Facades\Auth;
 
 #[Title('Edit Transaksi')]
 class Edit extends Component
@@ -19,7 +20,7 @@ class Edit extends Component
     public array $formData = [
         'kode_transaksi' => '',
         'tanggal_masuk' => '',
-        'kasir_id' => 1,
+        'kasir_id' => null,
         'pelanggan_id' => '',
         'nama_pelanggan' => '',
         'layanan_id' => '',
@@ -151,6 +152,7 @@ class Edit extends Component
 
         try {
             $transaksi = Transaksi::findOrFail($this->transaksiId);
+            $this->formData['kasir_id'] = Auth::id();
             $transaksi->update($this->formData);
 
             $this->success('Transaksi berhasil diupdate!', position: 'toast-bottom');

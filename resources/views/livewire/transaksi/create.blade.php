@@ -20,11 +20,12 @@
 
                     <x-input
                         label="Kasir"
-                        value="Admin (Kasir)"
+                        value="{{ Auth::user()->name ?? 'Tidak diketahui' }}"
                         readonly
                         hint="Auto dari login"
                         icon="o-user-circle"
                     />
+
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

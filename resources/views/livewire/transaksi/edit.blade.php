@@ -21,7 +21,7 @@
 
                     <x-input
                         label="Kasir"
-                        value="Admin (Kasir)"
+                        value="{{ Auth::user()->name ?? 'Tidak diketahui' }}"
                         readonly
                         hint="Tidak dapat diubah"
                         icon="o-user-circle"

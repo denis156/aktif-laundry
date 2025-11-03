@@ -18,7 +18,7 @@
             </x-slot:empty>
 
             @scope('cell_kasir', $item)
-            <span class="truncate">Admin</span>
+            <span class="truncate">{{ $item->kasir->name ?? '-' }}</span>
             @endscope
 
             @scope('cell_tanggal_masuk', $item)

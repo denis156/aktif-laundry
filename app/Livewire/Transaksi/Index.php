@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Transaksi;
 
-use App\Models\Transaksi;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\WithPagination;
+use App\Models\User;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Models\Transaksi;
+use Livewire\WithPagination;
+use Livewire\Attributes\Title;
 
 #[Title('Daftar Transaksi')]
 class Index extends Component
@@ -73,15 +74,21 @@ class Index extends Component
         ];
     }
 
+    public function kasir()
+    {
+        return $this->belongsTo(User::class, 'kasir_id');
+    }
+
+
     public function transaksi()
     {
         return Transaksi::query()
-            ->with(['pelanggan', 'layanan'])
+            ->with(['pelanggan', 'layanan', 'kasir'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('kode_transaksi', 'like', "%{$this->search}%")
-                      ->orWhere('nama_pelanggan', 'like', "%{$this->search}%")
-                      ->orWhere('nama_layanan', 'like', "%{$this->search}%");
+                        ->orWhere('nama_pelanggan', 'like', "%{$this->search}%")
+                        ->orWhere('nama_layanan', 'like', "%{$this->search}%");
                 });
             })
             ->when($this->statusFilter, function ($query) {

@@ -2,13 +2,14 @@
 
 namespace App\Livewire\Transaksi;
 
-use App\Models\Transaksi;
-use App\Models\Pelanggan;
+use Mary\Traits\Toast;
 use App\Models\Layanan;
 use App\Models\Setting;
 use Livewire\Component;
+use App\Models\Pelanggan;
+use App\Models\Transaksi;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
+use Illuminate\Support\Facades\Auth;
 
 #[Title('Tambah Transaksi')]
 class Create extends Component
@@ -18,7 +19,7 @@ class Create extends Component
     public array $formData = [
         'kode_transaksi' => '',
         'tanggal_masuk' => '',
-        'kasir_id' => 1,
+        'kasir_id' => null,
         'pelanggan_id' => '',
         'nama_pelanggan' => '',
         'layanan_id' => '',
@@ -42,8 +43,8 @@ class Create extends Component
         $this->formData['kode_transaksi'] = $this->generateKode();
         $this->formData['tanggal_masuk'] = now()->format('Y-m-d\TH:i');
 
-        // Set kasir_id dari user yang login (untuk sementara pakai user id 1)
-        $this->formData['kasir_id'] = 1;
+        // Set kasir_id dari user yang login
+        $this->formData['kasir_id'] = Auth::id();
     }
 
     protected function generateKode(): string
