@@ -2,7 +2,7 @@
 
 use App\Livewire\Kasir;
 use App\Livewire\Pengaturan;
-use App\Livewire\Welcome;
+use App\Livewire\Dashboard;
 use App\Livewire\Component\Receipt;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Layanan\Edit as LayananEdit;
@@ -36,7 +36,7 @@ Route::get('/logout', function() {
 
 // Protected Routes
 Route::middleware('auth')->group(function() {
-    Route::get('/', Welcome::class);
+    Route::get('/', Dashboard::class)->name('dashboard');
 
 // Kasir Route
 Route::get('/kasir', Kasir::class)->name('kasir');
