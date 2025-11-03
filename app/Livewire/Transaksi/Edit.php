@@ -16,6 +16,7 @@ class Edit extends Component
     use Toast;
 
     public int $transaksiId;
+    public array $pelangganOptions = [];
 
     public array $formData = [
         'kode_transaksi' => '',
@@ -43,6 +44,27 @@ class Edit extends Component
     {
         $this->transaksiId = $id;
         $this->loadTransaksi();
+        $this->search();
+    }
+
+    public function search(string $term = '')
+    {
+        $selected = Pelanggan::where('id', $this->formData['pelanggan_id'])->get();
+
+        $this->pelangganOptions = Pelanggan::query()
+            ->where('nama', 'like', "%{$term}%")
+            ->orWhere('no_hp', 'like', "%{$term}%")
+            ->take(10)
+            ->orderBy('nama')
+            ->get()
+            ->merge($selected)
+            ->map(fn($p) => [
+                'id' => (string) $p->id,
+                'nama' => $p->nama,
+                'no_hp' => $p->no_hp,
+            ])
+            ->values()
+            ->toArray();
     }
 
     protected function loadTransaksi()
@@ -167,7 +189,11 @@ class Edit extends Component
         return Pelanggan::where('status', 'Aktif')
             ->orderBy('nama')
             ->get()
-            ->map(fn($p) => ['id' => $p->id, 'name' => $p->nama . ' (' . $p->no_hp . ')'])
+            ->map(fn($p) => [
+                'id' => (string) $p->id,
+                'nama' => $p->nama,
+                'no_hp' => $p->no_hp,
+            ])
             ->toArray();
     }
 

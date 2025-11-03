@@ -56,16 +56,20 @@
 
                 {{-- Pelanggan & Layanan --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-select
+                    <x-choices
                         label="Pelanggan"
-                        wire:model="formData.pelanggan_id"
-                        icon="o-user"
+                        wire:model.live="formData.pelanggan_id"
                         :options="$pelangganOptions"
-                        option-value="id"
-                        option-label="name"
-                        required
-                        placeholder="Pilih pelanggan"
+                        option-label="nama"
+                        option-sub-label="no_hp"
+                        single
+                        searchable
+                        clearable
+                        icon="o-user"
+                        height="max-h-86"
+                        hint="Ketik nama atau nomor HP untuk mencari"
                     />
+
 
                     <x-select
                         label="Layanan"
