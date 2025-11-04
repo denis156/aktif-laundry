@@ -61,7 +61,7 @@
             @elseif($item->status == 'Selesai')
                 <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
             @elseif($item->status == 'Diambil')
-                <x-badge value="{{ $item->status }}" class="badge-primary badge-sm" />
+                <x-badge value="{{ $item->status }}" class="badge-secondary badge-sm" />
             @else
                 <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
             @endif
