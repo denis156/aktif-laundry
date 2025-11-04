@@ -1,10 +1,15 @@
 <?php
 
 use App\Livewire\Kasir;
-use App\Livewire\Pengaturan;
+use App\Livewire\Login;
 use App\Livewire\Dashboard;
+use App\Livewire\Pengaturan;
 use App\Livewire\Component\Receipt;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Admin\Edit as AdminEdit;
+use App\Livewire\Admin\Index as AdminIndex;
+use App\Livewire\Admin\Create as AdminCreate;
 use App\Livewire\Layanan\Edit as LayananEdit;
 use App\Livewire\Layanan\Index as LayananIndex;
 use App\Livewire\Layanan\Create as LayananCreate;
@@ -17,11 +22,6 @@ use App\Livewire\Transaksi\Create as TransaksiCreate;
 use App\Livewire\JenisPakaian\Edit as JenisPakaianEdit;
 use App\Livewire\JenisPakaian\Index as JenisPakaianIndex;
 use App\Livewire\JenisPakaian\Create as JenisPakaianCreate;
-use App\Livewire\Admin\Edit as AdminEdit;
-use App\Livewire\Admin\Index as AdminIndex;
-use App\Livewire\Admin\Create as AdminCreate;
-use App\Livewire\Login;
-use Illuminate\Support\Facades\Auth;
 
 // Landing Page Route - Public
 Route::get('/', function () {
@@ -85,17 +85,11 @@ Route::middleware('auth')->prefix('admin')->group(function() {
         $receipt = new Receipt();
         $receipt->mount($id);
 
-        // Format nomor HP dengan prefix 0 jika belum ada
-        $noHp = $receipt->pelangganNoHp;
-        if (!empty($noHp) && !str_starts_with($noHp, '0')) {
-            $noHp = '0' . $noHp;
-        }
-
         return view('livewire.component.receipt', [
             'transaksiData' => $receipt->transaksiData,
             'setting' => $receipt->setting,
             'pelangganAlamat' => $receipt->pelangganAlamat,
-            'pelangganNoHp' => $noHp,
+            'pelangganNoHp' => $receipt->pelangganNoHp,
         ]);
     })->name('receipt.print');
 
