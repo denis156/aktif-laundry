@@ -55,7 +55,7 @@
                     <x-menu-separator />
                 @endif
 
-                <x-menu-item title="Dashboard" icon="o-home" link="/" wire:navigate.hover exact />
+                <x-menu-item title="Dashboard" icon="o-home" link="{{ route('dashboard') }}" wire:navigate.hover exact />
 
                 <x-menu-separator />
 
