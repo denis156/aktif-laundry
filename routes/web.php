@@ -23,69 +23,80 @@ use App\Livewire\Admin\Create as AdminCreate;
 use App\Livewire\Login;
 use Illuminate\Support\Facades\Auth;
 
-// Login Route
-Route::get('/login', Login::class)->name('login');
+// Landing Page Route - Public
+Route::get('/', function () {
+    return view('landingpage');
+})->name('landingpage');
 
-// Logout Route
-Route::get('/logout', function() {
-    Auth::logout();
-    request()->session()->invalidate();
-    request()->session()->regenerateToken();
-    return redirect()->route('login');
-})->name('logout');
+// Public Routes - tanpa auth
+Route::prefix('admin')->group(function() {
+    // Login Route di /admin/login
+    Route::get('/login', Login::class)->name('login');
 
-// Protected Routes
-Route::middleware('auth')->group(function() {
+    // Logout Route di /admin/logout
+    Route::get('/logout', function() {
+        Auth::logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+        return redirect('/');
+    })->name('logout');
+});
+
+// Protected Routes dengan prefix /admin
+Route::middleware('auth')->prefix('admin')->group(function() {
+
+    // Dashboard di /admin
     Route::get('/', Dashboard::class)->name('dashboard');
+    Route::get('/dashboard', Dashboard::class)->name('dashboard.alternative');
 
-// Kasir Route
-Route::get('/kasir', Kasir::class)->name('kasir');
+    // Kasir Route di /admin/kasir
+    Route::get('/kasir', Kasir::class)->name('kasir');
 
-// Layanan Routes
-Route::get('/layanan', LayananIndex::class)->name('layanan.index');
-Route::get('/layanan/create', LayananCreate::class)->name('layanan.create');
-Route::get('/layanan/edit/{id}', LayananEdit::class)->name('layanan.edit');
+    // Layanan Routes di /admin/layanan
+    Route::get('/layanan', LayananIndex::class)->name('layanan.index');
+    Route::get('/layanan/create', LayananCreate::class)->name('layanan.create');
+    Route::get('/layanan/edit/{id}', LayananEdit::class)->name('layanan.edit');
 
-// Pelanggan Routes
-Route::get('/pelanggan', PelangganIndex::class)->name('pelanggan.index');
-Route::get('/pelanggan/create', PelangganCreate::class)->name('pelanggan.create');
-Route::get('/pelanggan/edit/{id}', PelangganEdit::class)->name('pelanggan.edit');
+    // Pelanggan Routes di /admin/pelanggan
+    Route::get('/pelanggan', PelangganIndex::class)->name('pelanggan.index');
+    Route::get('/pelanggan/create', PelangganCreate::class)->name('pelanggan.create');
+    Route::get('/pelanggan/edit/{id}', PelangganEdit::class)->name('pelanggan.edit');
 
-// Jenis Pakaian Routes
-Route::get('/jenis-pakaian', JenisPakaianIndex::class)->name('jenis-pakaian.index');
-Route::get('/jenis-pakaian/create', JenisPakaianCreate::class)->name('jenis-pakaian.create');
-Route::get('/jenis-pakaian/edit/{id}', JenisPakaianEdit::class)->name('jenis-pakaian.edit');
+    // Jenis Pakaian Routes di /admin/jenis-pakaian
+    Route::get('/jenis-pakaian', JenisPakaianIndex::class)->name('jenis-pakaian.index');
+    Route::get('/jenis-pakaian/create', JenisPakaianCreate::class)->name('jenis-pakaian.create');
+    Route::get('/jenis-pakaian/edit/{id}', JenisPakaianEdit::class)->name('jenis-pakaian.edit');
 
-// Transaksi Routes
-Route::get('/transaksi', TransaksiIndex::class)->name('transaksi.index');
-Route::get('/transaksi/create', TransaksiCreate::class)->name('transaksi.create');
-Route::get('/transaksi/edit/{id}', TransaksiEdit::class)->name('transaksi.edit');
+    // Transaksi Routes di /admin/transaksi
+    Route::get('/transaksi', TransaksiIndex::class)->name('transaksi.index');
+    Route::get('/transaksi/create', TransaksiCreate::class)->name('transaksi.create');
+    Route::get('/transaksi/edit/{id}', TransaksiEdit::class)->name('transaksi.edit');
 
-// Pengaturan Route
-Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
+    // Pengaturan Route di /admin/pengaturan
+    Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
 
-// Admin Routes
-Route::get('/admin', AdminIndex::class)->name('admin.index');
-Route::get('/admin/create', AdminCreate::class)->name('admin.create');
-Route::get('/admin/edit/{id}', AdminEdit::class)->name('admin.edit');
+    // Admin Routes di /admin/admin
+    Route::get('/admin', AdminIndex::class)->name('admin.index');
+    Route::get('/admin/create', AdminCreate::class)->name('admin.create');
+    Route::get('/admin/edit/{id}', AdminEdit::class)->name('admin.edit');
 
-// Receipt Print Route
-Route::get('/receipt/print/{id}', function($id) {
-    $receipt = new Receipt();
-    $receipt->mount($id);
+    // Receipt Print Route di /admin/receipt/print
+    Route::get('/receipt/print/{id}', function($id) {
+        $receipt = new Receipt();
+        $receipt->mount($id);
 
-    // Format nomor HP dengan prefix 0 jika belum ada
-    $noHp = $receipt->pelangganNoHp;
-    if (!empty($noHp) && !str_starts_with($noHp, '0')) {
-        $noHp = '0' . $noHp;
-    }
+        // Format nomor HP dengan prefix 0 jika belum ada
+        $noHp = $receipt->pelangganNoHp;
+        if (!empty($noHp) && !str_starts_with($noHp, '0')) {
+            $noHp = '0' . $noHp;
+        }
 
-    return view('livewire.component.receipt', [
-        'transaksiData' => $receipt->transaksiData,
-        'setting' => $receipt->setting,
-        'pelangganAlamat' => $receipt->pelangganAlamat,
-        'pelangganNoHp' => $noHp,
-    ]);
-})->name('receipt.print');
+        return view('livewire.component.receipt', [
+            'transaksiData' => $receipt->transaksiData,
+            'setting' => $receipt->setting,
+            'pelangganAlamat' => $receipt->pelangganAlamat,
+            'pelangganNoHp' => $noHp,
+        ]);
+    })->name('receipt.print');
 
-}); // End of auth middleware group
+}); // End of auth middleware dan prefix admin group

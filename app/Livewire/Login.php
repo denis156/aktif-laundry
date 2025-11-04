@@ -38,7 +38,7 @@ class Login extends Component
                 $this->success('Login berhasil! Selamat datang ' . Auth::user()->name, position: 'toast-bottom');
 
                 // Redirect ke dashboard
-                return $this->redirect('/kasir', navigate: false);
+                return $this->redirect('/admin/kasir', navigate: false);
             } else {
                 $this->error('Email atau password salah!', position: 'toast-bottom');
             }
