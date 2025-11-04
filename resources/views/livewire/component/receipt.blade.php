@@ -158,6 +158,7 @@
         @if(!empty($setting['email']))
         <p>{{ $setting['email'] }}</p>
         @endif
+        <p class="small">Buka: {{ $setting['jam_buka'] }} - Tutup: {{ $setting['jam_tutup'] }}</p>
     </div>
 
     <!-- INFO TRANSAKSI -->

@@ -82,15 +82,9 @@ Route::middleware('auth')->prefix('admin')->group(function() {
 
     // Receipt Print Route di /admin/receipt/print
     Route::get('/receipt/print/{id}', function($id) {
-        $receipt = new Receipt();
-        $receipt->mount($id);
+        $receiptData = \App\Livewire\Component\Receipt::generateReceiptData($id);
 
-        return view('livewire.component.receipt', [
-            'transaksiData' => $receipt->transaksiData,
-            'setting' => $receipt->setting,
-            'pelangganAlamat' => $receipt->pelangganAlamat,
-            'pelangganNoHp' => $receipt->pelangganNoHp,
-        ]);
+        return view('livewire.component.receipt', $receiptData);
     })->name('receipt.print');
 
 }); // End of auth middleware dan prefix admin group
