@@ -34,7 +34,7 @@
     {{-- MAIN --}}
     <x-main full-width>
         {{-- SIDEBAR --}}
-        <x-slot:sidebar drawer="main-drawer" collapsible class="bg-base-100 lg:bg-base-100 rounded-r-2xl">
+        <x-slot:sidebar drawer="main-drawer" collapse-text="Tutup" right-mobile collapsible class="bg-base-100 lg:bg-base-100 rounded-r-2xl">
 
             {{-- BRAND --}}
             <x-app-brand class="px-5 pt-4" />
