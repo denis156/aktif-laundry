@@ -200,12 +200,9 @@ class Dashboard extends Component
 
     public function calendarEvents()
     {
-        // Get transactions for last 4 months (including this month)
-        $startDate = now()->subMonths(3)->startOfMonth();
-        $endDate = now()->endOfMonth();
-
+        // Get all transactions
         $transaksi = Transaksi::with('pelanggan')
-            ->whereBetween('tanggal_masuk', [$startDate, $endDate])
+            ->orderBy('tanggal_masuk', 'asc')
             ->get();
 
         $events = [];
@@ -220,7 +217,7 @@ class Dashboard extends Component
             $events[] = [
                 'label' => "$count Transaksi",
                 'description' => $items->pluck('pelanggan.nama')->take(3)->implode(', ') . ($count > 3 ? '...' : ''),
-                'css' => '!bg-primary',
+                'css' => '!bg-neutral/28',
                 'date' => Carbon::parse($date),
             ];
         }

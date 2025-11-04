@@ -7,14 +7,15 @@
             </div>
         </x-slot:subtitle>
         <x-slot:actions>
-            <x-button icon="o-arrow-path" label="Refresh" class="btn-primary" wire:click="refreshDashboard" spinner="refreshDashboard" />
+            <x-button icon="o-arrow-path" label="Refresh" class="btn-secondary btn-outline" wire:click="refreshDashboard" spinner="refreshDashboard" responsive />
+            <x-button icon="o-calculator" label="Kasir" class="btn-primary" link="{{ route('kasir') }}" wire:navigate.hover responsive />
         </x-slot:actions>
     </x-header>
 
     <section class="space-y-6">
         <!-- STATISTICS -->
-        <!-- Baris 1: Transaksi Metrics -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Baris 1: Transaksi Metrics -->
             <x-stat title="Total Transaksi" description="Semua transaksi" value="{{ number_format($totalTransaksi) }}"
                 icon="o-clipboard-document-list" color="text-primary" tooltip="Total semua transaksi" />
 
@@ -25,10 +26,8 @@
             <x-stat title="Transaksi Hari Ini" description="{{ now()->locale('id')->isoFormat('D MMMM YYYY') }}"
                 value="{{ $transaksiHariIni }}" icon="m-clipboard-document-list" color="text-success"
                 tooltip="Transaksi hari ini" />
-        </div>
 
-        <!-- Baris 2: Pendapatan Metrics -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            <!-- Baris 2: Pendapatan Metrics -->
             <x-stat title="Total Pendapatan" description="Semua pendapatan"
                 value="Rp {{ number_format($totalPendapatan, 0, ',', '.') }}" icon="o-banknotes" color="text-primary"
                 tooltip="Total semua pendapatan" />
@@ -42,41 +41,38 @@
                 tooltip="Pendapatan hari ini" />
         </div>
 
-        <!-- CALENDAR -->
-        <x-card title="Kalender" subtitle="Pencatatan semua transaksi harian" class="shadow-sm" body-class="flex items-center justify-center">
-            <x-calendar :events="$events" weekend-highlight months="4" :selected-date="now()->subMonths(3)->toDateString()" />
-        </x-card>
-
-        <!-- CHARTS -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <!-- BAR/LINE CHART -->
-            <x-card title="7 Hari Terakhir" subtitle="Perbandingan transaksi terakhir minggu ini" class="shadow-sm col-span-2">
+            <x-card title="7 Hari Terakhir" subtitle="Perbandingan transaksi terakhir minggu ini" class="shadow-sm md:col-span-2">
                 <x-slot:menu>
                     <x-toggle
-                        label="Diagram Garis"
                         wire:model.live="isLineChart"
-                        hint="Aktifkan untuk diagram garis"
-                        right />
+                        left />
                 </x-slot:menu>
                 <x-chart wire:model="transaksiChart" />
             </x-card>
 
             <!-- DONUT CHART -->
-            <x-card title="Status" subtitle="Kondisi transaksi sedang aktif" class="shadow-sm col-span-1">
+            <x-card title="Status" subtitle="Kondisi transaksi sedang aktif" class="shadow-sm">
                 <x-chart wire:model="statusChart" />
             </x-card>
         </div>
 
-        <!-- MONTHLY CHART (12 Months) -->
-        <x-card title="12 Bulan Terakhir" subtitle="Pertumbuhan transaksi selama tahun ini" class="shadow-sm">
-            <x-slot:menu>
-                <x-toggle
-                    label="Diagram Garis"
-                    wire:model.live="isLineChartMonthly"
-                    hint="Aktifkan untuk diagram garis"
-                    right />
-                </x-slot:menu>
-            <x-chart wire:model="monthlyChart" />
-        </x-card>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- MONTHLY CHART (12 Months) -->
+            <x-card title="12 Bulan Terakhir" subtitle="Pertumbuhan transaksi selama tahun ini" class="shadow-sm md:col-span-2">
+                <x-slot:menu>
+                    <x-toggle
+                        wire:model.live="isLineChartMonthly"
+                        right />
+                    </x-slot:menu>
+                <x-chart wire:model="monthlyChart" />
+            </x-card>
+
+            <!-- CALENDAR -->
+            <x-card title="Kalender" subtitle="Pencatatan semua transaksi harian" class="shadow-sm md:coll-span-2" body-class="flex items-center justify-center">
+                <x-calendar :events="$events" weekend-highlight months="1" :selected-date="now()->startOfMonth()->toDateString()" />
+            </x-card>
+        </div>
     </section>
 </div>
