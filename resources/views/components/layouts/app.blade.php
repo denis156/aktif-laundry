@@ -32,15 +32,15 @@
     </x-nav>
 
     {{-- MAIN --}}
-    <x-main>
+    <x-main full-width>
         {{-- SIDEBAR --}}
-        <x-slot:sidebar drawer="main-drawer" collapsible class="bg-base-100 lg:bg-inherit">
+        <x-slot:sidebar drawer="main-drawer" collapsible class="bg-base-100 lg:bg-base-100 rounded-r-2xl">
 
             {{-- BRAND --}}
             <x-app-brand class="px-5 pt-4" />
 
             {{-- MENU --}}
-            <x-menu activate-by-route>
+            <x-menu activate-by-route active-bg-color="font-black bg-primary text-primary-content hover:text-primary-content">
 
                 {{-- User Info --}}
                 @if($user = Auth::user())
@@ -48,7 +48,7 @@
 
                     <x-list-item :item="$user" value="name" sub-value="email" no-separator no-hover class="-mx-2 -my-2! rounded">
                         <x-slot:actions>
-                            <x-button icon="o-power" class="btn-circle btn-ghost btn-xs" tooltip-left="logout" no-wire-navigate link="{{ route('logout') }}" />
+                            <x-theme-toggle class="btn btn-circle btn-secondary btn-md" />
                         </x-slot:actions>
                     </x-list-item>
 
@@ -72,6 +72,11 @@
 
                 <x-menu-item title="Admin" icon="o-user-group" link="{{ route('admin.index') }}" wire:navigate.hover exact />
                 <x-menu-item title="Pengaturan" icon="o-cog-6-tooth" link="{{ route('pengaturan') }}" wire:navigate.hover exact />
+
+                <x-menu-separator />
+
+                <x-menu-item title="Keluar" icon="o-arrow-right-start-on-rectangle" no-wire-navigate class="text-error" link="{{ route('logout') }}" />
+
             </x-menu>
         </x-slot:sidebar>
 
