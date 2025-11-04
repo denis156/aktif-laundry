@@ -1,5 +1,5 @@
 <div>
-    <x-header title="Pengaturan" icon="o-cog-6-tooth" icon-classes="bg-primary rounded-full p-1 w-8 h-8" subtitle="Konfigurasi Sistem & Toko" separator progress-indicator>
+    <x-header title="Pengaturan" icon="o-cog-6-tooth" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" subtitle="Konfigurasi Sistem & Toko" separator progress-indicator>
         <x-slot:subtitle>
             Kelola informasi dan pengaturan toko laundry
         </x-slot:subtitle>

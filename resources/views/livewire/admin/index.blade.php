@@ -1,6 +1,6 @@
 <div wire:poll.visible.30s>
     <!-- HEADER -->
-    <x-header title="Admin" icon="o-user-group" icon-classes="bg-primary rounded-full p-1 w-8 h-8" subtitle="Manajemen Pengguna & Hak Akses" separator progress-indicator>
+    <x-header title="Admin" icon="o-user-group" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" subtitle="Manajemen Pengguna & Hak Akses" separator progress-indicator>
         <x-slot:middle class="justify-end">
             <x-input placeholder="Cari user..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
         </x-slot:middle>

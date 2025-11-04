@@ -1,6 +1,6 @@
 <div>
     <!-- HEADER -->
-    <x-header title="Dashboard Aktif Laundry" icon="o-home" icon-classes="bg-primary rounded-full p-1 w-8 h-8" separator progress-indicator>
+    <x-header title="Dashboard" icon="o-home" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator progress-indicator>
         <x-slot:subtitle>
             <div class="flex items-center gap-2">
                 <span class="text-secondary">{{ $currentDateTime }}</span>
