@@ -188,6 +188,16 @@ class Dashboard extends Component
         $this->monthlyChart['data']['datasets'][0]['data'] = $last12Months->pluck('count')->toArray();
     }
 
+    public function refreshDashboard()
+    {
+        $this->updateDateTime();
+        $this->loadChartData();
+        $this->loadStatusChart();
+        $this->loadMonthlyChart();
+
+        $this->success('Data berhasil diperbarui!', position: 'toast-bottom');
+    }
+
     public function calendarEvents()
     {
         // Get transactions for last 4 months (including this month)
