@@ -168,7 +168,7 @@ class Create extends Component
             }
 
             $this->success('Transaksi berhasil ditambahkan!', position: 'toast-bottom');
-            return $this->redirect('/transaksi', navigate: true);
+            return $this->redirect('/admin/transaksi', navigate: true);
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), position: 'toast-bottom');
         }

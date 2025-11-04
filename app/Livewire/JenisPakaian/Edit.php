@@ -40,7 +40,7 @@ class Edit extends Component
             ];
         } catch (\Exception $e) {
             $this->error('Jenis Pakaian tidak ditemukan', position: 'toast-bottom');
-            return $this->redirect('/jenis-pakaian', navigate: true);
+            return $this->redirect('/admin/jenis-pakaian', navigate: true);
         }
     }
 
@@ -57,7 +57,7 @@ class Edit extends Component
             $jenisPakaian->update($this->formData);
 
             $this->success('Jenis Pakaian berhasil diupdate!', position: 'toast-bottom');
-            return $this->redirect('/jenis-pakaian', navigate: true);
+            return $this->redirect('/admin/jenis-pakaian', navigate: true);
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
         }

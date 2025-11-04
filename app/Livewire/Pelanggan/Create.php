@@ -65,7 +65,7 @@ class Create extends Component
             Pelanggan::create($this->formData);
 
             $this->success('Pelanggan berhasil ditambahkan!', position: 'toast-bottom');
-            return $this->redirect('/pelanggan', navigate: true);
+            return $this->redirect('/admin/pelanggan', navigate: true);
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
         }

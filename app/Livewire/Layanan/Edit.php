@@ -44,7 +44,7 @@ class Edit extends Component
             ];
         } catch (\Exception $e) {
             $this->error('Layanan tidak ditemukan', position: 'toast-bottom');
-            return $this->redirect('/layanan', navigate: true);
+            return $this->redirect('/admin/layanan', navigate: true);
         }
     }
 
@@ -63,7 +63,7 @@ class Edit extends Component
             $layanan->update($this->formData);
 
             $this->success('Layanan berhasil diupdate!', position: 'toast-bottom');
-            return $this->redirect('/layanan', navigate: true);
+            return $this->redirect('/admin/layanan', navigate: true);
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan layanan: ' . $e->getMessage(), position: 'toast-bottom');
         }

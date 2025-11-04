@@ -62,7 +62,7 @@ class Create extends Component
             Layanan::create($this->formData);
 
             $this->success('Layanan berhasil ditambahkan!', position: 'toast-bottom');
-            return $this->redirect('/layanan', navigate: true);
+            return $this->redirect('/admin/layanan', navigate: true);
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan layanan: ' . $e->getMessage(), position: 'toast-bottom');
         }

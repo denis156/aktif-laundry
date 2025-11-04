@@ -58,7 +58,7 @@ class Create extends Component
             JenisPakaian::create($this->formData);
 
             $this->success('Jenis Pakaian berhasil ditambahkan!', position: 'toast-bottom');
-            return $this->redirect('/jenis-pakaian', navigate: true);
+            return $this->redirect('/admin/jenis-pakaian', navigate: true);
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
         }
