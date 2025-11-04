@@ -22,6 +22,11 @@ class Create extends Component
 
     public function mount()
     {
+        $this->refreshKodeJenisPakaian();
+    }
+
+    public function refreshKodeJenisPakaian()
+    {
         $this->formData['kode_jenis'] = $this->generateKode();
     }
 
@@ -31,8 +36,8 @@ class Create extends Component
         $prefix = Setting::get('format_id_jenis_pakaian', 'JNS');
         $prefixLength = strlen($prefix);
 
-        // Get latest kode from database
-        $lastJenisPakaian = JenisPakaian::orderBy('kode_jenis', 'desc')->first();
+        // Get latest kode from database, including soft-deleted records to handle gaps
+        $lastJenisPakaian = JenisPakaian::withTrashed()->orderBy('kode_jenis', 'desc')->first();
 
         if (!$lastJenisPakaian) {
             return $prefix . '001';
@@ -40,9 +45,16 @@ class Create extends Component
 
         // Extract number part after prefix
         $lastNumber = (int) substr($lastJenisPakaian->kode_jenis, $prefixLength);
-        $newNumber = $lastNumber + 1;
+        
+        // Check if there are any gaps in the numbering by finding the next available number
+        $nextNumber = $lastNumber + 1;
+        
+        // Verify if this number is already used (in case of deletions)
+        while (JenisPakaian::where('kode_jenis', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+            $nextNumber++;
+        }
 
-        return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
     public function save()

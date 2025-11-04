@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Pelanggan;
 
-use App\Models\Pelanggan;
-use Livewire\Component;
-use Livewire\Attributes\Title;
+use Carbon\Carbon;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Models\Pelanggan;
+use Livewire\Attributes\Title;
 
 #[Title('Edit Pelanggan')]
 class Edit extends Component
@@ -63,7 +64,12 @@ class Edit extends Component
 
         try {
             $pelanggan = Pelanggan::findOrFail($this->pelangganId);
-            $pelanggan->update($this->formData);
+
+            // Konversi format tanggal
+            $data = $this->formData;
+            $data['tanggal_daftar'] = Carbon::parse($this->formData['tanggal_daftar'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s');
+
+            $pelanggan->update($data);
 
             $this->success('Pelanggan berhasil diupdate!', position: 'toast-bottom');
             return $this->redirect('/admin/pelanggan', navigate: true);

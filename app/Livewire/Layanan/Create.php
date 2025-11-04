@@ -24,6 +24,11 @@ class Create extends Component
 
     public function mount()
     {
+        $this->refreshKodeLayanan();
+    }
+
+    public function refreshKodeLayanan()
+    {
         $this->formData['kode_layanan'] = $this->generateKode();
     }
 
@@ -33,8 +38,8 @@ class Create extends Component
         $prefix = Setting::get('format_id_layanan', 'LYN');
         $prefixLength = strlen($prefix);
 
-        // Get latest kode from database
-        $lastLayanan = Layanan::orderBy('kode_layanan', 'desc')->first();
+        // Get latest kode from database, including soft-deleted records to handle gaps
+        $lastLayanan = Layanan::withTrashed()->orderBy('kode_layanan', 'desc')->first();
 
         if (!$lastLayanan) {
             return $prefix . '001';
@@ -42,9 +47,16 @@ class Create extends Component
 
         // Extract number part after prefix
         $lastNumber = (int) substr($lastLayanan->kode_layanan, $prefixLength);
-        $newNumber = $lastNumber + 1;
+        
+        // Check if there are any gaps in the numbering by finding the next available number
+        $nextNumber = $lastNumber + 1;
+        
+        // Verify if this number is already used (in case of deletions)
+        while (Layanan::where('kode_layanan', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+            $nextNumber++;
+        }
 
-        return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
     public function save()

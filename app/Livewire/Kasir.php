@@ -61,7 +61,7 @@ class Kasir extends Component
 
     public function mount()
     {
-        $this->resetForm();
+        $this->refreshKodeTransaksi();
         $this->search();
     }
 
@@ -69,7 +69,7 @@ class Kasir extends Component
     {
         $this->formData = [
             'kode_transaksi' => $this->generateKode(),
-            'tanggal_masuk' => now()->format('Y-m-d\TH:i'),
+            'tanggal_masuk' => now()->format('Y-m-d H:i'),
             'kasir_id' => Auth::id(),
             'pelanggan_id' => '',
             'nama_pelanggan' => '',
@@ -102,16 +102,28 @@ class Kasir extends Component
         $prefix = Setting::get('format_id_transaksi', 'TRX');
         $prefixLength = strlen($prefix);
 
-        $lastTransaksi = Transaksi::orderBy('kode_transaksi', 'desc')->first();
+        $lastTransaksi = Transaksi::withTrashed()->orderBy('kode_transaksi', 'desc')->first();
 
         if (!$lastTransaksi) {
             return $prefix . '001';
         }
 
         $lastNumber = (int) substr($lastTransaksi->kode_transaksi, $prefixLength);
-        $newNumber = $lastNumber + 1;
+        
+        // Check if there are any gaps in the numbering by finding the next available number
+        $nextNumber = $lastNumber + 1;
+        
+        // Verify if this number is already used (in case of deletions)
+        while (Transaksi::where('kode_transaksi', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+            $nextNumber++;
+        }
 
-        return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+    }
+
+    public function refreshKodeTransaksi()
+    {
+        $this->formData['kode_transaksi'] = $this->generateKode();
     }
 
     public function search(string $term = '')
@@ -223,7 +235,7 @@ class Kasir extends Component
             try {
                 $tanggalMasuk = \Carbon\Carbon::parse($this->formData['tanggal_masuk']);
                 $tanggalSelesai = $tanggalMasuk->addHours($durasiJam);
-                $this->formData['tanggal_selesai'] = $tanggalSelesai->format('Y-m-d\TH:i');
+                $this->formData['tanggal_selesai'] = $tanggalSelesai->format('Y-m-d H:i');
             } catch (\Exception $e) {
                 $this->formData['tanggal_selesai'] = '';
             }
@@ -338,14 +350,20 @@ class Kasir extends Component
             $prefix = Setting::get('format_id_pelanggan', 'PLG');
             $prefixLength = strlen($prefix);
 
-            $lastPelanggan = Pelanggan::orderBy('kode_pelanggan', 'desc')->first();
+            $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
 
             if (!$lastPelanggan) {
                 $kodePelanggan = $prefix . '001';
             } else {
                 $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
-                $newNumber = $lastNumber + 1;
-                $kodePelanggan = $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+                $nextNumber = $lastNumber + 1;
+                
+                // Check if there are any gaps in the numbering by finding the next available number
+                while (Pelanggan::where('kode_pelanggan', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+                    $nextNumber++;
+                }
+                
+                $kodePelanggan = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
             }
 
             // Simpan pelanggan baru
@@ -355,7 +373,7 @@ class Kasir extends Component
                 'no_hp' => $this->pelangganBaru['no_hp'],
                 'alamat' => $this->pelangganBaru['alamat'] ?? '',
                 'email' => $this->pelangganBaru['email'] ?? '',
-                'tanggal_daftar' => $this->formData['tanggal_masuk'] ?? now(),
+                'tanggal_daftar' => $this->formData['tanggal_masuk'] ? \Carbon\Carbon::parse($this->formData['tanggal_masuk'])->format('Y-m-d H:i:s') : now(),
                 'total_transaksi' => 0,
                 'status' => 'Aktif',
             ]);
@@ -378,6 +396,16 @@ class Kasir extends Component
             $this->isPelangganBaru = false;
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
+        }
+    }
+
+    public function updatedFormDataTanggalMasuk($value)
+    {
+        if ($value && $this->formData['layanan_id']) {
+            $layanan = Layanan::find($this->formData['layanan_id']);
+            if ($layanan && $layanan->durasi_jam) {
+                $this->calculateTanggalSelesai($layanan->durasi_jam);
+            }
         }
     }
 

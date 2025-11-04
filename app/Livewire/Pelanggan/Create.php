@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Pelanggan;
 
-use App\Models\Pelanggan;
+use Carbon\Carbon;
+use Mary\Traits\Toast;
 use App\Models\Setting;
 use Livewire\Component;
+use App\Models\Pelanggan;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
 
 #[Title('Tambah Pelanggan')]
 class Create extends Component
@@ -25,8 +26,13 @@ class Create extends Component
 
     public function mount()
     {
-        $this->formData['kode_pelanggan'] = $this->generateKode();
+        $this->refreshKodePelanggan();
         $this->formData['tanggal_daftar'] = now()->format('Y-m-d H:i');
+    }
+
+    public function refreshKodePelanggan()
+    {
+        $this->formData['kode_pelanggan'] = $this->generateKode();
     }
 
     protected function generateKode(): string
@@ -35,8 +41,8 @@ class Create extends Component
         $prefix = Setting::get('format_id_pelanggan', 'PLG');
         $prefixLength = strlen($prefix);
 
-        // Get latest kode from database
-        $lastPelanggan = Pelanggan::orderBy('kode_pelanggan', 'desc')->first();
+        // Get latest kode from database, including soft-deleted records to handle gaps
+        $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
 
         if (!$lastPelanggan) {
             return $prefix . '001';
@@ -44,9 +50,16 @@ class Create extends Component
 
         // Extract number part after prefix
         $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
-        $newNumber = $lastNumber + 1;
+        
+        // Check if there are any gaps in the numbering by finding the next available number
+        $nextNumber = $lastNumber + 1;
+        
+        // Verify if this number is already used (in case of deletions)
+        while (Pelanggan::where('kode_pelanggan', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+            $nextNumber++;
+        }
 
-        return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
     public function save()
@@ -62,7 +75,11 @@ class Create extends Component
         ]);
 
         try {
-            Pelanggan::create($this->formData);
+            // Konversi format tanggal
+            $data = $this->formData;
+            $data['tanggal_daftar'] = Carbon::parse($this->formData['tanggal_daftar'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s');
+
+            Pelanggan::create($data);
 
             $this->success('Pelanggan berhasil ditambahkan!', position: 'toast-bottom');
             return $this->redirect('/admin/pelanggan', navigate: true);

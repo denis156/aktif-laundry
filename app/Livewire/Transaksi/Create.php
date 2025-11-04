@@ -41,10 +41,15 @@ class Create extends Component
 
     public function mount()
     {
-        $this->formData['kode_transaksi'] = $this->generateKode();
+        $this->refreshKodeTransaksi();
         $this->formData['tanggal_masuk'] = now()->format('Y-m-d\TH:i');
         $this->formData['kasir_id'] = Auth::id();
         $this->search();
+    }
+
+    public function refreshKodeTransaksi()
+    {
+        $this->formData['kode_transaksi'] = $this->generateKode();
     }
 
     public function search(string $term = '')
@@ -72,16 +77,23 @@ class Create extends Component
         $prefix = Setting::get('format_id_transaksi', 'TRX');
         $prefixLength = strlen($prefix);
 
-        $lastTransaksi = Transaksi::orderBy('kode_transaksi', 'desc')->first();
+        $lastTransaksi = Transaksi::withTrashed()->orderBy('kode_transaksi', 'desc')->first();
 
         if (!$lastTransaksi) {
             return $prefix . '001';
         }
 
         $lastNumber = (int) substr($lastTransaksi->kode_transaksi, $prefixLength);
-        $newNumber = $lastNumber + 1;
+        
+        // Check if there are any gaps in the numbering by finding the next available number
+        $nextNumber = $lastNumber + 1;
+        
+        // Verify if this number is already used (in case of deletions)
+        while (Transaksi::where('kode_transaksi', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+            $nextNumber++;
+        }
 
-        return $prefix . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
+        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
     public function jenisPakaianUpdated($outputString)
