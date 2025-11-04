@@ -1,6 +1,6 @@
 <div wire:poll.visible.30s>
     <!-- HEADER -->
-    <x-header title="Daftar Jenis Pakaian" separator progress-indicator>
+    <x-header title="Jenis Pakaian" icon="o-square-3-stack-3d" icon-classes="bg-primary rounded-full p-1 w-8 h-8" subtitle="Kategori & Jenis Cucian" separator progress-indicator>
         <x-slot:middle class="justify-end">
             <x-input placeholder="Cari jenis pakaian..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
         </x-slot:middle>

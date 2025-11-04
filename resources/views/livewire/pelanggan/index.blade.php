@@ -1,6 +1,6 @@
 <div wire:poll.visible.30s>
     <!-- HEADER -->
-    <x-header title="Daftar Pelanggan" separator progress-indicator>
+    <x-header title="Pelanggan" icon="o-users" icon-classes="bg-primary rounded-full p-1 w-8 h-8" subtitle="Database Klien & Riwayat" separator progress-indicator>
         <x-slot:middle class="justify-end">
             <x-input placeholder="Cari pelanggan..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
         </x-slot:middle>

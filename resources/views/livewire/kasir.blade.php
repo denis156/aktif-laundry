@@ -1,6 +1,6 @@
 <div>
     <!-- HEADER -->
-    <x-header title="Kasir - Point of Sale" separator progress-indicator>
+    <x-header title="Kasir" icon="o-calculator" icon-classes="bg-primary rounded-full p-1 w-8 h-8" subtitle="Point of Sale - Transaksi Cepat" separator progress-indicator>
         <x-slot:actions>
             <x-button label="Daftar Transaksi" link="{{ route('transaksi.index') }}" wire:navigate.hover responsive icon="o-queue-list" class="btn-outline btn-primary" />
         </x-slot:actions>
