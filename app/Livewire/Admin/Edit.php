@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use Exception;
 use App\Models\User;
 use Mary\Traits\Toast;
 use Livewire\Component;
@@ -76,7 +77,7 @@ class Edit extends Component
             $user->update($data);
 
             $this->success('User berhasil diperbarui!', redirectTo: route('admin.index'), position: 'toast-bottom');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal memperbarui user: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

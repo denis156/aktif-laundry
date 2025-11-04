@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Component;
 
-use Livewire\Component;
-use App\Models\Transaksi;
-use App\Models\Pelanggan;
+use Exception;
 use App\Models\Setting;
+use Livewire\Component;
+use App\Models\Pelanggan;
+use App\Models\Transaksi;
 
 class Receipt extends Component
 {
@@ -59,7 +60,7 @@ class Receipt extends Component
                 $this->pelangganNoHp = $transaksi->pelanggan->no_hp ?? '';
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             abort(404, 'Transaksi tidak ditemukan: ' . $e->getMessage());
         }
     }

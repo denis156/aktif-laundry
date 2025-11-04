@@ -2,11 +2,14 @@
 
 namespace App\Livewire\Layanan;
 
+use Exception;
+use Mary\Traits\Toast;
 use App\Models\Layanan;
 use App\Models\Setting;
 use Livewire\Component;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 #[Title('Tambah Layanan')]
 class Create extends Component
@@ -47,10 +50,10 @@ class Create extends Component
 
         // Extract number part after prefix
         $lastNumber = (int) substr($lastLayanan->kode_layanan, $prefixLength);
-        
+
         // Check if there are any gaps in the numbering by finding the next available number
         $nextNumber = $lastNumber + 1;
-        
+
         // Verify if this number is already used (in case of deletions)
         while (Layanan::where('kode_layanan', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
             $nextNumber++;
@@ -71,11 +74,27 @@ class Create extends Component
         ]);
 
         try {
-            Layanan::create($this->formData);
+            // Gunakan database transaction untuk mencegah race condition
+            DB::transaction(function() {
+                // Cek ulang apakah kode layanan sudah ada, jika ya generate ulang
+                if (Layanan::where('kode_layanan', $this->formData['kode_layanan'])->exists()) {
+                    $this->refreshKodeLayanan();
+                }
+
+                Layanan::create($this->formData);
+            });
 
             $this->success('Layanan berhasil ditambahkan!', position: 'toast-bottom');
             return $this->redirect('/admin/layanan', navigate: true);
-        } catch (\Exception $e) {
+        } catch (QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->errorInfo[1] == 1062) { // Duplicate entry
+                $this->refreshKodeLayanan();
+                $this->success('Kode layanan di-regenerate, silakan coba lagi', position: 'toast-bottom');
+                return;
+            }
+            $this->error('Gagal menyimpan layanan: ' . $e->getMessage(), position: 'toast-bottom');
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan layanan: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

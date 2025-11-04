@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Layanan;
 
+use Exception;
+use Mary\Traits\Toast;
 use App\Models\Layanan;
 use Livewire\Component;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
 
 #[Title('Edit Layanan')]
 class Edit extends Component
@@ -42,7 +43,7 @@ class Edit extends Component
                 'deskripsi' => $layanan->deskripsi,
                 'status' => $layanan->status,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Layanan tidak ditemukan', position: 'toast-bottom');
             return $this->redirect('/admin/layanan', navigate: true);
         }
@@ -64,7 +65,7 @@ class Edit extends Component
 
             $this->success('Layanan berhasil diupdate!', position: 'toast-bottom');
             return $this->redirect('/admin/layanan', navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan layanan: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

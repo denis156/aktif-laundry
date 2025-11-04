@@ -2,6 +2,7 @@
 
 namespace App\Livewire;
 
+use Exception;
 use Mary\Traits\Toast;
 use Livewire\Component;
 use Livewire\Attributes\Title;
@@ -43,7 +44,7 @@ class Login extends Component
                 $this->error('Email atau password salah!', position: 'toast-bottom');
             }
 
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Terjadi kesalahan: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Transaksi;
 
+use Exception;
 use Mary\Traits\Toast;
 use App\Models\Layanan;
 use Livewire\Component;
@@ -95,7 +96,7 @@ class Edit extends Component
                 'status' => $transaksi->status,
                 'catatan' => $transaksi->catatan ?? '',
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Transaksi tidak ditemukan', position: 'toast-bottom');
             return $this->redirect('/admin/transaksi', navigate: true);
         }
@@ -179,7 +180,7 @@ class Edit extends Component
 
             $this->success('Transaksi berhasil diupdate!', position: 'toast-bottom');
             return $this->redirect('/admin/transaksi', navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

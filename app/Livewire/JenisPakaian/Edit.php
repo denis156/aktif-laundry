@@ -2,10 +2,11 @@
 
 namespace App\Livewire\JenisPakaian;
 
-use App\Models\JenisPakaian;
-use Livewire\Component;
-use Livewire\Attributes\Title;
+use Exception;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Models\JenisPakaian;
+use Livewire\Attributes\Title;
 
 #[Title('Edit Jenis Pakaian')]
 class Edit extends Component
@@ -38,7 +39,7 @@ class Edit extends Component
                 'keterangan' => $jenisPakaian->keterangan,
                 'status' => $jenisPakaian->status,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Jenis Pakaian tidak ditemukan', position: 'toast-bottom');
             return $this->redirect('/admin/jenis-pakaian', navigate: true);
         }
@@ -58,7 +59,7 @@ class Edit extends Component
 
             $this->success('Jenis Pakaian berhasil diupdate!', position: 'toast-bottom');
             return $this->redirect('/admin/jenis-pakaian', navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

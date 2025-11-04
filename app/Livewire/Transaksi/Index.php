@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Transaksi;
 
+use Exception;
 use App\Models\User;
 use Mary\Traits\Toast;
 use Livewire\Component;
@@ -54,7 +55,7 @@ class Index extends Component
             $this->success("Transaksi {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
             $this->deleteModal = false;
             $this->reset(['deleteId', 'deleteName']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menghapus transaksi: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

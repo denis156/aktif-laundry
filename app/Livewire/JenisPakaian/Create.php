@@ -2,11 +2,14 @@
 
 namespace App\Livewire\JenisPakaian;
 
-use App\Models\JenisPakaian;
+use Exception;
+use Mary\Traits\Toast;
 use App\Models\Setting;
 use Livewire\Component;
+use App\Models\JenisPakaian;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 #[Title('Tambah Jenis Pakaian')]
 class Create extends Component
@@ -45,10 +48,10 @@ class Create extends Component
 
         // Extract number part after prefix
         $lastNumber = (int) substr($lastJenisPakaian->kode_jenis, $prefixLength);
-        
+
         // Check if there are any gaps in the numbering by finding the next available number
         $nextNumber = $lastNumber + 1;
-        
+
         // Verify if this number is already used (in case of deletions)
         while (JenisPakaian::where('kode_jenis', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
             $nextNumber++;
@@ -67,11 +70,27 @@ class Create extends Component
         ]);
 
         try {
-            JenisPakaian::create($this->formData);
+            // Gunakan database transaction untuk mencegah race condition
+            DB::transaction(function() {
+                // Cek ulang apakah kode jenis pakaian sudah ada, jika ya generate ulang
+                if (JenisPakaian::where('kode_jenis', $this->formData['kode_jenis'])->exists()) {
+                    $this->refreshKodeJenisPakaian();
+                }
+
+                JenisPakaian::create($this->formData);
+            });
 
             $this->success('Jenis Pakaian berhasil ditambahkan!', position: 'toast-bottom');
             return $this->redirect('/admin/jenis-pakaian', navigate: true);
-        } catch (\Exception $e) {
+        } catch (QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->errorInfo[1] == 1062) { // Duplicate entry
+                $this->refreshKodeJenisPakaian();
+                $this->success('Kode jenis pakaian di-regenerate, silakan coba lagi', position: 'toast-bottom');
+                return;
+            }
+            $this->error('Gagal menyimpan jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

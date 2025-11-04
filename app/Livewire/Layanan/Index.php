@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Layanan;
 
+use Exception;
+use Mary\Traits\Toast;
 use App\Models\Layanan;
 use Livewire\Component;
-use Livewire\Attributes\Title;
 use Livewire\WithPagination;
-use Mary\Traits\Toast;
+use Livewire\Attributes\Title;
 
 #[Title('Daftar Layanan')]
 class Index extends Component
@@ -46,7 +47,7 @@ class Index extends Component
             $this->success("Layanan {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
             $this->deleteModal = false;
             $this->reset(['deleteId', 'deleteName']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menghapus layanan: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

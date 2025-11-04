@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Transaksi;
 
+use Exception;
 use Mary\Traits\Toast;
 use App\Models\Layanan;
 use App\Models\Setting;
@@ -9,7 +10,9 @@ use Livewire\Component;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
 use Livewire\Attributes\Title;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 #[Title('Tambah Transaksi')]
 class Create extends Component
@@ -84,10 +87,10 @@ class Create extends Component
         }
 
         $lastNumber = (int) substr($lastTransaksi->kode_transaksi, $prefixLength);
-        
+
         // Check if there are any gaps in the numbering by finding the next available number
         $nextNumber = $lastNumber + 1;
-        
+
         // Verify if this number is already used (in case of deletions)
         while (Transaksi::where('kode_transaksi', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
             $nextNumber++;
@@ -171,17 +174,34 @@ class Create extends Component
         ]);
 
         try {
-            Transaksi::create($this->formData);
+            // Gunakan database transaction untuk mencegah race condition
+            DB::transaction(function() {
+                // Cek ulang apakah kode transaksi sudah ada, jika ya generate ulang
+                if (Transaksi::where('kode_transaksi', $this->formData['kode_transaksi'])->exists()) {
+                    $this->refreshKodeTransaksi();
+                }
 
-            // Update total transaksi pelanggan
-            $pelanggan = Pelanggan::find($this->formData['pelanggan_id']);
-            if ($pelanggan) {
-                $pelanggan->increment('total_transaksi');
-            }
+                // Simpan transaksi
+                $transaksi = Transaksi::create($this->formData);
+
+                // Update total transaksi pelanggan dengan lock
+                $pelanggan = Pelanggan::lockForUpdate()->find($this->formData['pelanggan_id']);
+                if ($pelanggan) {
+                    $pelanggan->increment('total_transaksi');
+                }
+            });
 
             $this->success('Transaksi berhasil ditambahkan!', position: 'toast-bottom');
             return $this->redirect('/admin/transaksi', navigate: true);
-        } catch (\Exception $e) {
+        } catch (QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->errorInfo[1] == 1062) { // Duplicate entry
+                $this->refreshKodeTransaksi();
+                $this->success('Kode transaksi di-regenerate, silakan coba lagi', position: 'toast-bottom');
+                return;
+            }
+            $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), position: 'toast-bottom');
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

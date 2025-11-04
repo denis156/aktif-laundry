@@ -2,14 +2,11 @@
 
 namespace App\Livewire;
 
-use App\Models\Transaksi;
-use App\Models\Pelanggan;
-use App\Models\Layanan;
 use Carbon\Carbon;
-use Illuminate\Support\Arr;
-use Livewire\Component;
-use Livewire\Attributes\Title;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Models\Transaksi;
+use Livewire\Attributes\Title;
 
 #[Title('Dashboard')]
 class Dashboard extends Component

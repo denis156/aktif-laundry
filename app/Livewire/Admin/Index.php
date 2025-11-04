@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Admin;
 
+use Exception;
 use App\Models\User;
 use Mary\Traits\Toast;
 use Livewire\Component;
-use Livewire\Attributes\Title;
 use Livewire\WithPagination;
+use Livewire\Attributes\Title;
 use Illuminate\Support\Facades\Auth;
 
 #[Title('Daftar User')]
@@ -48,7 +49,7 @@ class Index extends Component
 
                 $user->delete();
                 $this->success('User berhasil dihapus!', position: 'toast-bottom');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->error('Gagal menghapus user: ' . $e->getMessage(), position: 'toast-bottom');
             }
         }

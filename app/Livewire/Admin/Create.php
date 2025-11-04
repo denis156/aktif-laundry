@@ -2,10 +2,11 @@
 
 namespace App\Livewire\Admin;
 
+use Exception;
 use App\Models\User;
+use Mary\Traits\Toast;
 use Livewire\Component;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
 use Illuminate\Support\Facades\Hash;
 
 #[Title('Tambah User')]
@@ -44,7 +45,7 @@ class Create extends Component
             ]);
 
             $this->success('User berhasil ditambahkan!', redirectTo: route('admin.index'), position: 'toast-bottom');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menambahkan user: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

@@ -2,11 +2,12 @@
 
 namespace App\Livewire\Pelanggan;
 
-use App\Models\Pelanggan;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\WithPagination;
+use Exception;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Models\Pelanggan;
+use Livewire\WithPagination;
+use Livewire\Attributes\Title;
 
 #[Title('Daftar Pelanggan')]
 class Index extends Component
@@ -44,7 +45,7 @@ class Index extends Component
             $this->success("Pelanggan {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
             $this->deleteModal = false;
             $this->reset(['deleteId', 'deleteName']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menghapus pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

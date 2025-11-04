@@ -2,6 +2,8 @@
 
 namespace App\Livewire;
 
+use Exception;
+use Carbon\Carbon;
 use Mary\Traits\Toast;
 use App\Models\Layanan;
 use App\Models\Setting;
@@ -9,7 +11,9 @@ use Livewire\Component;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
 use Livewire\Attributes\Title;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\QueryException;
 
 #[Title('Kasir')]
 class Kasir extends Component
@@ -109,10 +113,10 @@ class Kasir extends Component
         }
 
         $lastNumber = (int) substr($lastTransaksi->kode_transaksi, $prefixLength);
-        
+
         // Check if there are any gaps in the numbering by finding the next available number
         $nextNumber = $lastNumber + 1;
-        
+
         // Verify if this number is already used (in case of deletions)
         while (Transaksi::where('kode_transaksi', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
             $nextNumber++;
@@ -233,10 +237,10 @@ class Kasir extends Component
     {
         if (!empty($this->formData['tanggal_masuk']) && $durasiJam > 0) {
             try {
-                $tanggalMasuk = \Carbon\Carbon::parse($this->formData['tanggal_masuk']);
+                $tanggalMasuk = Carbon::parse($this->formData['tanggal_masuk']);
                 $tanggalSelesai = $tanggalMasuk->addHours($durasiJam);
                 $this->formData['tanggal_selesai'] = $tanggalSelesai->format('Y-m-d H:i');
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->formData['tanggal_selesai'] = '';
             }
         }
@@ -285,20 +289,28 @@ class Kasir extends Component
         }
 
         try {
-            // ID Kasir
-            $this->formData['kasir_id'] = Auth::id() ?? 1;
+            // Gunakan database transaction untuk mencegah race condition
+            DB::transaction(function() {
+                // ID Kasir
+                $this->formData['kasir_id'] = Auth::id() ?? 1;
 
-            // Simpan transaksi
-            Transaksi::create($this->formData);
+                // Cek ulang apakah kode transaksi sudah ada, jika ya generate ulang
+                if (Transaksi::where('kode_transaksi', $this->formData['kode_transaksi'])->exists()) {
+                    $this->refreshKodeTransaksi();
+                }
 
-            // Update total transaksi pelanggan
-            $pelanggan = Pelanggan::find($this->formData['pelanggan_id']);
-            if ($pelanggan) {
-                $pelanggan->increment('total_transaksi');
-            }
+                // Simpan transaksi
+                $transaksi = Transaksi::create($this->formData);
 
-            // Simpan kode transaksi terakhir untuk struk
-            $this->lastTransactionId = $this->formData['kode_transaksi'];
+                // Update total transaksi pelanggan dengan lock
+                $pelanggan = Pelanggan::lockForUpdate()->find($this->formData['pelanggan_id']);
+                if ($pelanggan) {
+                    $pelanggan->increment('total_transaksi');
+                }
+
+                // Simpan kode transaksi terakhir untuk struk
+                $this->lastTransactionId = $transaksi->kode_transaksi;
+            });
 
             $this->success('Transaksi berhasil disimpan!', position: 'toast-bottom');
 
@@ -307,7 +319,15 @@ class Kasir extends Component
 
             // Tampilkan pilihan cetak struk
             $this->showReceipt = true;
-        } catch (\Exception $e) {
+        } catch (QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->errorInfo[1] == 1062) { // Duplicate entry
+                $this->refreshKodeTransaksi();
+                $this->success('Kode transaksi di-regenerate, silakan coba lagi', position: 'toast-bottom');
+                return;
+            }
+            $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), timeout: 10000, position: 'toast-bottom');
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), timeout: 10000, position: 'toast-bottom');
         }
     }
@@ -346,54 +366,64 @@ class Kasir extends Component
         }
 
         try {
-            // Generate kode pelanggan baru
-            $prefix = Setting::get('format_id_pelanggan', 'PLG');
-            $prefixLength = strlen($prefix);
+            // Gunakan transaction untuk pembuatan pelanggan baru
+            DB::transaction(function() {
+                // Generate kode pelanggan baru
+                $prefix = Setting::get('format_id_pelanggan', 'PLG');
+                $prefixLength = strlen($prefix);
 
-            $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
+                $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
 
-            if (!$lastPelanggan) {
-                $kodePelanggan = $prefix . '001';
-            } else {
-                $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
-                $nextNumber = $lastNumber + 1;
-                
-                // Check if there are any gaps in the numbering by finding the next available number
-                while (Pelanggan::where('kode_pelanggan', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
-                    $nextNumber++;
+                if (!$lastPelanggan) {
+                    $kodePelanggan = $prefix . '001';
+                } else {
+                    $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
+                    $nextNumber = $lastNumber + 1;
+
+                    // Check if there are any gaps in the numbering by finding the next available number
+                    while (Pelanggan::where('kode_pelanggan', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+                        $nextNumber++;
+                    }
+
+                    $kodePelanggan = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
                 }
-                
-                $kodePelanggan = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+
+                // Simpan pelanggan baru
+                $pelanggan = Pelanggan::create([
+                    'kode_pelanggan' => $kodePelanggan,
+                    'nama' => $this->pelangganBaru['nama'],
+                    'no_hp' => $this->pelangganBaru['no_hp'],
+                    'alamat' => $this->pelangganBaru['alamat'] ?? '',
+                    'email' => $this->pelangganBaru['email'] ?? '',
+                    'tanggal_daftar' => $this->formData['tanggal_masuk'] ? \Carbon\Carbon::parse($this->formData['tanggal_masuk'])->format('Y-m-d H:i:s') : now(),
+                    'total_transaksi' => 0,
+                    'status' => 'Aktif',
+                ]);
+
+                $this->success("Pelanggan {$this->pelangganBaru['nama']} berhasil ditambahkan!", position: 'toast-bottom');
+
+                // Auto-select pelanggan yang baru ditambahkan
+                $this->formData['pelanggan_id'] = $pelanggan->id;
+                $this->formData['nama_pelanggan'] = $pelanggan->nama;
+
+                // Reset form pelanggan baru
+                $this->pelangganBaru = [
+                    'nama' => '',
+                    'no_hp' => '',
+                    'alamat' => '',
+                    'email' => '',
+                ];
+
+                // Switch kembali ke mode pilih pelanggan existing
+                $this->isPelangganBaru = false;
+            });
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->errorInfo[1] == 1062) { // Duplicate entry
+                $this->error('Kode pelanggan sudah ada, sistem akan mencoba generate ulang', position: 'toast-bottom');
+                return;
             }
-
-            // Simpan pelanggan baru
-            $pelanggan = Pelanggan::create([
-                'kode_pelanggan' => $kodePelanggan,
-                'nama' => $this->pelangganBaru['nama'],
-                'no_hp' => $this->pelangganBaru['no_hp'],
-                'alamat' => $this->pelangganBaru['alamat'] ?? '',
-                'email' => $this->pelangganBaru['email'] ?? '',
-                'tanggal_daftar' => $this->formData['tanggal_masuk'] ? \Carbon\Carbon::parse($this->formData['tanggal_masuk'])->format('Y-m-d H:i:s') : now(),
-                'total_transaksi' => 0,
-                'status' => 'Aktif',
-            ]);
-
-            $this->success("Pelanggan {$this->pelangganBaru['nama']} berhasil ditambahkan!", position: 'toast-bottom');
-
-            // Auto-select pelanggan yang baru ditambahkan
-            $this->formData['pelanggan_id'] = $pelanggan->id;
-            $this->formData['nama_pelanggan'] = $pelanggan->nama;
-
-            // Reset form pelanggan baru
-            $this->pelangganBaru = [
-                'nama' => '',
-                'no_hp' => '',
-                'alamat' => '',
-                'email' => '',
-            ];
-
-            // Switch kembali ke mode pilih pelanggan existing
-            $this->isPelangganBaru = false;
+            $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
         } catch (\Exception $e) {
             $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
         }

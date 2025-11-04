@@ -2,10 +2,11 @@
 
 namespace App\Livewire;
 
+use Exception;
+use Mary\Traits\Toast;
 use App\Models\Setting;
 use Livewire\Component;
 use Livewire\Attributes\Title;
-use Mary\Traits\Toast;
 
 #[Title('Pengaturan')]
 class Pengaturan extends Component
@@ -63,7 +64,7 @@ class Pengaturan extends Component
             Setting::set('jam_tutup', $this->settings['jam_tutup'], 'Jam tutup toko');
 
             $this->success('Pengaturan berhasil disimpan!', position: 'toast-bottom');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan pengaturan: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

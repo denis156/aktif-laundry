@@ -2,11 +2,12 @@
 
 namespace App\Livewire\JenisPakaian;
 
-use App\Models\JenisPakaian;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\WithPagination;
+use Exception;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Models\JenisPakaian;
+use Livewire\WithPagination;
+use Livewire\Attributes\Title;
 
 #[Title('Daftar Jenis Pakaian')]
 class Index extends Component
@@ -44,7 +45,7 @@ class Index extends Component
             $this->success("Jenis Pakaian {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
             $this->deleteModal = false;
             $this->reset(['deleteId', 'deleteName']);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menghapus jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

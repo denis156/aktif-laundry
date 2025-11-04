@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Pelanggan;
 
+use Exception;
 use Carbon\Carbon;
 use Mary\Traits\Toast;
 use Livewire\Component;
@@ -45,7 +46,7 @@ class Edit extends Component
                 'tanggal_daftar' => $pelanggan->tanggal_daftar->format('Y-m-d H:i'),
                 'status' => $pelanggan->status,
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Pelanggan tidak ditemukan', position: 'toast-bottom');
             return $this->redirect('/admin/pelanggan', navigate: true);
         }
@@ -73,7 +74,7 @@ class Edit extends Component
 
             $this->success('Pelanggan berhasil diupdate!', position: 'toast-bottom');
             return $this->redirect('/admin/pelanggan', navigate: true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }

@@ -2,9 +2,10 @@
 
 namespace App\Livewire\Component;
 
+use Exception;
+use Livewire\Component;
 use App\Models\JenisPakaian;
 use Illuminate\Support\Collection;
-use Livewire\Component;
 
 class KeyValueJenisPakaian extends Component
 {
@@ -40,7 +41,7 @@ class KeyValueJenisPakaian extends Component
                         'name' => $item->nama_jenis,
                     ];
                 });
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->jenisPakaianOptions = collect([]);
         }
     }
