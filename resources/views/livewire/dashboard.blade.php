@@ -8,7 +8,7 @@
             </div>
         </x-slot:subtitle>
         <x-slot:actions>
-            <x-button icon="o-arrow-path" class="btn-primary btn-sm" wire:click="refreshDashboard" spinner="refreshDashboard">
+            <x-button icon="o-arrow-path" class="btn-primary" wire:click="refreshDashboard" spinner="refreshDashboard">
                 Refresh
             </x-button>
         </x-slot:actions>
