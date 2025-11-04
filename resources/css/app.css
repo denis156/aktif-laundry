@@ -67,8 +67,6 @@
     /* Primary - Consistent Laundry Red */
     --color-primary: oklch(58% 0.18 25); /* Professional Soft Red */
     --color-primary-content: oklch(98% 0 0); /* White Text on Primary */
-    --color-primary/85: oklch(58% 0.18 25 / 0.85); /* Primary with opacity */
-    --color-primary/70: oklch(58% 0.18 25 / 0.7); /* Primary with more opacity */
 
     /* Secondary - Warm Neutral (Complements Red) */
     --color-secondary: oklch(45% 0.015 0); /* Warm Gray */
@@ -123,8 +121,6 @@
     /* Primary - Vibrant Soft Red (Dark Mode) */
     --color-primary: oklch(58% 0.18 25); /* Vibrant Soft Red */
     --color-primary-content: oklch(98% 0 0); /* White Text */
-    --color-primary/85: oklch(58% 0.18 25 / 0.85); /* Primary with opacity */
-    --color-primary/70: oklch(58% 0.18 25 / 0.7); /* Primary with more opacity */
 
     /* Secondary - Warm Neutral */
     --color-secondary: oklch(45% 0.015 0); /* Warm Gray */

@@ -9,7 +9,7 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-dvh min-w-dvw font-sans antialiased bg-linear-to-br from-primary/10 via-base-200 to-accent/10">
+<body class="min-h-dvh min-w-dvw font-sans antialiased bg-linear-to-bl from-primary/38 via-primary/68 to-primary/28">
 
     <div class="flex items-center justify-center min-h-screen p-4">
         <div class="w-full max-w-md">

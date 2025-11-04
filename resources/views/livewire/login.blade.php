@@ -2,14 +2,9 @@
     <x-card class="shadow-xl">
         <!-- Logo / Brand -->
         <div class="text-center mb-8">
-            <div class="w-20 h-20 mx-auto mb-4 bg-primary/10 rounded-full flex items-center justify-center">
-                <x-icon name="o-home" class="w-10 h-10 text-primary" />
-            </div>
-            <h1 class="text-3xl font-bold bg-linear-to-r from-primary to-accent bg-clip-text text-transparent">
-                Aktif Laundry
-            </h1>
-            <p class="text-sm text-base-content/60 mt-2">
-                Sistem Manajemen Laundry
+            <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="w-auto h-28 mx-auto my-4" />
+            <p class="text-md text-base-content/60 mt-2">
+                Sistem Manajemen Data <span class="font-bold text-primary">{{ config('app.name') }}</span>
             </p>
         </div>
 
@@ -30,23 +25,31 @@
                     label="Password"
                     wire:model="password"
                     placeholder="Masukkan password"
-                    password-icon="o-lock-closed"
-                    password-visible-icon="o-lock-open"
-                    hint="Klik icon untuk toggle visibility"
+                    icon="o-lock-closed"
+                    hint="Klik icon untuk melihat password"
+                    right
                     required
                 />
 
-                <x-checkbox label="Remember me" wire:model="remember" />
+                <x-checkbox label="Ingat Saya" wire:model="remember" />
             </div>
 
             <x-slot:actions>
-                <x-button
-                    label="Login"
-                    type="submit"
-                    spinner="login"
-                    class="btn-primary w-full"
-                    icon="o-arrow-right-on-rectangle"
-                />
+                <div class="grid grid-cols-2 gap-4 w-full">
+                     <x-button
+                        label="Batal"
+                        link="{{ route('landingpage') }}"
+                        class="btn-error btn-block"
+                        icon="o-x-circle"
+                    />
+                    <x-button
+                        label="Masuk"
+                        type="submit"
+                        spinner="login"
+                        class="btn-success btn-block"
+                        icon="o-arrow-right-end-on-rectangle"
+                    />
+                </div>
             </x-slot:actions>
         </x-form>
     </x-card>
