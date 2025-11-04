@@ -12,7 +12,7 @@
 
     <!-- TABLE  -->
     <x-card class="shadow-sm">
-        <x-table :headers="$headers" :rows="$jenisPakaian" :sort-by="$sortBy" striped with-pagination per-page="perPage" :per-page-values="[5, 10, 25, 50]">
+        <x-table :headers="$headers" :rows="$jenisPakaian" :sort-by="$sortBy" striped with-pagination per-page="perPage" :per-page-values="[5, 10, 25, 50]" link="{{ route('jenis-pakaian.edit', '[id]') }}">
             <x-slot:empty>
                 <x-icon name="o-cube" label="Tidak ada data jenis pakaian." />
             </x-slot:empty>
