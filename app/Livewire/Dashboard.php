@@ -122,7 +122,7 @@ class Dashboard extends Component
 
     public function updateDateTime()
     {
-        $this->currentDateTime = now()->locale('id')->isoFormat('dddd, D MMMM YYYY - HH:mm:ss');
+        $this->currentDateTime = now()->isoFormat('dddd, D MMMM YYYY - HH:mm:ss');
     }
 
     public function loadChartData()
