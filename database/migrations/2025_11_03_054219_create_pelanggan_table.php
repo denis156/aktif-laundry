@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('no_hp', 15);
             $table->text('alamat');
             $table->string('email')->nullable();
-            $table->date('tanggal_daftar');
+            $table->dateTime('tanggal_daftar');
             $table->integer('total_transaksi')->default(0);
             $table->enum('status', ['Aktif', 'Tidak Aktif'])->default('Aktif');
             $table->timestamps();

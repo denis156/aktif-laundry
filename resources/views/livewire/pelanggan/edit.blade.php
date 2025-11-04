@@ -58,9 +58,9 @@
 
                 <!-- Tanggal Daftar & Status -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input
+                    <x-datetime
                         label="Tanggal Daftar"
-                        type="date"
+                        type="datetime-local"
                         wire:model="formData.tanggal_daftar"
                         icon="o-calendar"
                         required

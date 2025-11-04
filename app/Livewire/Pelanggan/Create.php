@@ -26,7 +26,7 @@ class Create extends Component
     public function mount()
     {
         $this->formData['kode_pelanggan'] = $this->generateKode();
-        $this->formData['tanggal_daftar'] = now()->format('Y-m-d');
+        $this->formData['tanggal_daftar'] = now()->format('Y-m-d H:i');
     }
 
     protected function generateKode(): string

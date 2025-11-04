@@ -18,7 +18,7 @@
             </x-slot:empty>
 
             @scope('cell_tanggal_daftar', $item)
-            <span class="text-sm">{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y') }}</span>
+            <span class="text-sm truncate">{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y H:i') }}</span>
             @endscope
 
             @scope('cell_total_transaksi', $item)

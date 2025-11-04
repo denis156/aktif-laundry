@@ -41,7 +41,7 @@ class Edit extends Component
                 'no_hp' => $pelanggan->no_hp,
                 'alamat' => $pelanggan->alamat,
                 'email' => $pelanggan->email,
-                'tanggal_daftar' => $pelanggan->tanggal_daftar->format('Y-m-d'),
+                'tanggal_daftar' => $pelanggan->tanggal_daftar->format('Y-m-d H:i'),
                 'status' => $pelanggan->status,
             ];
         } catch (\Exception $e) {
