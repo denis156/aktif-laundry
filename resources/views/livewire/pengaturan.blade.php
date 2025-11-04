@@ -38,7 +38,7 @@
                             <h3 class="text-lg font-bold">Informasi Kontak</h3>
                         </div>
 
-                        <div class="space-y-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <x-input
                                 label="WhatsApp"
                                 wire:model="settings.whatsapp"
@@ -83,6 +83,50 @@
                         </div>
                     </x-card>
 
+                    <!-- Card 4: Format ID -->
+                    <x-card class="shadow-md">
+                        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-base-300">
+                            <div class="bg-info/10 p-2 rounded-lg">
+                                <x-icon name="o-hashtag" class="w-6 h-6 text-info" />
+                            </div>
+                            <h3 class="text-lg font-bold">Format ID Otomatis</h3>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <x-input
+                                label="Format ID Jenis Pakaian"
+                                wire:model="settings.format_id_jenis_pakaian"
+                                placeholder="JP-"
+                                icon="o-tag"
+                                required
+                                hint="Contoh: JP-, JENIS-, JP001" />
+
+                            <x-input
+                                label="Format ID Layanan"
+                                wire:model="settings.format_id_layanan"
+                                placeholder="LY-"
+                                icon="o-sparkles"
+                                required
+                                hint="Contoh: LY-, LAYANAN-, LY001" />
+
+                            <x-input
+                                label="Format ID Pelanggan"
+                                wire:model="settings.format_id_pelanggan"
+                                placeholder="PL-"
+                                icon="o-user"
+                                required
+                                hint="Contoh: PL-, PELANGGAN-, PL001" />
+
+                            <x-input
+                                label="Format ID Transaksi"
+                                wire:model="settings.format_id_transaksi"
+                                placeholder="TR-"
+                                icon="o-clipboard-document-list"
+                                required
+                                hint="Contoh: TR-, TRANSAKSI-, TR001" />
+                        </div>
+                    </x-card>
+
                 </div>
 
                 <!-- RIGHT SIDE: Info & Actions (1 column) -->
@@ -118,6 +162,22 @@
                                     <div class="flex justify-between text-sm">
                                         <span class="opacity-80">Jam Tutup:</span>
                                         <span class="font-bold">{{ $settings['jam_tutup'] ?: '-' }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="opacity-80">Format ID Jenis Pakaian:</span>
+                                        <span class="font-bold font-mono text-xs">{{ $settings['format_id_jenis_pakaian'] ?: '-' }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="opacity-80">Format ID Layanan:</span>
+                                        <span class="font-bold font-mono text-xs">{{ $settings['format_id_layanan'] ?: '-' }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="opacity-80">Format ID Pelanggan:</span>
+                                        <span class="font-bold font-mono text-xs">{{ $settings['format_id_pelanggan'] ?: '-' }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span class="opacity-80">Format ID Transaksi:</span>
+                                        <span class="font-bold font-mono text-xs">{{ $settings['format_id_transaksi'] ?: '-' }}</span>
                                     </div>
                                 </div>
                             </div>
