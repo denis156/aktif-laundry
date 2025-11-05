@@ -38,7 +38,7 @@
                 <div class="grid grid-cols-2 gap-4 w-full">
                      <x-button
                         label="Batal"
-                        link="{{ route('landingpage') }}"
+                        link="{{ route('landing.hero') }}"
                         class="btn-error btn-block"
                         icon="o-x-circle"
                     />

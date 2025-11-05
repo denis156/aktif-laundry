@@ -5,6 +5,7 @@ use App\Livewire\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\Pengaturan;
 use App\Livewire\Component\Receipt;
+use App\Livewire\LandingPage\Index as LandingPageIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\Edit as AdminEdit;
@@ -24,9 +25,7 @@ use App\Livewire\JenisPakaian\Index as JenisPakaianIndex;
 use App\Livewire\JenisPakaian\Create as JenisPakaianCreate;
 
 // Landing Page Route - Public
-Route::get('/', function () {
-    return view('landingpage');
-})->name('landingpage');
+Route::get('/', LandingPageIndex::class)->name('landing.hero');
 
 // Public Routes - tanpa auth
 Route::prefix('admin')->group(function() {
