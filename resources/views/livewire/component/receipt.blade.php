@@ -302,7 +302,14 @@
     <div class="center" style="margin-top: 28px;">
         <img src="{{ asset('images/Qris.png') }}"
              alt="QRIS"
-             style="max-width: 140px; max-height: 140px; margin: 0 auto; display: block; filter: grayscale(100%) contrast(3) brightness(0.3);">
+             style="max-width: 108px; max-height: 108px; margin: 0 auto; display: block; filter: grayscale(100%) contrast(3) brightness(0.3);">
+
+        <!-- Text di bawah QRIS -->
+        <div style="margin-top: 8px; text-align: center;">
+            <p class="bold" style="font-size: 9px; margin-bottom: 2px;">SCAN UNTUK PEMBAYARAN</p>
+            <p style="font-size: 8px; font-weight: 600; margin: 1px 0;">QRIS</p>
+            <p class="small" style="margin-top: 2px;">Terima kasih atas kepercayaan Anda</p>
+        </div>
     </div>
 
     <script>
