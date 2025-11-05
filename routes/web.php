@@ -5,7 +5,6 @@ use App\Livewire\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\Pengaturan;
 use App\Livewire\Component\Receipt;
-use App\Livewire\LandingPage\Index as LandingPageIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Livewire\Admin\Edit as AdminEdit;
@@ -21,6 +20,7 @@ use App\Livewire\Transaksi\Index as TransaksiIndex;
 use App\Livewire\Pelanggan\Create as PelangganCreate;
 use App\Livewire\Transaksi\Create as TransaksiCreate;
 use App\Livewire\JenisPakaian\Edit as JenisPakaianEdit;
+use App\Livewire\LandingPage\Index as LandingPageIndex;
 use App\Livewire\JenisPakaian\Index as JenisPakaianIndex;
 use App\Livewire\JenisPakaian\Create as JenisPakaianCreate;
 
@@ -81,7 +81,7 @@ Route::middleware('auth')->prefix('admin')->group(function() {
 
     // Receipt Print Route di /admin/receipt/print
     Route::get('/receipt/print/{id}', function($id) {
-        $receiptData = \App\Livewire\Component\Receipt::generateReceiptData($id);
+        $receiptData = Receipt::generateReceiptData($id);
 
         return view('livewire.component.receipt', $receiptData);
     })->name('receipt.print');
