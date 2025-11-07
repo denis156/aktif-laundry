@@ -201,102 +201,95 @@
 
     <!-- DETAIL LAYANAN -->
     <div class="section">
-        <table>
-            <thead>
-                <tr>
-                    <th>Layanan</th>
-                    <th class="text-center">Qty</th>
-                    <th class="text-right">Harga</th>
-                    <th class="text-right">Subtotal</th>
-                </tr>
-            </thead>
-            <tbody>
+        @php
+            // Load transaksi layanan data
+            $transaksiLayananItems = [];
+            try {
+                $transaksiLayananItems = \DB::table('transaksi_layanan')
+                    ->where('transaksi_id', $transaksiData['id'] ?? 0)
+                    ->get()
+                    ->toArray();
+            } catch(\Exception $e) {
+                // Fallback untuk data lama (single layanan)
+                $transaksiLayananItems = [[
+                    'nama_layanan' => $transaksiData['nama_layanan'] ?? '-',
+                    'berat_kg' => $transaksiData['berat_kg'] ?? 0,
+                    'jumlah_satuan' => null,
+                    'harga_per_kg' => $transaksiData['harga_per_kg'] ?? 0,
+                    'harga_per_satuan' => null,
+                    'jenis_pakaian' => $transaksiData['jenis_pakaian'] ?? null,
+                    'subtotal' => $transaksiData['subtotal'] ?? 0
+                ]];
+            }
+        @endphp
+
+        @foreach($transaksiLayananItems as $index => $item)
+            @php
+                // Convert stdClass to array if needed
+                if (is_object($item)) {
+                    $item = (array) $item;
+                }
+
+                // Get satuan from layanan
+                $satuan = 'pcs'; // default
+                if (!empty($item['layanan_id'])) {
+                    $layanan = \App\Models\Layanan::find($item['layanan_id']);
+                    if ($layanan && !empty($layanan->satuan)) {
+                        $satuan = ucfirst($layanan->satuan);
+                    }
+                }
+            @endphp
+
+            @if($index > 0)
+                <div class="divider-solid" style="margin: 3px 0;"></div>
+            @endif
+
+            <!-- Nama Layanan & Harga per unit -->
+            <div class="row" style="margin-bottom: 2px;">
+                <span class="label bold">{{ $item['nama_layanan'] }}</span>
+                @if (!empty($item['berat_kg']))
+                    <span class="value">Rp {{ number_format((int)$item['harga_per_kg'], 0, ',', '.') }}</span>
+                @elseif (!empty($item['jumlah_satuan']))
+                    <span class="value">Rp {{ number_format((int)$item['harga_per_satuan'], 0, ',', '.') }}</span>
+                @endif
+            </div>
+
+            <!-- Jenis Pakaian detail untuk layanan per kg -->
+            @if(!empty($item['jenis_pakaian']) && !empty($item['berat_kg']))
                 @php
-                    // Load transaksi layanan data
-                    $transaksiLayananItems = [];
-                    try {
-                        $transaksiLayananItems = \DB::table('transaksi_layanan')
-                            ->where('transaksi_id', $transaksiData['id'] ?? 0)
-                            ->get()
-                            ->toArray();
-                    } catch(\Exception $e) {
-                        // Fallback untuk data lama (single layanan)
-                        $transaksiLayananItems = [[
-                            'nama_layanan' => $transaksiData['nama_layanan'] ?? '-',
-                            'berat_kg' => $transaksiData['berat_kg'] ?? 0,
-                            'jumlah_satuan' => null,
-                            'harga_per_kg' => $transaksiData['harga_per_kg'] ?? 0,
-                            'harga_per_satuan' => null,
-                            'jenis_pakaian' => $transaksiData['jenis_pakaian'] ?? null,
-                            'subtotal' => $transaksiData['subtotal'] ?? 0
-                        ]];
+                    $jenisPakaianItems = [];
+                    if (is_array($item['jenis_pakaian'])) {
+                        $jenisPakaianItems = $item['jenis_pakaian'];
+                    } elseif (is_string($item['jenis_pakaian'])) {
+                        $decoded = json_decode($item['jenis_pakaian'], true);
+                        $jenisPakaianItems = $decoded ?: [];
                     }
                 @endphp
-
-                @foreach($transaksiLayananItems as $item)
+                @foreach($jenisPakaianItems as $jp)
                     @php
                         // Convert stdClass to array if needed
-                        if (is_object($item)) {
-                            $item = (array) $item;
-                        }
-
-                        // Get satuan from layanan
-                        $satuan = 'pcs'; // default
-                        if (!empty($item['layanan_id'])) {
-                            $layanan = \App\Models\Layanan::find($item['layanan_id']);
-                            if ($layanan && !empty($layanan->satuan)) {
-                                $satuan = $layanan->satuan;
-                            }
-                        }
-
-                        $qtyText = '';
-                        $hargaText = '';
-
-                        if (!empty($item['berat_kg'])) {
-                            // Layanan per kg
-                            $qtyText = number_format((float)$item['berat_kg'], 1, '.', '') . ' Kg';
-                            $hargaText = 'Rp ' . number_format((int)$item['harga_per_kg'], 0, ',', '.') . '/Kg';
-                        } elseif (!empty($item['jumlah_satuan'])) {
-                            // Layanan per satuan
-                            $qtyText = $item['jumlah_satuan'] . ' ' . $satuan;
-                            $hargaText = 'Rp ' . number_format((int)$item['harga_per_satuan'], 0, ',', '.') . '/' . $satuan;
+                        if (is_object($jp)) {
+                            $jp = (array) $jp;
                         }
                     @endphp
-                    <tr>
-                        <td>{{ $item['nama_layanan'] }}</td>
-                        <td class="text-center">{{ $qtyText }}</td>
-                        <td class="text-right" style="font-size: 8px;">{{ $hargaText }}</td>
-                        <td class="text-right bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</td>
-                    </tr>
-
-                    <!-- Jenis Pakaian untuk layanan per kg -->
-                    @if(!empty($item['jenis_pakaian']) && !empty($item['berat_kg']))
-                        @php
-                            $jenisPakaianItems = [];
-                            if (is_array($item['jenis_pakaian'])) {
-                                $jenisPakaianItems = $item['jenis_pakaian'];
-                            } elseif (is_string($item['jenis_pakaian'])) {
-                                $decoded = json_decode($item['jenis_pakaian'], true);
-                                $jenisPakaianItems = $decoded ?: [];
-                            }
-                        @endphp
-                        @foreach($jenisPakaianItems as $jp)
-                            @php
-                                // Convert stdClass to array if needed
-                                if (is_object($jp)) {
-                                    $jp = (array) $jp;
-                                }
-                            @endphp
-                            <tr style="font-size: 8px; background-color: #f9f9f9;">
-                                <td colspan="2" style="padding-left: 10px;">└ {{ $jp['nama'] ?? '-' }}</td>
-                                <td class="text-center">{{ $jp['jumlah'] ?? '-' }}</td>
-                                <td></td>
-                            </tr>
-                        @endforeach
-                    @endif
+                    <div class="row" style="margin-bottom: 1px;">
+                        <span class="label" style="font-size: 9px;">{{ $jp['nama'] ?? '-' }}</span>
+                        <span class="value" style="font-size: 9px;">{{ $jp['jumlah'] ?? '-' }}</span>
+                    </div>
                 @endforeach
-            </tbody>
-        </table>
+            @endif
+
+            <!-- Qty/Berat -->
+            <div class="row" style="margin-bottom: 2px;">
+                @if (!empty($item['berat_kg']))
+                    <span class="label">Berat</span>
+                    <span class="value">{{ number_format((float)$item['berat_kg'], 1, '.', '') }} Kg</span>
+                @elseif (!empty($item['jumlah_satuan']))
+                    <span class="label">{{ $item['jumlah_satuan'] }} {{ $satuan }}</span>
+                    <span class="value bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
+                @endif
+            </div>
+        @endforeach
     </div>
 
     <div class="divider-solid"></div>
