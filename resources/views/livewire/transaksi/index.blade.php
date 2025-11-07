@@ -83,6 +83,9 @@
 
             @scope('actions', $item)
             <div class="flex items-center justify-end gap-2">
+                @if($item->status === 'Selesai')
+                    <livewire:component.whats-app-button :transaksi-id="$item->id" :key="'wa-'.$item->id" />
+                @endif
                 <x-button
                     label="Edit"
                     icon="o-pencil"

@@ -208,7 +208,14 @@ class Kasir extends Component
 
     public function updatedFormDataDiskon()
     {
-        $this->formData['total'] = $this->multiLayananData['totalGrandTotal'] - $this->formData['diskon'];
+        $diskon = (float) ($this->formData['diskon'] ?? 0);
+
+        // Update totalGrandTotal di multiLayananData
+        $this->multiLayananData['totalGrandTotal'] = $this->multiLayananData['totalSubtotal'] - $diskon;
+
+        // Update formData total
+        $this->formData['total'] = $this->multiLayananData['totalGrandTotal'];
+        $this->formData['subtotal'] = $this->multiLayananData['totalSubtotal'];
     }
 
     protected function calculateTanggalSelesaiFromMultiLayanan()

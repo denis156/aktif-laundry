@@ -2,7 +2,8 @@
     <x-header title="Edit Transaksi" separator progress-indicator>
         <x-slot:actions>
             <x-button label="Kembali" link="{{ route('transaksi.index') }}" wire:navigate.hover icon="o-arrow-left" class="btn-outline" />
-            <x-button label="Print Struk" wire:click="printReceipt" icon="o-printer" class="btn-success" />
+            <livewire:component.whats-app-button :transaksi-id="$transaksiId" size="md" :key="'wa-edit-'.$transaksiId" />
+            <x-button label="Print Struk" wire:click="printReceipt" icon="o-printer" class="btn-secondary" />
         </x-slot:actions>
     </x-header>
 
