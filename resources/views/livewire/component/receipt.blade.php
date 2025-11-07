@@ -246,7 +246,7 @@
 
             <!-- Nama Layanan & Harga per unit -->
             <div class="row" style="margin-bottom: 2px;">
-                <span class="label bold">Layanan {{ $item['nama_layanan'] }}</span>
+                <span class="label bold">{{ $item['nama_layanan'] }}</span>
                 @if (!empty($item['berat_kg']))
                     <span class="value">Rp {{ number_format((int)$item['harga_per_kg'], 0, ',', '.') }}</span>
                 @elseif (!empty($item['jumlah_satuan']))
