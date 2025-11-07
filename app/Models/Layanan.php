@@ -15,7 +15,10 @@ class Layanan extends Model
     protected $fillable = [
         'kode_layanan',
         'nama_layanan',
+        'tipe_layanan',
         'harga_per_kg',
+        'harga_per_satuan',
+        'satuan',
         'durasi_jam',
         'deskripsi',
         'status',
@@ -23,6 +26,7 @@ class Layanan extends Model
 
     protected $casts = [
         'harga_per_kg' => 'integer',
+        'harga_per_satuan' => 'integer',
         'durasi_jam' => 'integer',
     ];
 

@@ -5,11 +5,11 @@
         </x-slot:actions>
     </x-header>
 
-    <x-card class="max-w-5xl mx-auto shadow-sm">
+    <x-card class="max-w-6xl mx-auto shadow-sm">
         <x-form wire:submit="save">
             <div class="space-y-5">
                 {{-- Informasi Transaksi --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                     <x-input
                         label="Kode Transaksi"
                         wire:model="formData.kode_transaksi"
@@ -26,9 +26,6 @@
                         icon="o-user-circle"
                     />
 
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-datetime
                         label="Tanggal Masuk"
                         type="datetime-local"
@@ -54,10 +51,12 @@
                     />
                 </div>
 
-                {{-- Pelanggan & Layanan --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {{-- Pelanggan --}}
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Pelanggan</span>
+                    </label>
                     <x-choices
-                        label="Pelanggan"
                         wire:model.live="formData.pelanggan_id"
                         :options="$pelangganOptions"
                         option-label="nama"
@@ -69,53 +68,27 @@
                         height="max-h-86"
                         hint="Ketik nama atau nomor HP untuk mencari"
                     />
-
-
-                    <x-select
-                        label="Layanan"
-                        wire:model="formData.layanan_id"
-                        icon="o-sparkles"
-                        :options="$layananOptions"
-                        option-value="id"
-                        option-label="name"
-                        required
-                        placeholder="Pilih layanan"
-                    />
                 </div>
 
-                {{-- Komponen Jenis Pakaian --}}
-                <div class="border border-base-300 rounded-lg p-4">
-                    <livewire:component.key-value-jenis-pakaian :value="$formData['jenis_pakaian']" />
+                {{-- Multi-Layanan Form --}}
+                <div class="border border-base-300 rounded-lg p-4 bg-base-50">
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold flex items-center gap-2">
+                            <x-icon name="o-sparkles" class="w-5 h-5" />
+                            Layanan
+                        </h3>
+                        <span class="text-sm text-base-content/70">Tambahkan satu atau lebih layanan</span>
+                    </div>
+
+                    <livewire:component.multi-layanan-form />
                 </div>
 
-                {{-- Berat & Harga --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input
-                        label="Berat (Kg)"
-                        type="text"
-                        wire:model.lazy="formData.berat_kg"
-                        placeholder="Contoh: 8.5 atau 8,5"
-                        suffix="kg"
-                        hint="Bisa gunakan titik (8.5) atau koma (8,5)"
-                        required
-                    />
-
-                    <x-input
-                        label="Harga per Kg"
-                        type="number"
-                        wire:model="formData.harga_per_kg"
-                        readonly
-                        prefix="Rp"
-                        hint="Otomatis dari layanan"
-                    />
-                </div>
-
-                {{-- Subtotal, Diskon, Total dalam 1 baris 3 kolom --}}
+                {{-- Subtotal, Diskon, Total --}}
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <x-input
                         label="Subtotal"
                         type="number"
-                        wire:model="formData.subtotal"
+                        wire:model.live="formData.subtotal"
                         readonly
                         prefix="Rp"
                         hint="Otomatis dihitung"
@@ -133,7 +106,7 @@
                     <x-input
                         label="Total Bayar"
                         type="number"
-                        wire:model="formData.total"
+                        wire:model.live="formData.total"
                         readonly
                         prefix="Rp"
                         hint="Subtotal - Diskon"
@@ -159,11 +132,12 @@
                     />
 
                     <x-datetime
-                        label="Tanggal Selesai"
+                        label="Estimasi Selesai"
                         type="datetime-local"
                         wire:model="formData.tanggal_selesai"
                         icon="o-clock"
-                        hint="Estimasi selesai"
+                        hint="Otomatis dari layanan"
+                        readonly
                     />
                 </div>
 

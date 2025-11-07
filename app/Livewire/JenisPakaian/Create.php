@@ -89,9 +89,11 @@ class Create extends Component
                 $this->success('Kode jenis pakaian di-regenerate, silakan coba lagi', position: 'toast-bottom');
                 return;
             }
-            $this->error('Gagal menyimpan jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
+            \Log::error('Database error saving jenis pakaian: ' . $e->getMessage());
+            $this->error('Gagal menyimpan jenis pakaian. Silakan coba lagi.', position: 'toast-bottom');
         } catch (Exception $e) {
-            $this->error('Gagal menyimpan jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
+            \Log::error('General error saving jenis pakaian: ' . $e->getMessage());
+            $this->error('Terjadi kesalahan. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 

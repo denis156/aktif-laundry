@@ -16,8 +16,20 @@
             <x-slot:empty>
                 <x-icon name="o-cube" label="Tidak ada data layanan." />
             </x-slot:empty>
-            @scope('cell_harga_per_kg', $item)
-            <span class="font-semibold text-success">Rp {{ number_format((float) $item->harga_per_kg, 0, ',', '.') }}</span>
+            @scope('cell_tipe_layanan', $item)
+            @if($item->tipe_layanan === 'per_kg')
+                <span class="badge badge-primary badge-sm truncate">Per Kg</span>
+            @else
+                <span class="badge badge-warning badge-sm truncate">Per {{ ucfirst($item->satuan ?? 'pcs') }}</span>
+            @endif
+            @endscope
+
+            @scope('cell_harga', $item)
+            @if($item->tipe_layanan === 'per_kg')
+                <span class="font-semibold text-success truncate">Rp {{ number_format((float) $item->harga_per_kg, 0, ',', '.') }}/kg</span>
+            @else
+                <span class="font-semibold text-warning truncate">Rp {{ number_format((float) $item->harga_per_satuan, 0, ',', '.') }}/{{ $item->satuan ?? 'pcs' }}</span>
+            @endif
             @endscope
 
             @scope('cell_durasi_jam', $item)

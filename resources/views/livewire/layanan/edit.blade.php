@@ -27,16 +27,66 @@
                     />
                 </div>
 
-                <!-- Harga & Durasi -->
+                <!-- Tipe Layanan -->
+                <div class="form-control">
+                    <label class="label">
+                        <span class="label-text font-medium">Tipe Layanan</span>
+                    </label>
+                    <div class="grid grid-cols-2 gap-4">
+                        <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-4 hover:bg-base-200 transition {{ $formData['tipe_layanan'] == 'per_kg' ? 'bg-primary/10 border-primary' : '' }}">
+                            <input
+                                type="radio"
+                                value="per_kg"
+                                wire:model.live="formData.tipe_layanan"
+                                class="radio radio-primary" />
+                            <div>
+                                <span class="label-text font-medium">Per Kilogram (Kg)</span>
+                                <p class="text-xs opacity-70">Untuk pakaian, bahan, dll yang dihitung per berat</p>
+                            </div>
+                        </label>
+
+                        <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-4 hover:bg-base-200 transition {{ $formData['tipe_layanan'] == 'per_satuan' ? 'bg-primary/10 border-primary' : '' }}">
+                            <input
+                                type="radio"
+                                value="per_satuan"
+                                wire:model.live="formData.tipe_layanan"
+                                class="radio radio-primary" />
+                            <div>
+                                <span class="label-text font-medium">Per Satuan (Pieces)</span>
+                                <p class="text-xs opacity-70">Untuk bed cover, karpet, gorden, dll</p>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Harga & Durasi - Dynamic based on tipe layanan -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input
-                        label="Harga per Kg"
-                        type="number"
-                        wire:model="formData.harga_per_kg"
-                        placeholder="Contoh: 8000"
-                        prefix="Rp"
-                        required
-                    />
+                    @if($formData['tipe_layanan'] === 'per_kg')
+                        <x-input
+                            label="Harga per Kg"
+                            type="number"
+                            wire:model="formData.harga_per_kg"
+                            placeholder="Contoh: 8000"
+                            prefix="Rp"
+                            required
+                        />
+                    @else
+                        <x-input
+                            label="Harga per Satuan"
+                            type="number"
+                            wire:model="formData.harga_per_satuan"
+                            placeholder="Contoh: 25000"
+                            prefix="Rp"
+                            required
+                        />
+                        <x-input
+                            label="Satuan"
+                            wire:model="formData.satuan"
+                            placeholder="Contoh: pcs"
+                            hint="Contoh: pcs, lembar, item"
+                            required
+                        />
+                    @endif
 
                     <x-input
                         label="Durasi (Jam)"

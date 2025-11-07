@@ -18,11 +18,9 @@ class Transaksi extends Model
         'kasir_id',
         'pelanggan_id',
         'nama_pelanggan',
-        'layanan_id',
-        'nama_layanan',
-        'jenis_pakaian',
-        'berat_kg',
-        'harga_per_kg',
+        'total_berat',
+        'total_item',
+        'jumlah_layanan',
         'subtotal',
         'diskon',
         'total',
@@ -35,9 +33,9 @@ class Transaksi extends Model
     protected $casts = [
         'tanggal_masuk' => 'datetime',
         'tanggal_selesai' => 'datetime',
-        'jenis_pakaian' => 'array',
-        'berat_kg' => 'decimal:2',
-        'harga_per_kg' => 'integer',
+        'total_berat' => 'decimal:2',
+        'total_item' => 'integer',
+        'jumlah_layanan' => 'integer',
         'subtotal' => 'integer',
         'diskon' => 'integer',
         'total' => 'integer',
@@ -60,10 +58,58 @@ class Transaksi extends Model
     }
 
     /**
-     * Relasi ke Layanan
+     * Relasi ke TransaksiLayanan (breakdown layanan)
      */
-    public function layanan()
+    public function transaksiLayanan()
     {
-        return $this->belongsTo(Layanan::class);
+        return $this->hasMany(TransaksiLayanan::class);
+    }
+
+    /**
+     * Helper: Hitung ulang total dari transaksi_layanan
+     */
+    public function hitungUlangTotal()
+    {
+        $totalBerat = 0;
+        $totalItem = 0;
+        $subtotal = 0;
+
+        foreach ($this->transaksiLayanan as $tl) {
+            if ($tl->isPerKg()) {
+                $totalBerat += $tl->berat_kg;
+            } else {
+                $totalItem += $tl->jumlah_satuan;
+            }
+            $subtotal += $tl->subtotal;
+        }
+
+        $this->update([
+            'total_berat' => $totalBerat,
+            'total_item' => $totalItem,
+            'jumlah_layanan' => $this->transaksiLayanan()->count(),
+            'subtotal' => $subtotal,
+            'total' => $subtotal - $this->diskon,
+        ]);
+    }
+
+    /**
+     * Helper: Dapatkan layanan dengan tanggal selesai paling lama
+     */
+    public function getTanggalSelesaiTerlama()
+    {
+        $tanggalTerlama = null;
+
+        foreach ($this->transaksiLayanan as $tl) {
+            if ($tl->layanan && $tl->layanan->durasi_jam > 0) {
+                $tanggalSelesai = \Carbon\Carbon::parse($this->tanggal_masuk)
+                    ->addHours($tl->layanan->durasi_jam);
+
+                if (!$tanggalTerlama || $tanggalSelesai > $tanggalTerlama) {
+                    $tanggalTerlama = $tanggalSelesai;
+                }
+            }
+        }
+
+        return $tanggalTerlama;
     }
 }
