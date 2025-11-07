@@ -235,35 +235,24 @@
                 if (!empty($item['layanan_id'])) {
                     $layanan = \App\Models\Layanan::find($item['layanan_id']);
                     if ($layanan && !empty($layanan->satuan)) {
-                        $satuan = $layanan->satuan;
+                        $satuan = ucfirst($layanan->satuan);
                     }
                 }
             @endphp
 
-            @if($index > 0)
-                <div class="divider" style="margin: 3px 0;"></div>
-            @endif
+            <div class="divider" style="margin: 3px 0;"></div>
 
-            <!-- Nama Layanan -->
-            <div class="row" style="margin-bottom: 1px;">
-                <span class="label" style="font-size: 10px;">{{ $item['nama_layanan'] }}</span>
-            </div>
-
-            <!-- Qty, Harga, Subtotal -->
+            <!-- Nama Layanan & Harga per unit -->
             <div class="row" style="margin-bottom: 2px;">
+                <span class="label bold">{{ $item['nama_layanan'] }}</span>
                 @if (!empty($item['berat_kg']))
-                    <span class="value" style="font-size: 9px;">
-                        {{ number_format((float)$item['berat_kg'], 1, '.', '') }} Kg × Rp {{ number_format((int)$item['harga_per_kg'], 0, ',', '.') }}
-                    </span>
+                    <span class="value">Rp {{ number_format((int)$item['harga_per_kg'], 0, ',', '.') }}</span>
                 @elseif (!empty($item['jumlah_satuan']))
-                    <span class="value" style="font-size: 9px;">
-                        {{ $item['jumlah_satuan'] }} {{ $satuan }} × Rp {{ number_format((int)$item['harga_per_satuan'], 0, ',', '.') }}
-                    </span>
+                    <span class="value">Rp {{ number_format((int)$item['harga_per_satuan'], 0, ',', '.') }}</span>
                 @endif
-                <span class="value bold" style="font-size: 10px;">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
             </div>
 
-            <!-- Jenis Pakaian untuk layanan per kg -->
+            <!-- Jenis Pakaian detail untuk layanan per kg -->
             @if(!empty($item['jenis_pakaian']) && !empty($item['berat_kg']))
                 @php
                     $jenisPakaianItems = [];
@@ -274,16 +263,36 @@
                         $jenisPakaianItems = $decoded ?: [];
                     }
                 @endphp
-                <div style="margin-left: 8px; margin-top: 2px; font-size: 8px; line-height: 1.3;">
-                    @foreach($jenisPakaianItems as $jp)
-                        @php
-                            // Convert stdClass to array if needed
-                            if (is_object($jp)) {
-                                $jp = (array) $jp;
-                            }
-                        @endphp
-                        <div style="margin-bottom: 1px;">• {{ $jp['nama'] ?? '-' }} ({{ $jp['jumlah'] ?? '-' }} pcs)</div>
-                    @endforeach
+                @foreach($jenisPakaianItems as $jp)
+                    @php
+                        // Convert stdClass to array if needed
+                        if (is_object($jp)) {
+                            $jp = (array) $jp;
+                        }
+                    @endphp
+                    <div class="row" style="margin-bottom: 1px;">
+                        <span class="label" style="font-size: 9px;">{{ $jp['nama'] ?? '-' }}</span>
+                        <span class="value" style="font-size: 9px;">{{ $jp['jumlah'] ?? '-' }}</span>
+                    </div>
+                @endforeach
+            @endif
+
+            <!-- Qty/Berat -->
+            <div class="row" style="margin-bottom: 2px;">
+                @if (!empty($item['berat_kg']))
+                    <span class="label">Berat</span>
+                    <span class="value">{{ number_format((float)$item['berat_kg'], 1, '.', '') }} Kg</span>
+                @elseif (!empty($item['jumlah_satuan']))
+                    <span class="label">{{ $item['jumlah_satuan'] }} {{ $satuan }}</span>
+                    <span class="value bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
+                @endif
+            </div>
+
+            <!-- Subtotal untuk layanan per kg (setelah detail) -->
+            @if (!empty($item['berat_kg']))
+                <div class="row" style="margin-top: 2px;">
+                    <span class="label bold">Subtotal</span>
+                    <span class="value bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
                 </div>
             @endif
         @endforeach
