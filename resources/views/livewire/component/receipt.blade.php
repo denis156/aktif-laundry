@@ -240,11 +240,13 @@
                 }
             @endphp
 
-            <div class="divider" style="margin: 3px 0;"></div>
+            @if($index > 0)
+                <div class="divider-solid" style="margin: 3px 0;"></div>
+            @endif
 
             <!-- Nama Layanan & Harga per unit -->
             <div class="row" style="margin-bottom: 2px;">
-                <span class="label bold">{{ $item['nama_layanan'] }}</span>
+                <span class="label bold">Layanan {{ $item['nama_layanan'] }}</span>
                 @if (!empty($item['berat_kg']))
                     <span class="value">Rp {{ number_format((int)$item['harga_per_kg'], 0, ',', '.') }}</span>
                 @elseif (!empty($item['jumlah_satuan']))
@@ -287,14 +289,6 @@
                     <span class="value bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
                 @endif
             </div>
-
-            <!-- Subtotal untuk layanan per kg (setelah detail) -->
-            @if (!empty($item['berat_kg']))
-                <div class="row" style="margin-top: 2px;">
-                    <span class="label bold">Subtotal</span>
-                    <span class="value bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
-                </div>
-            @endif
         @endforeach
     </div>
 
