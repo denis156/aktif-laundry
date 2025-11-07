@@ -63,15 +63,14 @@ class Index extends Component
     public function headers(): array
     {
         return [
-            ['key' => 'kode_transaksi', 'label' => 'Kode', 'class' => 'w-28'],
-            ['key' => 'kasir', 'label' => 'Kasir', 'class' => 'w-32'],
-            ['key' => 'tanggal_masuk', 'label' => 'Tgl Masuk', 'class' => 'w-36'],
-            ['key' => 'nama_pelanggan', 'label' => 'Pelanggan', 'class' => 'w-40'],
-            ['key' => 'nama_layanan', 'label' => 'Layanan', 'class' => 'w-32'],
-            ['key' => 'berat_kg', 'label' => 'Berat (Kg)', 'class' => 'w-24'],
-            ['key' => 'total', 'label' => 'Total', 'class' => 'w-32'],
-            ['key' => 'metode_pembayaran', 'label' => 'Pembayaran', 'class' => 'w-28'],
-            ['key' => 'status', 'label' => 'Status', 'class' => 'w-28'],
+            ['key' => 'kode_transaksi', 'label' => 'Kode', 'class' => 'w-20'],
+            ['key' => 'kasir', 'label' => 'Kasir', 'class' => 'w-24'],
+            ['key' => 'tanggal_masuk', 'label' => 'Tgl Masuk', 'class' => 'w-32'],
+            ['key' => 'nama_pelanggan', 'label' => 'Pelanggan', 'class' => 'w-32'],
+            ['key' => 'layanan_info', 'label' => 'Layanan', 'class' => 'w-40'],
+            ['key' => 'total', 'label' => 'Total', 'class' => 'w-28'],
+            ['key' => 'metode_pembayaran', 'label' => 'Pembayaran', 'class' => 'w-24'],
+            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24'],
         ];
     }
 
@@ -84,12 +83,16 @@ class Index extends Component
     public function transaksi()
     {
         return Transaksi::query()
-            ->with(['pelanggan', 'layanan', 'kasir'])
+            ->with(['pelanggan', 'kasir', 'transaksiLayanan.layanan'])
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('kode_transaksi', 'like', "%{$this->search}%")
                         ->orWhere('nama_pelanggan', 'like', "%{$this->search}%")
-                        ->orWhere('nama_layanan', 'like', "%{$this->search}%");
+                        ->orWhereHas('transaksiLayanan', function ($subQuery) {
+                            $subQuery->whereHas('layanan', function ($layananQuery) {
+                                $layananQuery->where('nama_layanan', 'like', "%{$this->search}%");
+                            });
+                        });
                 });
             })
             ->when($this->statusFilter, function ($query) {

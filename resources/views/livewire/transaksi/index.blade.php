@@ -29,12 +29,26 @@
             <span class="truncate">{{ $item->nama_pelanggan }}</span>
             @endscope
 
-            @scope('cell_nama_layanan', $item)
-            <span class="truncate">{{ $item->nama_layanan }}</span>
-            @endscope
+            @scope('cell_layanan_info', $item)
+            @if($item->transaksiLayanan && $item->transaksiLayanan->count() > 0)
+                @php
+                    $layananList = [];
 
-            @scope('cell_berat_kg', $item)
-            <span class="badge badge-outline badge-sm">{{ number_format($item->berat_kg, 2) }} kg</span>
+                    foreach($item->transaksiLayanan as $tl) {
+                        $layananList[] = $tl->nama_layanan;
+                    }
+
+                    $layananText = implode(', ', $layananList);
+                    if(strlen($layananText) > 50) {
+                        $layananText = substr($layananText, 0, 47) . '...';
+                    }
+                @endphp
+                <span class="truncate" title="{{ $layananText }}">{{ $layananText }}</span>
+            @elseif($item->layanan_id) {{-- Fallback for old single-layanan transactions --}}
+                <span class="truncate">{{ $item->nama_layanan ?? '-' }}</span>
+            @else
+                <span class="text-gray-500">-</span>
+            @endif
             @endscope
 
             @scope('cell_total', $item)

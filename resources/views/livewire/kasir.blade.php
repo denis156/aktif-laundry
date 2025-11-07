@@ -88,48 +88,32 @@
             <x-card class="shadow-md">
                 <div class="flex items-center gap-3 mb-4">
                     <x-icon name="o-shopping-cart" class="w-6 h-6" />
-                    <h2 class="text-lg font-bold">Detail Transaksi</h2>
+                    <h2 class="text-lg font-bold">Detail Layanan</h2>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="grid grid-cols-2 gap-4">
-                        <x-datetime
-                            label="Tanggal Masuk"
-                            type="datetime-local"
-                            wire:model="formData.tanggal_masuk"
-                            required />
+                    <!-- Tanggal Masuk -->
+                    <x-datetime
+                        label="Tanggal Masuk"
+                        type="datetime-local"
+                        wire:model="formData.tanggal_masuk"
+                        required />
 
-                        <x-select
-                            label="Layanan"
-                            wire:model.live="formData.layanan_id"
-                            :options="$layananOptions"
-                            option-value="id"
-                            option-label="name"
-                            placeholder="Pilih Layanan"
-                            required />
-                    </div>
+                    <!-- Multi Layanan Form -->
+                    <livewire:component.multi-layanan-form :key="'multi-layanan-'.$this->getId()" />
 
-                    <!-- Jenis Pakaian Component -->
-                    <livewire:component.key-value-jenis-pakaian :value="$formData['jenis_pakaian']" :key="'kasir-jenis-pakaian'" />
+                    <!-- Diskon -->
+                    <x-input
+                        label="Diskon"
+                        type="number"
+                        wire:model.live="formData.diskon"
+                        placeholder="0"
+                        prefix="Rp"
+                        hint="Opsional"
+                        min="0"
+                    />
 
-                    <div class="grid grid-cols-2 gap-4">
-                        <x-input
-                            label="Berat (Kg)"
-                            type="text"
-                            wire:model.lazy="formData.berat_kg"
-                            placeholder="Contoh: 8.5 atau 8,5"
-                            suffix="kg"
-                            hint="Bisa gunakan (8.5) atau (8,5). Minimal 0.5 kg"
-                            required />
-
-                        <x-input
-                            label="Diskon (Rp)"
-                            type="number"
-                            wire:model.live="formData.diskon"
-                            placeholder="0"
-                            hint="Opsional" />
-                    </div>
-
+                    <!-- Catatan -->
                     <x-textarea
                         label="Catatan"
                         wire:model="formData.catatan"
@@ -212,24 +196,32 @@
                             </span>
                         </div>
 
-                        <div class="flex justify-between items-center py-2 border-b border-primary-content/20">
-                            <span class="text-sm opacity-90">Layanan:</span>
-                            <span class="font-bold text-right">{{ $formData['nama_layanan'] ?: '-' }}</span>
-                        </div>
-
-                        <div class="flex justify-between items-center py-2 border-b border-primary-content/20">
-                            <span class="text-sm opacity-90">Berat:</span>
-                            <span class="font-bold">{{ number_format((float) ($formData['berat_kg'] ?: 0), 1, '.', '') }} Kg</span>
-                        </div>
-
-                        <div class="flex justify-between items-center py-2 border-b border-primary-content/20">
-                            <span class="text-sm opacity-90">Harga/Kg:</span>
-                            <span class="font-bold">Rp {{ number_format((float) ($formData['harga_per_kg'] ?? 0), 0, ',', '.') }}</span>
+                        <!-- Layanan Summary -->
+                        <div class="border-b border-primary-content/20 pb-3 mb-3">
+                            <div class="text-sm opacity-90 mb-2 font-medium">Rincian Layanan:</div>
+                            @if(!empty($multiLayananData))
+                                @foreach($multiLayananData['items'] as $item)
+                                    @if(!empty($item['layanan_id']))
+                                        <div class="flex justify-between items-center py-1 text-sm">
+                                            <span>{{ $item['nama_layanan'] ?? 'Layanan' }}:</span>
+                                            <span class="font-medium">
+                                                @if($item['tipe_layanan'] === 'per_kg')
+                                                    {{ number_format((float) ($item['berat_kg'] ?? 0), 1, '.', '') }} kg
+                                                @else
+                                                    {{ $item['jumlah_satuan'] ?? 0 }} pcs
+                                                @endif
+                                            </span>
+                                        </div>
+                                    @endif
+                                @endforeach
+                            @else
+                                <div class="text-sm opacity-70">Belum ada layanan dipilih</div>
+                            @endif
                         </div>
 
                         <div class="flex justify-between items-center py-2 border-b border-primary-content/20">
                             <span class="text-sm opacity-90">Subtotal:</span>
-                            <span class="font-bold">Rp {{ number_format((float) ($formData['subtotal'] ?? 0), 0, ',', '.') }}</span>
+                            <span class="font-bold">Rp {{ number_format((float) ($multiLayananData['totalSubtotal'] ?? 0), 0, ',', '.') }}</span>
                         </div>
 
                         <div class="flex justify-between items-center py-2 border-b border-primary-content/20">
@@ -240,7 +232,7 @@
                         <!-- TOTAL -->
                         <div class="flex justify-between items-center py-4 mt-2 bg-primary-content/20 rounded-lg px-4">
                             <span class="text-xl font-bold">TOTAL:</span>
-                            <span class="text-3xl font-bold">Rp {{ number_format((float) ($formData['total'] ?? 0), 0, ',', '.') }}</span>
+                            <span class="text-3xl font-bold">Rp {{ number_format((float) ($multiLayananData['totalGrandTotal'] ?? 0), 0, ',', '.') }}</span>
                         </div>
 
                         <div class="flex justify-between items-center py-2 mt-2">

@@ -26,16 +26,13 @@ class Receipt extends Component
     {
         try {
             // Get Transaksi Data
-            $transaksi = Transaksi::with(['pelanggan', 'layanan'])->findOrFail($this->transaksiId);
+            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])->findOrFail($this->transaksiId);
 
             $this->transaksiData = [
+                'id' => $transaksi->id,
                 'kode_transaksi' => $transaksi->kode_transaksi,
                 'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d H:i:s'),
                 'nama_pelanggan' => $transaksi->nama_pelanggan,
-                'nama_layanan' => $transaksi->nama_layanan,
-                'jenis_pakaian' => $transaksi->jenis_pakaian,
-                'berat_kg' => (float) $transaksi->berat_kg,
-                'harga_per_kg' => (int) $transaksi->harga_per_kg,
                 'subtotal' => (int) $transaksi->subtotal,
                 'diskon' => (int) $transaksi->diskon,
                 'total' => (int) $transaksi->total,
@@ -43,6 +40,9 @@ class Receipt extends Component
                 'tanggal_selesai' => $transaksi->tanggal_selesai ? $transaksi->tanggal_selesai->format('Y-m-d H:i:s') : '',
                 'status' => $transaksi->status,
                 'catatan' => $transaksi->catatan ?? '',
+                'total_berat' => (float) $transaksi->total_berat,
+                'total_item' => (int) $transaksi->total_item,
+                'jumlah_layanan' => (int) $transaksi->jumlah_layanan,
             ];
 
             // Get Setting Data
@@ -84,16 +84,13 @@ class Receipt extends Component
     {
         try {
             // Get Transaksi Data
-            $transaksi = Transaksi::with(['pelanggan', 'layanan'])->findOrFail($id);
+            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])->findOrFail($id);
 
             $transaksiData = [
+                'id' => $transaksi->id,
                 'kode_transaksi' => $transaksi->kode_transaksi,
                 'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d H:i:s'),
                 'nama_pelanggan' => $transaksi->nama_pelanggan,
-                'nama_layanan' => $transaksi->nama_layanan,
-                'jenis_pakaian' => $transaksi->jenis_pakaian,
-                'berat_kg' => (float) $transaksi->berat_kg,
-                'harga_per_kg' => (int) $transaksi->harga_per_kg,
                 'subtotal' => (int) $transaksi->subtotal,
                 'diskon' => (int) $transaksi->diskon,
                 'total' => (int) $transaksi->total,
@@ -101,6 +98,9 @@ class Receipt extends Component
                 'tanggal_selesai' => $transaksi->tanggal_selesai ? $transaksi->tanggal_selesai->format('Y-m-d H:i:s') : '',
                 'status' => $transaksi->status,
                 'catatan' => $transaksi->catatan ?? '',
+                'total_berat' => (float) $transaksi->total_berat,
+                'total_item' => (int) $transaksi->total_item,
+                'jumlah_layanan' => (int) $transaksi->jumlah_layanan,
             ];
 
             // Get Setting Data

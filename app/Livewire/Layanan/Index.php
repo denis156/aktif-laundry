@@ -55,11 +55,11 @@ class Index extends Component
     public function headers(): array
     {
         return [
-            ['key' => 'kode_layanan', 'label' => 'Kode', 'class' => 'w-24'],
+            ['key' => 'kode_layanan', 'label' => 'Kode', 'class' => 'w-20'],
             ['key' => 'nama_layanan', 'label' => 'Nama Layanan', 'class' => 'w-48'],
-            ['key' => 'harga_per_kg', 'label' => 'Harga/Kg', 'class' => 'w-32'],
-            ['key' => 'durasi_jam', 'label' => 'Durasi (Jam)', 'class' => 'w-32'],
-            ['key' => 'deskripsi', 'label' => 'Deskripsi'],
+            ['key' => 'tipe_layanan', 'label' => 'Tipe', 'class' => 'w-20'],
+            ['key' => 'harga', 'label' => 'Harga', 'class' => 'w-32'],
+            ['key' => 'durasi_jam', 'label' => 'Durasi (Jam)', 'class' => 'w-24'],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24'],
         ];
     }
@@ -70,14 +70,19 @@ class Index extends Component
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('nama_layanan', 'like', "%{$this->search}%")
-                      ->orWhere('deskripsi', 'like', "%{$this->search}%")
-                      ->orWhere('kode_layanan', 'like', "%{$this->search}%");
+                      ->orWhere('kode_layanan', 'like', "%{$this->search}%")
+                      ->orWhere('tipe_layanan', 'like', "%{$this->search}%");
                 });
             })
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);
             })
-            ->whereBetween('harga_per_kg', [$this->minHarga, $this->maxHarga])
+            ->when($this->minHarga > 0 || $this->maxHarga < 999999, function ($query) {
+                $query->where(function ($q) {
+                    $q->whereBetween('harga_per_kg', [$this->minHarga, $this->maxHarga])
+                      ->orWhereBetween('harga_per_satuan', [$this->minHarga, $this->maxHarga]);
+                });
+            })
             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
             ->paginate($this->perPage);
     }

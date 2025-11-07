@@ -12,6 +12,7 @@ use App\Models\Transaksi;
 use Livewire\Attributes\Title;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Database\QueryException;
 
 #[Title('Tambah Transaksi')]
@@ -26,11 +27,6 @@ class Create extends Component
         'kasir_id' => null,
         'pelanggan_id' => '',
         'nama_pelanggan' => '',
-        'layanan_id' => '',
-        'nama_layanan' => '',
-        'jenis_pakaian' => '',
-        'berat_kg' => '',
-        'harga_per_kg' => '',
         'subtotal' => 0,
         'diskon' => 0,
         'total' => 0,
@@ -40,13 +36,28 @@ class Create extends Component
         'catatan' => '',
     ];
 
-    protected $listeners = ['jenisPakaianUpdated'];
+    // Multi-layanan data
+    public array $multiLayananData = [
+        'items' => [],
+        'totalSubtotal' => 0,
+        'totalGrandTotal' => 0,
+    ];
+
+    protected $listeners = ['jenisPakaianUpdated', 'multiLayananUpdated'];
 
     public function mount()
     {
         $this->refreshKodeTransaksi();
         $this->formData['tanggal_masuk'] = now()->format('Y-m-d\TH:i');
         $this->formData['kasir_id'] = Auth::id();
+
+        // Initialize multiLayananData dengan default values
+        $this->multiLayananData = [
+            'items' => [],
+            'totalSubtotal' => 0,
+            'totalGrandTotal' => 0,
+        ];
+
         $this->search();
     }
 
@@ -101,7 +112,42 @@ class Create extends Component
 
     public function jenisPakaianUpdated($outputString)
     {
-        $this->formData['jenis_pakaian'] = $outputString;
+        // Legacy method - not used in multi-layanan
+    }
+
+    public function multiLayananUpdated($data)
+    {
+        $this->multiLayananData = $data;
+        $this->formData['subtotal'] = $data['totalSubtotal'];
+        $this->formData['total'] = $data['totalGrandTotal'] - (float) $this->formData['diskon'];
+
+        // Calculate tanggal selesai based on layanan with longest duration
+        $this->calculateTanggalSelesaiFromMultiLayanan();
+    }
+
+    protected function calculateTanggalSelesaiFromMultiLayanan()
+    {
+        $tanggalTerlama = null;
+
+        foreach ($this->multiLayananData['items'] as $item) {
+            if (!empty($item['layanan_id'])) {
+                try {
+                    $layanan = Layanan::find($item['layanan_id']);
+                    if ($layanan && $layanan->durasi_jam > 0) {
+                        $tanggalSelesai = \Carbon\Carbon::parse($this->formData['tanggal_masuk'])
+                            ->addHours($layanan->durasi_jam);
+
+                        if (!$tanggalTerlama || $tanggalSelesai > $tanggalTerlama) {
+                            $tanggalTerlama = $tanggalSelesai;
+                        }
+                    }
+                } catch (\Exception $e) {
+                    \Log::error('Error calculating tanggal selesai: ' . $e->getMessage());
+                }
+            }
+        }
+
+        $this->formData['tanggal_selesai'] = $tanggalTerlama ? $tanggalTerlama->format('Y-m-d H:i') : '';
     }
 
     public function updatedFormDataPelangganId($value)
@@ -146,29 +192,48 @@ class Create extends Component
 
     public function updatedFormDataDiskon()
     {
-        $this->calculateTotal();
-    }
-
-    protected function calculateTotal()
-    {
-        $berat = (float) ($this->formData['berat_kg'] ?? 0);
-        $harga = (float) ($this->formData['harga_per_kg'] ?? 0);
-        $diskon = (float) ($this->formData['diskon'] ?? 0);
-
-        $this->formData['subtotal'] = $berat * $harga;
-        $this->formData['total'] = $this->formData['subtotal'] - $diskon;
+        $this->formData['total'] = (float) $this->formData['subtotal'] - (float) $this->formData['diskon'];
     }
 
     public function save()
     {
+        // Validasi multi-layanan
+        if (empty($this->multiLayananData['items'])) {
+            $this->error('Tambahkan minimal 1 layanan!', position: 'toast-bottom');
+            return;
+        }
+
+        $hasValidLayanan = false;
+        foreach ($this->multiLayananData['items'] as $item) {
+            if (!empty($item['layanan_id'])) {
+                if ($item['tipe_layanan'] === 'per_kg') {
+                    if (empty($item['berat_kg']) || $item['berat_kg'] < 0.1) {
+                        $this->error('Berat minimal 0.1 kg untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
+                        return;
+                    }
+                    if (empty($item['jenis_pakaian']) || count($item['jenis_pakaian']) === 0) {
+                        $this->error('Jenis pakaian wajib diisi untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
+                        return;
+                    }
+                } else {
+                    if (empty($item['jumlah_satuan']) || $item['jumlah_satuan'] < 1) {
+                        $this->error('Jumlah minimal 1 untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
+                        return;
+                    }
+                }
+                $hasValidLayanan = true;
+            }
+        }
+
+        if (!$hasValidLayanan) {
+            $this->error('Pilih layanan yang valid terlebih dahulu!', position: 'toast-bottom');
+            return;
+        }
+
         $this->validate([
             'formData.kode_transaksi' => 'required|unique:transaksi,kode_transaksi',
             'formData.tanggal_masuk' => 'required|date',
             'formData.pelanggan_id' => 'required|exists:pelanggan,id',
-            'formData.layanan_id' => 'required|exists:layanan,id',
-            'formData.jenis_pakaian' => 'required|string',
-            'formData.berat_kg' => 'required|numeric|min:0.1',
-            'formData.harga_per_kg' => 'required|integer|min:0',
             'formData.metode_pembayaran' => 'required|in:Tunai,Transfer,QRIS,Debit',
             'formData.status' => 'required|in:Menunggu,Proses,Selesai,Diambil,Batal',
         ]);
@@ -176,13 +241,72 @@ class Create extends Component
         try {
             // Gunakan database transaction untuk mencegah race condition
             DB::transaction(function() {
+                // Prepare transaksi data
+                $transaksiData = $this->formData;
+                $transaksiData['jumlah_layanan'] = count($this->multiLayananData['items']);
+                $transaksiData['total_berat'] = 0;
+                $transaksiData['total_item'] = 0;
+
+                // Calculate total berat dan total item
+                foreach ($this->multiLayananData['items'] as $item) {
+                    if ($item['tipe_layanan'] === 'per_kg') {
+                        $transaksiData['total_berat'] += (float) ($item['berat_kg'] ?? 0);
+                    } else {
+                        $transaksiData['total_item'] += (int) ($item['jumlah_satuan'] ?? 0);
+                    }
+                }
+
                 // Cek ulang apakah kode transaksi sudah ada, jika ya generate ulang
-                if (Transaksi::where('kode_transaksi', $this->formData['kode_transaksi'])->exists()) {
+                if (Transaksi::where('kode_transaksi', $transaksiData['kode_transaksi'])->exists()) {
                     $this->refreshKodeTransaksi();
+                    $transaksiData['kode_transaksi'] = $this->formData['kode_transaksi'];
                 }
 
                 // Simpan transaksi
-                $transaksi = Transaksi::create($this->formData);
+                $transaksi = Transaksi::create($transaksiData);
+
+                // Simpan detail transaksi layanan
+                foreach ($this->multiLayananData['items'] as $index => $item) {
+                    if (!empty($item['layanan_id'])) {
+                        // Get layanan data untuk backup jika item data kosong
+                        $layanan = Layanan::find($item['layanan_id']);
+
+                        $transaksiLayananData = [
+                            'transaksi_id' => $transaksi->id,
+                            'layanan_id' => $item['layanan_id'],
+                            'nama_layanan' => $item['nama_layanan'] ?? ($layanan ? $layanan->nama_layanan : ''),
+                            'subtotal' => $item['subtotal'] ?? 0,
+                        ];
+
+                        if ($item['tipe_layanan'] === 'per_kg') {
+                            // Prepare data untuk per_kg
+                            $transaksiLayananData['jenis_pakaian'] = !empty($item['jenis_pakaian']) ? json_encode($item['jenis_pakaian']) : null;
+                            $transaksiLayananData['berat_kg'] = $item['berat_kg'] ?? 0;
+                            $transaksiLayananData['harga_per_kg'] = $item['harga_per_kg'] ?? ($layanan ? $layanan->harga_per_kg : 0);
+
+                            // Calculate subtotal jika belum ada
+                            if (empty($item['subtotal'])) {
+                                $berat = (float) ($item['berat_kg'] ?? 0);
+                                $harga = (int) ($transaksiLayananData['harga_per_kg']);
+                                $transaksiLayananData['subtotal'] = $berat * $harga;
+                            }
+                        } else {
+                            // Prepare data untuk per_satuan
+                            $transaksiLayananData['jumlah_satuan'] = $item['jumlah_satuan'] ?? 1;
+                            $transaksiLayananData['harga_per_satuan'] = $item['harga_per_satuan'] ?? ($layanan ? $layanan->harga_per_satuan : 0);
+
+                            // Calculate subtotal jika belum ada
+                            if (empty($item['subtotal'])) {
+                                $jumlah = (int) ($item['jumlah_satuan'] ?? 1);
+                                $harga = (int) ($transaksiLayananData['harga_per_satuan']);
+                                $transaksiLayananData['subtotal'] = $jumlah * $harga;
+                            }
+                        }
+
+                        // Create TransaksiLayanan
+                        \DB::table('transaksi_layanan')->insert($transaksiLayananData);
+                    }
+                }
 
                 // Update total transaksi pelanggan dengan lock
                 $pelanggan = Pelanggan::lockForUpdate()->find($this->formData['pelanggan_id']);
