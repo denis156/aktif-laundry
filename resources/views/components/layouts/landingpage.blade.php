@@ -284,7 +284,7 @@
                             <x-button no-wire-navigate link="#pesan" label="Yuk Mulai Hidup Lebih Bebas"
                                 icon="o-arrow-down" class="btn-primary btn-lg" />
                             <p class="text-base-content/60 mt-4 text-sm">
-                                Karena waktumu terlalu berharga untuk urusan laundry
+                                Karena waktumu terlalu berharga untuk urusan nyuci.
                             </p>
                         </div>
                     </div>
