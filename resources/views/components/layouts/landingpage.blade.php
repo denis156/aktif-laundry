@@ -35,48 +35,51 @@
     <link rel="canonical" href="{{ url('/') }}">
 
     <!-- Structured Data -->
+    @php
+        $structuredData = [
+            "@context" => "https://schema.org",
+            "@type" => "LocalBusiness",
+            "name" => "Aktif Laundry",
+            "description" => "Jasa laundry profesional di Kendari, Sulawesi Tenggara dengan layanan antar jemput gratis untuk mahasiswa dan pekerja sibuk",
+            "image" => asset('images/Logo.png'),
+            "url" => url('/'),
+            "telephone" => "+6282156912202",
+            "priceRange" => "$",
+            "address" => [
+                "@type" => "PostalAddress",
+                "addressLocality" => "Kendari",
+                "addressCountry" => "ID"
+            ],
+            "areaServed" => [
+                "@type" => "Place",
+                "name" => "Indonesia"
+            ],
+            "serviceType" => "Laundry Service",
+            "offers" => [
+                [
+                    "@type" => "Offer",
+                    "itemOffered" => "Cuci + Lipat",
+                    "price" => "5000",
+                    "priceCurrency" => "IDR",
+                    "description" => "Layanan cuci dan lipat rapi dengan parfum premium"
+                ],
+                [
+                    "@type" => "Offer",
+                    "itemOffered" => "Cuci + Setrika",
+                    "price" => "7000",
+                    "priceCurrency" => "IDR",
+                    "description" => "Layanan cuci bersih dan setrika rapi dengan parfum premium"
+                ]
+            ],
+            "sameAs" => [
+                "https://www.tiktok.com/@miegacoanlevel01",
+                "https://www.instagram.com/aktif_laundry",
+                "https://wa.me/6282156912202"
+            ]
+        ];
+    @endphp
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "LocalBusiness",
-        "name": "Aktif Laundry",
-        "description": "Jasa laundry profesional di Kendari, Sulawesi Tenggara dengan layanan antar jemput gratis untuk mahasiswa dan pekerja sibuk",
-        "image": "{{ asset('images/Logo.png') }}",
-        "url": "{{ url('/') }}",
-        "telephone": "+6282156912202",
-        "priceRange": "$",
-        "address": {
-            "@type": "PostalAddress",
-            "addressLocality": "Kendari",
-            "addressCountry": "ID"
-        },
-        "areaServed": {
-            "@type": "Place",
-            "name": "Indonesia"
-        },
-        "serviceType": "Laundry Service",
-        "offers": [
-            {
-                "@type": "Offer",
-                "itemOffered": "Cuci + Lipat",
-                "price": "5000",
-                "priceCurrency": "IDR",
-                "description": "Layanan cuci dan lipat rapi dengan parfum premium"
-            },
-            {
-                "@type": "Offer",
-                "itemOffered": "Cuci + Setrika",
-                "price": "7000",
-                "priceCurrency": "IDR",
-                "description": "Layanan cuci bersih dan setrika rapi dengan parfum premium"
-            }
-        ],
-        "sameAs": [
-            "https://www.tiktok.com/@miegacoanlevel01",
-            "https://www.instagram.com/aktif_laundry",
-            "https://wa.me/6282156912202"
-        ]
-    }
+    {!! json_encode($structuredData) !!}
     </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
