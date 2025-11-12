@@ -46,6 +46,18 @@
     <!-- Logo for SEO -->
     <link rel="image_src" href="{{ asset('images/Logo.png') }}">
 
+    <!-- PWA Manifest & Icons -->
+    <link rel="manifest" href="{{ asset('manifest.json') }}">
+    <link rel="apple-touch-icon" href="{{ asset('images/Logo.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('images/Logo.png') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('images/Logo.png') }}">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Aktif Laundry">
+    <meta name="application-name" content="Aktif Laundry">
+    <meta name="msapplication-TileColor" content="#dc2626">
+    <meta name="msapplication-config" content="{{ asset('browserconfig.xml') }}">
+
     <!-- Structured Data -->
     @php
         $structuredData = [
