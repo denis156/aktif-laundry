@@ -27,6 +27,19 @@
 /* Theme toggle */
 @custom-variant dark (&:where(.dark, .dark *));
 
+/* add the code bellow */
+@layer utilities {
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    .no-scrollbar::-webkit-scrollbar {
+        display: none;
+    }
+    /* Hide scrollbar for IE, Edge and Firefox */
+    .no-scrollbar {
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
+    }
+}
+
 /**
 * Paginator - Traditional style
 * Because Laravel defaults does not match well the design of daisyUI.
@@ -59,10 +72,9 @@
     prefersdark: false;
     color-scheme: "light";
     /* Base Colors - Optimized for Primary Red Theme */
-    --color-base-100: oklch(100% 0 0); /* Pure White Background */
-    --color-base-200: oklch(97% 0.002 0); /* Very Light Gray */
-    --color-base-300: oklch(92% 0.005 0); /* Light Gray Border */
-    --color-base-content: oklch(10% 0.008 0); /* Deep Black Text */
+    --color-base-100: oklch(100% 0 0);
+    --color-base-200: oklch(98% 0 0);
+    --color-base-300: oklch(95% 0 0);
 
     /* Primary - Consistent Laundry Red */
     --color-primary: oklch(58% 0.18 25); /* Professional Soft Red */
@@ -113,10 +125,10 @@
     prefersdark: true;
     color-scheme: "dark";
     /* Base Colors - Dark & Comfortable (Optimized for Primary Red) */
-    --color-base-100: oklch(24% 0.007 0); /* Dark Background */
-    --color-base-200: oklch(19% 0.008 0); /* Darker Gray */
-    --color-base-300: oklch(15% 0.009 0); /* Darkest Gray Border */
-    --color-base-content: oklch(94% 0.003 0); /* Light Gray Text */
+    --color-base-100: oklch(25.33% 0.016 252.42);
+    --color-base-200: oklch(23.26% 0.014 253.1);
+    --color-base-300: oklch(21.15% 0.012 254.09);
+    --color-base-content: oklch(97.807% 0.029 256.847);
 
     /* Primary - Vibrant Soft Red (Dark Mode) */
     --color-primary: oklch(58% 0.18 25); /* Vibrant Soft Red */
