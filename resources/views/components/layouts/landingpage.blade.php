@@ -302,7 +302,7 @@
                             <!-- Narasi Penawaran -->
                             <div class="space-y-6 text-base-content/80 text-md leading-relaxed">
                                 <p class="max-w-2xl mx-auto">
-                                    "Yuk Mulai Hidup Lebih Bebas" dimulai dari sini!<br class="hidden sm:inline" />
+                                    <span class="text-primary">Yuk Mulai Hidup Lebih Bebas,</span> dimulai dari sini!<br class="hidden sm:inline" />
                                     Bebas dari baju kotor tanpa bikin kantong bolong.<br class="hidden sm:inline" />
                                     Cuci bersih mulai dari Rp 5.000/kg aja.<br class="hidden sm:inline" />
                                     Tinggal WhatsApp, kami yang jemput!
@@ -462,7 +462,7 @@
                                 JEMPUTIN BAJU KUY!
                             </a>
                             <p class="text-base-content/60 mt-4 text-sm">
-                                Klik tombol di atas untuk hubungi WhatsApp kami sekarang juga & klaim layanan free
+                                Klik tombol di atas untuk hubungi WhatsApp kami sekarang juga & klaim layanan gratis<br class="hidden sm:inline" />
                                 antar-jemput pertama kamu!
                             </p>
                         </div>
