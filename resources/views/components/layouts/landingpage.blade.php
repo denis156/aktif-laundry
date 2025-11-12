@@ -5,8 +5,80 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ config('app.name') }} - Tetap Aktif, Tetap Bersih</title>
+
+    <!-- SEO Meta Tags -->
+    <title>Aktif Laundry - Jasa Laundry Profesional Kendari | Cuci Setrika Rp 5.000/kg | Antar Jemput Gratis</title>
+    <meta name="description" content="Aktif Laundry - Jasa laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg, cuci setrika Rp 7.000/kg. Gratis antar jemput untuk mahasiswa dan pekerja sibuk. WhatsApp sekarang!">
+    <meta name="keywords" content="laundry Kendari, laundry Sulawesi Tenggara, cuci baju Kendari, laundry kiloan Kendari, laundry mahasiswa Kendari, laundry antar jemput Kendari, cuci setrika Kendari, cuci lipat Kendari, laundry profesional Kendari, laundry murah Kendari, laundry express Kendari, Aktif Laundry">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Aktif Laundry - Jasa Laundry Profesional Kendari | Gratis Antar Jemput">
+    <meta property="og:description" content="Laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg. Hemat waktu dan energi dengan layanan laundry antar jemput gratis. WhatsApp sekarang!">
+    <meta property="og:image" content="{{ asset('images/Logo.png') }}">
+    <meta property="og:url" content="{{ url('/') }}">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Aktif Laundry - Jasa Laundry Profesional Kendari">
+    <meta name="twitter:description" content="Laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg. Gratis antar jemput untuk mahasiswa dan pekerja sibuk.">
+    <meta name="twitter:image" content="{{ asset('images/Logo.png') }}">
+
+    <!-- Additional SEO -->
+    <meta name="author" content="Aktif Laundry">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <meta name="language" content="id">
+    <meta name="geo.region" content="ID">
     <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="{{ url('/') }}">
+
+    <!-- Structured Data -->
+    <script type="application/ld+json">
+    {
+        "@context": "https://schema.org",
+        "@type": "LocalBusiness",
+        "name": "Aktif Laundry",
+        "description": "Jasa laundry profesional di Kendari, Sulawesi Tenggara dengan layanan antar jemput gratis untuk mahasiswa dan pekerja sibuk",
+        "image": "{{ asset('images/Logo.png') }}",
+        "url": "{{ url('/') }}",
+        "telephone": "+6282156912202",
+        "priceRange": "$",
+        "address": {
+            "@type": "PostalAddress",
+            "addressLocality": "Kendari",
+            "addressCountry": "ID"
+        },
+        "areaServed": {
+            "@type": "Place",
+            "name": "Indonesia"
+        },
+        "serviceType": "Laundry Service",
+        "offers": [
+            {
+                "@type": "Offer",
+                "itemOffered": "Cuci + Lipat",
+                "price": "5000",
+                "priceCurrency": "IDR",
+                "description": "Layanan cuci dan lipat rapi dengan parfum premium"
+            },
+            {
+                "@type": "Offer",
+                "itemOffered": "Cuci + Setrika",
+                "price": "7000",
+                "priceCurrency": "IDR",
+                "description": "Layanan cuci bersih dan setrika rapi dengan parfum premium"
+            }
+        ],
+        "sameAs": [
+            "https://www.tiktok.com/@miegacoanlevel01",
+            "https://www.instagram.com/aktif_laundry",
+            "https://wa.me/6282156912202"
+        ]
+    }
+    </script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 </head>
@@ -47,9 +119,8 @@
                         <div class="max-w-full space-y-5">
                             <h1 class="text-3xl md:text-5xl font-bold">Jangan Biarin Baju Kotor <br class="lg:hidden" />
                                 Menghentikan Gaya Lo.</h1>
-                            <h2
-                                class="text-xl md:text-2xl lg:text-4xl font-semibold bg-primary px-4 py-2 rounded-lg inline-block">
-                                Tetap Aktif, Tetap Bersih !!!</h2>
+                            <p class="text-xl md:text-2xl lg:text-4xl font-semibold bg-primary px-4 py-2 rounded-lg inline-block">
+                                Tetap Aktif, Tetap Bersih !!!</p>
                             <p
                                 class="text-primary-content max-w-md sm:max-w-lg md:max-w-2xl mx-auto font-light text-md md:text-xl leading-relaxed px-4">
                                 Buat lo yang sibuk ngampus, <span class="hidden sm:inline"><br /></span>padat jadwal
@@ -90,7 +161,7 @@
                             <!-- Manfaat 1: Bebas Jalani Lifestyle -->
                             <div class="flex-none w-80 md:w-auto card bg-base-200 shadow-md">
                                 <figure>
-                                    <img src="{{ asset('images/more-time.jpg') }}" alt="Bebas Jalani Lifestyle"
+                                    <img src="{{ asset('images/more-time.jpg') }}" alt="Laundry hemat waktu - Mahasiswa bisa fokus belajar dan beraktivitas dengan layanan laundry Aktif Laundry"
                                         class="w-full h-48 object-cover"
                                         loading="lazy" />
                                 </figure>
@@ -109,7 +180,7 @@
                             <!-- Manfaat 2: Hidup Lebih Smart -->
                             <div class="flex-none w-80 md:w-auto card bg-base-200 shadow-md">
                                 <figure>
-                                    <img src="{{ asset('images/productivity.jpg') }}" alt="Hidup Lebih Smart"
+                                    <img src="{{ asset('images/productivity.jpg') }}" alt="Laundry meningkatkan produktivitas - Layanan laundry antar jemput untuk pekerja sibuk dan mahasiswa"
                                         class="w-full h-48 object-cover"
                                         loading="lazy" />
                                 </figure>
@@ -128,7 +199,7 @@
                             <!-- Manfaat 3: Bebas Ekspresi Diri -->
                             <div class="flex-none w-80 md:w-auto card bg-base-200 shadow-md">
                                 <figure>
-                                    <img src="{{ asset('images/confidence.jpg') }}" alt="Bebas Ekspresi Diri"
+                                    <img src="{{ asset('images/confidence.jpg') }}" alt="Berkualitas dengan laundry profesional - Baju wangi dan rapi untuk menunjang percaya diri"
                                         class="w-full h-48 object-cover"
                                         loading="lazy" />
                                 </figure>
