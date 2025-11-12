@@ -34,47 +34,96 @@
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url('/') }}">
 
+    <!-- Additional SEO Meta Tags -->
+    <meta name="geo.placename" content="Kendari">
+    <meta name="geo.region" content="ID-SU">
+    <meta name="classification" content="Laundry Service">
+    <meta name="category" content="Business, Services, Laundry">
+    <meta name="coverage" content="Worldwide">
+    <meta name="distribution" content="Global">
+    <meta name="rating" content="General">
+
+    <!-- Logo for SEO -->
+    <link rel="image_src" href="{{ asset('images/Logo.png') }}">
+
     <!-- Structured Data -->
     @php
         $structuredData = [
             "@context" => "https://schema.org",
             "@type" => "LocalBusiness",
             "name" => "Aktif Laundry",
-            "description" => "Jasa laundry profesional di Kendari, Sulawesi Tenggara dengan layanan antar jemput gratis untuk mahasiswa dan pekerja sibuk",
-            "image" => asset('images/Logo.png'),
+            "alternateName" => "Aktif Laundry Kendari",
+            "description" => "Jasa laundry profesional di Kendari, Sulawesi Tenggara dengan layanan antar jemput gratis untuk mahasiswa dan pekerja sibuk. Cuci + lipat mulai Rp 5.000/kg.",
             "url" => url('/'),
             "telephone" => "+6282156912202",
-            "priceRange" => "$",
+            "priceRange" => "Rp 5.000 - Rp 7.000",
+            "currenciesAccepted" => "IDR",
+            "paymentAccepted" => "Cash, Transfer, E-Wallet",
             "address" => [
                 "@type" => "PostalAddress",
                 "addressLocality" => "Kendari",
+                "addressRegion" => "Sulawesi Tenggara",
                 "addressCountry" => "ID"
             ],
             "areaServed" => [
                 "@type" => "Place",
-                "name" => "Indonesia"
+                "name" => "Kendari, Sulawesi Tenggara",
+                "addressCountry" => "ID"
             ],
+            "logo" => asset('images/Logo.png'),
+            "image" => [
+                asset('images/Logo.png')
+            ],
+            "hasMerchantReturnPolicy" => [
+                "@type" => "MerchantReturnPolicy",
+                "returnPolicyCategory" => "https://schema.org/MerchantReturnFiniteReturnWindow"
+            ],
+            "openingHours" => "Mo-Su 08:00-21:00",
             "serviceType" => "Laundry Service",
-            "offers" => [
-                [
-                    "@type" => "Offer",
-                    "itemOffered" => "Cuci + Lipat",
-                    "price" => "5000",
-                    "priceCurrency" => "IDR",
-                    "description" => "Layanan cuci dan lipat rapi dengan parfum premium"
-                ],
-                [
-                    "@type" => "Offer",
-                    "itemOffered" => "Cuci + Setrika",
-                    "price" => "7000",
-                    "priceCurrency" => "IDR",
-                    "description" => "Layanan cuci bersih dan setrika rapi dengan parfum premium"
+            "slogan" => "Tetap Aktif, Tetap Bersih",
+            "foundingDate" => "2024",
+            "hasOfferCatalog" => [
+                "@type" => "OfferCatalog",
+                "name" => "Laundry Services",
+                "itemListElement" => [
+                    [
+                        "@type" => "Offer",
+                        "itemOffered" => [
+                            "@type" => "Service",
+                            "name" => "Cuci + Lipat",
+                            "description" => "Layanan cuci dan lipat rapi dengan parfum premium dan gratis antar jemput"
+                        ],
+                        "price" => "5000",
+                        "priceCurrency" => "IDR",
+                        "availability" => "https://schema.org/InStock",
+                        "validFrom" => "2024-01-01"
+                    ],
+                    [
+                        "@type" => "Offer",
+                        "itemOffered" => [
+                            "@type" => "Service",
+                            "name" => "Cuci + Setrika",
+                            "description" => "Layanan cuci bersih dan setrika rapi dengan parfum premium dan gratis antar jemput"
+                        ],
+                        "price" => "7000",
+                        "priceCurrency" => "IDR",
+                        "availability" => "https://schema.org/InStock",
+                        "validFrom" => "2024-01-01"
+                    ]
                 ]
             ],
             "sameAs" => [
                 "https://www.tiktok.com/@miegacoanlevel01",
                 "https://www.instagram.com/aktif_laundry",
-                "https://wa.me/6282156912202"
+                "https://wa.me/6282156912202",
+                "https://aktiflaundry.com"
+            ],
+            "aggregateRating" => [
+                "@type" => "AggregateRating",
+                "ratingValue" => "5",
+                "reviewCount" => "1",
+                "bestRating" => "5",
+                "worstRating" => "1"
             ]
         ];
     @endphp
