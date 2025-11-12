@@ -72,10 +72,13 @@
 
                             <!-- Narasi Marketing 3.0 -->
                             <div class="space-y-6 text-base-content/80 text-md leading-relaxed">
-                                <p>
-                                    Di <span class="font-semibold text-primary">{{ config('app.name') }}</span>, kami
-                                    percaya bahwa setiap orang punya hak untuk bebas mengekspresikan diri dan menjalani
-                                    lifestyle tanpa batas. Masa depanmu, karirmu, prestasi olahragamu, dan tawamu bareng
+                                <p class="max-w-2xl mx-auto">
+                                    Di <span class="font-semibold text-primary">{{ config('app.name') }}</span>, kami<br
+                                        class="hidden sm:inline" />
+                                    percaya bahwa setiap orang punya hak untuk bebas mengekspresikan diri dan
+                                    menjalani<br class="hidden sm:inline" />
+                                    lifestyle tanpa batas. Masa depanmu, karirmu, prestasi olahragamu, dan tawamu
+                                    bareng<br class="hidden sm:inline" />
                                     teman-teman jauh lebih berharga.
                                 </p>
                             </div>
@@ -83,12 +86,13 @@
 
                         <!-- Manfaat Utama -->
                         <div
-                            class="flex md:grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-16 overflow-x-auto no-scrollbar p-4">
+                            class="flex md:grid md:grid-cols-3 gap-4 max-w-6xl mx-auto mt-16 overflow-x-auto no-scrollbar p-4">
                             <!-- Manfaat 1: Bebas Jalani Lifestyle -->
                             <div class="flex-none w-80 md:w-auto card bg-base-200 shadow-md">
                                 <figure>
                                     <img src="{{ asset('images/more-time.jpg') }}" alt="Bebas Jalani Lifestyle"
-                                        class="w-full h-48 object-cover" />
+                                        class="w-full h-48 object-cover"
+                                        loading="lazy" />
                                 </figure>
                                 <div class="card-body border-t-2 border-base-content border-dashed">
                                     <h2 class="card-title text-success">Bebas Jalani Lifestyle</h2>
@@ -106,7 +110,8 @@
                             <div class="flex-none w-80 md:w-auto card bg-base-200 shadow-md">
                                 <figure>
                                     <img src="{{ asset('images/productivity.jpg') }}" alt="Hidup Lebih Smart"
-                                        class="w-full h-48 object-cover" />
+                                        class="w-full h-48 object-cover"
+                                        loading="lazy" />
                                 </figure>
                                 <div class="card-body border-t-2 border-base-content border-dashed">
                                     <h2 class="card-title text-success">Hidup Lebih Smart</h2>
@@ -124,7 +129,8 @@
                             <div class="flex-none w-80 md:w-auto card bg-base-200 shadow-md">
                                 <figure>
                                     <img src="{{ asset('images/confidence.jpg') }}" alt="Bebas Ekspresi Diri"
-                                        class="w-full h-48 object-cover" />
+                                        class="w-full h-48 object-cover"
+                                        loading="lazy" />
                                 </figure>
                                 <div class="card-body border-t-2 border-base-content border-dashed">
                                     <h2 class="card-title text-success">Bebas Ekspresi Diri</h2>
@@ -162,21 +168,31 @@
                             <!-- Narasi Penawaran -->
                             <div class="space-y-6 text-base-content/80 text-md leading-relaxed">
                                 <p class="max-w-2xl mx-auto">
-                                    Kami bikin hidup lo makin gampang.<br class="hidden sm:inline" />
-                                    Dapatkan layanan laundry spesialis dengan harga <br class="hidden sm:inline" />
-                                    yang nggak akan bikin kantong bolong.<br class="hidden sm:inline" />
-                                    Nikmati kebebasan sesungguhnya.
+                                    "Yuk Mulai Hidup Lebih Bebas" dimulai dari sini!<br class="hidden sm:inline" />
+                                    Bebas dari baju kotor tanpa bikin kantong bolong.<br class="hidden sm:inline" />
+                                    Cuci bersih mulai dari Rp 5.000/kg aja.<br class="hidden sm:inline" />
+                                    Tinggal WhatsApp, kami yang jemput!
                                 </p>
                             </div>
                         </div>
 
                         <!-- Layanan Pricing -->
-                        <div class="flex md:grid md:grid-cols-3 gap-6 max-w-6xl mx-auto mt-16 overflow-x-auto no-scrollbar p-4 scroll-smooth"
-                             x-data="{ scrollToCenter() { if (window.innerWidth < 768) { const card = $refs.cuciLipatCard; const container = $el; const cardRect = card.getBoundingClientRect(); const containerRect = container.getBoundingClientRect(); const scrollPosition = (cardRect.left - containerRect.left) + container.scrollLeft - (containerRect.width / 2) + (cardRect.width / 2); container.scrollTo({ left: scrollPosition, behavior: 'smooth' }); } } }"
-                             x-init="$nextTick(() => { setTimeout(() => scrollToCenter(), 500); })"
-                             id="pricing-cards">
+                        <div class="flex md:grid md:grid-cols-3 gap-4 max-w-6xl mx-auto mt-16 overflow-x-auto no-scrollbar p-4 scroll-smooth"
+                            x-data="{
+                                scrollToCenter() {
+                                    if (window.innerWidth < 768) {
+                                        const card = $refs.cuciLipatCard;
+                                        const container = $el;
+                                        const cardRect = card.getBoundingClientRect();
+                                        const containerRect = container.getBoundingClientRect();
+                                        const scrollPosition = (cardRect.left - containerRect.left) + container.scrollLeft - (containerRect.width / 2) + (cardRect.width / 2);
+                                        container.scrollTo({ left: scrollPosition, behavior: 'smooth' });
+                                    }
+                                }
+                            }" x-init="$nextTick(() => { setTimeout(() => scrollToCenter(), 500); })" id="pricing-cards">
                             <!-- Cuci Setrika -->
-                            <div class="flex-none w-80 md:w-full card bg-base-100 shadow-sm border border-primary h-full">
+                            <div
+                                class="flex-none w-80 md:w-full card bg-base-100 shadow-sm border border-primary h-full">
                                 <div class="card-body">
                                     <span
                                         class="badge badge-md md:badge-lg badge-primary badge-soft border border-primary">Paket
@@ -208,7 +224,7 @@
                                         </li>
                                     </ul>
                                     <div class="mt-6">
-                                        <a href="https://wa.me/6281524089375?text=Mimin%20aktif%20laundry,%20saya%20mau%20pesan%20Cuci%20Setrika%20Rp%207.000/kg"
+                                        <a href="https://wa.me/6282156912202?text=Mimin%20aktif%20laundry,%20saya%20mau%20pesan%20Cuci%20Setrika%20Rp%207.000/kg"
                                             target="_blank" class="btn btn-primary btn-block text-primary-content">
                                             <x-icon name="o-arrow-right" class="w-5 h-5 mr-2" />
                                             Pesan Sekarang
@@ -218,7 +234,8 @@
                             </div>
 
                             <!-- Cuci + Lipat -->
-                            <div x-ref="cuciLipatCard" class="flex-none w-80 md:w-full card bg-base-100 shadow-sm border-2 border-success h-full scale-105">
+                            <div x-ref="cuciLipatCard"
+                                class="flex-none w-80 md:w-full card bg-base-100 shadow-sm border-2 border-success h-full scale-102">
                                 <div class="card-body">
                                     <span
                                         class="badge badge-md md:badge-lg badge-success badge-soft border border-dashed border-success">Paling
@@ -250,7 +267,7 @@
                                         </li>
                                     </ul>
                                     <div class="mt-6">
-                                        <a href="https://wa.me/6281524089375?text=Mimin%20aktif%20laundry,%20saya%20mau%20pesan%20Cuci%20Lipat%20Rp%205.000/kg"
+                                        <a href="https://wa.me/6282156912202?text=Mimin%20aktif%20laundry,%20saya%20mau%20pesan%20Cuci%20Lipat%20Rp%205.000/kg"
                                             target="_blank" class="btn btn-success btn-block text-success-content">
                                             <x-icon name="o-arrow-right" class="w-5 h-5 mr-2" />
                                             Pesan Sekarang
@@ -260,7 +277,8 @@
                             </div>
 
                             <!-- Cuci Satuan -->
-                            <div class="flex-none w-80 md:w-full card bg-base-100 shadow-sm border border-primary h-full">
+                            <div
+                                class="flex-none w-80 md:w-full card bg-base-100 shadow-sm border border-primary h-full">
                                 <div class="card-body">
                                     <span
                                         class="badge badge-md md:badge-lg badge-primary badge-soft border border-primary">Cuci
@@ -292,7 +310,7 @@
                                         </li>
                                     </ul>
                                     <div class="mt-6">
-                                        <a href="https://wa.me/6281524089375?text=Mimin%20aktif%20laundry,%20saya%20mau%20pesan%20Cuci%20Setrika%20Rp%206.000/kg"
+                                        <a href="https://wa.me/6282156912202?text=Mimin%20aktif%20laundry,%20saya%20mau%20pesan%20Item%20Satuan%20(Seprai/Gorden/BedCover)"
                                             target="_blank" class="btn btn-primary btn-block text-primary-content">
                                             <x-icon name="o-arrow-right" class="w-5 h-5 mr-2" />
                                             Pesan Sekarang
@@ -304,10 +322,10 @@
 
                         <!-- Call to Action -->
                         <div class="text-center mt-14">
-                            <a href="https://wa.me/6281524089375?text=Mimin%20aktif%20laundry,%20saya%20mau%20nyuci%20nih.%20Jemputin%20dong..."
+                            <a href="https://wa.me/6282156912202?text=Mimin%20aktif%20laundry,%20saya%20mau%20nyuci%20nih.%20Jemputin%20dong..."
                                 target="_blank" class="btn btn-success btn-lg text-success-content">
                                 <x-icon name="o-chat-bubble-left-right" class="w-5 h-5 mr-2" />
-                                SAYA MAU BEBAS DARI LAUNDRY!
+                                JEMPUTIN BAJU KUY!
                             </a>
                             <p class="text-base-content/60 mt-4 text-sm">
                                 Klik tombol di atas untuk hubungi WhatsApp kami sekarang juga & klaim layanan free
@@ -322,37 +340,30 @@
                 class="footer footer-horizontal footer-center bg-primary text-base-content rounded-t-2xl p-4 border-t-2 border-primary-content border-dashed">
                 <!-- Company Info -->
                 <nav class="grid grid-flow-col gap-4">
-                    <a href="#beranda" class="link text-primary-content text-sm">Beranda</a>
-                    <a href="#smart-clean" class="link text-primary-content text-sm">Smart & Clean</a>
-                    <a href="#pesan" class="link text-primary-content text-sm">Pesan Sekarang</a>
+                    <a href="#beranda" class="link text-primary-content text-md">Beranda</a>
+                    <a href="#smart-clean" class="link text-primary-content text-md">Smart & Clean</a>
+                    <a href="#pesan" class="link text-primary-content text-md">Pesan Sekarang</a>
                 </nav>
 
                 <!-- Social Media -->
                 <nav>
                     <div class="grid grid-flow-col gap-4">
-                        <a href="https://twitter.com" target="_blank"
+                        <!-- TikTok -->
+                        <a href="https://www.tiktok.com/@miegacoanlevel01" target="_blank"
                             class="btn btn-circle btn-primary-content btn-outline text-primary-content hover:text-base-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" class="fill-current">
-                                <path
-                                    d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z" />
-                            </svg>
+                            <x-icon name="bi.tiktok" class="w-4 h-4 fill-current" />
                         </a>
-                        <a href="https://youtube.com" target="_blank"
+
+                        <!-- WhatsApp -->
+                        <a href="https://wa.me/6282156912202" target="_blank"
                             class="btn btn-circle btn-primary-content btn-outline text-primary-content hover:text-base-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" class="fill-current">
-                                <path
-                                    d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z" />
-                            </svg>
+                            <x-icon name="bi.whatsapp" class="w-4 h-4 fill-current" />
                         </a>
-                        <a href="https://facebook.com" target="_blank"
+
+                        <!-- Instagram -->
+                        <a href="https://www.instagram.com/aktif_laundry" target="_blank"
                             class="btn btn-circle btn-primary-content btn-outline text-primary-content hover:text-base-content">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20"
-                                viewBox="0 0 24 24" class="fill-current">
-                                <path
-                                    d="M9 8h-3v4h3v12h5v-12h3.642l.358-4h-4v-1.667c0-.955.192-1.333 1.115-1.333h2.885v-5h-3.808c-3.596 0-5.192 1.583-5.192 4.615v3.385z" />
-                            </svg>
+                            <x-icon name="bi.instagram" class="w-4 h-4 fill-current" />
                         </a>
                     </div>
                 </nav>
@@ -360,7 +371,7 @@
                 <!-- Copyright -->
                 <aside>
                     <div class="flex flex-col items-center gap-2">
-                        <p class="font-semibold text-lg text-primary-content">{{ config('app.name') }} ©
+                        <p class="font-semibold text-md text-primary-content">{{ config('app.name') }} ©
                             {{ date('Y') }}</p>
                         <p class="text-sm text-primary-content">Tetap Aktif, Tetap Bersih</p>
                     </div>
