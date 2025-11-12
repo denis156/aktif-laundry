@@ -65,11 +65,6 @@
     },
     {
       "src": "/images/Logo.png",
-      "sizes": "192x192",
-      "type": "image/png"
-    },
-    {
-      "src": "/images/Logo.png",
       "sizes": "384x384",
       "type": "image/png"
     },
@@ -86,26 +81,6 @@
       "description": "Pesan layanan laundry sekarang",
       "url": "/#pesan",
       "icons": [{ "src": "/images/Logo.png", "sizes": "192x192" }]
-    },
-    {
-      "name": "WhatsApp",
-      "short_name": "WA",
-      "description": "Hubungi WhatsApp",
-      "url": "https://wa.me/6282156912202",
-      "icons": [{ "src": "/images/Logo.png", "sizes": "192x192" }]
     }
-  ],
-  "screenshots": [
-    {
-      "src": "/images/Logo.png",
-      "sizes": "1280x720",
-      "type": "image/png",
-      "description": "Aktif Laundry - Tampilan layanan"
-    }
-  ],
-  "related_applications": [],
-  "prefer_related_applications": false,
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  ]
 }
