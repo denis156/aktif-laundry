@@ -20,12 +20,11 @@ use App\Livewire\Transaksi\Index as TransaksiIndex;
 use App\Livewire\Pelanggan\Create as PelangganCreate;
 use App\Livewire\Transaksi\Create as TransaksiCreate;
 use App\Livewire\JenisPakaian\Edit as JenisPakaianEdit;
-use App\Livewire\LandingPage\Index as LandingPageIndex;
 use App\Livewire\JenisPakaian\Index as JenisPakaianIndex;
 use App\Livewire\JenisPakaian\Create as JenisPakaianCreate;
 
 // Landing Page Route - Public
-Route::get('/', LandingPageIndex::class)->name('landing.hero');
+Route::view('/', 'components.layouts.landingpage')->name('landing-page');
 
 // Public Routes - tanpa auth
 Route::prefix('admin')->group(function() {
