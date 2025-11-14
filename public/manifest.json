@@ -3,7 +3,7 @@
   "short_name": "Aktif Laundry",
   "description": "Jasa laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg dengan gratis antar jemput untuk mahasiswa dan pekerja sibuk.",
   "start_url": "/",
-  "display": "standalone",
+  "display": "browser",
   "background_color": "#ffffff",
   "theme_color": "#dc2626",
   "orientation": "portrait-primary",
