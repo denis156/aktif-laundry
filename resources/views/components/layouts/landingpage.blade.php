@@ -7,15 +7,15 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
     <!-- SEO Meta Tags -->
-    <title>Aktif Laundry - Jasa Laundry Profesional Kendari | Cuci Setrika Rp 5.000/kg | Antar Jemput Gratis</title>
+    <title>{{ config('app.name') }} - Jasa Laundry Profesional Kendari | Cuci Setrika Rp 5.000/kg | Antar Jemput Gratis</title>
     <meta name="description"
-        content="Aktif Laundry - Jasa laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg, cuci setrika Rp 7.000/kg. Gratis antar jemput untuk mahasiswa dan pekerja sibuk. WhatsApp sekarang!">
+        content="{{ config('app.name') }} - Jasa laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg, cuci setrika Rp 7.000/kg. Gratis antar jemput untuk mahasiswa dan pekerja sibuk. WhatsApp sekarang!">
     <meta name="keywords"
-        content="laundry Kendari, laundry Sulawesi Tenggara, cuci baju Kendari, laundry kiloan Kendari, laundry mahasiswa Kendari, laundry antar jemput Kendari, cuci setrika Kendari, cuci lipat Kendari, laundry profesional Kendari, laundry murah Kendari, laundry express Kendari, Aktif Laundry">
+        content="laundry Kendari, laundry Sulawesi Tenggara, cuci baju Kendari, laundry kiloan Kendari, laundry mahasiswa Kendari, laundry antar jemput Kendari, cuci setrika Kendari, cuci lipat Kendari, laundry profesional Kendari, laundry murah Kendari, laundry express Kendari, {{ config('app.name') }}">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Aktif Laundry - Jasa Laundry Profesional Kendari | Gratis Antar Jemput">
+    <meta property="og:title" content="{{ config('app.name') }} - Jasa Laundry Profesional Kendari | Gratis Antar Jemput">
     <meta property="og:description"
         content="Laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg. Hemat waktu dan energi dengan layanan laundry antar jemput gratis. WhatsApp sekarang!">
     <meta property="og:image" content="{{ asset('images/Logo.png') }}">
@@ -23,13 +23,13 @@
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Aktif Laundry - Jasa Laundry Profesional Kendari">
+    <meta name="twitter:title" content="{{ config('app.name') }} - Jasa Laundry Profesional Kendari">
     <meta name="twitter:description"
         content="Laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg. Gratis antar jemput untuk mahasiswa dan pekerja sibuk.">
     <meta name="twitter:image" content="{{ asset('images/Logo.png') }}">
 
     <!-- Additional SEO -->
-    <meta name="author" content="Aktif Laundry">
+    <meta name="author" content="{{ config('app.name') }}">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="language" content="id">
     <meta name="geo.region" content="ID">
@@ -49,103 +49,6 @@
 
     <!-- Logo for SEO -->
     <link rel="image_src" href="{{ asset('images/Logo.png') }}">
-
-    <!-- PWA Manifest & Icons -->
-    <link rel="manifest" href="{{ url('/manifest.json') }}">
-    <link rel="apple-touch-icon" href="{{ url('/images/Logo.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ url('/images/Logo.png') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ url('/images/Logo.png') }}">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Aktif Laundry">
-    <meta name="application-name" content="Aktif Laundry">
-    <meta name="msapplication-TileColor" content="#dc2626">
-
-    <!-- Structured Data -->
-    @php
-        $structuredData = [
-            '@context' => 'https://schema.org',
-            '@type' => 'LocalBusiness',
-            'name' => 'Aktif Laundry',
-            'alternateName' => 'Aktif Laundry Kendari',
-            'description' =>
-                'Jasa laundry profesional di Kendari, Sulawesi Tenggara dengan layanan antar jemput gratis untuk mahasiswa dan pekerja sibuk. Cuci + lipat mulai Rp 5.000/kg.',
-            'url' => url('/'),
-            'telephone' => '+6282156912202',
-            'priceRange' => 'Rp 5.000 - Rp 7.000',
-            'currenciesAccepted' => 'IDR',
-            'paymentAccepted' => 'Cash, Transfer, E-Wallet',
-            'address' => [
-                '@type' => 'PostalAddress',
-                'addressLocality' => 'Kendari',
-                'addressRegion' => 'Sulawesi Tenggara',
-                'addressCountry' => 'ID',
-            ],
-            'areaServed' => [
-                '@type' => 'Place',
-                'name' => 'Kendari, Sulawesi Tenggara',
-                'addressCountry' => 'ID',
-            ],
-            'logo' => asset('images/Logo.png'),
-            'image' => [asset('images/Logo.png')],
-            'hasMerchantReturnPolicy' => [
-                '@type' => 'MerchantReturnPolicy',
-                'returnPolicyCategory' => 'https://schema.org/MerchantReturnFiniteReturnWindow',
-            ],
-            'openingHours' => 'Mo-Su 08:00-21:00',
-            'serviceType' => 'Laundry Service',
-            'slogan' => 'Tetap Aktif, Tetap Bersih',
-            'foundingDate' => '2024',
-            'hasOfferCatalog' => [
-                '@type' => 'OfferCatalog',
-                'name' => 'Laundry Services',
-                'itemListElement' => [
-                    [
-                        '@type' => 'Offer',
-                        'itemOffered' => [
-                            '@type' => 'Service',
-                            'name' => 'Cuci + Lipat',
-                            'description' =>
-                                'Layanan cuci dan lipat rapi dengan parfum premium dan gratis antar jemput',
-                        ],
-                        'price' => '5000',
-                        'priceCurrency' => 'IDR',
-                        'availability' => 'https://schema.org/InStock',
-                        'validFrom' => '2024-01-01',
-                    ],
-                    [
-                        '@type' => 'Offer',
-                        'itemOffered' => [
-                            '@type' => 'Service',
-                            'name' => 'Cuci + Setrika',
-                            'description' =>
-                                'Layanan cuci bersih dan setrika rapi dengan parfum premium dan gratis antar jemput',
-                        ],
-                        'price' => '7000',
-                        'priceCurrency' => 'IDR',
-                        'availability' => 'https://schema.org/InStock',
-                        'validFrom' => '2024-01-01',
-                    ],
-                ],
-            ],
-            'sameAs' => [
-                'https://www.tiktok.com/@miegacoanlevel01',
-                'https://www.instagram.com/aktif_laundry',
-                'https://wa.me/6282156912202',
-                'https://aktiflaundry.com',
-            ],
-            'aggregateRating' => [
-                '@type' => 'AggregateRating',
-                'ratingValue' => '5',
-                'reviewCount' => '1',
-                'bestRating' => '5',
-                'worstRating' => '1',
-            ],
-        ];
-    @endphp
-    <script type="application/ld+json">
-    {!! json_encode($structuredData) !!}
-    </script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
