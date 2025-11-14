@@ -54,12 +54,12 @@ class Index extends Component
     {
         return [
             ['key' => 'kode_pelanggan', 'label' => 'Kode', 'class' => 'w-24'],
-            ['key' => 'nama', 'label' => 'Nama Pelanggan', 'class' => 'w-48'],
-            ['key' => 'no_hp', 'label' => 'No. HP', 'class' => 'w-32'],
-            ['key' => 'email', 'label' => 'Email', 'class' => 'w-48'],
+            ['key' => 'nama', 'label' => 'Nama Pelanggan', 'class' => 'w-48', 'sortable' => false],
+            ['key' => 'no_hp', 'label' => 'No. HP', 'class' => 'w-32', 'sortable' => false],
+            ['key' => 'email', 'label' => 'Email', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'tanggal_daftar', 'label' => 'Tanggal Daftar', 'class' => 'w-32'],
-            ['key' => 'total_transaksi', 'label' => 'Total Transaksi', 'class' => 'w-32'],
-            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24'],
+            ['key' => 'total_transaksi', 'label' => 'Total Transaksi', 'class' => 'w-32', 'sortable' => false],
+            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
 

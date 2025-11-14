@@ -1,65 +1,57 @@
 <div wire:poll.visible.30s>
     <!-- HEADER -->
-    <x-header title="Jenis Pakaian" icon="o-square-3-stack-3d" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" subtitle="Kategori & Jenis Cucian" separator progress-indicator>
+    <x-header title="Jenis Pakaian" icon="o-square-3-stack-3d"
+        icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" subtitle="Kategori & Jenis Cucian"
+        separator progress-indicator>
         <x-slot:middle class="justify-end">
-            <x-input placeholder="Cari jenis pakaian..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
+            <x-input placeholder="Cari jenis pakaian..." wire:model.live.debounce="search" clearable
+                icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
-            <x-button label="Tambah Jenis Pakaian" link="{{ route('jenis-pakaian.create') }}" wire:navigate.hover responsive icon="o-plus" class="btn-success" />
+            <x-button label="Tambah Jenis Pakaian" link="{{ route('jenis-pakaian.create') }}" wire:navigate.hover
+                responsive icon="o-plus" class="btn-success" />
             <x-button label="Filters" @click="$wire.drawer = true" responsive icon="o-funnel" class="btn-primary" />
         </x-slot:actions>
     </x-header>
 
     <!-- TABLE  -->
-    <x-card class="shadow-sm">
-        <x-table :headers="$headers" :rows="$jenisPakaian" :sort-by="$sortBy" striped with-pagination per-page="perPage" :per-page-values="[5, 10, 25, 50]" link="{{ route('jenis-pakaian.edit', '[id]') }}">
+    <x-card class="shadow-sm" title="Jenis Pakaian" subtitle="Kategori cucian yang tersedia" shadow separator>
+        <x-table :headers="$headers" :rows="$jenisPakaian" :sort-by="$sortBy" striped with-pagination per-page="perPage"
+            :per-page-values="[5, 10, 25, 50]" link="{{ route('jenis-pakaian.edit', '[id]') }}">
             <x-slot:empty>
                 <x-icon name="o-cube" label="Tidak ada data jenis pakaian." />
             </x-slot:empty>
 
             @scope('cell_status', $item)
-            @if($item->status == 'Aktif')
-                <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-            @else
-                <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
-            @endif
+                @if ($item->status == 'Aktif')
+                    <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+                @else
+                    <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
+                @endif
             @endscope
 
             @scope('actions', $item)
-            <div class="flex items-center justify-end gap-2">
-                <x-button
-                    label="Edit"
-                    icon="o-pencil"
-                    link="{{ route('jenis-pakaian.edit', $item->id) }}"
-                    wire:navigate.hover
-                    class="btn-sm btn-soft btn-info"
-                />
-                <x-button
-                    label="Hapus"
-                    icon="o-trash"
-                    wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_jenis }}')"
-                    class="btn-sm btn-soft btn-error"
-                />
-            </div>
+                <div class="flex items-center justify-end gap-2">
+                    <x-button label="Edit" icon="o-pencil" link="{{ route('jenis-pakaian.edit', $item->id) }}"
+                        wire:navigate.hover class="btn-sm btn-soft btn-info" />
+                    <x-button label="Hapus" icon="o-trash"
+                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_jenis }}')"
+                        class="btn-sm btn-soft btn-error" />
+                </div>
             @endscope
         </x-table>
     </x-card>
 
     <!-- FILTER DRAWER -->
-    <x-drawer wire:model="drawer" title="Filter Jenis Pakaian" subtitle="Saring data sesuai kebutuhan" right separator with-close-button class="lg:w-1/3">
+    <x-drawer wire:model="drawer" title="Filter Jenis Pakaian" subtitle="Saring data sesuai kebutuhan" right separator
+        with-close-button class="lg:w-1/3">
         <div class="space-y-5">
-            <x-select
-                label="Status Jenis Pakaian"
-                wire:model.live="statusFilter"
-                icon="o-funnel"
-                :options="[
-                    ['id' => '', 'name' => 'Semua Status'],
-                    ['id' => 'Aktif', 'name' => 'Aktif'],
-                    ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']
-                ]"
-                option-value="id"
-                option-label="name"
-            />
+            <x-select label="Status Jenis Pakaian" wire:model.live="statusFilter" icon="o-funnel" :options="[
+                ['id' => '', 'name' => 'Semua Status'],
+                ['id' => 'Aktif', 'name' => 'Aktif'],
+                ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
+            ]"
+                option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>
@@ -78,7 +70,8 @@
             <div>
                 <h3 class="text-lg font-bold text-error">Konfirmasi Hapus!</h3>
                 <p class="text-sm text-base-content mt-2">Data yang sudah dihapus tidak dapat dikembalikan.</p>
-                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus jenis pakaian <span class="font-bold">{{ $deleteName }}</span> ?</p>
+                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus jenis pakaian <span
+                        class="font-bold">{{ $deleteName }}</span> ?</p>
             </div>
         </div>
 

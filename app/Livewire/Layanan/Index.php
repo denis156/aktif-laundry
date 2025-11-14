@@ -56,11 +56,11 @@ class Index extends Component
     {
         return [
             ['key' => 'kode_layanan', 'label' => 'Kode', 'class' => 'w-20'],
-            ['key' => 'nama_layanan', 'label' => 'Nama Layanan', 'class' => 'w-48'],
-            ['key' => 'tipe_layanan', 'label' => 'Tipe', 'class' => 'w-20'],
-            ['key' => 'harga', 'label' => 'Harga', 'class' => 'w-32'],
+            ['key' => 'nama_layanan', 'label' => 'Nama Layanan', 'class' => 'w-48', 'sortable' => false],
+            ['key' => 'tipe_layanan', 'label' => 'Tipe', 'class' => 'w-20', 'sortable' => false],
+            ['key' => 'harga', 'label' => 'Harga', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'durasi_jam', 'label' => 'Durasi (Jam)', 'class' => 'w-24'],
-            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24'],
+            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
 

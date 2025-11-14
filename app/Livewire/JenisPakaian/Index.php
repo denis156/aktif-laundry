@@ -54,9 +54,9 @@ class Index extends Component
     {
         return [
             ['key' => 'kode_jenis', 'label' => 'Kode', 'class' => 'w-24'],
-            ['key' => 'nama_jenis', 'label' => 'Nama Jenis', 'class' => 'w-48'],
-            ['key' => 'keterangan', 'label' => 'Keterangan'],
-            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24'],
+            ['key' => 'nama_jenis', 'label' => 'Nama Jenis', 'class' => 'w-48', 'sortable' => false],
+            ['key' => 'keterangan', 'label' => 'Keterangan', 'sortable' => false],
+            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
 

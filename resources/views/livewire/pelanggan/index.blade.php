@@ -1,73 +1,65 @@
 <div wire:poll.visible.30s>
     <!-- HEADER -->
-    <x-header title="Pelanggan" icon="o-users" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" subtitle="Database Klien & Riwayat" separator progress-indicator>
+    <x-header title="Pelanggan" icon="o-users" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
+        subtitle="Database Klien & Riwayat" separator progress-indicator>
         <x-slot:middle class="justify-end">
-            <x-input placeholder="Cari pelanggan..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
+            <x-input placeholder="Cari pelanggan..." wire:model.live.debounce="search" clearable
+                icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
-            <x-button label="Tambah Pelanggan" link="{{ route('pelanggan.create') }}" wire:navigate.hover responsive icon="o-plus" class="btn-success" />
+            <x-button label="Tambah Pelanggan" link="{{ route('pelanggan.create') }}" wire:navigate.hover responsive
+                icon="o-plus" class="btn-success" />
             <x-button label="Filters" @click="$wire.drawer = true" responsive icon="o-funnel" class="btn-primary" />
         </x-slot:actions>
     </x-header>
 
     <!-- TABLE  -->
-    <x-card class="shadow-sm">
-        <x-table :headers="$headers" :rows="$pelanggan" :sort-by="$sortBy" striped with-pagination per-page="perPage" :per-page-values="[5, 10, 25, 50]" link="{{ route('pelanggan.edit', '[id]') }}">
+    <x-card class="shadow-sm" title="Data Pelanggan" subtitle="Kelola informasi klien laundry" shadow separator>
+        <x-table :headers="$headers" :rows="$pelanggan" :sort-by="$sortBy" striped with-pagination per-page="perPage"
+            :per-page-values="[5, 10, 25, 50]" link="{{ route('pelanggan.edit', '[id]') }}">
             <x-slot:empty>
                 <x-icon name="o-cube" label="Tidak ada data pelanggan." />
             </x-slot:empty>
 
             @scope('cell_tanggal_daftar', $item)
-            <span class="text-sm truncate" title="{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d F Y H:i:s') }}">{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y H:i') }}</span>
+                <span class="text-sm truncate"
+                    title="{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d F Y H:i:s') }}">{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y H:i') }}</span>
             @endscope
 
             @scope('cell_total_transaksi', $item)
-            <span class="badge badge-outline badge-sm">{{ $item->total_transaksi }}x</span>
+                <span class="badge badge-outline badge-sm">{{ $item->total_transaksi }}x</span>
             @endscope
 
             @scope('cell_status', $item)
-            @if($item->status == 'Aktif')
-                <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-            @else
-                <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
-            @endif
+                @if ($item->status == 'Aktif')
+                    <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+                @else
+                    <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
+                @endif
             @endscope
 
             @scope('actions', $item)
-            <div class="flex items-center justify-end gap-2">
-                <x-button
-                    label="Edit"
-                    icon="o-pencil"
-                    link="{{ route('pelanggan.edit', $item->id) }}"
-                    wire:navigate.hover
-                    class="btn-sm btn-soft btn-info"
-                />
-                <x-button
-                    label="Hapus"
-                    icon="o-trash"
-                    wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama }}')"
-                    class="btn-sm btn-soft btn-error"
-                />
-            </div>
+                <div class="flex items-center justify-end gap-2">
+                    <x-button label="Edit" icon="o-pencil" link="{{ route('pelanggan.edit', $item->id) }}"
+                        wire:navigate.hover class="btn-sm btn-soft btn-info" />
+                    <x-button label="Hapus" icon="o-trash"
+                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama }}')"
+                        class="btn-sm btn-soft btn-error" />
+                </div>
             @endscope
         </x-table>
     </x-card>
 
     <!-- FILTER DRAWER -->
-    <x-drawer wire:model="drawer" title="Filter Pelanggan" subtitle="Saring data sesuai kebutuhan" right separator with-close-button class="lg:w-1/3">
+    <x-drawer wire:model="drawer" title="Filter Pelanggan" subtitle="Saring data sesuai kebutuhan" right separator
+        with-close-button class="lg:w-1/3">
         <div class="space-y-5">
-            <x-select
-                label="Status Pelanggan"
-                wire:model.live="statusFilter"
-                icon="o-funnel"
-                :options="[
-                    ['id' => '', 'name' => 'Semua Status'],
-                    ['id' => 'Aktif', 'name' => 'Aktif'],
-                    ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']
-                ]"
-                option-value="id"
-                option-label="name"
-            />
+            <x-select label="Status Pelanggan" wire:model.live="statusFilter" icon="o-funnel" :options="[
+                ['id' => '', 'name' => 'Semua Status'],
+                ['id' => 'Aktif', 'name' => 'Aktif'],
+                ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
+            ]"
+                option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>
@@ -86,7 +78,8 @@
             <div>
                 <h3 class="text-lg font-bold text-error">Konfirmasi Hapus!</h3>
                 <p class="text-sm text-base-content mt-2">Data yang sudah dihapus tidak dapat dikembalikan.</p>
-                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus pelanggan <span class="font-bold">{{ $deleteName }}</span> ?</p>
+                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus pelanggan <span
+                        class="font-bold">{{ $deleteName }}</span> ?</p>
             </div>
         </div>
 
