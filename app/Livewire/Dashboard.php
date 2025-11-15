@@ -7,6 +7,7 @@ use Mary\Traits\Toast;
 use Livewire\Component;
 use App\Models\Transaksi;
 use Livewire\Attributes\Title;
+use Illuminate\Support\Facades\DB;
 
 #[Title('Dashboard')]
 class Dashboard extends Component
@@ -226,14 +227,14 @@ class Dashboard extends Component
             $count = Transaksi::whereDate('tanggal_masuk', $date)->count();
 
             // Sum total berat from transaksi_layanan (per kg)
-            $totalBerat = \DB::table('transaksi_layanan')
+            $totalBerat = DB::table('transaksi_layanan')
                 ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
                 ->whereDate('transaksi.tanggal_masuk', $date)
                 ->whereNull('transaksi_layanan.deleted_at')
                 ->sum('transaksi_layanan.berat_kg');
 
             // Sum total item satuan from transaksi_layanan (per satuan)
-            $totalItemSatuan = \DB::table('transaksi_layanan')
+            $totalItemSatuan = DB::table('transaksi_layanan')
                 ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
                 ->whereDate('transaksi.tanggal_masuk', $date)
                 ->whereNull('transaksi_layanan.deleted_at')
@@ -291,7 +292,7 @@ class Dashboard extends Component
                 ->count();
 
             // Sum total berat from transaksi_layanan (per kg)
-            $totalBerat = \DB::table('transaksi_layanan')
+            $totalBerat = DB::table('transaksi_layanan')
                 ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
                 ->whereMonth('transaksi.tanggal_masuk', $date->month)
                 ->whereYear('transaksi.tanggal_masuk', $date->year)
@@ -299,7 +300,7 @@ class Dashboard extends Component
                 ->sum('transaksi_layanan.berat_kg');
 
             // Sum total item satuan from transaksi_layanan (per satuan)
-            $totalItemSatuan = \DB::table('transaksi_layanan')
+            $totalItemSatuan = DB::table('transaksi_layanan')
                 ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
                 ->whereMonth('transaksi.tanggal_masuk', $date->month)
                 ->whereYear('transaksi.tanggal_masuk', $date->year)
@@ -374,12 +375,12 @@ class Dashboard extends Component
         $pendapatanHariIni = Transaksi::whereDate('tanggal_masuk', today())->sum('total');
 
         // Top 5 Layanan Terpopuler
-        $topLayanan = \DB::table('transaksi_layanan')
+        $topLayanan = DB::table('transaksi_layanan')
             ->select(
                 'transaksi_layanan.layanan_id',
                 'transaksi_layanan.nama_layanan',
-                \DB::raw('COUNT(DISTINCT transaksi_layanan.transaksi_id) as total_transaksi'),
-                \DB::raw('MAX(COALESCE(transaksi_layanan.harga_per_kg, transaksi_layanan.harga_per_satuan)) as harga')
+                DB::raw('COUNT(DISTINCT transaksi_layanan.transaksi_id) as total_transaksi'),
+                DB::raw('MAX(COALESCE(transaksi_layanan.harga_per_kg, transaksi_layanan.harga_per_satuan)) as harga')
             )
             ->whereNull('transaksi_layanan.deleted_at')
             ->groupBy('transaksi_layanan.layanan_id', 'transaksi_layanan.nama_layanan')
