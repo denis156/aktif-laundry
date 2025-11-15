@@ -14,7 +14,8 @@
     </x-header>
 
     <!-- TABLE  -->
-    <x-card class="shadow-sm" title="Data Pelanggan" subtitle="Kelola informasi klien laundry" shadow separator>
+    <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-2" title="Data Pelanggan"
+        subtitle="Kelola informasi klien laundry">
         <x-table :headers="$headers" :rows="$pelanggan" :sort-by="$sortBy" striped with-pagination per-page="perPage"
             :per-page-values="[5, 10, 25, 50]" link="{{ route('pelanggan.edit', '[id]') }}">
             <x-slot:empty>
@@ -41,10 +42,10 @@
             @scope('actions', $item)
                 <div class="flex items-center justify-end gap-2">
                     <x-button label="Edit" icon="o-pencil" link="{{ route('pelanggan.edit', $item->id) }}"
-                        wire:navigate.hover class="btn-sm btn-soft btn-info" />
+                        wire:navigate.hover class="btn-sm btn-outline btn-info" />
                     <x-button label="Hapus" icon="o-trash"
                         wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama }}')"
-                        class="btn-sm btn-soft btn-error" />
+                        class="btn-sm btn-outline btn-error" />
                 </div>
             @endscope
         </x-table>
