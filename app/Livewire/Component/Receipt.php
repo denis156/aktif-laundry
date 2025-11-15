@@ -7,6 +7,7 @@ use App\Models\Setting;
 use Livewire\Component;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
+use App\Helper\QrisHelper;
 
 class Receipt extends Component
 {
@@ -15,6 +16,7 @@ class Receipt extends Component
     public array $setting = [];
     public string $pelangganAlamat = '';
     public string $pelangganNoHp = '';
+    public string $qrCodeSvg = '';
 
     public function mount($id)
     {
@@ -62,6 +64,15 @@ class Receipt extends Component
                 $this->pelangganNoHp = $transaksi->pelanggan->no_hp ?? '';
             }
 
+            // Generate QR Code dynamic on-demand
+            try {
+                $this->qrCodeSvg = QrisHelper::generateOnDemandQrCode((float) $transaksi->total);
+            } catch (Exception $qrError) {
+                // Jika gagal generate QR, gunakan fallback (kosong atau static)
+                $this->qrCodeSvg = '';
+                \Log::warning('QR Code generation failed for transaction ' . $transaksi->id . ': ' . $qrError->getMessage());
+            }
+
         } catch (Exception $e) {
             abort(404, 'Transaksi tidak ditemukan: ' . $e->getMessage());
         }
@@ -74,6 +85,7 @@ class Receipt extends Component
             'setting' => $this->setting,
             'pelangganAlamat' => $this->pelangganAlamat,
             'pelangganNoHp' => $this->pelangganNoHp,
+            'qrCodeSvg' => $this->qrCodeSvg,
         ]);
     }
 
@@ -122,11 +134,20 @@ class Receipt extends Component
                 $pelangganNoHp = $transaksi->pelanggan->no_hp ?? '';
             }
 
+            // Generate QR Code dynamic on-demand
+            $qrCodeSvg = '';
+            try {
+                $qrCodeSvg = QrisHelper::generateOnDemandQrCode((float) $transaksi->total);
+            } catch (Exception $qrError) {
+                \Log::warning('QR Code generation failed for transaction ' . $transaksi->id . ': ' . $qrError->getMessage());
+            }
+
             return [
                 'transaksiData' => $transaksiData,
                 'setting' => $setting,
                 'pelangganAlamat' => $pelangganAlamat,
                 'pelangganNoHp' => $pelangganNoHp,
+                'qrCodeSvg' => $qrCodeSvg,
             ];
 
         } catch (Exception $e) {

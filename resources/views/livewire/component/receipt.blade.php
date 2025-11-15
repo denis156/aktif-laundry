@@ -151,7 +151,7 @@
 <body>
     <!-- HEADER TOKO -->
     <div class="header">
-        <img src="{{ asset('images/Logo.png') }}" alt="Logo" style="max-width: 120px; max-height: 120px; margin: 0 auto 3px; filter: grayscale(100%) contrast(3) brightness(0.3);">
+        <img src="{{ asset('images/Logo.png') }}" alt="Logo" style="max-width: 108px; max-height: 108px; margin: 0 auto 3px; filter: grayscale(100%) contrast(3) brightness(0.3);">
         @if(!empty($setting['whatsapp']))
         <p>WA: {{ $setting['whatsapp'] }}</p>
         @endif
@@ -346,15 +346,25 @@
     </div>
 
     <!-- Qris -->
-    <div class="center" style="margin-top: 28px;">
-        <img src="{{ asset('images/Qris.png') }}"
-             alt="QRIS"
-             style="max-width: 108px; max-height: 108px; margin: 0 auto; display: block; filter: grayscale(100%) contrast(3) brightness(0.3);">
+    <div style="margin-top: 8px; text-align: center; width: 100%; padding: 0 4px;">
+        @if(!empty($qrCodeSvg))
+            <!-- Dynamic QR Code dengan nominal transaksi -->
+            <div style="width: 140px; height: 140px; margin: 0 auto; padding: 4px; display: flex; align-items: center; justify-content: center;">
+                {!! $qrCodeSvg !!}
+            </div>
+        @else
+            <!-- Fallback ke QR static jika generate gagal -->
+            <div style="width: 108px; height: 108px; margin: 0 auto; padding: 4px; display: flex; align-items: center; justify-content: center;">
+                <img src="{{ asset('images/Qris.png') }}"
+                     alt="QRIS"
+                     style="max-width: 108px; max-height: 108px; filter: grayscale(100%) contrast(3) brightness(0.3);">
+            </div>
+        @endif
 
         <!-- Text di bawah QRIS -->
-        <div style="margin-top: 8px; text-align: center;">
+        <div style="margin-top: 8px; text-align: center; width: 100%; padding: 0 4px;">
             <p class="bold" style="font-size: 9px; margin-bottom: 2px;">SCAN UNTUK PEMBAYARAN</p>
-            <p style="font-size: 8px; font-weight: 600; margin: 1px 0;">QRIS</p>
+            <p style="font-size: 8px; font-weight: 600; margin: 1px 0;">QRIS - Rp {{ number_format((int)$transaksiData['total'], 0, ',', '.') }}</p>
             <p class="small" style="margin-top: 2px;">Terima kasih atas kepercayaan Anda</p>
         </div>
     </div>
