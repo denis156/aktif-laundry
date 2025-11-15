@@ -6,20 +6,37 @@ use Exception;
 use App\Models\User;
 use Mary\Traits\Toast;
 use Livewire\Component;
+use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
+use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 #[Title('Edit User')]
 class Edit extends Component
 {
-    use Toast;
+    use Toast, WithFileUploads;
 
     public int $userId;
     public string $name = '';
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public string $currentAvatarUrl = '';
+
+    #[Rule('nullable|image|max:2048')]
+    public $avatar = null;
+
+    public bool $super_admin = false;
+
+    public function roleOptions(): array
+    {
+        return [
+            ['id' => 0, 'name' => 'User'],
+            ['id' => 1, 'name' => 'Super Admin'],
+        ];
+    }
 
     public function mount($id)
     {
@@ -28,6 +45,8 @@ class Edit extends Component
 
         $this->name = $user->name;
         $this->email = $user->email;
+        $this->currentAvatarUrl = $user->avatar_url ?? '';
+        $this->super_admin = $user->super_admin;
     }
 
     public function save()
@@ -36,6 +55,8 @@ class Edit extends Component
         $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . $this->userId,
+            'avatar' => 'nullable|image|max:2048',
+            'super_admin' => 'boolean',
         ];
 
         $messages = [
@@ -43,6 +64,8 @@ class Edit extends Component
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah digunakan',
+            'avatar.image' => 'File harus berupa gambar',
+            'avatar.max' => 'Ukuran gambar maksimal 2MB',
         ];
 
         // Jika password diisi, tambahkan validasi password
@@ -63,10 +86,20 @@ class Edit extends Component
                 return;
             }
 
+            // Upload avatar baru jika ada
+            if ($this->avatar) {
+                // Observer akan otomatis hapus avatar lama
+                $avatarPath = $this->avatar->store('avatars', 'public');
+            } else {
+                $avatarPath = $user->avatar_url;
+            }
+
             // Update user
             $data = [
                 'name' => $this->name,
                 'email' => $this->email,
+                'avatar_url' => $avatarPath,
+                'super_admin' => $this->super_admin,
             ];
 
             // Jika password diisi, update password
@@ -84,6 +117,8 @@ class Edit extends Component
 
     public function render()
     {
-        return view('livewire.admin.edit');
+        return view('livewire.admin.edit', [
+            'roleOptions' => $this->roleOptions(),
+        ]);
     }
 }

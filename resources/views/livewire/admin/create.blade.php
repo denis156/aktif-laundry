@@ -8,6 +8,14 @@
     <x-card>
         <x-form wire:submit="save">
             <div class="space-y-4">
+                <x-file
+                    wire:model="avatar"
+                    label="Avatar"
+                    hint="Opsional - Upload foto avatar (max 2MB)"
+                    accept="image/png, image/jpeg, image/jpg">
+                    <img src="{{ asset('images/Logo.png') }}" class="h-40 rounded-lg" />
+                </x-file>
+
                 <x-input
                     label="Nama Lengkap"
                     wire:model="name"
@@ -22,6 +30,15 @@
                     placeholder="email@example.com"
                     icon="o-envelope"
                     required />
+
+                <x-group
+                    label="Role Pengguna"
+                    wire:model="super_admin"
+                    :options="$roleOptions"
+                    class="checked:btn-primary!"
+                    hint="Pilih role untuk pengguna ini" />
+
+                <div class="divider my-4">Password</div>
 
                 <x-password
                     label="Password"

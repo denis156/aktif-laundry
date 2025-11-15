@@ -62,9 +62,11 @@ class Index extends Component
     public function headers(): array
     {
         return [
-            ['key' => 'name', 'label' => 'Nama', 'class' => 'w-1/3', 'sortable' => false],
-            ['key' => 'email', 'label' => 'Email', 'class' => 'w-1/3', 'sortable' => false],
-            ['key' => 'created_at', 'label' => 'Dibuat', 'class' => 'w-1/4']
+            ['key' => 'avatar_url', 'label' => 'Avatar', 'class' => 'w-16', 'sortable' => false],
+            ['key' => 'name', 'label' => 'Nama', 'class' => 'w-1/4', 'sortable' => false],
+            ['key' => 'email', 'label' => 'Email', 'class' => 'w-1/4', 'sortable' => false],
+            ['key' => 'super_admin', 'label' => 'Super Admin', 'class' => 'w-24', 'sortable' => false],
+            ['key' => 'created_at', 'label' => 'Dibuat', 'class' => 'w-1/5']
         ];
     }
 

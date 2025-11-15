@@ -20,6 +20,22 @@
                 <x-icon name="o-cube" label="Tidak ada data user." />
             </x-slot:empty>
 
+            @scope('cell_avatar_url', $user)
+                <div class="flex items-center justify-center">
+                    <img src="{{ $user->avatar_url ? asset('storage/' . $user->avatar_url) : asset('images/Logo.png') }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
+                </div>
+            @endscope
+
+            @scope('cell_super_admin', $user)
+                <div class="flex items-center justify-center">
+                    @if($user->super_admin)
+                        <x-icon name="o-check-circle" class="w-6 h-6 text-success" />
+                    @else
+                        <x-icon name="o-x-circle" class="w-6 h-6 text-error" />
+                    @endif
+                </div>
+            @endscope
+
             @scope('cell_created_at', $user)
                 <span class="text-sm">{{ $user->created_at->format('d M Y H:i') }}</span>
             @endscope
