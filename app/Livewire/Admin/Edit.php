@@ -61,11 +61,14 @@ class Edit extends Component
 
         $messages = [
             'name.required' => 'Nama wajib diisi',
+            'name.string' => 'Nama harus berupa teks',
+            'name.max' => 'Nama maksimal 255 karakter',
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah digunakan',
             'avatar.image' => 'File harus berupa gambar',
-            'avatar.max' => 'Ukuran gambar maksimal 2MB',
+            'avatar.max' => 'Ukuran file maksimal 2MB',
+            'super_admin.boolean' => 'Role harus berupa pilihan yang valid',
         ];
 
         // Jika password diisi, tambahkan validasi password
