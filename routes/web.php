@@ -71,13 +71,17 @@ Route::middleware('auth')->prefix('admin')->group(function() {
     Route::get('/transaksi/create', TransaksiCreate::class)->name('transaksi.create');
     Route::get('/transaksi/edit/{id}', TransaksiEdit::class)->name('transaksi.edit');
 
-    // Pengaturan Route di /admin/pengaturan
-    Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
+    // Pengaturan Route di /admin/pengaturan (Super Admin Only)
+    Route::middleware('super_admin')->group(function() {
+        Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
+    });
 
-    // Admin Routes di /admin/admin
-    Route::get('/admin', AdminIndex::class)->name('admin.index');
-    Route::get('/admin/create', AdminCreate::class)->name('admin.create');
-    Route::get('/admin/edit/{id}', AdminEdit::class)->name('admin.edit');
+    // Admin Routes di /admin/admin (Super Admin Only)
+    Route::middleware('super_admin')->group(function() {
+        Route::get('/admin', AdminIndex::class)->name('admin.index');
+        Route::get('/admin/create', AdminCreate::class)->name('admin.create');
+        Route::get('/admin/edit/{id}', AdminEdit::class)->name('admin.edit');
+    });
 
     // Profile Route di /admin/profile
     Route::get('/profile', Profile::class)->name('profile');

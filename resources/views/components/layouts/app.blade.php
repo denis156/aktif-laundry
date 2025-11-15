@@ -70,8 +70,10 @@
 
                 <x-menu-separator />
 
-                <x-menu-item title="Admin" icon="o-user-group" link="{{ route('admin.index') }}" wire:navigate.hover exact />
-                <x-menu-item title="Pengaturan" icon="o-cog-6-tooth" link="{{ route('pengaturan') }}" wire:navigate.hover exact />
+                @if(Auth::user()->super_admin)
+                    <x-menu-item title="Admin" icon="o-user-group" link="{{ route('admin.index') }}" wire:navigate.hover exact />
+                    <x-menu-item title="Pengaturan" icon="o-cog-6-tooth" link="{{ route('pengaturan') }}" wire:navigate.hover exact />
+                @endif
                 <x-menu-item title="Profil Saya" icon="o-user-circle" link="{{ route('profile') }}" wire:navigate.hover exact />
 
                 <x-menu-separator />
