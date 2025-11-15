@@ -9,6 +9,8 @@ use Livewire\Component;
 use App\Models\Transaksi;
 use Livewire\WithPagination;
 use Livewire\Attributes\Title;
+use App\Exports\TransaksiExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 #[Title('Daftar Transaksi')]
 class Index extends Component
@@ -26,6 +28,7 @@ class Index extends Component
     public string $tanggalMulai = '';
     public string $tanggalAkhir = '';
     public int $perPage = 10;
+    public array $selected = [];
 
     public function clear(): void
     {
@@ -60,25 +63,32 @@ class Index extends Component
         }
     }
 
+    public function exportExcel()
+    {
+        try {
+            $filename = 'transaksi_' . now()->format('Y-m-d_His') . '.xlsx';
+
+            $this->info('Mengunduh ' . count($this->selected) . ' transaksi...', position: 'toast-bottom');
+
+            return Excel::download(new TransaksiExport($this->selected), $filename);
+        } catch (Exception $e) {
+            $this->error('Gagal export Excel: ' . $e->getMessage(), position: 'toast-bottom');
+        }
+    }
+
     public function headers(): array
     {
         return [
             ['key' => 'kode_transaksi', 'label' => 'Kode', 'class' => 'w-20'],
-            ['key' => 'kasir', 'label' => 'Kasir', 'class' => 'w-24'],
+            ['key' => 'kasir', 'label' => 'Kasir', 'class' => 'w-24', 'sortable' => false],
             ['key' => 'tanggal_masuk', 'label' => 'Tgl Masuk', 'class' => 'w-32'],
-            ['key' => 'nama_pelanggan', 'label' => 'Pelanggan', 'class' => 'w-32'],
-            ['key' => 'layanan_info', 'label' => 'Layanan', 'class' => 'w-40'],
+            ['key' => 'nama_pelanggan', 'label' => 'Pelanggan', 'class' => 'w-32', 'sortable' => false],
+            ['key' => 'layanan_info', 'label' => 'Layanan', 'class' => 'w-40', 'sortable' => false],
             ['key' => 'total', 'label' => 'Total', 'class' => 'w-28'],
-            ['key' => 'metode_pembayaran', 'label' => 'Pembayaran', 'class' => 'w-24'],
-            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24'],
+            ['key' => 'metode_pembayaran', 'label' => 'Pembayaran', 'class' => 'w-24', 'sortable' => false],
+            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
-
-    public function kasir()
-    {
-        return $this->belongsTo(User::class, 'kasir_id');
-    }
-
 
     public function transaksi()
     {
