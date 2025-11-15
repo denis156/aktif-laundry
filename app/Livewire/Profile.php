@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use Exception;
+use App\Models\User;
 use Mary\Traits\Toast;
 use Livewire\Component;
 use Livewire\Attributes\Rule;
@@ -71,6 +72,8 @@ class Profile extends Component
 
         $messages = [
             'name.required' => 'Nama wajib diisi',
+            'name.string' => 'Nama harus berupa teks',
+            'name.max' => 'Nama maksimal 255 karakter',
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah digunakan',
