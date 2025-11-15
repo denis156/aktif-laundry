@@ -94,7 +94,7 @@ class Profile extends Component
         $this->validate($rules, $messages);
 
         try {
-            $user = Auth::user();
+            $user = User::findOrFail(Auth::id());
 
             // Upload avatar baru jika ada
             if ($this->avatar) {
