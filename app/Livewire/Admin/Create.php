@@ -53,8 +53,8 @@ class Create extends Component
             'password.required' => 'Password wajib diisi',
             'password.min' => 'Password minimal 8 karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
-            'avatar.image' => 'File harus berupa gambar',
-            'avatar.max' => 'Ukuran file maksimal 2MB',
+            'file.image' => 'File harus berupa gambar',
+            'file.max' => 'Ukuran file maksimal 2MB',
             'super_admin.boolean' => 'Role harus berupa pilihan yang valid',
         ]);
 

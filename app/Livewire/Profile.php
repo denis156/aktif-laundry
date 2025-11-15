@@ -77,8 +77,8 @@ class Profile extends Component
             'email.required' => 'Email wajib diisi',
             'email.email' => 'Format email tidak valid',
             'email.unique' => 'Email sudah digunakan',
-            'avatar.image' => 'File harus berupa gambar',
-            'avatar.max' => 'Ukuran file maksimal 2MB',
+            'file.image' => 'File harus berupa gambar',
+            'file.max' => 'Ukuran file maksimal 2MB',
         ];
 
         // Validasi password jika diisi
