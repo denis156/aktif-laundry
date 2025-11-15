@@ -2,6 +2,7 @@
 
 use App\Livewire\Kasir;
 use App\Livewire\Login;
+use App\Livewire\Profile;
 use App\Livewire\Dashboard;
 use App\Livewire\Pengaturan;
 use App\Livewire\Component\Receipt;
@@ -77,6 +78,9 @@ Route::middleware('auth')->prefix('admin')->group(function() {
     Route::get('/admin', AdminIndex::class)->name('admin.index');
     Route::get('/admin/create', AdminCreate::class)->name('admin.create');
     Route::get('/admin/edit/{id}', AdminEdit::class)->name('admin.edit');
+
+    // Profile Route di /admin/profile
+    Route::get('/profile', Profile::class)->name('profile');
 
     // Receipt Print Route di /admin/receipt/print
     Route::get('/receipt/print/{id}', function($id) {
