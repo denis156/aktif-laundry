@@ -17,7 +17,7 @@ return new class extends Migration
             $table->id();
             $table->string('kode_pelanggan')->unique()->comment('PLG001, PLG002, etc');
             $table->string('nama');
-            $table->string('no_hp', 15)->unique();
+            $table->string('no_hp', 15);
             $table->string('email')->nullable()->unique();
             $table->text('alamat');
 
