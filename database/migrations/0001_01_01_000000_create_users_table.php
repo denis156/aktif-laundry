@@ -22,7 +22,8 @@ return new class extends Migration
             $table->string('password');
             $table->string('avatar_url')->nullable()->after('email');
             $table->boolean('super_admin')->default(false)->after('avatar_url');
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: no_hp, alamat, shift, gaji, target_bulanan, dll');
+            $table->text('alamat')->nullable()->comment('Alamat lengkap (auto-generated dari metadata)');
+            $table->jsonb('metadata')->nullable()->comment('Flexible data: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, shift, gaji, target_bulanan, dll');
             $table->rememberToken();
             $table->timestamps();
         });

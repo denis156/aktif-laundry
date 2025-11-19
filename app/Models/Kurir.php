@@ -14,7 +14,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 //
 // ? Menyimpan data kurir untuk antar jemput
 // ? Extends Authenticatable untuk login di aplikasi courier
-// ? Metadata: area_coverage, bank_info, emergency_contact
+// ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
+// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, area_coverage, bank_info, emergency_contact
 
 class Kurir extends Authenticatable
 {

@@ -14,9 +14,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ! Model Pelanggan - Customer/Member
 //
 // ? Menyimpan data pelanggan laundry
-// ? Dilengkapi dengan wilayah (kelurahan, kecamatan, kabupaten_kota, provinsi)
-// ? GPS coordinates dan sistem referral
-// ? Metadata: member_card, loyalty_points, preferensi_pengiriman, villages, district, regency, province, detail_alamat
+// ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
+// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, member_card, loyalty_points, preferensi_pengiriman
 
 class Pelanggan extends Model
 {
@@ -31,12 +30,6 @@ class Pelanggan extends Model
         'no_hp',
         'email',
         'alamat',
-        'kelurahan',
-        'kecamatan',
-        'kabupaten_kota',
-        'provinsi',
-        'latitude',
-        'longitude',
         'tanggal_daftar',
         'total_transaksi',
         'status',
@@ -51,8 +44,6 @@ class Pelanggan extends Model
         return [
             'tanggal_daftar' => 'date',
             'total_transaksi' => 'integer',
-            'latitude' => 'decimal:8',
-            'longitude' => 'decimal:8',
             'direferensikan_oleh' => 'integer',
             'metadata' => 'array',
         ];

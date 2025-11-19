@@ -12,7 +12,8 @@ use Illuminate\Notifications\Notifiable;
 // ! Model User - Pegawai/Admin/Kasir
 //
 // ? Menyimpan data pengguna sistem (bukan pelanggan)
-// ? Metadata: alamat, shift, gaji
+// ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
+// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, shift, gaji, target_bulanan
 
 class User extends Authenticatable
 {
@@ -28,6 +29,7 @@ class User extends Authenticatable
         'avatar_url',
         'super_admin',
         'email_verified_at',
+        'alamat',
         'metadata',
     ];
 

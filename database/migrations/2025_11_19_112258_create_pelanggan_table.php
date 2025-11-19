@@ -19,17 +19,7 @@ return new class extends Migration
             $table->string('nama');
             $table->string('no_hp', 15);
             $table->string('email')->nullable()->unique();
-            $table->text('alamat');
-
-            // Wilayah
-            $table->string('kelurahan')->nullable()->comment('Kelurahan/Desa');
-            $table->string('kecamatan')->nullable();
-            $table->string('kabupaten_kota')->nullable()->comment('Kabupaten/Kota');
-            $table->string('provinsi')->nullable();
-
-            // Koordinat GPS
-            $table->decimal('latitude', 10, 8)->nullable();
-            $table->decimal('longitude', 11, 8)->nullable();
+            $table->text('alamat')->comment('Alamat lengkap (auto-generated dari metadata)');
 
             $table->dateTime('tanggal_daftar');
             $table->integer('total_transaksi')->default(0);
@@ -40,7 +30,7 @@ return new class extends Migration
             $table->foreignId('direferensikan_oleh')->nullable()->constrained('pelanggan')->onDelete('set null')->comment('ID pelanggan yang nge-refer');
 
             // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: instagram, preferensi, catatan khusus, dll');
+            $table->jsonb('metadata')->nullable()->comment('Flexible data: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, instagram, preferensi, dll');
 
             $table->timestamps();
             $table->softDeletes();

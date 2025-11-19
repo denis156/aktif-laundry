@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('nama');
             $table->string('no_hp', 15)->unique();
             $table->string('email')->nullable()->unique();
-            $table->text('alamat')->nullable();
+            $table->text('alamat')->nullable()->comment('Alamat lengkap (auto-generated dari metadata)');
 
             // Vehicle info
             $table->string('no_kendaraan')->nullable()->comment('Plat nomor');
@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('device_token')->nullable()->comment('FCM token untuk push notification');
 
             // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: rating, area_coverage, bank_info, emergency_contact, dll');
+            $table->jsonb('metadata')->nullable()->comment('Flexible data: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, area_coverage, bank_info, emergency_contact, dll');
 
             $table->timestamps();
             $table->softDeletes();

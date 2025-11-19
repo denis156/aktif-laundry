@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Helpers;
+namespace App\Helper;
 
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -35,7 +35,7 @@ class RegionalLocation
     private const SULAWESI_TENGGARA_CODE = '74';
 
     // ! Kota Kendari regency code
-    private const KOTA_KENDARI_CODE = '71';
+    private const KOTA_KENDARI_CODE = '74.71';
 
     // * Get semua provinsi di Indonesia
     public static function getProvinces(): array

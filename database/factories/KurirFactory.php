@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Helper\AddressMetadata;
+use App\Helper\RegionalLocation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
@@ -23,6 +25,63 @@ class KurirFactory extends Factory
     {
         static $counter = 1;
 
+        // Wilayah Kota Kendari untuk kurir
+        $wilayah = [
+            ['kelurahan' => 'Mandonga', 'kecamatan' => 'Mandonga'],
+            ['kelurahan' => 'Wua-Wua', 'kecamatan' => 'Wua-Wua'],
+            ['kelurahan' => 'Poasia', 'kecamatan' => 'Poasia'],
+            ['kelurahan' => 'Baruga', 'kecamatan' => 'Baruga'],
+            ['kelurahan' => 'Kendari', 'kecamatan' => 'Kendari'],
+            ['kelurahan' => 'Kendari Barat', 'kecamatan' => 'Kendari Barat'],
+            ['kelurahan' => 'Abeli', 'kecamatan' => 'Abeli'],
+            ['kelurahan' => 'Kambu', 'kecamatan' => 'Kambu'],
+            ['kelurahan' => 'Kadia', 'kecamatan' => 'Kadia'],
+            ['kelurahan' => 'Puuwatu', 'kecamatan' => 'Puuwatu'],
+        ];
+
+        $selectedWilayah = fake()->randomElement($wilayah);
+
+        // Detail alamat kurir
+        $detailAlamat = fake()->streetAddress();
+
+        // Koordinat GPS Kota Kendari
+        $latitude = fake()->latitude(-4.0, -3.9);
+        $longitude = fake()->longitude(122.4, 122.6);
+
+        // Generate metadata alamat dengan GPS menggunakan AddressMetadata helper
+        $addressMetadata = AddressMetadata::generate(
+            $detailAlamat,
+            $selectedWilayah['kelurahan'],
+            $selectedWilayah['kecamatan'],
+            RegionalLocation::getRegencyName(),
+            RegionalLocation::getProvinceName(),
+            $latitude,
+            $longitude
+        );
+
+        // Alamat lengkap gabungan (auto-generated dari metadata)
+        $alamatLengkap = RegionalLocation::formatFullAddress(
+            $detailAlamat,
+            $selectedWilayah['kelurahan'],
+            $selectedWilayah['kecamatan'],
+            RegionalLocation::getRegencyName(),
+            RegionalLocation::getProvinceName()
+        );
+
+        // Area coverage sesuai kecamatan di Kota Kendari
+        $areaCoverage = fake()->randomElement([
+            'Mandonga',
+            'Wua-Wua',
+            'Poasia',
+            'Baruga',
+            'Kendari',
+            'Kendari Barat',
+            'Abeli',
+            'Kambu',
+            'Kadia',
+            'Puuwatu',
+        ]);
+
         $jenisKendaraan = ['Motor', 'Mobil'];
         $selected = fake()->randomElement($jenisKendaraan);
 
@@ -31,7 +90,7 @@ class KurirFactory extends Factory
             'nama' => fake()->name(),
             'no_hp' => '8' . fake()->numerify('##########'),
             'email' => fake()->unique()->safeEmail(),
-            'alamat' => fake()->address(),
+            'alamat' => $alamatLengkap, // Alamat lengkap (auto-generated dari metadata)
             'no_kendaraan' => fake()->regexify('[A-Z]{1,2} [0-9]{1,4} [A-Z]{1,3}'),
             'jenis_kendaraan' => $selected,
             'foto_profil' => null,
@@ -41,8 +100,8 @@ class KurirFactory extends Factory
             'total_jemput' => fake()->numberBetween(0, 200),
             'password' => static::$password ??= Hash::make('password'),
             'device_token' => null,
-            'metadata' => [
-                'area_coverage' => fake()->randomElement(['Bandung Timur', 'Bandung Barat', 'Bandung Utara', 'Bandung Selatan']),
+            'metadata' => array_merge($addressMetadata, [
+                'area_coverage' => $areaCoverage,
                 'bank_info' => [
                     'bank' => fake()->randomElement(['BCA', 'Mandiri', 'BRI', 'BNI']),
                     'no_rekening' => fake()->numerify('##########'),
@@ -53,7 +112,7 @@ class KurirFactory extends Factory
                     'no_hp' => '8' . fake()->numerify('##########'),
                     'hubungan' => fake()->randomElement(['Orang Tua', 'Saudara', 'Teman']),
                 ],
-            ],
+            ]),
         ];
     }
 }
