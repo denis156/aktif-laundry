@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('pembayaran', function (Blueprint $table) {
             $table->id();
+            $table->string('kode_pembayaran')->unique()->comment('PBY001, PBY002, etc');
 
             // Relations
             $table->foreignId('transaksi_id')->constrained('transaksi')->onDelete('cascade');
@@ -28,14 +29,18 @@ return new class extends Migration
             // Verification
             $table->enum('status', ['Pending', 'Verified', 'Rejected'])->default('Pending');
             $table->string('bukti_transfer')->nullable()->comment('Path foto bukti transfer');
+            $table->dateTime('verified_at')->nullable();
+            $table->foreignId('verified_by')->nullable()->constrained('users')->onDelete('set null');
             $table->text('catatan')->nullable();
 
             // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: bank_tujuan, nama_pengirim, verified_by, dll');
+            $table->jsonb('metadata')->nullable()->comment('Flexible data: bank_tujuan, nama_pengirim, dll');
 
             $table->timestamps();
+            $table->softDeletes();
 
             // Indexes
+            $table->index('kode_pembayaran');
             $table->index('transaksi_id');
             $table->index('status');
             $table->index('metode');

@@ -30,6 +30,7 @@ class Pelanggan extends Model
         'nama',
         'no_hp',
         'email',
+        'alamat',
         'kelurahan',
         'kecamatan',
         'kabupaten_kota',
@@ -38,7 +39,6 @@ class Pelanggan extends Model
         'longitude',
         'tanggal_daftar',
         'total_transaksi',
-        'total_belanja',
         'status',
         'kode_referral_dipakai',
         'direferensikan_oleh',
@@ -51,7 +51,6 @@ class Pelanggan extends Model
         return [
             'tanggal_daftar' => 'date',
             'total_transaksi' => 'integer',
-            'total_belanja' => 'integer',
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',
             'direferensikan_oleh' => 'integer',

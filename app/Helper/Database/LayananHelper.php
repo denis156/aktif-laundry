@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Helpers\Database;
+namespace App\Helper\Database;
 
 use App\Models\Layanan;
 
