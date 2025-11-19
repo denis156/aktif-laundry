@@ -1,10 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+
+// ! Model Layanan - Jenis Layanan Laundry
+//
+// ? Menyimpan master data layanan (cuci kering, setrika, dll)
+// ? Mendukung pricing per_kg atau per_satuan
+// ? Metadata: include, exclude, min_order, max_order, popular, icon, deskripsi_detail
 
 class Layanan extends Model
 {
@@ -12,6 +21,7 @@ class Layanan extends Model
 
     protected $table = 'layanan';
 
+    // * Fillable attributes
     protected $fillable = [
         'kode_layanan',
         'nama_layanan',
@@ -22,19 +32,23 @@ class Layanan extends Model
         'durasi_jam',
         'deskripsi',
         'status',
+        'metadata',
     ];
 
-    protected $casts = [
-        'harga_per_kg' => 'integer',
-        'harga_per_satuan' => 'integer',
-        'durasi_jam' => 'integer',
-    ];
-
-    /**
-     * Relasi ke Transaksi
-     */
-    public function transaksi()
+    // * Casts
+    protected function casts(): array
     {
-        return $this->hasMany(Transaksi::class);
+        return [
+            'harga_per_kg' => 'integer',
+            'harga_per_satuan' => 'integer',
+            'durasi_jam' => 'integer',
+            'metadata' => 'array',
+        ];
+    }
+
+    // * Relasi: Detail transaksi yang menggunakan layanan ini
+    public function transaksiLayanan(): HasMany
+    {
+        return $this->hasMany(TransaksiLayanan::class, 'layanan_id');
     }
 }

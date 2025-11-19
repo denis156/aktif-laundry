@@ -8,11 +8,18 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
-class QrisHelper
+// ! Helper untuk konversi QRIS Static menjadi Dynamic
+//
+// ? Features/Description:
+// * - Generate dynamic QRIS dengan nominal transaksi
+// * - Generate QR Code image (PNG/SVG)
+// * - Support on-demand dan storable QR Code
+// * - Auto cleanup old QR files
+// * - Storage usage statistics
+
+class QrisConvert
 {
-    /**
-     * Convert QRIS Static to Dynamic dengan nominal
-     */
+    // * Convert QRIS Static to Dynamic dengan nominal
     public static function generateDynamicQris(float $amount, ?string $feeType = null, ?float $feeAmount = null): string
     {
         try {
@@ -36,9 +43,7 @@ class QrisHelper
         }
     }
 
-    /**
-     * Generate QR Code image dan simpan ke storage
-     */
+    // * Generate QR Code image dan simpan ke storage
     public static function generateQrCodeImage(string $qrisData, string $filename): string
     {
         try {
@@ -64,9 +69,7 @@ class QrisHelper
         }
     }
 
-    /**
-     * Generate QR Code untuk payment dengan nominal dari transaction (on-demand)
-     */
+    // * Generate QR Code untuk payment dengan nominal dari transaction (on-demand)
     public static function generatePaymentQrCode(float $amount, int $transactionId): array
     {
         try {
@@ -85,10 +88,8 @@ class QrisHelper
         }
     }
 
-    /**
-     * Convert static QRIS to dynamic dengan nominal
-     * Logic dari config/qrisconvert.php
-     */
+    // * Convert static QRIS to dynamic dengan nominal
+    // * Logic dari config/qrisconvert.php
     private static function convertStaticToDynamic(string $qris, string $amount, ?string $feeType = null, ?float $feeAmount = null): string
     {
         // Remove last 4 characters (CRC)
@@ -125,9 +126,7 @@ class QrisHelper
         return $fix;
     }
 
-    /**
-     * Calculate CRC16 checksum
-     */
+    // * Calculate CRC16 checksum
     private static function calculateCRC16(string $str): string
     {
         $crc = 0xFFFF;
@@ -151,18 +150,14 @@ class QrisHelper
         return str_pad($hex, 4, '0', STR_PAD_LEFT);
     }
 
-    /**
-     * Validate QRIS static format
-     */
+    // ? Validate QRIS static format
     public static function validateQrisStatic(string $qris): bool
     {
         // Basic validation - check if it starts with correct prefix
         return str_starts_with($qris, '000201010211');
     }
 
-    /**
-     * Generate QR Code on-demand (tidak disimpan, hanya untuk display)
-     */
+    // * Generate QR Code on-demand (tidak disimpan, hanya untuk display)
     public static function generateOnDemandQrCode(float $amount): string
     {
         try {
@@ -183,9 +178,7 @@ class QrisHelper
         }
     }
 
-    /**
-     * Generate QR Code dengan storage (untuk download)
-     */
+    // * Generate QR Code dengan storage (untuk download)
     public static function generateStorableQrCode(float $amount, int $transactionId): array
     {
         try {
@@ -229,9 +222,7 @@ class QrisHelper
         }
     }
 
-    /**
-     * Clean up old QR Code files (lebih dari X jam)
-     */
+    // * Clean up old QR Code files (lebih dari X jam)
     public static function cleanupOldQrCodes(int $hoursOld = 24): array
     {
         try {
@@ -281,9 +272,7 @@ class QrisHelper
         }
     }
 
-    /**
-     * Get storage usage statistics
-     */
+    // * Get storage usage statistics
     public static function getStorageStats(): array
     {
         try {
@@ -346,10 +335,8 @@ class QrisHelper
         }
     }
 
-    /**
-     * Auto cleanup old QR codes berdasarkan konfigurasi
-     * Dipanggil otomatis saat generate QR code baru
-     */
+    // * Auto cleanup old QR codes berdasarkan konfigurasi
+    // * Dipanggil otomatis saat generate QR code baru
     private static function autoCleanupOldQrCodes(): void
     {
         try {
@@ -381,9 +368,7 @@ class QrisHelper
         }
     }
 
-    /**
-     * Format amount untuk display
-     */
+    // * Format amount untuk display
     public static function formatAmount(float $amount): string
     {
         return 'Rp ' . number_format($amount, 0, ',', '.');
