@@ -7,12 +7,19 @@ namespace Database\Factories;
 use App\Helper\AddressMetadata;
 use App\Helper\RegionalLocation;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pelanggan>
  */
 class PelangganFactory extends Factory
 {
+    /**
+     * The current password being used by the factory.
+     * Shared static password to improve performance when creating multiple customers.
+     */
+    protected static ?string $password = null;
+
     /**
      * Define the model's default state.
      *
@@ -80,6 +87,8 @@ class PelangganFactory extends Factory
             'no_hp' => '8' . fake()->numerify('##########'),
             'email' => $email,
             'alamat' => $alamatLengkap, // Alamat lengkap (auto-generated dari metadata)
+            'password' => null, // Nullable - customer may not have registered on mobile app yet
+            'device_token' => null, // Nullable - no push notification token by default
             'tanggal_daftar' => fake()->dateTimeBetween('-1 year', 'now'),
             'total_transaksi' => 0,
             'status' => fake()->randomElement(['Aktif', 'Aktif', 'Aktif', 'Tidak Aktif']),
@@ -91,5 +100,107 @@ class PelangganFactory extends Factory
                 'preferensi_pengiriman' => fake()->randomElement(['antar_jemput', 'ambil_sendiri']),
             ]),
         ];
+    }
+
+    /**
+     * Indicate that the customer has registered on mobile app with a password.
+     * Creates a customer with hashed password (default: 'password').
+     *
+     * @param string|null $password The password to set, or null to use default 'password'
+     * @return static
+     */
+    public function withPassword(?string $password = null): static
+    {
+        return $this->state(function (array $attributes) use ($password) {
+            if ($password === null) {
+                // Use shared static password for performance
+                static::$password ??= Hash::make('password');
+                return ['password' => static::$password];
+            }
+
+            return ['password' => Hash::make($password)];
+        });
+    }
+
+    /**
+     * Indicate that the customer has NOT registered on mobile app (no password).
+     * This is the default state, but can be explicitly used for clarity.
+     *
+     * @return static
+     */
+    public function withoutPassword(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the customer has a device token for push notifications.
+     *
+     * @param string|null $token The device token, or null to generate a fake one
+     * @return static
+     */
+    public function withDeviceToken(?string $token = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'device_token' => $token ?? fake()->regexify('[a-f0-9]{64}'),
+        ]);
+    }
+
+    /**
+     * Indicate that the customer is a registered mobile app user.
+     * Sets password and device token automatically.
+     *
+     * @param string|null $password The password to set, or null to use default 'password'
+     * @return static
+     */
+    public function registered(?string $password = null): static
+    {
+        return $this->withPassword($password)->withDeviceToken();
+    }
+
+    /**
+     * Indicate that the customer is currently inactive.
+     *
+     * @return static
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'Tidak Aktif',
+        ]);
+    }
+
+    /**
+     * Indicate that the customer is a loyal customer with many transactions.
+     *
+     * @return static
+     */
+    public function loyal(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'total_transaksi' => fake()->numberBetween(20, 100),
+            'tanggal_daftar' => fake()->dateTimeBetween('-3 years', '-1 year'),
+            'metadata' => array_merge($attributes['metadata'], [
+                'member_card' => 'MEMBER' . fake()->numerify('###########'),
+                'loyalty_points' => fake()->numberBetween(500, 2000),
+            ]),
+        ]);
+    }
+
+    /**
+     * Indicate that the customer was referred by another customer.
+     *
+     * @param int $referrerId The ID of the referring customer
+     * @param string|null $referralCode The referral code used
+     * @return static
+     */
+    public function referred(int $referrerId, ?string $referralCode = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'direferensikan_oleh' => $referrerId,
+            'kode_referral_dipakai' => $referralCode ?? fake()->regexify('[A-Z0-9]{8}'),
+        ]);
     }
 }

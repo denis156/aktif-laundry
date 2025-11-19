@@ -9,6 +9,7 @@ use App\Models\Pengaturan;
 use App\Helper\PhoneNumber;
 use App\Helper\AddressMetadata;
 use App\Helper\RegionalLocation;
+use Illuminate\Support\Facades\Hash;
 
 // ! Helper untuk mengelola data Pelanggan
 //
@@ -26,6 +27,11 @@ use App\Helper\RegionalLocation;
 
 class PelangganHelper
 {
+    // * Password validation constants
+    public const PASSWORD_MIN_LENGTH = 8;
+    public const PASSWORD_MAX_LENGTH = 255;
+
+    // * Metadata constants
     public const META_MEMBER_CARD = 'member_card';
     public const META_LOYALTY_POINTS = 'loyalty_points';
     public const META_PREFERENSI_PENGIRIMAN = 'preferensi_pengiriman';
@@ -158,5 +164,76 @@ class PelangganHelper
                 'no_hp' => PhoneNumber::formatLocal($p->no_hp) ?? $p->no_hp,
             ])
             ->toArray();
+    }
+
+    // * Validate password strength
+    public static function validatePassword(string $password): bool
+    {
+        $length = strlen($password);
+
+        // Check minimum length
+        if ($length < self::PASSWORD_MIN_LENGTH) {
+            return false;
+        }
+
+        // Check maximum length
+        if ($length > self::PASSWORD_MAX_LENGTH) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // * Generate validation rules untuk password
+    public static function passwordRules(bool $required = false): string
+    {
+        $rules = [];
+
+        if ($required) {
+            $rules[] = 'required';
+        } else {
+            $rules[] = 'nullable';
+        }
+
+        $rules[] = 'string';
+        $rules[] = 'min:' . self::PASSWORD_MIN_LENGTH;
+        $rules[] = 'max:' . self::PASSWORD_MAX_LENGTH;
+
+        return implode('|', $rules);
+    }
+
+    // * Get password requirements message untuk user
+    public static function getPasswordRequirementsMessage(): string
+    {
+        return sprintf(
+            'Password harus memiliki minimal %d karakter',
+            self::PASSWORD_MIN_LENGTH
+        );
+    }
+
+    // * Set password untuk pelanggan (with hashing)
+    public static function setPassword(Pelanggan $pelanggan, string $password): void
+    {
+        if (!self::validatePassword($password)) {
+            throw new \InvalidArgumentException(self::getPasswordRequirementsMessage());
+        }
+
+        $pelanggan->password = Hash::make($password);
+    }
+
+    // * Check apakah pelanggan memiliki password (sudah terdaftar di app)
+    public static function hasPassword(Pelanggan $pelanggan): bool
+    {
+        return !empty($pelanggan->password);
+    }
+
+    // * Verify password pelanggan
+    public static function verifyPassword(Pelanggan $pelanggan, string $password): bool
+    {
+        if (!self::hasPassword($pelanggan)) {
+            return false;
+        }
+
+        return Hash::check($password, $pelanggan->password);
     }
 }

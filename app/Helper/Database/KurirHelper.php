@@ -26,6 +26,11 @@ use Illuminate\Support\Facades\Hash;
 
 class KurirHelper
 {
+    // * Password validation constants
+    public const PASSWORD_MIN_LENGTH = 8;
+    public const PASSWORD_MAX_LENGTH = 255;
+
+    // * Metadata constants
     public const META_AREA_COVERAGE = 'area_coverage';
     public const META_BANK_INFO = 'bank_info';
     public const META_EMERGENCY_CONTACT = 'emergency_contact';
@@ -201,6 +206,51 @@ class KurirHelper
         ]);
 
         return $kurir;
+    }
+
+    // * Validate password strength
+    public static function validatePassword(string $password): bool
+    {
+        $length = strlen($password);
+
+        // Check minimum length
+        if ($length < self::PASSWORD_MIN_LENGTH) {
+            return false;
+        }
+
+        // Check maximum length
+        if ($length > self::PASSWORD_MAX_LENGTH) {
+            return false;
+        }
+
+        return true;
+    }
+
+    // * Generate validation rules untuk password
+    public static function passwordRules(bool $required = true): string
+    {
+        $rules = [];
+
+        if ($required) {
+            $rules[] = 'required';
+        } else {
+            $rules[] = 'nullable';
+        }
+
+        $rules[] = 'string';
+        $rules[] = 'min:' . self::PASSWORD_MIN_LENGTH;
+        $rules[] = 'max:' . self::PASSWORD_MAX_LENGTH;
+
+        return implode('|', $rules);
+    }
+
+    // * Get password requirements message untuk user
+    public static function getPasswordRequirementsMessage(): string
+    {
+        return sprintf(
+            'Password harus memiliki minimal %d karakter',
+            self::PASSWORD_MIN_LENGTH
+        );
     }
 
     // ! Rules validasi untuk metadata

@@ -30,12 +30,20 @@ class Pelanggan extends Model
         'no_hp',
         'email',
         'alamat',
+        'password',
+        'device_token',
         'tanggal_daftar',
         'total_transaksi',
         'status',
         'kode_referral_dipakai',
         'direferensikan_oleh',
         'metadata',
+    ];
+
+    // * Hidden attributes (sensitive data)
+    protected $hidden = [
+        'password',
+        'device_token',
     ];
 
     // * Casts
@@ -45,6 +53,7 @@ class Pelanggan extends Model
             'tanggal_daftar' => 'date',
             'total_transaksi' => 'integer',
             'direferensikan_oleh' => 'integer',
+            'password' => 'hashed',
             'metadata' => 'array',
         ];
     }

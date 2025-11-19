@@ -14,7 +14,11 @@ use Illuminate\Support\Facades\Hash;
  */
 class KurirFactory extends Factory
 {
-    protected static ?string $password;
+    /**
+     * The current password being used by the factory.
+     * Shared static password to improve performance when creating multiple couriers.
+     */
+    protected static ?string $password = null;
 
     /**
      * Define the model's default state.
@@ -98,7 +102,7 @@ class KurirFactory extends Factory
             'status' => fake()->randomElement(['Aktif', 'Aktif', 'Tidak Aktif']),
             'total_antar' => fake()->numberBetween(0, 200),
             'total_jemput' => fake()->numberBetween(0, 200),
-            'password' => static::$password ??= Hash::make('password'),
+            'password' => static::$password ??= Hash::make('password'), // Required field, default: 'password'
             'device_token' => null,
             'metadata' => array_merge($addressMetadata, [
                 'area_coverage' => $areaCoverage,
@@ -114,5 +118,57 @@ class KurirFactory extends Factory
                 ],
             ]),
         ];
+    }
+
+    /**
+     * Indicate that the courier should have a custom password.
+     *
+     * @param string $password The password to set (will be hashed)
+     * @return static
+     */
+    public function withPassword(string $password): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'password' => Hash::make($password),
+        ]);
+    }
+
+    /**
+     * Indicate that the courier should have a device token for push notifications.
+     *
+     * @param string|null $token The device token, or null to generate a fake one
+     * @return static
+     */
+    public function withDeviceToken(?string $token = null): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'device_token' => $token ?? fake()->regexify('[a-f0-9]{64}'),
+        ]);
+    }
+
+    /**
+     * Indicate that the courier is currently inactive.
+     *
+     * @return static
+     */
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'Tidak Aktif',
+        ]);
+    }
+
+    /**
+     * Indicate that the courier has extensive delivery experience.
+     *
+     * @return static
+     */
+    public function experienced(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'total_antar' => fake()->numberBetween(300, 1000),
+            'total_jemput' => fake()->numberBetween(300, 1000),
+            'tanggal_bergabung' => fake()->dateTimeBetween('-5 years', '-2 years'),
+        ]);
     }
 }
