@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -26,9 +28,17 @@ class UserFactory extends Factory
         return [
             'name' => fake()->name(),
             'email' => fake()->unique()->safeEmail(),
+            'no_hp' => '8' . fake()->numerify('##########'),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
+            'avatar_url' => null,
+            'super_admin' => false,
             'remember_token' => Str::random(10),
+            'metadata' => [
+                'alamat' => fake()->address(),
+                'shift' => fake()->randomElement(['Pagi', 'Siang', 'Malam']),
+                'gaji' => fake()->numberBetween(3000000, 6000000),
+            ],
         ];
     }
 
@@ -39,6 +49,16 @@ class UserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'email_verified_at' => null,
+        ]);
+    }
+
+    /**
+     * Indicate that the user is a super admin.
+     */
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'super_admin' => true,
         ]);
     }
 }
