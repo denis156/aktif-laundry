@@ -1,19 +1,22 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin\Component;
 
 use Livewire\Component;
 use App\Models\Transaksi;
-use App\Models\Setting;
+use App\Models\Pengaturan;
+use App\Helper\PhoneNumber;
 
 class WhatsAppButton extends Component
 {
-    public $transaksiId;
-    public $phoneNumber;
-    public $size = 'sm'; // default sm, bisa di-override dengan md, lg
-    public $btnClass = 'btn-success'; // default success, bisa btn-primary, btn-soft-success, dll
+    public int $transaksiId;
+    public string $phoneNumber = '';
+    public string $size = 'sm'; // default sm, bisa di-override dengan md, lg
+    public string $btnClass = 'btn-success'; // default success, bisa btn-primary, btn-soft-success, dll
 
-    public function mount($transaksiId, $size = 'sm', $btnClass = 'btn-success')
+    public function mount(int $transaksiId, string $size = 'sm', string $btnClass = 'btn-success'): void
     {
         $this->transaksiId = $transaksiId;
         $this->size = $size;
@@ -21,52 +24,54 @@ class WhatsAppButton extends Component
 
         // Get phone number from transaksi pelanggan
         $transaksi = Transaksi::with('pelanggan')->find($transaksiId);
-        $this->phoneNumber = $transaksi->pelanggan->no_hp ?? '';
+        $this->phoneNumber = $transaksi?->pelanggan?->no_hp ?? '';
     }
 
-    public function sendWhatsApp()
+    public function sendWhatsApp(): void
     {
-        $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])->find($this->transaksiId);
+        $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])
+            ->find($this->transaksiId);
 
         if (!$transaksi) {
             $this->dispatch('notify', type: 'error', message: 'Transaksi tidak ditemukan');
+
             return;
         }
 
         // Generate WhatsApp message text
         $message = $this->generateReceiptText($transaksi);
 
-        // Clean phone number (remove +, spaces, dashes)
-        $phone = preg_replace('/[^0-9]/', '', $this->phoneNumber);
+        // Normalize phone number menggunakan PhoneNumber Helper
+        $normalizedPhone = PhoneNumber::normalize($this->phoneNumber);
 
-        // Add country code if not exists
-        if (!str_starts_with($phone, '62')) {
-            if (str_starts_with($phone, '0')) {
-                $phone = '62' . substr($phone, 1);
-            } else {
-                $phone = '62' . $phone;
-            }
+        if (!$normalizedPhone) {
+            $this->dispatch('notify', type: 'error', message: 'Nomor telepon tidak valid');
+
+            return;
         }
 
-        // Encode message for URL
-        $encodedMessage = urlencode($message);
+        // Generate WhatsApp URL menggunakan PhoneNumber Helper
+        $whatsappUrl = PhoneNumber::getWhatsAppUrl($normalizedPhone, $message);
 
-        // Create WhatsApp URL
-        $whatsappUrl = "https://wa.me/{$phone}?text={$encodedMessage}";
+        if (!$whatsappUrl) {
+            $this->dispatch('notify', type: 'error', message: 'Gagal membuat URL WhatsApp');
+
+            return;
+        }
 
         // Dispatch event to open URL in new tab
         $this->dispatch('open-whatsapp', url: $whatsappUrl);
     }
 
-    private function generateReceiptText($transaksi)
+    private function generateReceiptText(Transaksi $transaksi): string
     {
-        $namaToko = Setting::get('nama_toko', 'AKTIF LAUNDRY');
-        $whatsapp = Setting::get('whatsapp', '');
-        $email = Setting::get('email', '');
-        $jamBuka = Setting::get('jam_buka', '08:00');
-        $jamTutup = Setting::get('jam_tutup', '21:00');
+        $namaToko = Pengaturan::getValue('nama_toko', 'AKTIF LAUNDRY');
+        $whatsapp = Pengaturan::getValue('whatsapp', '');
+        $email = Pengaturan::getValue('email', '');
+        $jamBuka = Pengaturan::getValue('jam_buka', '08:00');
+        $jamTutup = Pengaturan::getValue('jam_tutup', '21:00');
 
-        $text = "*" . strtoupper($namaToko) . "*\n";
+        $text = '*'.strtoupper($namaToko)."*\n";
         if (!empty($whatsapp)) {
             $text .= "WA: {$whatsapp}\n";
         }
@@ -74,32 +79,34 @@ class WhatsAppButton extends Component
             $text .= "Email: {$email}\n";
         }
         $text .= "Buka: {$jamBuka} - Tutup: {$jamTutup}\n";
-        $text .= str_repeat("-", 25) . "\n\n";
+        $text .= str_repeat('-', 25)."\n\n";
 
         // Info Transaksi
         $text .= "*STRUK TRANSAKSI*\n";
         $text .= "No: *{$transaksi->kode_transaksi}*\n";
-        $text .= "Tanggal: " . $transaksi->tanggal_masuk->format('d/m/Y H:i') . "\n\n";
+        $text .= 'Tanggal: '.$transaksi->tanggal_masuk->format('d/m/Y H:i')."\n\n";
 
-        // Info Pelanggan
+        // Info Pelanggan menggunakan PhoneNumber Helper untuk format
         $text .= "*PELANGGAN*\n";
         $text .= "Nama: {$transaksi->nama_pelanggan}\n";
-        $pelangganPhone = $transaksi->pelanggan->no_hp ?? '-';
+        $pelangganPhone = $transaksi->pelanggan?->no_hp
+            ? (PhoneNumber::formatLocal($transaksi->pelanggan->no_hp) ?? '-')
+            : '-';
         $text .= "Telp: {$pelangganPhone}\n";
-        $text .= str_repeat("-", 25) . "\n\n";
+        $text .= str_repeat('-', 25)."\n\n";
 
-        // Detail Layanan
+        // Detail Layanan menggunakan Model methods
         $text .= "*DETAIL LAYANAN*\n";
         foreach ($transaksi->transaksiLayanan as $index => $item) {
             if ($index > 0) {
-                $text .= str_repeat("-", 25) . "\n";
+                $text .= str_repeat('-', 25)."\n";
             }
 
             $text .= "*{$item->nama_layanan}*\n";
 
-            // Per Kg
-            if (!empty($item->berat_kg)) {
-                $text .= "Harga: Rp " . number_format($item->harga_per_kg, 0, ',', '.') . "/Kg\n";
+            // Per Kg - menggunakan method isPerKg() dari Model
+            if ($item->isPerKg()) {
+                $text .= 'Harga: Rp '.number_format($item->harga_per_kg, 0, ',', '.')."/Kg\n";
 
                 // Jenis Pakaian
                 if (!empty($item->jenis_pakaian)) {
@@ -114,32 +121,31 @@ class WhatsAppButton extends Component
                     }
                 }
 
-                $text .= "Berat: " . number_format($item->berat_kg, 1, '.', '') . " Kg\n";
-            }
-            // Per Satuan
-            else if (!empty($item->jumlah_satuan)) {
-                $satuan = $item->layanan->satuan ?? 'pcs';
-                $text .= "Harga: Rp " . number_format($item->harga_per_satuan, 0, ',', '.') . "/{$satuan}\n";
-                $text .= "{$item->jumlah_satuan} " . ucfirst($satuan) . "\n";
+                $text .= 'Berat: '.number_format($item->berat_kg, 1, '.', '')." Kg\n";
+            } elseif ($item->isPerSatuan()) {
+                // Per Satuan - menggunakan method isPerSatuan() dari Model
+                $satuan = $item->layanan?->satuan ?? 'pcs';
+                $text .= 'Harga: Rp '.number_format($item->harga_per_satuan, 0, ',', '.')."/{$satuan}\n";
+                $text .= $item->jumlah_satuan.' '.ucfirst($satuan)."\n";
             }
 
-            $text .= "*Rp " . number_format($item->subtotal, 0, ',', '.') . "*\n\n";
+            $text .= '*Rp '.number_format($item->subtotal, 0, ',', '.')."*\n\n";
         }
 
-        $text .= str_repeat("-", 25) . "\n";
+        $text .= str_repeat('-', 25)."\n";
 
         // Ringkasan Pembayaran
-        $text .= "Subtotal: Rp " . number_format($transaksi->subtotal, 0, ',', '.') . "\n";
-        $text .= "Diskon: Rp " . number_format($transaksi->diskon, 0, ',', '.') . "\n";
-        $text .= "*TOTAL: Rp " . number_format($transaksi->total, 0, ',', '.') . "*\n";
-        $text .= str_repeat("-", 25) . "\n\n";
+        $text .= 'Subtotal: Rp '.number_format($transaksi->subtotal, 0, ',', '.')."\n";
+        $text .= 'Diskon: Rp '.number_format($transaksi->diskon, 0, ',', '.')."\n";
+        $text .= '*TOTAL: Rp '.number_format($transaksi->total, 0, ',', '.')."*\n";
+        $text .= str_repeat('-', 25)."\n\n";
 
         // Status & Pembayaran
         $text .= "Pembayaran: {$transaksi->metode_pembayaran}\n";
         $text .= "Status: *{$transaksi->status}*\n";
 
         if ($transaksi->tanggal_selesai) {
-            $text .= "Selesai: " . $transaksi->tanggal_selesai->format('d/m/Y H:i') . "\n";
+            $text .= 'Selesai: '.$transaksi->tanggal_selesai->format('d/m/Y H:i')."\n";
         }
 
         // Catatan
@@ -148,7 +154,7 @@ class WhatsAppButton extends Component
         }
 
         $text .= "\n_Tetap Aktif, Tetap Bersih_\n";
-        $text .= "Terima kasih atas kepercayaan Anda!";
+        $text .= 'Terima kasih atas kepercayaan Anda!';
 
         return $text;
     }

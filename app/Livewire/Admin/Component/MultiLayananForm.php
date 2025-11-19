@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin\Component;
 
 use App\Models\Layanan;
@@ -18,7 +20,7 @@ class MultiLayananForm extends Component
     public int $totalDiskon = 0;
     public int $totalGrandTotal = 0;
 
-    public function mount($items = [])
+    public function mount(array $items = []): void
     {
         $this->loadOptions();
 
@@ -43,44 +45,53 @@ class MultiLayananForm extends Component
         }
     }
 
-    protected function loadOptions()
+    protected function loadOptions(): void
     {
         try {
             $this->layananOptions = Layanan::where('status', 'Aktif')
                 ->orderBy('nama_layanan')
-                ->get()
-                ->map(function($l) {
-                    if ($l->tipe_layanan === 'per_kg') {
-                        $price = $l->harga_per_kg;
-                        $unit = 'kg';
-                    } else {
-                        $price = $l->harga_per_satuan;
-                        $unit = $l->satuan ?? 'pcs';
-                    }
+                ->get(['id', 'nama_layanan', 'tipe_layanan', 'harga_per_kg', 'harga_per_satuan', 'satuan'])
+                ->map(function (Layanan $layanan) {
+                    $price = $layanan->tipe_layanan === 'per_kg'
+                        ? $layanan->harga_per_kg
+                        : $layanan->harga_per_satuan;
+
+                    $unit = $layanan->tipe_layanan === 'per_kg'
+                        ? 'kg'
+                        : ($layanan->satuan ?? 'pcs');
 
                     return [
-                        'id' => $l->id,
-                        'name' => $l->nama_layanan . ' - ' . $l->tipe_layanan . ' (Rp ' . number_format($price, 0, ',', '.') . '/' . $unit . ')'
+                        'id' => $layanan->id,
+                        'name' => sprintf(
+                            '%s - %s (Rp %s/%s)',
+                            $layanan->nama_layanan,
+                            $layanan->tipe_layanan,
+                            number_format($price, 0, ',', '.'),
+                            $unit
+                        ),
                     ];
                 })
                 ->toArray();
 
             $this->jenisPakaianOptions = JenisPakaian::where('status', 'Aktif')
                 ->orderBy('nama_jenis')
-                ->get()
-                ->map(fn($jp) => [
+                ->get(['id', 'nama_jenis'])
+                ->map(fn (JenisPakaian $jp) => [
                     'id' => $jp->id,
-                    'name' => $jp->nama_jenis
+                    'name' => $jp->nama_jenis,
                 ])
                 ->toArray();
         } catch (\Exception $e) {
-            Log::error('Error loading layanan/jenis pakaian options: ' . $e->getMessage());
+            Log::error('Failed to load layanan/jenis pakaian options', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             $this->layananOptions = [];
             $this->jenisPakaianOptions = [];
         }
     }
 
-    public function addLayanan()
+    public function addLayanan(): void
     {
         $this->items[] = [
             'layanan_id' => '',
@@ -98,14 +109,14 @@ class MultiLayananForm extends Component
         $this->calculateTotals();
     }
 
-    public function removeLayanan($index)
+    public function removeLayanan(int $index): void
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items);
         $this->calculateTotals();
     }
 
-    public function addJenisPakaian($layananIndex)
+    public function addJenisPakaian(int $layananIndex): void
     {
         if (!isset($this->items[$layananIndex]['jenis_pakaian'])) {
             $this->items[$layananIndex]['jenis_pakaian'] = [];
@@ -114,22 +125,24 @@ class MultiLayananForm extends Component
         $this->items[$layananIndex]['jenis_pakaian'][] = [
             'jenis_id' => '',
             'nama' => '',
-            'jumlah' => 1
+            'jumlah' => 1,
         ];
 
         $this->calculateTotals();
     }
 
-    public function removeJenisPakaian($layananIndex, $jenisIndex)
+    public function removeJenisPakaian(int $layananIndex, int $jenisIndex): void
     {
         if (isset($this->items[$layananIndex]['jenis_pakaian'][$jenisIndex])) {
             unset($this->items[$layananIndex]['jenis_pakaian'][$jenisIndex]);
-            $this->items[$layananIndex]['jenis_pakaian'] = array_values($this->items[$layananIndex]['jenis_pakaian']);
+            $this->items[$layananIndex]['jenis_pakaian'] = array_values(
+                $this->items[$layananIndex]['jenis_pakaian']
+            );
         }
         $this->calculateTotals();
     }
 
-    public function updatedItems($value, $key)
+    public function updatedItems(mixed $value, string $key): void
     {
         // Extract index and property from key like "0.layanan_id" (Livewire format)
         $parts = explode('.', $key);
@@ -145,7 +158,7 @@ class MultiLayananForm extends Component
         // Update layanan info when layanan_id changes
         if ($property === 'layanan_id' && !empty($value)) {
             $layanan = Layanan::find($value);
-            if ($layanan) {
+            if ($layanan instanceof Layanan) {
                 $this->items[$index]['nama_layanan'] = $layanan->nama_layanan;
                 $this->items[$index]['tipe_layanan'] = $layanan->tipe_layanan;
 
@@ -168,7 +181,7 @@ class MultiLayananForm extends Component
             if (isset($this->items[$index]['jenis_pakaian'][$jenisIndex])) {
                 if ($field === 'jenis_id') {
                     $jenisPakaian = JenisPakaian::find($value);
-                    if ($jenisPakaian) {
+                    if ($jenisPakaian instanceof JenisPakaian) {
                         $this->items[$index]['jenis_pakaian'][$jenisIndex]['nama'] = $jenisPakaian->nama_jenis;
                     }
                 } elseif ($field === 'jumlah') {
@@ -180,7 +193,7 @@ class MultiLayananForm extends Component
         $this->calculateTotals();
     }
 
-    protected function calculateTotals()
+    protected function calculateTotals(): void
     {
         $totalSubtotal = 0;
 
@@ -192,7 +205,7 @@ class MultiLayananForm extends Component
                     // Calculate for per kg services
                     $berat = (float) ($item['berat_kg'] ?? 0);
                     $harga = (int) ($item['harga_per_kg'] ?? 0);
-                    $subtotal = $berat * $harga;
+                    $subtotal = (int) ($berat * $harga);
                 } else {
                     // Calculate for per satuan services
                     $jumlah = (int) ($item['jumlah_satuan'] ?? 0);
@@ -212,28 +225,28 @@ class MultiLayananForm extends Component
         $this->dispatch('multiLayananUpdated', [
             'items' => $this->items,
             'totalSubtotal' => $this->totalSubtotal,
-            'totalGrandTotal' => $this->totalGrandTotal
+            'totalGrandTotal' => $this->totalGrandTotal,
         ]);
     }
 
-    public function setDiskon($diskon)
+    public function setDiskon(int $diskon): void
     {
-        $this->totalDiskon = (int) $diskon;
+        $this->totalDiskon = $diskon;
         $this->totalGrandTotal = $this->totalSubtotal - $this->totalDiskon;
 
         $this->dispatch('multiLayananUpdated', [
             'items' => $this->items,
             'totalSubtotal' => $this->totalSubtotal,
-            'totalGrandTotal' => $this->totalGrandTotal
+            'totalGrandTotal' => $this->totalGrandTotal,
         ]);
     }
 
-    public function getItems()
+    public function getItems(): array
     {
         return $this->items;
     }
 
-    public function getGrandTotal()
+    public function getGrandTotal(): int
     {
         return $this->totalGrandTotal;
     }

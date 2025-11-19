@@ -76,11 +76,46 @@
                     </div>
 
                     <x-textarea
-                        label="Alamat"
-                        wire:model="pelangganBaru.alamat"
-                        placeholder="Alamat lengkap"
-                        rows="3"
+                        label="Detail Alamat"
+                        wire:model="pelangganBaru.detail_alamat"
+                        placeholder="Jalan, nomor rumah, RT/RW"
+                        rows="2"
+                        hint="Contoh: Jl. Merdeka No. 123, RT 01/RW 02"
+                        required
                         :disabled="!$isPelangganBaru" />
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <x-select
+                            label="Kecamatan"
+                            wire:model.live="pelangganBaru.kecamatan"
+                            :options="$kecamatanOptions"
+                            placeholder="Pilih kecamatan"
+                            icon="o-map-pin"
+                            :disabled="!$isPelangganBaru" />
+
+                        <x-select
+                            label="Kelurahan/Desa"
+                            wire:model="pelangganBaru.kelurahan"
+                            :options="$kelurahanOptions"
+                            placeholder="Pilih kelurahan"
+                            hint="{{ empty($pelangganBaru['kecamatan']) ? 'Pilih kecamatan dulu' : '' }}"
+                            icon="o-map"
+                            :disabled="!$isPelangganBaru || empty($pelangganBaru['kecamatan'])" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <x-input
+                            label="Kabupaten/Kota"
+                            wire:model="pelangganBaru.kabupaten_kota"
+                            placeholder="Kota Kendari"
+                            disabled />
+
+                        <x-input
+                            label="Provinsi"
+                            wire:model="pelangganBaru.provinsi"
+                            placeholder="Sulawesi Tenggara"
+                            disabled />
+                    </div>
                 </div>
             </x-card>
 
@@ -100,7 +135,7 @@
                         required />
 
                     <!-- Multi Layanan Form -->
-                    <livewire:component.multi-layanan-form :key="'multi-layanan-'.$this->getId()" />
+                    <livewire:admin.component.multi-layanan-form :key="'multi-layanan-'.$this->getId()" />
 
                     <!-- Diskon -->
                     <x-input

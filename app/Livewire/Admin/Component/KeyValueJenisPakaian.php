@@ -1,11 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin\Component;
 
 use Exception;
 use Livewire\Component;
 use App\Models\JenisPakaian;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Log;
 
 class KeyValueJenisPakaian extends Component
 {
@@ -13,7 +16,7 @@ class KeyValueJenisPakaian extends Component
     public Collection $jenisPakaianOptions;
     public string $outputString = '';
 
-    public function mount($value = '')
+    public function mount(string $value = ''): void
     {
         $this->loadJenisPakaianOptions();
 
@@ -26,27 +29,28 @@ class KeyValueJenisPakaian extends Component
         }
     }
 
-    protected function loadJenisPakaianOptions()
+    protected function loadJenisPakaianOptions(): void
     {
         try {
-            // Load dari database MySQL
-            $this->jenisPakaianOptions = JenisPakaian::query()
-                ->where('status', 'Aktif')
+            // Load dari database dengan query builder approach yang lebih efisien
+            $this->jenisPakaianOptions = JenisPakaian::where('status', 'Aktif')
                 ->orderBy('nama_jenis')
-                ->get()
-                ->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'kode' => $item->kode_jenis,
-                        'name' => $item->nama_jenis,
-                    ];
-                });
+                ->get(['id', 'kode_jenis', 'nama_jenis'])
+                ->map(fn ($item) => [
+                    'id' => $item->id,
+                    'kode' => $item->kode_jenis,
+                    'name' => $item->nama_jenis,
+                ]);
         } catch (Exception $e) {
+            Log::error('Failed to load jenis pakaian options', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             $this->jenisPakaianOptions = collect([]);
         }
     }
 
-    protected function parseInitialValue($value)
+    protected function parseInitialValue(string $value): void
     {
         // Try to decode JSON first
         $jsonData = json_decode($value, true);
@@ -54,17 +58,17 @@ class KeyValueJenisPakaian extends Component
         if (is_array($jsonData) && !empty($jsonData)) {
             // Parse dari JSON format: [{"nama": "Kemeja", "jumlah": 3}]
             foreach ($jsonData as $item) {
-                if (isset($item['nama']) && isset($item['jumlah'])) {
+                if (isset($item['nama'], $item['jumlah'])) {
                     $nama = $item['nama'];
                     $jumlah = (int) $item['jumlah'];
 
-                    // Cari ID jenis dari nama
+                    // Cari ID jenis dari nama menggunakan Collection method
                     $jenis = $this->jenisPakaianOptions->firstWhere('name', $nama);
 
                     $this->items[] = [
                         'jenis_id' => $jenis['id'] ?? '',
                         'nama' => $nama,
-                        'jumlah' => $jumlah,
+                        'jumlah' => max(1, $jumlah), // Ensure minimum 1
                     ];
                 }
             }
@@ -86,7 +90,7 @@ class KeyValueJenisPakaian extends Component
                     $this->items[] = [
                         'jenis_id' => $jenis['id'] ?? '',
                         'nama' => $nama,
-                        'jumlah' => $jumlah,
+                        'jumlah' => max(1, $jumlah),
                     ];
                 }
             }
@@ -98,7 +102,7 @@ class KeyValueJenisPakaian extends Component
         }
     }
 
-    public function addRow()
+    public function addRow(): void
     {
         $this->items[] = [
             'jenis_id' => '',
@@ -107,14 +111,14 @@ class KeyValueJenisPakaian extends Component
         ];
     }
 
-    public function removeRow($index)
+    public function removeRow(int $index): void
     {
         unset($this->items[$index]);
         $this->items = array_values($this->items); // Re-index array
         $this->updateOutput();
     }
 
-    public function updatedItems($value, $key)
+    public function updatedItems(mixed $value, string $key): void
     {
         // When jenis_id changes, update nama
         if (str_contains($key, 'jenis_id')) {
@@ -130,34 +134,36 @@ class KeyValueJenisPakaian extends Component
         $this->updateOutput();
     }
 
-    protected function updateOutput()
+    protected function updateOutput(): void
     {
-        // Filter items yang sudah terisi
-        $validItems = array_filter($this->items, function ($item) {
-            return !empty($item['jenis_id']) && !empty($item['nama']) && $item['jumlah'] > 0;
-        });
+        // Filter items yang sudah terisi menggunakan arrow function
+        $validItems = array_filter(
+            $this->items,
+            fn (array $item) => !empty($item['jenis_id']) && !empty($item['nama']) && $item['jumlah'] > 0
+        );
 
         // Format JSON: [{"nama": "Kemeja", "jumlah": 3}, {"nama": "Celana", "jumlah": 2}]
-        $jsonData = array_map(function ($item) {
-            return [
+        $jsonData = array_map(
+            fn (array $item) => [
                 'nama' => $item['nama'],
-                'jumlah' => (int) $item['jumlah']
-            ];
-        }, $validItems);
+                'jumlah' => (int) $item['jumlah'],
+            ],
+            $validItems
+        );
 
         // Convert ke JSON string untuk disimpan ke database
-        $this->outputString = json_encode(array_values($jsonData));
+        $this->outputString = json_encode(array_values($jsonData), JSON_THROW_ON_ERROR);
 
         // Emit event ke parent component
         $this->dispatch('jenisPakaianUpdated', $this->outputString);
     }
 
-    public function getOutputString()
+    public function getOutputString(): string
     {
         return $this->outputString;
     }
 
-    public function getItems()
+    public function getItems(): array
     {
         return $this->items;
     }

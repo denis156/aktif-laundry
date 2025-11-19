@@ -87,7 +87,7 @@ Route::middleware('auth')->prefix('admin')->group(function() {
     Route::get('/profile', Profile::class)->name('profile');
 
     // Receipt Print Route di /admin/receipt/print
-    Route::get('/receipt/print/{id}', function($id) {
+    Route::get('/receipt/print/{id}', function (int $id) {
         $receiptData = Receipt::generateReceiptData($id);
 
         return view('livewire.admin.component.receipt', $receiptData);

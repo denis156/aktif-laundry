@@ -1,15 +1,23 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin;
 
 use Exception;
 use Carbon\Carbon;
 use Mary\Traits\Toast;
 use App\Models\Layanan;
-use App\Models\Setting;
+use App\Models\Pengaturan;
 use Livewire\Component;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
+use App\Models\TransaksiLayanan;
+use App\Helper\PhoneNumber;
+use App\Helper\AddressMetadata;
+use App\Helper\RegionalLocation;
+use App\Helper\Database\PelangganHelper;
+use App\Helper\Database\TransaksiHelper;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\DB;
@@ -33,9 +41,9 @@ class Kasir extends Component
         'diskon' => 0,
         'subtotal' => 0,
         'total' => 0,
-        'metode_pembayaran' => 'Tunai',
+        'metode_pembayaran' => TransaksiHelper::METODE_TUNAI,
         'tanggal_selesai' => '',
-        'status' => 'Menunggu',
+        'status' => TransaksiHelper::STATUS_MENUNGGU,
         'catatan' => '',
     ];
 
@@ -57,14 +65,18 @@ class Kasir extends Component
     public array $pelangganBaru = [
         'nama' => '',
         'no_hp' => '',
-        'alamat' => '',
         'email' => '',
+        'detail_alamat' => '',
+        'kelurahan' => '',
+        'kecamatan' => '',
+        'kabupaten_kota' => '',
+        'provinsi' => '',
     ];
 
     // Listener untuk event dari component
     protected $listeners = ['multiLayananUpdated'];
 
-    public function multiLayananUpdated($data)
+    public function multiLayananUpdated(array $data): void
     {
         $this->multiLayananData = $data;
         $this->formData['subtotal'] = $data['totalSubtotal'];
@@ -74,15 +86,20 @@ class Kasir extends Component
         $this->calculateTanggalSelesaiFromMultiLayanan();
     }
 
-    public function mount()
+    public function mount(): void
     {
         $this->refreshKodeTransaksi();
         $this->formData['tanggal_masuk'] = now()->format('Y-m-d\TH:i');
         $this->formData['kasir_id'] = Auth::id();
+
+        // Set default kabupaten/kota dan provinsi menggunakan RegionalLocation Helper
+        $this->pelangganBaru['kabupaten_kota'] = RegionalLocation::getRegencyName();
+        $this->pelangganBaru['provinsi'] = RegionalLocation::getProvinceName();
+
         $this->search();
     }
 
-    protected function resetForm()
+    protected function resetForm(): void
     {
         $this->formData = [
             'kode_transaksi' => $this->generateKode(),
@@ -93,9 +110,9 @@ class Kasir extends Component
             'diskon' => 0,
             'subtotal' => 0,
             'total' => 0,
-            'metode_pembayaran' => 'Tunai',
+            'metode_pembayaran' => TransaksiHelper::METODE_TUNAI,
             'tanggal_selesai' => '',
-            'status' => 'Menunggu',
+            'status' => TransaksiHelper::STATUS_MENUNGGU,
             'catatan' => '',
         ];
 
@@ -108,8 +125,12 @@ class Kasir extends Component
         $this->pelangganBaru = [
             'nama' => '',
             'no_hp' => '',
-            'alamat' => '',
             'email' => '',
+            'detail_alamat' => '',
+            'kelurahan' => '',
+            'kecamatan' => '',
+            'kabupaten_kota' => RegionalLocation::getRegencyName(),
+            'provinsi' => RegionalLocation::getProvinceName(),
         ];
 
         $this->isPelangganBaru = false;
@@ -117,7 +138,7 @@ class Kasir extends Component
 
     protected function generateKode(): string
     {
-        $prefix = Setting::get('format_id_transaksi', 'TRX');
+        $prefix = Pengaturan::getValue('format_id_transaksi', 'TRX');
         $prefixLength = strlen($prefix);
 
         $lastTransaksi = Transaksi::withTrashed()->orderBy('kode_transaksi', 'desc')->first();
@@ -132,68 +153,68 @@ class Kasir extends Component
         $nextNumber = $lastNumber + 1;
 
         // Verify if this number is already used (in case of deletions)
-        while (Transaksi::where('kode_transaksi', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+        while (Transaksi::where('kode_transaksi', $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
             $nextNumber++;
         }
 
-        return $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
-    public function refreshKodeTransaksi()
+    public function refreshKodeTransaksi(): void
     {
         $this->formData['kode_transaksi'] = $this->generateKode();
     }
 
-    public function search(string $term = '')
+    public function search(string $term = ''): void
     {
         try {
-            $selected = Pelanggan::where('id', $this->formData['pelanggan_id'])->get();
-
-            $this->pelangganOptions = Pelanggan::query()
-                ->where('nama', 'like', "%{$term}%")
-                ->orWhere('no_hp', 'like', "%{$term}%")
-                ->take(10)
-                ->orderBy('nama')
-                ->get()
-                ->merge($selected)
-                ->map(fn($p) => [
-                    'id' => (string) $p->id,
-                    'nama' => $p->nama,
-                    'no_hp' => $p->no_hp,
-                ])
-                ->values()
-                ->toArray();
+            // Menggunakan PelangganHelper untuk get options (approach OOP)
+            $this->pelangganOptions = PelangganHelper::getPelangganOptions($term, 10);
         } catch (\Exception $e) {
-            Log::error('Error searching pelanggan: ' . $e->getMessage());
+            Log::error('Error searching pelanggan', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             $this->pelangganOptions = [];
         }
     }
 
-    public function updatedFormDataPelangganId($value)
+    public function updatedFormDataPelangganId(mixed $value): void
     {
         if ($value) {
             $pelanggan = Pelanggan::find($value);
-            if ($pelanggan) {
+            if ($pelanggan instanceof Pelanggan) {
                 $this->formData['nama_pelanggan'] = $pelanggan->nama;
 
-                // Auto-fill form pelanggan dengan data yang dipilih (untuk ditampilkan di disabled fields)
+                // Auto-fill form pelanggan dengan data yang dipilih menggunakan Helpers
                 $this->pelangganBaru['nama'] = $pelanggan->nama;
-                $this->pelangganBaru['no_hp'] = $pelanggan->no_hp;
+                $this->pelangganBaru['no_hp'] = PhoneNumber::formatLocal($pelanggan->no_hp)
+                    ?? $pelanggan->no_hp;
                 $this->pelangganBaru['email'] = $pelanggan->email ?? '';
-                $this->pelangganBaru['alamat'] = $pelanggan->alamat ?? '';
+                $this->pelangganBaru['detail_alamat'] = AddressMetadata::getDetailAlamat($pelanggan);
+                $this->pelangganBaru['kelurahan'] = AddressMetadata::getKelurahan($pelanggan);
+                $this->pelangganBaru['kecamatan'] = AddressMetadata::getKecamatan($pelanggan);
+                $this->pelangganBaru['kabupaten_kota'] = AddressMetadata::getKabupatenKota($pelanggan)
+                    ?: RegionalLocation::getRegencyName();
+                $this->pelangganBaru['provinsi'] = AddressMetadata::getProvinsi($pelanggan)
+                    ?: RegionalLocation::getProvinceName();
             }
         }
     }
 
-    public function updatedIsPelangganBaru($value)
+    public function updatedIsPelangganBaru(mixed $value): void
     {
         if ($value) {
             // Saat toggle ke mode "Pelanggan Baru", clear form pelanggan
             $this->pelangganBaru = [
                 'nama' => '',
                 'no_hp' => '',
-                'alamat' => '',
                 'email' => '',
+                'detail_alamat' => '',
+                'kelurahan' => '',
+                'kecamatan' => '',
+                'kabupaten_kota' => RegionalLocation::getRegencyName(),
+                'provinsi' => RegionalLocation::getProvinceName(),
             ];
             // Clear juga pilihan pelanggan
             $this->formData['pelanggan_id'] = '';
@@ -203,15 +224,19 @@ class Kasir extends Component
             $this->pelangganBaru = [
                 'nama' => '',
                 'no_hp' => '',
-                'alamat' => '',
                 'email' => '',
+                'detail_alamat' => '',
+                'kelurahan' => '',
+                'kecamatan' => '',
+                'kabupaten_kota' => RegionalLocation::getRegencyName(),
+                'provinsi' => RegionalLocation::getProvinceName(),
             ];
         }
     }
 
-    public function updatedFormDataDiskon()
+    public function updatedFormDataDiskon(): void
     {
-        $diskon = (float) ($this->formData['diskon'] ?? 0);
+        $diskon = (int) ($this->formData['diskon'] ?? 0);
 
         // Update totalGrandTotal di multiLayananData
         $this->multiLayananData['totalGrandTotal'] = $this->multiLayananData['totalSubtotal'] - $diskon;
@@ -221,14 +246,14 @@ class Kasir extends Component
         $this->formData['subtotal'] = $this->multiLayananData['totalSubtotal'];
     }
 
-    protected function calculateTanggalSelesaiFromMultiLayanan()
+    protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         $tanggalTerlama = null;
 
         foreach ($this->multiLayananData['items'] as $item) {
             if (!empty($item['layanan_id'])) {
                 $layanan = Layanan::find($item['layanan_id']);
-                if ($layanan && $layanan->durasi_jam > 0) {
+                if ($layanan instanceof Layanan && $layanan->durasi_jam > 0) {
                     $tanggalSelesai = Carbon::parse($this->formData['tanggal_masuk'])
                         ->addHours($layanan->durasi_jam);
 
@@ -243,53 +268,92 @@ class Kasir extends Component
     }
 
 
-    public function save()
+    public function save(): void
     {
         // Jika mode pelanggan baru, simpan pelanggan dulu
         if ($this->isPelangganBaru) {
             if (empty($this->pelangganBaru['nama'])) {
+                Log::warning('Kasir validation failed: nama pelanggan kosong');
                 $this->error('Nama pelanggan wajib diisi!', position: 'toast-bottom');
+
                 return;
             }
 
             if (empty($this->pelangganBaru['no_hp'])) {
+                Log::warning('Kasir validation failed: no_hp pelanggan kosong');
                 $this->error('Nomor HP wajib diisi!', position: 'toast-bottom');
+
                 return;
             }
 
             $this->savePelangganBaru();
 
             if ($this->isPelangganBaru) {
+                Log::warning('Kasir save aborted: pelanggan baru gagal disimpan');
                 return;
             }
         }
 
         // Validasi transaksi
         if (empty($this->formData['pelanggan_id'])) {
+            Log::warning('Kasir validation failed: pelanggan_id kosong');
             $this->error('Pilih pelanggan terlebih dahulu!', position: 'toast-bottom');
+            return;
+        }
+
+        // Validasi metode pembayaran
+        if (!TransaksiHelper::isValidMetodePembayaran($this->formData['metode_pembayaran'])) {
+            Log::warning('Kasir validation failed: metode_pembayaran invalid', [
+                'metode_pembayaran' => $this->formData['metode_pembayaran'],
+            ]);
+            $this->error('Metode pembayaran tidak valid!', position: 'toast-bottom');
+            return;
+        }
+
+        // Validasi status
+        if (!TransaksiHelper::isValidStatus($this->formData['status'])) {
+            Log::warning('Kasir validation failed: status invalid', [
+                'status' => $this->formData['status'],
+            ]);
+            $this->error('Status transaksi tidak valid!', position: 'toast-bottom');
             return;
         }
 
         // Validasi multi-layanan
         if (empty($this->multiLayananData['items'])) {
+            Log::warning('Kasir validation failed: items layanan kosong');
             $this->error('Tambahkan minimal 1 layanan!', position: 'toast-bottom');
             return;
         }
 
         $hasValidLayanan = false;
-        foreach ($this->multiLayananData['items'] as $item) {
+        foreach ($this->multiLayananData['items'] as $index => $item) {
             if (!empty($item['layanan_id'])) {
                 if ($item['tipe_layanan'] === 'per_kg') {
                     if (empty($item['berat_kg']) || $item['berat_kg'] < 0.1) {
+                        Log::warning('Kasir validation failed: berat_kg invalid', [
+                            'layanan_index' => $index,
+                            'layanan_nama' => $item['nama_layanan'] ?? '',
+                            'berat_kg' => $item['berat_kg'] ?? null,
+                        ]);
                         $this->error('Berat minimal 0.1 kg untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
                         return;
                     }
                     if (empty($item['jenis_pakaian']) || count($item['jenis_pakaian']) === 0) {
+                        Log::warning('Kasir validation failed: jenis_pakaian kosong', [
+                            'layanan_index' => $index,
+                            'layanan_nama' => $item['nama_layanan'] ?? '',
+                        ]);
                         $this->error('Jenis pakaian wajib diisi untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
                         return;
                     }
                 } else {
                     if (empty($item['jumlah_satuan']) || $item['jumlah_satuan'] < 1) {
+                        Log::warning('Kasir validation failed: jumlah_satuan invalid', [
+                            'layanan_index' => $index,
+                            'layanan_nama' => $item['nama_layanan'] ?? '',
+                            'jumlah_satuan' => $item['jumlah_satuan'] ?? null,
+                        ]);
                         $this->error('Jumlah minimal 1 untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
                         return;
                     }
@@ -299,18 +363,22 @@ class Kasir extends Component
         }
 
         if (!$hasValidLayanan) {
+            Log::warning('Kasir validation failed: tidak ada layanan valid');
             $this->error('Pilih layanan yang valid terlebih dahulu!', position: 'toast-bottom');
             return;
         }
 
         try {
             // Gunakan database transaction untuk mencegah race condition
-            DB::transaction(function() {
+            DB::transaction(function () {
                 // ID Kasir
                 $this->formData['kasir_id'] = Auth::id() ?? 1;
 
                 // Cek ulang apakah kode transaksi sudah ada, jika ya generate ulang
                 if (Transaksi::where('kode_transaksi', $this->formData['kode_transaksi'])->exists()) {
+                    Log::warning('Kasir: Duplicate kode_transaksi detected, regenerating', [
+                        'old_kode' => $this->formData['kode_transaksi'],
+                    ]);
                     $this->refreshKodeTransaksi();
                 }
 
@@ -337,40 +405,65 @@ class Kasir extends Component
                         // Get layanan data untuk backup jika item data kosong
                         $layanan = Layanan::find($item['layanan_id']);
 
+                        if (!$layanan) {
+                            Log::error('Kasir: Layanan not found', [
+                                'layanan_id' => $item['layanan_id'],
+                                'index' => $index,
+                            ]);
+                            throw new Exception("Layanan dengan ID {$item['layanan_id']} tidak ditemukan");
+                        }
+
                         $transaksiLayananData = [
                             'transaksi_id' => $transaksi->id,
                             'layanan_id' => $item['layanan_id'],
-                            'nama_layanan' => $item['nama_layanan'] ?? ($layanan ? $layanan->nama_layanan : ''),
+                            'nama_layanan' => $item['nama_layanan'] ?? $layanan->nama_layanan,
                             'subtotal' => $item['subtotal'] ?? 0,
                         ];
 
                         if ($item['tipe_layanan'] === 'per_kg') {
                             // Prepare data untuk per_kg
-                            $transaksiLayananData['jenis_pakaian'] = !empty($item['jenis_pakaian']) ? json_encode($item['jenis_pakaian']) : null;
+                            $transaksiLayananData['jenis_pakaian'] = !empty($item['jenis_pakaian']) ? $item['jenis_pakaian'] : null;
                             $transaksiLayananData['berat_kg'] = $item['berat_kg'] ?? 0;
-                            $transaksiLayananData['harga_per_kg'] = $item['harga_per_kg'] ?? ($layanan ? $layanan->harga_per_kg : 0);
+                            $transaksiLayananData['harga_per_kg'] = $item['harga_per_kg'] ?? $layanan->harga_per_kg;
+                            $transaksiLayananData['jumlah_satuan'] = null;
+                            $transaksiLayananData['harga_per_satuan'] = null;
 
                             // Calculate subtotal jika belum ada
                             if (empty($item['subtotal'])) {
                                 $berat = (float) ($item['berat_kg'] ?? 0);
-                                $harga = (int) ($transaksiLayananData['harga_per_kg']);
-                                $transaksiLayananData['subtotal'] = $berat * $harga;
+                                $harga = (int) $transaksiLayananData['harga_per_kg'];
+                                $transaksiLayananData['subtotal'] = (int) ($berat * $harga);
                             }
                         } else {
                             // Prepare data untuk per_satuan
+                            $transaksiLayananData['jenis_pakaian'] = null;
+                            $transaksiLayananData['berat_kg'] = null;
+                            $transaksiLayananData['harga_per_kg'] = null;
                             $transaksiLayananData['jumlah_satuan'] = $item['jumlah_satuan'] ?? 1;
-                            $transaksiLayananData['harga_per_satuan'] = $item['harga_per_satuan'] ?? ($layanan ? $layanan->harga_per_satuan : 0);
+                            $transaksiLayananData['harga_per_satuan'] = $item['harga_per_satuan'] ?? $layanan->harga_per_satuan;
 
                             // Calculate subtotal jika belum ada
                             if (empty($item['subtotal'])) {
                                 $jumlah = (int) ($item['jumlah_satuan'] ?? 1);
-                                $harga = (int) ($transaksiLayananData['harga_per_satuan']);
+                                $harga = (int) $transaksiLayananData['harga_per_satuan'];
                                 $transaksiLayananData['subtotal'] = $jumlah * $harga;
                             }
                         }
 
-                        // Create TransaksiLayanan
-                        DB::table('transaksi_layanan')->insert($transaksiLayananData);
+                        // Create TransaksiLayanan using Model (untuk automatic JSON casting)
+                        $transaksiLayananData['created_at'] = now();
+                        $transaksiLayananData['updated_at'] = now();
+
+                        try {
+                            $transaksiLayanan = TransaksiLayanan::create($transaksiLayananData);
+                        } catch (Exception $e) {
+                            Log::error('Kasir: Failed to create TransaksiLayanan', [
+                                'error' => $e->getMessage(),
+                                'data' => $transaksiLayananData,
+                                'index' => $index,
+                            ]);
+                            throw $e;
+                        }
                     }
                 }
 
@@ -378,6 +471,10 @@ class Kasir extends Component
                 $pelanggan = Pelanggan::lockForUpdate()->find($this->formData['pelanggan_id']);
                 if ($pelanggan) {
                     $pelanggan->increment('total_transaksi');
+                } else {
+                    Log::warning('Kasir: Pelanggan not found for increment', [
+                        'pelanggan_id' => $this->formData['pelanggan_id'],
+                    ]);
                 }
 
                 // Simpan kode transaksi terakhir untuk struk
@@ -392,85 +489,90 @@ class Kasir extends Component
             // Tampilkan pilihan cetak struk
             $this->showReceipt = true;
         } catch (QueryException $e) {
+            Log::error('Kasir: Database error', [
+                'error_code' => $e->errorInfo[1] ?? null,
+                'error_message' => $e->getMessage(),
+                'sql' => $e->getSql() ?? null,
+                'bindings' => $e->getBindings() ?? [],
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             // Handle unique constraint violation
-            if ($e->errorInfo[1] == 1062) { // Duplicate entry
+            if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062) { // Duplicate entry
+                Log::warning('Kasir: Duplicate entry detected, regenerating kode', [
+                    'kode_transaksi' => $this->formData['kode_transaksi'],
+                ]);
                 $this->refreshKodeTransaksi();
                 $this->success('Kode transaksi di-regenerate, silakan coba lagi', position: 'toast-bottom');
                 return;
             }
-            $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), timeout: 10000, position: 'toast-bottom');
+
+            // Jangan expose SQL error ke user - security risk!
+            $this->error('Gagal menyimpan transaksi. Silakan coba lagi atau hubungi administrator.', timeout: 10000, position: 'toast-bottom');
         } catch (Exception $e) {
-            $this->error('Gagal menyimpan transaksi: ' . $e->getMessage(), timeout: 10000, position: 'toast-bottom');
+            Log::error('Kasir: Unexpected error', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'formData' => $this->formData,
+                'multiLayananData' => $this->multiLayananData,
+            ]);
+
+            // Jangan expose technical error ke user - security risk!
+            $this->error('Terjadi kesalahan sistem. Silakan coba lagi atau hubungi administrator.', timeout: 10000, position: 'toast-bottom');
         }
     }
 
 
-    public function printReceipt($transactionId = null)
+    public function printReceipt(?string $transactionId = null): void
     {
         $kode = $transactionId ?? $this->lastTransactionId;
         if (!empty($kode)) {
             // Cari transaksi by kode untuk dapat ID
             $transaksi = Transaksi::where('kode_transaksi', $kode)->first();
-            if ($transaksi) {
+            if ($transaksi instanceof Transaksi) {
                 $this->dispatch('open-print-window', url: route('receipt.print', ['id' => $transaksi->id]));
                 $this->showReceipt = false;
             }
         }
     }
 
-    public function batalTransaksi()
+    public function batalTransaksi(): void
     {
         $this->resetForm();
         $this->success('Form direset', position: 'toast-bottom');
     }
 
-    public function savePelangganBaru()
+    public function savePelangganBaru(): void
     {
         // Validasi sederhana
         if (empty($this->pelangganBaru['nama'])) {
+            Log::warning('Kasir: savePelangganBaru validation failed - nama kosong');
             $this->error('Nama pelanggan wajib diisi!', position: 'toast-bottom');
             return;
         }
 
         if (empty($this->pelangganBaru['no_hp'])) {
+            Log::warning('Kasir: savePelangganBaru validation failed - no_hp kosong');
             $this->error('Nomor HP wajib diisi!', position: 'toast-bottom');
+            return;
+        }
+
+        if (empty($this->pelangganBaru['detail_alamat'])) {
+            Log::warning('Kasir: savePelangganBaru validation failed - detail_alamat kosong');
+            $this->error('Detail alamat wajib diisi!', position: 'toast-bottom');
             return;
         }
 
         try {
             // Gunakan transaction untuk pembuatan pelanggan baru
-            DB::transaction(function() {
-                // Generate kode pelanggan baru
-                $prefix = Setting::get('format_id_pelanggan', 'PLG');
-                $prefixLength = strlen($prefix);
-
-                $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
-
-                if (!$lastPelanggan) {
-                    $kodePelanggan = $prefix . '001';
-                } else {
-                    $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
-                    $nextNumber = $lastNumber + 1;
-
-                    // Check if there are any gaps in the numbering by finding the next available number
-                    while (Pelanggan::where('kode_pelanggan', $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
-                        $nextNumber++;
-                    }
-
-                    $kodePelanggan = $prefix . str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-                }
-
-                // Simpan pelanggan baru
-                $pelanggan = Pelanggan::create([
-                    'kode_pelanggan' => $kodePelanggan,
-                    'nama' => $this->pelangganBaru['nama'],
-                    'no_hp' => $this->pelangganBaru['no_hp'],
-                    'alamat' => $this->pelangganBaru['alamat'] ?? '',
-                    'email' => $this->pelangganBaru['email'] ?? '',
-                    'tanggal_daftar' => $this->formData['tanggal_masuk'] ? \Carbon\Carbon::parse($this->formData['tanggal_masuk'])->format('Y-m-d H:i:s') : now(),
-                    'total_transaksi' => 0,
-                    'status' => 'Aktif',
-                ]);
+            DB::transaction(function () {
+                // Create pelanggan menggunakan PelangganHelper (OOP approach)
+                $pelanggan = PelangganHelper::createPelanggan(
+                    $this->pelangganBaru,
+                    $this->formData['tanggal_masuk'] ? \Carbon\Carbon::parse($this->formData['tanggal_masuk'])->format('Y-m-d H:i:s') : null
+                );
 
                 $this->success("Pelanggan {$this->pelangganBaru['nama']} berhasil ditambahkan!", position: 'toast-bottom');
 
@@ -482,56 +584,148 @@ class Kasir extends Component
                 $this->pelangganBaru = [
                     'nama' => '',
                     'no_hp' => '',
-                    'alamat' => '',
                     'email' => '',
+                    'detail_alamat' => '',
+                    'kelurahan' => '',
+                    'kecamatan' => '',
+                    'kabupaten_kota' => '',
+                    'provinsi' => '',
                 ];
 
                 // Switch kembali ke mode pilih pelanggan existing
                 $this->isPelangganBaru = false;
             });
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Kasir: Database error saat create pelanggan', [
+                'error_code' => $e->errorInfo[1] ?? null,
+                'error_message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'pelanggan_data' => $this->pelangganBaru,
+            ]);
+
             // Handle unique constraint violation
-            if ($e->errorInfo[1] == 1062) { // Duplicate entry
-                $this->error('Kode pelanggan sudah ada, sistem akan mencoba generate ulang', position: 'toast-bottom');
+            if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062) { // Duplicate entry
+                $this->error('Nomor HP atau email sudah terdaftar. Silakan gunakan data lain.', position: 'toast-bottom');
                 return;
             }
-            $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
+
+            // Jangan expose SQL error ke user - security risk!
+            $this->error('Gagal menyimpan pelanggan. Silakan coba lagi atau hubungi administrator.', position: 'toast-bottom');
         } catch (\Exception $e) {
-            $this->error('Gagal menyimpan pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
+            Log::error('Kasir: Unexpected error saat create pelanggan', [
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+                'pelanggan_data' => $this->pelangganBaru,
+            ]);
+
+            // Jangan expose technical error ke user - security risk!
+            $this->error('Terjadi kesalahan sistem. Silakan coba lagi atau hubungi administrator.', position: 'toast-bottom');
         }
     }
 
 
-    public function getPelangganOptions()
+    public function getPelangganOptions(): array
     {
         try {
-            return Pelanggan::where('status', 'Aktif')
-                ->orderBy('nama')
-                ->get()
-                ->map(fn($p) => [
-                    'id' => (string) $p->id,
-                    'nama' => $p->nama,
-                    'no_hp' => $p->no_hp,
-                ])
-                ->toArray();
+            // Gunakan PelangganHelper untuk get options (OOP approach)
+            return PelangganHelper::getPelangganOptions('', 100);
         } catch (\Exception $e) {
-            Log::error('Error getting pelanggan options: ' . $e->getMessage());
+            Log::error('Error getting pelanggan options: '.$e->getMessage());
             return [];
         }
     }
 
-    public function getLayananOptions()
+    public function getLayananOptions(): array
     {
         try {
             return Layanan::where('status', 'Aktif')
                 ->orderBy('nama_layanan')
-                ->get()
-                ->map(fn($l) => ['id' => $l->id, 'name' => $l->nama_layanan . ' - Rp ' . number_format($l->harga_per_kg, 0, ',', '.')])
+                ->get(['id', 'nama_layanan', 'tipe_layanan', 'harga_per_kg', 'harga_per_satuan', 'satuan'])
+                ->map(function (Layanan $layanan) {
+                    $harga = $layanan->tipe_layanan === 'per_kg'
+                        ? 'Rp '.number_format($layanan->harga_per_kg, 0, ',', '.').'/'.$layanan->satuan
+                        : 'Rp '.number_format($layanan->harga_per_satuan, 0, ',', '.').'/'.$layanan->satuan;
+
+                    return [
+                        'id' => $layanan->id,
+                        'name' => $layanan->nama_layanan.' - '.$harga,
+                    ];
+                })
                 ->toArray();
         } catch (\Exception $e) {
-            Log::error('Error getting layanan options: ' . $e->getMessage());
+            Log::error('Error getting layanan options', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
             return [];
         }
+    }
+
+    public function getKecamatanOptions(): array
+    {
+        // Get kecamatan di Kota Kendari dari API menggunakan RegionalLocation helper
+        $districts = RegionalLocation::getKendariDistricts();
+
+        // Transform ke format yang dibutuhkan oleh x-select component
+        return collect($districts)->map(fn (array $district) => [
+            'id' => $district['name'] ?? '',
+            'name' => $district['name'] ?? '',
+        ])->toArray();
+    }
+
+    public function getKelurahanOptions(): array
+    {
+        // Kelurahan berdasarkan kecamatan yang dipilih menggunakan RegionalLocation Helper
+        $kecamatanName = $this->pelangganBaru['kecamatan'] ?? '';
+
+        if (empty($kecamatanName)) {
+            return [];
+        }
+
+        // Cari district code berdasarkan nama kecamatan
+        $districts = RegionalLocation::getKendariDistricts();
+        $districtCode = null;
+
+        foreach ($districts as $district) {
+            if (($district['name'] ?? '') === $kecamatanName) {
+                $districtCode = $district['code'] ?? null;
+                break;
+            }
+        }
+
+        if (!$districtCode) {
+            return [];
+        }
+
+        // Get kelurahan/desa berdasarkan district code dari API
+        $villages = RegionalLocation::getVillagesByDistrict($districtCode);
+
+        // Transform ke format yang dibutuhkan oleh x-select component
+        return collect($villages)->map(fn (array $village) => [
+            'id' => $village['name'] ?? '',
+            'name' => $village['name'] ?? '',
+        ])->toArray();
+    }
+
+    public function getMetodePembayaranOptions(): array
+    {
+        // Get metode pembayaran dari TransaksiHelper
+        return collect(TransaksiHelper::getAllMetodePembayaran())->map(fn (string $metode) => [
+            'id' => $metode,
+            'name' => $metode,
+        ])->toArray();
+    }
+
+    public function getStatusOptions(): array
+    {
+        // Get status transaksi dari TransaksiHelper
+        return collect(TransaksiHelper::getAllStatus())->map(fn (string $status) => [
+            'id' => $status,
+            'name' => $status,
+        ])->toArray();
     }
 
     public function render()
@@ -539,6 +733,10 @@ class Kasir extends Component
         return view('livewire.admin.kasir', [
             'pelangganOptions' => $this->getPelangganOptions(),
             'layananOptions' => $this->getLayananOptions(),
+            'kecamatanOptions' => $this->getKecamatanOptions(),
+            'kelurahanOptions' => $this->getKelurahanOptions(),
+            'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
+            'statusOptions' => $this->getStatusOptions(),
         ]);
     }
 }
