@@ -1,0 +1,157 @@
+<?php
+
+namespace App\Livewire\Admin\Component;
+
+use Exception;
+use App\Models\Setting;
+use Livewire\Component;
+use App\Models\Pelanggan;
+use App\Models\Transaksi;
+use App\Helper\QrisHelper;
+
+class Receipt extends Component
+{
+    public int $transaksiId;
+    public array $transaksiData = [];
+    public array $setting = [];
+    public string $pelangganAlamat = '';
+    public string $pelangganNoHp = '';
+    public string $qrCodeSvg = '';
+
+    public function mount($id)
+    {
+        $this->transaksiId = $id;
+        $this->loadReceiptData();
+    }
+
+    protected function loadReceiptData()
+    {
+        try {
+            // Get Transaksi Data
+            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])->findOrFail($this->transaksiId);
+
+            $this->transaksiData = [
+                'id' => $transaksi->id,
+                'kode_transaksi' => $transaksi->kode_transaksi,
+                'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d H:i:s'),
+                'nama_pelanggan' => $transaksi->nama_pelanggan,
+                'subtotal' => (int) $transaksi->subtotal,
+                'diskon' => (int) $transaksi->diskon,
+                'total' => (int) $transaksi->total,
+                'metode_pembayaran' => $transaksi->metode_pembayaran,
+                'tanggal_selesai' => $transaksi->tanggal_selesai ? $transaksi->tanggal_selesai->format('Y-m-d H:i:s') : '',
+                'status' => $transaksi->status,
+                'catatan' => $transaksi->catatan ?? '',
+                'total_berat' => (float) $transaksi->total_berat,
+                'total_item' => (int) $transaksi->total_item,
+                'jumlah_layanan' => (int) $transaksi->jumlah_layanan,
+            ];
+
+            // Get Setting Data
+            $this->setting = [
+                'nama_toko' => Setting::get('nama_toko', 'Aktif Laundry'),
+                'alamat' => Setting::get('alamat', ''),
+                'telepon' => Setting::get('telepon', ''),
+                'whatsapp' => Setting::get('whatsapp', ''),
+                'email' => Setting::get('email', ''),
+                'jam_buka' => Setting::get('jam_buka', '08:00'),
+                'jam_tutup' => Setting::get('jam_tutup', '21:00'),
+            ];
+
+            // Get Pelanggan Data (Alamat & No HP)
+            if ($transaksi->pelanggan) {
+                $this->pelangganAlamat = $transaksi->pelanggan->alamat ?? '';
+                $this->pelangganNoHp = $transaksi->pelanggan->no_hp ?? '';
+            }
+
+            // Generate QR Code dynamic on-demand
+            try {
+                $this->qrCodeSvg = QrisHelper::generateOnDemandQrCode((float) $transaksi->total);
+            } catch (Exception $qrError) {
+                // Jika gagal generate QR, gunakan fallback (kosong atau static)
+                $this->qrCodeSvg = '';
+                \Log::warning('QR Code generation failed for transaction ' . $transaksi->id . ': ' . $qrError->getMessage());
+            }
+
+        } catch (Exception $e) {
+            abort(404, 'Transaksi tidak ditemukan: ' . $e->getMessage());
+        }
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.component.receipt', [
+            'transaksiData' => $this->transaksiData,
+            'setting' => $this->setting,
+            'pelangganAlamat' => $this->pelangganAlamat,
+            'pelangganNoHp' => $this->pelangganNoHp,
+            'qrCodeSvg' => $this->qrCodeSvg,
+        ]);
+    }
+
+    /**
+     * Method static untuk generate receipt data (untuk route non-Livewire)
+     */
+    public static function generateReceiptData($id)
+    {
+        try {
+            // Get Transaksi Data
+            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])->findOrFail($id);
+
+            $transaksiData = [
+                'id' => $transaksi->id,
+                'kode_transaksi' => $transaksi->kode_transaksi,
+                'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d H:i:s'),
+                'nama_pelanggan' => $transaksi->nama_pelanggan,
+                'subtotal' => (int) $transaksi->subtotal,
+                'diskon' => (int) $transaksi->diskon,
+                'total' => (int) $transaksi->total,
+                'metode_pembayaran' => $transaksi->metode_pembayaran,
+                'tanggal_selesai' => $transaksi->tanggal_selesai ? $transaksi->tanggal_selesai->format('Y-m-d H:i:s') : '',
+                'status' => $transaksi->status,
+                'catatan' => $transaksi->catatan ?? '',
+                'total_berat' => (float) $transaksi->total_berat,
+                'total_item' => (int) $transaksi->total_item,
+                'jumlah_layanan' => (int) $transaksi->jumlah_layanan,
+            ];
+
+            // Get Setting Data
+            $setting = [
+                'nama_toko' => Setting::get('nama_toko', 'Aktif Laundry'),
+                'alamat' => Setting::get('alamat', ''),
+                'telepon' => Setting::get('telepon', ''),
+                'whatsapp' => Setting::get('whatsapp', ''),
+                'email' => Setting::get('email', ''),
+                'jam_buka' => Setting::get('jam_buka', '08:00'),
+                'jam_tutup' => Setting::get('jam_tutup', '21:00'),
+            ];
+
+            // Get Pelanggan Data (Alamat & No HP)
+            $pelangganAlamat = '';
+            $pelangganNoHp = '';
+            if ($transaksi->pelanggan) {
+                $pelangganAlamat = $transaksi->pelanggan->alamat ?? '';
+                $pelangganNoHp = $transaksi->pelanggan->no_hp ?? '';
+            }
+
+            // Generate QR Code dynamic on-demand
+            $qrCodeSvg = '';
+            try {
+                $qrCodeSvg = QrisHelper::generateOnDemandQrCode((float) $transaksi->total);
+            } catch (Exception $qrError) {
+                \Log::warning('QR Code generation failed for transaction ' . $transaksi->id . ': ' . $qrError->getMessage());
+            }
+
+            return [
+                'transaksiData' => $transaksiData,
+                'setting' => $setting,
+                'pelangganAlamat' => $pelangganAlamat,
+                'pelangganNoHp' => $pelangganNoHp,
+                'qrCodeSvg' => $qrCodeSvg,
+            ];
+
+        } catch (Exception $e) {
+            abort(404, 'Transaksi tidak ditemukan: ' . $e->getMessage());
+        }
+    }
+}

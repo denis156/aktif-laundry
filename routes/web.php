@@ -1,31 +1,31 @@
 <?php
 
-use App\Livewire\Kasir;
-use App\Livewire\Login;
-use App\Livewire\Profile;
-use App\Livewire\Dashboard;
-use App\Livewire\Pengaturan;
-use App\Livewire\Component\Receipt;
+use App\Livewire\Admin\Kasir;
+use App\Livewire\Admin\Profile;
+use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\Pengaturan;
+use App\Livewire\Admin\Auth\Login;
+use App\Livewire\Admin\Component\Receipt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\Staf\Edit as StafEdit;
-use App\Livewire\Staf\Index as StafIndex;
-use App\Livewire\Staf\Create as StafCreate;
-use App\Livewire\Layanan\Edit as LayananEdit;
-use App\Livewire\Layanan\Index as LayananIndex;
-use App\Livewire\Layanan\Create as LayananCreate;
-use App\Livewire\Pelanggan\Edit as PelangganEdit;
-use App\Livewire\Transaksi\Edit as TransaksiEdit;
-use App\Livewire\Pelanggan\Index as PelangganIndex;
-use App\Livewire\Transaksi\Index as TransaksiIndex;
-use App\Livewire\Pelanggan\Create as PelangganCreate;
-use App\Livewire\Transaksi\Create as TransaksiCreate;
-use App\Livewire\JenisPakaian\Edit as JenisPakaianEdit;
-use App\Livewire\JenisPakaian\Index as JenisPakaianIndex;
-use App\Livewire\JenisPakaian\Create as JenisPakaianCreate;
+use App\Livewire\Admin\Staf\Edit as StafEdit;
+use App\Livewire\Admin\Staf\Index as StafIndex;
+use App\Livewire\Admin\Staf\Create as StafCreate;
+use App\Livewire\Admin\Layanan\Edit as LayananEdit;
+use App\Livewire\Admin\Layanan\Index as LayananIndex;
+use App\Livewire\Admin\Layanan\Create as LayananCreate;
+use App\Livewire\Admin\Pelanggan\Edit as PelangganEdit;
+use App\Livewire\Admin\Transaksi\Edit as TransaksiEdit;
+use App\Livewire\Admin\Pelanggan\Index as PelangganIndex;
+use App\Livewire\Admin\Transaksi\Index as TransaksiIndex;
+use App\Livewire\Admin\Pelanggan\Create as PelangganCreate;
+use App\Livewire\Admin\Transaksi\Create as TransaksiCreate;
+use App\Livewire\Admin\JenisPakaian\Edit as JenisPakaianEdit;
+use App\Livewire\Admin\JenisPakaian\Index as JenisPakaianIndex;
+use App\Livewire\Admin\JenisPakaian\Create as JenisPakaianCreate;
 
 // Landing Page Route - Public
-Route::view('/', 'components.layouts.landingpage')->name('landing-page');
+Route::view('/', 'pages.landingpage')->name('landing-page');
 
 // Public Routes - tanpa auth
 Route::prefix('admin')->group(function() {
@@ -90,7 +90,7 @@ Route::middleware('auth')->prefix('admin')->group(function() {
     Route::get('/receipt/print/{id}', function($id) {
         $receiptData = Receipt::generateReceiptData($id);
 
-        return view('livewire.component.receipt', $receiptData);
+        return view('livewire.admin.component.receipt', $receiptData);
     })->name('receipt.print');
 
 }); // End of auth middleware dan prefix admin group
