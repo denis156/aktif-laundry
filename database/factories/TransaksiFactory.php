@@ -6,6 +6,7 @@ namespace Database\Factories;
 
 use App\Models\Pelanggan;
 use App\Models\User;
+use App\Helper\Database\TransaksiHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -55,9 +56,21 @@ class TransaksiFactory extends Factory
             'subtotal' => $subtotal,
             'diskon' => $diskon,
             'total' => $total,
-            'metode_pembayaran' => fake()->randomElement(['Tunai', 'Non-Tunai']),
+            // Gunakan TransaksiHelper constants untuk metode pembayaran
+            'metode_pembayaran' => fake()->randomElement([
+                TransaksiHelper::METODE_TUNAI,
+                TransaksiHelper::METODE_NON_TUNAI,
+                TransaksiHelper::METODE_TRANSFER,
+                TransaksiHelper::METODE_QRIS,
+            ]),
             'tanggal_selesai' => $tanggalSelesai,
-            'status' => fake()->randomElement(['Menunggu', 'Proses', 'Selesai', 'Diambil']),
+            // Gunakan TransaksiHelper constants untuk status
+            'status' => fake()->randomElement([
+                TransaksiHelper::STATUS_MENUNGGU,
+                TransaksiHelper::STATUS_PROSES,
+                TransaksiHelper::STATUS_SELESAI,
+                TransaksiHelper::STATUS_DIAMBIL,
+            ]),
             'catatan' => fake()->optional(0.3)->sentence(),
             'metadata' => [
                 'foto_bukti_timbangan' => fake()->optional(0.2)->imageUrl(640, 480, 'scale'),

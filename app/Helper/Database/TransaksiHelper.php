@@ -19,6 +19,23 @@ use App\Models\Transaksi;
 
 class TransaksiHelper
 {
+    // * Status Transaksi Constants
+    public const STATUS_MENUNGGU = 'Menunggu';
+    public const STATUS_PROSES = 'Proses';
+    public const STATUS_SELESAI = 'Selesai';
+    public const STATUS_DIAMBIL = 'Diambil';
+    public const STATUS_BATAL = 'Batal';
+
+    // * Metode Pembayaran Constants
+    public const METODE_TUNAI = 'Tunai';
+    public const METODE_NON_TUNAI = 'Non-Tunai';
+    public const METODE_TRANSFER = 'Transfer';
+    public const METODE_QRIS = 'QRIS';
+    public const METODE_EWALLET = 'E-Wallet';
+    public const METODE_DEBIT = 'Debit';
+    public const METODE_KREDIT = 'Kredit';
+
+    // * Metadata Keys
     public const META_PEMBAYARAN = 'pembayaran';
     public const META_PROMO = 'promo';
     public const META_REFERRAL = 'referral';
@@ -133,6 +150,44 @@ class TransaksiHelper
         $fotos = self::getFotoBuktiPembayaran($transaksi);
         $fotos[] = $fotoPath;
         self::setMetadata($transaksi, self::META_FOTO_BUKTI_PEMBAYARAN, $fotos);
+    }
+
+    // * Get semua status transaksi yang tersedia
+    public static function getAllStatus(): array
+    {
+        return [
+            self::STATUS_MENUNGGU,
+            self::STATUS_PROSES,
+            self::STATUS_SELESAI,
+            self::STATUS_DIAMBIL,
+            self::STATUS_BATAL,
+        ];
+    }
+
+    // * Get semua metode pembayaran yang tersedia
+    public static function getAllMetodePembayaran(): array
+    {
+        return [
+            self::METODE_TUNAI,
+            self::METODE_NON_TUNAI,
+            self::METODE_TRANSFER,
+            self::METODE_QRIS,
+            self::METODE_EWALLET,
+            self::METODE_DEBIT,
+            self::METODE_KREDIT,
+        ];
+    }
+
+    // * Check apakah status valid
+    public static function isValidStatus(string $status): bool
+    {
+        return in_array($status, self::getAllStatus(), true);
+    }
+
+    // * Check apakah metode pembayaran valid
+    public static function isValidMetodePembayaran(string $metode): bool
+    {
+        return in_array($metode, self::getAllMetodePembayaran(), true);
     }
 
     // ! Rules validasi untuk metadata

@@ -32,11 +32,11 @@ return new class extends Migration
             $table->integer('subtotal')->comment('Subtotal sebelum diskon');
             $table->integer('diskon')->default(0)->comment('Discount in Rupiah');
             $table->integer('total')->comment('Total after discount');
-            $table->enum('metode_pembayaran', ['Tunai', 'Non-Tunai']);
+            $table->string('metode_pembayaran')->default('Tunai')->comment('Tunai, Non-Tunai, Transfer, QRIS, dll');
 
             // Status & Timeline
             $table->dateTime('tanggal_selesai')->nullable();
-            $table->enum('status', ['Menunggu', 'Proses', 'Selesai', 'Diambil', 'Batal'])->default('Menunggu');
+            $table->string('status')->default('Menunggu')->comment('Menunggu, Proses, Selesai, Diambil, Batal');
             $table->text('catatan')->nullable();
 
             // Flexible data storage
