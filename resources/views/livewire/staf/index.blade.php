@@ -1,23 +1,23 @@
 <div wire:poll.visible.30s>
     <!-- HEADER -->
-    <x-header title="Admin" icon="o-user-group" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
+    <x-header title="Staf" icon="o-user-group" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Manajemen Pengguna & Hak Akses" separator progress-indicator>
         <x-slot:middle class="justify-end">
-            <x-input placeholder="Cari user..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
+            <x-input placeholder="Cari staf..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
-            <x-button label="Tambah User" link="{{ route('admin.create') }}" wire:navigate.hover responsive icon="o-plus"
+            <x-button label="Tambah Staf" link="{{ route('staf.create') }}" wire:navigate.hover responsive icon="o-plus"
                 class="btn-success" />
         </x-slot:actions>
     </x-header>
 
     <!-- TABLE  -->
-    <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-2" title="Data Admin"
+    <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-2" title="Data Staf"
         subtitle="Kelola akun pengguna sistem">
         <x-table :headers="$headers" :rows="$users" :sort-by="$sortBy" striped with-pagination per-page="perPage"
-            :per-page-values="[5, 10, 25, 50]" link="{{ route('admin.edit', '[id]') }}">
+            :per-page-values="[5, 10, 25, 50]" link="{{ route('staf.edit', '[id]') }}">
             <x-slot:empty>
-                <x-icon name="o-cube" label="Tidak ada data user." />
+                <x-icon name="o-cube" label="Tidak ada data staf." />
             </x-slot:empty>
 
             @scope('cell_avatar_url', $user)
@@ -42,7 +42,7 @@
 
             @scope('actions', $user)
                 <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('admin.edit', $user->id) }}" wire:navigate.hover
+                    <x-button label="Edit" icon="o-pencil" link="{{ route('staf.edit', $user->id) }}" wire:navigate.hover
                         class="btn-sm btn-outline btn-info" />
                     <x-button label="Hapus" icon="o-trash"
                         wire:click="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
@@ -62,7 +62,7 @@
             <div>
                 <h3 class="text-lg font-bold text-error">Konfirmasi Hapus!</h3>
                 <p class="text-sm text-base-content mt-2">Data yang sudah dihapus tidak dapat dikembalikan.</p>
-                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus user <span
+                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus staf <span
                         class="font-bold">{{ $deleteName }}</span> ?</p>
             </div>
         </div>

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Staf;
 
 use Exception;
 use App\Models\User;
@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
-#[Title('Edit User')]
+#[Title('Edit Staf')]
 class Edit extends Component
 {
     use Toast, WithFileUploads;
@@ -33,7 +33,7 @@ class Edit extends Component
     public function roleOptions(): array
     {
         return [
-            ['id' => 0, 'name' => 'User'],
+            ['id' => 0, 'name' => 'Staf'],
             ['id' => 1, 'name' => 'Super Admin'],
         ];
     }
@@ -112,15 +112,15 @@ class Edit extends Component
 
             $user->update($data);
 
-            $this->success('User berhasil diperbarui!', redirectTo: route('admin.index'), position: 'toast-bottom');
+            $this->success('Staf berhasil diperbarui!', redirectTo: route('staf.index'), position: 'toast-bottom');
         } catch (Exception $e) {
-            $this->error('Gagal memperbarui user: ' . $e->getMessage(), position: 'toast-bottom');
+            $this->error('Gagal memperbarui staf: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }
 
     public function render()
     {
-        return view('livewire.admin.edit', [
+        return view('livewire.staf.edit', [
             'roleOptions' => $this->roleOptions(),
         ]);
     }

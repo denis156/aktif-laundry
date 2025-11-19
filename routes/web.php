@@ -8,9 +8,9 @@ use App\Livewire\Pengaturan;
 use App\Livewire\Component\Receipt;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Livewire\Admin\Edit as AdminEdit;
-use App\Livewire\Admin\Index as AdminIndex;
-use App\Livewire\Admin\Create as AdminCreate;
+use App\Livewire\Staf\Edit as StafEdit;
+use App\Livewire\Staf\Index as StafIndex;
+use App\Livewire\Staf\Create as StafCreate;
 use App\Livewire\Layanan\Edit as LayananEdit;
 use App\Livewire\Layanan\Index as LayananIndex;
 use App\Livewire\Layanan\Create as LayananCreate;
@@ -76,11 +76,11 @@ Route::middleware('auth')->prefix('admin')->group(function() {
         Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
     });
 
-    // Admin Routes di /admin/admin (Super Admin Only)
+    // Staf Routes di /admin/staf (Super Admin Only)
     Route::middleware('super_admin')->group(function() {
-        Route::get('/admin', AdminIndex::class)->name('admin.index');
-        Route::get('/admin/create', AdminCreate::class)->name('admin.create');
-        Route::get('/admin/edit/{id}', AdminEdit::class)->name('admin.edit');
+        Route::get('/staf', StafIndex::class)->name('staf.index');
+        Route::get('/staf/create', StafCreate::class)->name('staf.create');
+        Route::get('/staf/edit/{id}', StafEdit::class)->name('staf.edit');
     });
 
     // Profile Route di /admin/profile

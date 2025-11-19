@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Staf;
 
 use Exception;
 use App\Models\User;
@@ -10,7 +10,7 @@ use Livewire\WithPagination;
 use Livewire\Attributes\Title;
 use Illuminate\Support\Facades\Auth;
 
-#[Title('Daftar User')]
+#[Title('Daftar Staf')]
 class Index extends Component
 {
     use Toast, WithPagination;
@@ -48,9 +48,9 @@ class Index extends Component
                 }
 
                 $user->delete();
-                $this->success('User berhasil dihapus!', position: 'toast-bottom');
+                $this->success('Staf berhasil dihapus!', position: 'toast-bottom');
             } catch (Exception $e) {
-                $this->error('Gagal menghapus user: ' . $e->getMessage(), position: 'toast-bottom');
+                $this->error('Gagal menghapus staf: ' . $e->getMessage(), position: 'toast-bottom');
             }
         }
 
@@ -80,7 +80,7 @@ class Index extends Component
             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
             ->paginate($this->perPage);
 
-        return view('livewire.admin.index', [
+        return view('livewire.staf.index', [
             'users' => $users,
             'headers' => $this->headers(),
         ]);

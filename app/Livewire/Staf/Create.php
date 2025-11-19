@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Admin;
+namespace App\Livewire\Staf;
 
 use Exception;
 use App\Models\User;
@@ -11,7 +11,7 @@ use Livewire\Attributes\Title;
 use Livewire\WithFileUploads;
 use Illuminate\Support\Facades\Hash;
 
-#[Title('Tambah User')]
+#[Title('Tambah Staf')]
 class Create extends Component
 {
     use Toast, WithFileUploads;
@@ -29,7 +29,7 @@ class Create extends Component
     public function roleOptions(): array
     {
         return [
-            ['id' => 0, 'name' => 'User'],
+            ['id' => 0, 'name' => 'Staf'],
             ['id' => 1, 'name' => 'Super Admin'],
         ];
     }
@@ -75,15 +75,15 @@ class Create extends Component
                 'email_verified_at' => now(), // Otomatis verified saat create
             ]);
 
-            $this->success('User berhasil ditambahkan!', redirectTo: route('admin.index'), position: 'toast-bottom');
+            $this->success('Staf berhasil ditambahkan!', redirectTo: route('staf.index'), position: 'toast-bottom');
         } catch (Exception $e) {
-            $this->error('Gagal menambahkan user: ' . $e->getMessage(), position: 'toast-bottom');
+            $this->error('Gagal menambahkan staf: ' . $e->getMessage(), position: 'toast-bottom');
         }
     }
 
     public function render()
     {
-        return view('livewire.admin.create', [
+        return view('livewire.staf.create', [
             'roleOptions' => $this->roleOptions(),
         ]);
     }

@@ -1,7 +1,7 @@
 <div>
-    <x-header title="Tambah User" separator progress-indicator>
+    <x-header title="Tambah Staf" separator progress-indicator>
         <x-slot:subtitle>
-            Tambahkan pengguna baru ke aplikasi
+            Tambahkan staf baru ke aplikasi
         </x-slot:subtitle>
     </x-header>
 
@@ -59,7 +59,7 @@
             </div>
 
             <x-slot:actions>
-                <x-button label="Batal" link="{{ route('admin.index') }}" wire:navigate />
+                <x-button label="Batal" link="{{ route('staf.index') }}" wire:navigate />
                 <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
             </x-slot:actions>
         </x-form>
