@@ -1,5 +1,5 @@
 <div>
-    <!-- HEADER -->
+    {{-- HEADER --}}
     <x-header title="Dashboard" icon="o-home" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         separator progress-indicator>
         <x-slot:subtitle>
@@ -16,21 +16,21 @@
     </x-header>
 
     <section class="space-y-6">
-        <!-- STATISTICS -->
+        {{-- STATISTICS --}}
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            <!-- Baris 1: Transaksi Metrics -->
+            {{-- Baris 1: Transaksi Metrics --}}
             <x-stat title="Total Transaksi" description="Semua transaksi" value="{{ number_format($totalTransaksi) }}"
                 icon="o-clipboard-document-list" color="text-primary" tooltip="Total semua transaksi" />
 
             <x-stat title="Transaksi Bulan Ini" description="{{ now()->locale('id')->isoFormat('MMMM YYYY') }}"
-                value="{{ $transaksiBulanIni }}" icon="s-clipboard-document-list" color="text-info"
+                value="{{ number_format($transaksiBulanIni) }}" icon="s-clipboard-document-list" color="text-info"
                 tooltip="Transaksi bulan ini" />
 
             <x-stat title="Transaksi Hari Ini" description="{{ now()->locale('id')->isoFormat('D MMMM YYYY') }}"
-                value="{{ $transaksiHariIni }}" icon="m-clipboard-document-list" color="text-success"
+                value="{{ number_format($transaksiHariIni) }}" icon="m-clipboard-document-list" color="text-success"
                 tooltip="Transaksi hari ini" />
 
-            <!-- Baris 2: Pendapatan Metrics -->
+            {{-- Baris 2: Pendapatan Metrics --}}
             <x-stat title="Total Pendapatan" description="Semua pendapatan"
                 value="Rp {{ number_format($totalPendapatan, 0, ',', '.') }}" icon="o-banknotes" color="text-primary"
                 tooltip="Total semua pendapatan" />
@@ -44,15 +44,16 @@
                 tooltip="Pendapatan hari ini" />
         </div>
 
-        <!-- DONUT STATUS & TOP LAYANAN -->
+        {{-- DONUT STATUS & TOP LAYANAN --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- DONUT CHART STATUS (1 KOLOM) -->
+            {{-- DONUT CHART STATUS (1 KOLOM) --}}
             <x-card title="Status Transaksi" subtitle="Kondisi transaksi aktif" class="shadow-sm">
                 <x-chart wire:model="statusChart" />
             </x-card>
 
-            <!-- TOP 5 LAYANAN (2 KOLOM) -->
-            <x-card title="Top 5 Layanan Terpopuler" subtitle="Layanan yang paling banyak digunakan" class="shadow-sm md:col-span-2">
+            {{-- TOP 5 LAYANAN (2 KOLOM) --}}
+            <x-card title="Top 5 Layanan Terpopuler" subtitle="Layanan yang paling banyak digunakan"
+                class="shadow-sm md:col-span-2">
                 <div class="overflow-x-auto">
                     <table class="table table-zebra">
                         <thead>
@@ -102,16 +103,18 @@
             </x-card>
         </div>
 
-        <!-- KALENDER & TRANSAKSI TERAKHIR -->
+        {{-- KALENDER & TRANSAKSI TERAKHIR --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <!-- CALENDAR (1 KOLOM) -->
+            {{-- CALENDAR (1 KOLOM) --}}
             <x-card title="Kalender Transaksi" subtitle="Pencatatan transaksi harian" class="shadow-sm"
                 body-class="flex items-center justify-center">
-                <x-calendar :events="$events" weekend-highlight months="1" :selected-date="now()->startOfMonth()->toDateString()" />
+                <x-calendar :events="$events" weekend-highlight months="1"
+                    :selected-date="now()->startOfMonth()->toDateString()" />
             </x-card>
 
-            <!-- 5 TRANSAKSI TERAKHIR (2 KOLOM) -->
-            <x-card title="5 Transaksi Terakhir" subtitle="Transaksi terbaru yang masuk" class="shadow-sm md:col-span-2">
+            {{-- 5 TRANSAKSI TERAKHIR (2 KOLOM) --}}
+            <x-card title="5 Transaksi Terakhir" subtitle="Transaksi terbaru yang masuk"
+                class="shadow-sm md:col-span-2">
                 <div class="overflow-x-auto">
                     <table class="table table-zebra">
                         <thead>
@@ -150,7 +153,7 @@
             </x-card>
         </div>
 
-        <!-- CHART 7 HARI - FULL WIDTH -->
+        {{-- CHART 7 HARI - FULL WIDTH --}}
         <x-card title="7 Hari Terakhir" subtitle="Perbandingan transaksi terakhir minggu ini" class="shadow-sm">
             <x-slot:menu>
                 <x-toggle wire:model.live="isLineChart" left />
@@ -158,7 +161,7 @@
             <x-chart wire:model="transaksiChart" />
         </x-card>
 
-        <!-- CHART 12 BULAN - FULL WIDTH -->
+        {{-- CHART 12 BULAN - FULL WIDTH --}}
         <x-card title="12 Bulan Terakhir" subtitle="Pertumbuhan transaksi selama tahun ini" class="shadow-sm">
             <x-slot:menu>
                 <x-toggle wire:model.live="isLineChartMonthly" right />

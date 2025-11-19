@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Admin;
 
 use Carbon\Carbon;
@@ -245,7 +247,7 @@ class Dashboard extends Component
             $last7Days->push([
                 'label' => $date->locale('id')->isoFormat('ddd, D MMM'),
                 'count' => $count,
-                'berat' => round($totalBerat, 1),
+                'berat' => round((float) $totalBerat, 1),
                 'item' => (int) $totalItemSatuan,
             ]);
         }
@@ -312,7 +314,7 @@ class Dashboard extends Component
             $last12Months->push([
                 'label' => $date->locale('id')->isoFormat('MMM YYYY'),
                 'count' => $count,
-                'berat' => round($totalBerat, 1),
+                'berat' => round((float) $totalBerat, 1),
                 'item' => (int) $totalItemSatuan,
             ]);
         }
@@ -333,25 +335,26 @@ class Dashboard extends Component
         $this->success('Data berhasil diperbarui!', position: 'toast-bottom');
     }
 
-    public function calendarEvents()
+    public function calendarEvents(): array
     {
-        // Get all transactions
+        // Get all transactions (last 60 days untuk performa)
         $transaksi = Transaksi::with('pelanggan')
+            ->where('tanggal_masuk', '>=', now()->subDays(60))
             ->orderBy('tanggal_masuk', 'asc')
             ->get();
 
         $events = [];
 
         // Group by date
-        $grouped = $transaksi->groupBy(function($item) {
+        $grouped = $transaksi->groupBy(function ($item) {
             return $item->tanggal_masuk->format('Y-m-d');
         });
 
         foreach ($grouped as $date => $items) {
             $count = $items->count();
             $events[] = [
-                'label' => "$count Transaksi",
-                'description' => $items->pluck('pelanggan.nama')->take(3)->implode(', ') . ($count > 3 ? '...' : ''),
+                'label' => "{$count} Transaksi",
+                'description' => $items->pluck('nama_pelanggan')->take(3)->implode(', ').($count > 3 ? '...' : ''),
                 'css' => '!bg-neutral/28',
                 'date' => Carbon::parse($date),
             ];
