@@ -10,6 +10,8 @@ use Livewire\Attributes\Layout;
 #[Layout('layouts.kurir.app')]
 class Pengaturan extends Component
 {
+    public bool $modalUbahNama = false;
+
     public function render()
     {
         return view('livewire.kurir.pengaturan');
