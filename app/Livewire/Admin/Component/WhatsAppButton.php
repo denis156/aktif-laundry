@@ -6,7 +6,8 @@ namespace App\Livewire\Admin\Component;
 
 use Livewire\Component;
 use App\Models\Transaksi;
-use App\Models\Pengaturan;
+use App\Helper\Database\PengaturanHelper;
+use App\Helper\Database\TransaksiLayananHelper;
 use App\Helper\PhoneNumber;
 
 class WhatsAppButton extends Component
@@ -65,11 +66,11 @@ class WhatsAppButton extends Component
 
     private function generateReceiptText(Transaksi $transaksi): string
     {
-        $namaToko = Pengaturan::getValue('nama_toko', 'AKTIF LAUNDRY');
-        $whatsapp = Pengaturan::getValue('whatsapp', '');
-        $email = Pengaturan::getValue('email', '');
-        $jamBuka = Pengaturan::getValue('jam_buka', '08:00');
-        $jamTutup = Pengaturan::getValue('jam_tutup', '21:00');
+        $namaToko = PengaturanHelper::getValue('nama_toko', 'AKTIF LAUNDRY');
+        $whatsapp = PengaturanHelper::getValue('whatsapp', '');
+        $email = PengaturanHelper::getValue('email', '');
+        $jamBuka = PengaturanHelper::getValue('jam_buka', '08:00');
+        $jamTutup = PengaturanHelper::getValue('jam_tutup', '21:00');
 
         $text = '*'.strtoupper($namaToko)."*\n";
         if (!empty($whatsapp)) {
@@ -104,8 +105,8 @@ class WhatsAppButton extends Component
 
             $text .= "*{$item->nama_layanan}*\n";
 
-            // Per Kg - menggunakan method isPerKg() dari Model
-            if ($item->isPerKg()) {
+            // Per Kg - menggunakan method isPerKg() dari Helper
+            if (TransaksiLayananHelper::isPerKg($item)) {
                 $text .= 'Harga: Rp '.number_format($item->harga_per_kg, 0, ',', '.')."/Kg\n";
 
                 // Jenis Pakaian
@@ -122,8 +123,8 @@ class WhatsAppButton extends Component
                 }
 
                 $text .= 'Berat: '.number_format($item->berat_kg, 1, '.', '')." Kg\n";
-            } elseif ($item->isPerSatuan()) {
-                // Per Satuan - menggunakan method isPerSatuan() dari Model
+            } elseif (TransaksiLayananHelper::isPerSatuan($item)) {
+                // Per Satuan - menggunakan method isPerSatuan() dari Helper
                 $satuan = $item->layanan?->satuan ?? 'pcs';
                 $text .= 'Harga: Rp '.number_format($item->harga_per_satuan, 0, ',', '.')."/{$satuan}\n";
                 $text .= $item->jumlah_satuan.' '.ucfirst($satuan)."\n";

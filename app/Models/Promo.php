@@ -54,31 +54,4 @@ class Promo extends Model
             'metadata' => 'array',
         ];
     }
-
-    // ? Cek apakah promo masih valid (aktif, dalam periode, ada kuota)
-    public function isValid(): bool
-    {
-        $now = now();
-
-        return $this->status === 'Aktif'
-            && $this->tanggal_mulai <= $now
-            && $this->tanggal_berakhir >= $now
-            && ($this->kuota_total === null || $this->kuota_terpakai < $this->kuota_total);
-    }
-
-    // ? Cek apakah masih ada kuota
-    public function hasQuota(): bool
-    {
-        return $this->kuota_total === null || $this->kuota_terpakai < $this->kuota_total;
-    }
-
-    // * Tambah counter penggunaan dan update status jika habis
-    public function incrementUsage(): void
-    {
-        $this->increment('kuota_terpakai');
-
-        if ($this->kuota_total && $this->kuota_terpakai >= $this->kuota_total) {
-            $this->update(['status' => 'Habis']);
-        }
-    }
 }

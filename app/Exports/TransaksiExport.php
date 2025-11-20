@@ -3,6 +3,7 @@
 namespace App\Exports;
 
 use App\Models\Transaksi;
+use App\Helper\Database\TransaksiLayananHelper;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -85,7 +86,7 @@ class TransaksiExport implements
         foreach ($transaksi->transaksiLayanan as $tl) {
             $layananNames[] = $tl->nama_layanan;
 
-            if ($tl->isPerKg()) {
+            if (TransaksiLayananHelper::isPerKg($tl)) {
                 $detail = $tl->nama_layanan . ': ' . $tl->berat_kg . ' kg x Rp ' . number_format($tl->harga_per_kg, 0, ',', '.');
 
                 // Add jenis pakaian if exists

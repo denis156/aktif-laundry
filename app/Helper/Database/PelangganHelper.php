@@ -10,6 +10,7 @@ use App\Helper\PhoneNumber;
 use App\Helper\AddressMetadata;
 use App\Helper\RegionalLocation;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola data Pelanggan
 //
@@ -71,8 +72,18 @@ class PelangganHelper
     // * Tambah poin loyalty (reward, cashback, dll)
     public static function addLoyaltyPoints(Pelanggan $pelanggan, int $points): void
     {
-        $current = self::getLoyaltyPoints($pelanggan);
-        self::setLoyaltyPoints($pelanggan, $current + $points);
+        try {
+            $current = self::getLoyaltyPoints($pelanggan);
+            self::setLoyaltyPoints($pelanggan, $current + $points);
+        } catch (\Exception $e) {
+            Log::error('Failed to add Pelanggan loyalty points', [
+                'pelanggan_id' => $pelanggan->id,
+                'points' => $points,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // ! Rules validasi untuk metadata
@@ -88,82 +99,109 @@ class PelangganHelper
     // * Generate kode pelanggan unik
     public static function generateKodePelanggan(): string
     {
-        $prefix = Pengaturan::getValue('format_id_pelanggan', 'PLG');
-        $prefixLength = strlen($prefix);
+        try {
+            $prefix = Pengaturan::getValue('format_id_pelanggan', 'PLG');
+            $prefixLength = strlen($prefix);
 
-        $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
+            $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
 
-        if (!$lastPelanggan) {
-            return $prefix . '001';
+            if (!$lastPelanggan) {
+                return $prefix . '001';
+            }
+
+            $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
+            $nextNumber = $lastNumber + 1;
+
+            // Check if there are any gaps in the numbering
+            while (Pelanggan::where('kode_pelanggan', $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+                $nextNumber++;
+            }
+
+            return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate kode pelanggan', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
-
-        $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
-        $nextNumber = $lastNumber + 1;
-
-        // Check if there are any gaps in the numbering
-        while (Pelanggan::where('kode_pelanggan', $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
-            $nextNumber++;
-        }
-
-        return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
     // * Create pelanggan baru dengan address metadata dan GPS
     public static function createPelanggan(array $data, ?string $tanggalDaftar = null): Pelanggan
     {
-        // Normalize nomor HP
-        $normalizedPhone = PhoneNumber::normalize($data['no_hp'] ?? '');
-        if (!$normalizedPhone) {
-            throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+        try {
+            // Normalize nomor HP
+            $normalizedPhone = PhoneNumber::normalize($data['no_hp'] ?? '');
+            if (!$normalizedPhone) {
+                throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+            }
+
+            // Generate metadata alamat dengan GPS
+            $addressMetadata = AddressMetadata::generate(
+                $data['detail_alamat'] ?? '',
+                $data['kelurahan'] ?? '',
+                $data['kecamatan'] ?? '',
+                $data['kabupaten_kota'] ?? RegionalLocation::getRegencyName(),
+                $data['provinsi'] ?? RegionalLocation::getProvinceName(),
+                isset($data['latitude']) ? (float) $data['latitude'] : null,
+                isset($data['longitude']) ? (float) $data['longitude'] : null
+            );
+
+            // Alamat lengkap gabungan untuk kolom alamat (text)
+            $alamatLengkap = AddressMetadata::buildAlamatFromArray($data);
+
+            // Create pelanggan dengan metadata saja (tidak ada kolom regional terpisah)
+            return Pelanggan::create([
+                'kode_pelanggan' => self::generateKodePelanggan(),
+                'nama' => $data['nama'],
+                'no_hp' => $normalizedPhone,
+                'email' => $data['email'] ?? null,
+                'alamat' => $alamatLengkap,
+                'tanggal_daftar' => $tanggalDaftar ?? now(),
+                'total_transaksi' => 0,
+                'status' => 'Aktif',
+                'metadata' => $addressMetadata,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to create pelanggan', [
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
-
-        // Generate metadata alamat dengan GPS
-        $addressMetadata = AddressMetadata::generate(
-            $data['detail_alamat'] ?? '',
-            $data['kelurahan'] ?? '',
-            $data['kecamatan'] ?? '',
-            $data['kabupaten_kota'] ?? RegionalLocation::getRegencyName(),
-            $data['provinsi'] ?? RegionalLocation::getProvinceName(),
-            isset($data['latitude']) ? (float) $data['latitude'] : null,
-            isset($data['longitude']) ? (float) $data['longitude'] : null
-        );
-
-        // Alamat lengkap gabungan untuk kolom alamat (text)
-        $alamatLengkap = AddressMetadata::buildAlamatFromArray($data);
-
-        // Create pelanggan dengan metadata saja (tidak ada kolom regional terpisah)
-        return Pelanggan::create([
-            'kode_pelanggan' => self::generateKodePelanggan(),
-            'nama' => $data['nama'],
-            'no_hp' => $normalizedPhone,
-            'email' => $data['email'] ?? null,
-            'alamat' => $alamatLengkap,
-            'tanggal_daftar' => $tanggalDaftar ?? now(),
-            'total_transaksi' => 0,
-            'status' => 'Aktif',
-            'metadata' => $addressMetadata,
-        ]);
     }
 
     // * Get pelanggan options untuk dropdown (with search)
     public static function getPelangganOptions(string $search = '', int $limit = 10): array
     {
-        return Pelanggan::where('status', 'Aktif')
-            ->where(function ($query) use ($search) {
-                if (!empty($search)) {
-                    $query->where('nama', 'like', "%{$search}%")
-                          ->orWhere('no_hp', 'like', "%{$search}%");
-                }
-            })
-            ->take($limit)
-            ->orderBy('nama')
-            ->get()
-            ->map(fn ($p) => [
-                'id' => (string) $p->id,
-                'nama' => $p->nama,
-                'no_hp' => PhoneNumber::formatLocal($p->no_hp) ?? $p->no_hp,
-            ])
-            ->toArray();
+        try {
+            return Pelanggan::where('status', 'Aktif')
+                ->where(function ($query) use ($search) {
+                    if (!empty($search)) {
+                        $query->where('nama', 'like', "%{$search}%")
+                              ->orWhere('no_hp', 'like', "%{$search}%");
+                    }
+                })
+                ->take($limit)
+                ->orderBy('nama')
+                ->get()
+                ->map(fn ($p) => [
+                    'id' => (string) $p->id,
+                    'nama' => $p->nama,
+                    'no_hp' => PhoneNumber::formatLocal($p->no_hp) ?? $p->no_hp,
+                ])
+                ->toArray();
+        } catch (\Exception $e) {
+            Log::error('Failed to get pelanggan options', [
+                'search' => $search,
+                'limit' => $limit,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Validate password strength
@@ -214,11 +252,23 @@ class PelangganHelper
     // * Set password untuk pelanggan (with hashing)
     public static function setPassword(Pelanggan $pelanggan, string $password): void
     {
-        if (!self::validatePassword($password)) {
-            throw new \InvalidArgumentException(self::getPasswordRequirementsMessage());
-        }
+        try {
+            if (!self::validatePassword($password)) {
+                throw new \InvalidArgumentException(self::getPasswordRequirementsMessage());
+            }
 
-        $pelanggan->password = Hash::make($password);
+            $pelanggan->password = Hash::make($password);
+        } catch (\InvalidArgumentException $e) {
+            // Re-throw validation exceptions without logging (expected behavior)
+            throw $e;
+        } catch (\Exception $e) {
+            Log::error('Failed to set Pelanggan password', [
+                'pelanggan_id' => $pelanggan->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Check apakah pelanggan memiliki password (sudah terdaftar di app)

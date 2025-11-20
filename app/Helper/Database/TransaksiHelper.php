@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace App\Helper\Database;
 
 use App\Models\Transaksi;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola metadata Transaksi
 //
@@ -53,15 +55,35 @@ class TransaksiHelper
     // * Set nilai ke metadata
     public static function setMetadata(Transaksi $transaksi, string $key, mixed $value): void
     {
-        $metadata = $transaksi->metadata ?? [];
-        data_set($metadata, $key, $value);
-        $transaksi->metadata = $metadata;
+        try {
+            $metadata = $transaksi->metadata ?? [];
+            data_set($metadata, $key, $value);
+            $transaksi->metadata = $metadata;
+        } catch (\Exception $e) {
+            Log::error('Failed to set Transaksi metadata', [
+                'transaksi_id' => $transaksi->id,
+                'key' => $key,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Merge data ke metadata
     public static function mergeMetadata(Transaksi $transaksi, array $data): void
     {
-        $transaksi->metadata = array_merge($transaksi->metadata ?? [], $data);
+        try {
+            $transaksi->metadata = array_merge($transaksi->metadata ?? [], $data);
+        } catch (\Exception $e) {
+            Log::error('Failed to merge Transaksi metadata', [
+                'transaksi_id' => $transaksi->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil informasi promo yang digunakan
@@ -133,9 +155,19 @@ class TransaksiHelper
     // * Tambah foto bukti timbangan ke array yang sudah ada
     public static function addFotoBuktiTimbangan(Transaksi $transaksi, string $fotoPath): void
     {
-        $fotos = self::getFotoBuktiTimbangan($transaksi);
-        $fotos[] = $fotoPath;
-        self::setMetadata($transaksi, self::META_FOTO_BUKTI_TIMBANGAN, $fotos);
+        try {
+            $fotos = self::getFotoBuktiTimbangan($transaksi);
+            $fotos[] = $fotoPath;
+            self::setMetadata($transaksi, self::META_FOTO_BUKTI_TIMBANGAN, $fotos);
+        } catch (\Exception $e) {
+            Log::error('Failed to add Transaksi foto bukti timbangan', [
+                'transaksi_id' => $transaksi->id,
+                'foto_path' => $fotoPath,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil semua foto bukti pembayaran
@@ -147,9 +179,19 @@ class TransaksiHelper
     // * Tambah foto bukti pembayaran ke array yang sudah ada
     public static function addFotoBuktiPembayaran(Transaksi $transaksi, string $fotoPath): void
     {
-        $fotos = self::getFotoBuktiPembayaran($transaksi);
-        $fotos[] = $fotoPath;
-        self::setMetadata($transaksi, self::META_FOTO_BUKTI_PEMBAYARAN, $fotos);
+        try {
+            $fotos = self::getFotoBuktiPembayaran($transaksi);
+            $fotos[] = $fotoPath;
+            self::setMetadata($transaksi, self::META_FOTO_BUKTI_PEMBAYARAN, $fotos);
+        } catch (\Exception $e) {
+            Log::error('Failed to add Transaksi foto bukti pembayaran', [
+                'transaksi_id' => $transaksi->id,
+                'foto_path' => $fotoPath,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Get semua status transaksi yang tersedia
@@ -202,5 +244,78 @@ class TransaksiHelper
             self::META_KURIR_JEMPUT => 'nullable|string|max:100',
             self::META_KURIR_ANTAR => 'nullable|string|max:100',
         ];
+    }
+
+    /**
+     * Hitung ulang total dari detail layanan
+     * Digunakan saat ada perubahan di transaksi_layanan
+     *
+     * @param Transaksi $transaksi
+     * @return void
+     * @throws \Exception
+     */
+    public static function hitungUlangTotal(Transaksi $transaksi): void
+    {
+        try {
+            DB::beginTransaction();
+
+            $totalBerat = 0;
+            $totalItem = 0;
+            $subtotal = 0;
+
+            foreach ($transaksi->transaksiLayanan as $tl) {
+                if (TransaksiLayananHelper::isPerKg($tl)) {
+                    $totalBerat += $tl->berat_kg;
+                } else {
+                    $totalItem += $tl->jumlah_satuan;
+                }
+                $subtotal += $tl->subtotal;
+            }
+
+            $transaksi->update([
+                'total_berat' => $totalBerat,
+                'total_item' => $totalItem,
+                'jumlah_layanan' => $transaksi->transaksiLayanan()->count(),
+                'subtotal' => $subtotal,
+                'total' => $subtotal - $transaksi->diskon,
+            ]);
+
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Failed to recalculate transaksi total', [
+                'transaksi_id' => $transaksi->id,
+                'kode_transaksi' => $transaksi->kode_transaksi,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            throw $e;
+        }
+    }
+
+    /**
+     * Dapatkan estimasi tanggal selesai berdasarkan durasi layanan terlama
+     *
+     * @param Transaksi $transaksi
+     * @return \Carbon\Carbon|null
+     */
+    public static function getTanggalSelesaiTerlama(Transaksi $transaksi): ?\Carbon\Carbon
+    {
+        $tanggalTerlama = null;
+
+        foreach ($transaksi->transaksiLayanan as $tl) {
+            if ($tl->layanan && $tl->layanan->durasi_jam > 0) {
+                $tanggalSelesai = \Carbon\Carbon::parse($transaksi->tanggal_masuk)
+                    ->addHours($tl->layanan->durasi_jam);
+
+                if (!$tanggalTerlama || $tanggalSelesai > $tanggalTerlama) {
+                    $tanggalTerlama = $tanggalSelesai;
+                }
+            }
+        }
+
+        return $tanggalTerlama;
     }
 }

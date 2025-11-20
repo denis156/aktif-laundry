@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helper\Database;
 
 use App\Models\JenisPakaian;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola metadata JenisPakaian
 //
@@ -24,15 +25,35 @@ class JenisPakaianHelper
     // * Set nilai ke metadata
     public static function setMetadata(JenisPakaian $jenisPakaian, string $key, mixed $value): void
     {
-        $metadata = $jenisPakaian->metadata ?? [];
-        data_set($metadata, $key, $value);
-        $jenisPakaian->metadata = $metadata;
+        try {
+            $metadata = $jenisPakaian->metadata ?? [];
+            data_set($metadata, $key, $value);
+            $jenisPakaian->metadata = $metadata;
+        } catch (\Exception $e) {
+            Log::error('Failed to set JenisPakaian metadata', [
+                'jenis_pakaian_id' => $jenisPakaian->id,
+                'key' => $key,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Merge data ke metadata
     public static function mergeMetadata(JenisPakaian $jenisPakaian, array $data): void
     {
-        $jenisPakaian->metadata = array_merge($jenisPakaian->metadata ?? [], $data);
+        try {
+            $jenisPakaian->metadata = array_merge($jenisPakaian->metadata ?? [], $data);
+        } catch (\Exception $e) {
+            Log::error('Failed to merge JenisPakaian metadata', [
+                'jenis_pakaian_id' => $jenisPakaian->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil instruksi penanganan khusus

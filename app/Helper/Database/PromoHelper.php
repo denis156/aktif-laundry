@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helper\Database;
 
 use App\Models\Promo;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola metadata Promo
 //
@@ -32,15 +33,35 @@ class PromoHelper
     // * Set nilai ke metadata
     public static function setMetadata(Promo $promo, string $key, mixed $value): void
     {
-        $metadata = $promo->metadata ?? [];
-        data_set($metadata, $key, $value);
-        $promo->metadata = $metadata;
+        try {
+            $metadata = $promo->metadata ?? [];
+            data_set($metadata, $key, $value);
+            $promo->metadata = $metadata;
+        } catch (\Exception $e) {
+            Log::error('Failed to set Promo metadata', [
+                'promo_id' => $promo->id,
+                'key' => $key,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Merge data ke metadata
     public static function mergeMetadata(Promo $promo, array $data): void
     {
-        $promo->metadata = array_merge($promo->metadata ?? [], $data);
+        try {
+            $promo->metadata = array_merge($promo->metadata ?? [], $data);
+        } catch (\Exception $e) {
+            Log::error('Failed to merge Promo metadata', [
+                'promo_id' => $promo->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil array ID layanan yang berlaku untuk promo
@@ -133,5 +154,58 @@ class PromoHelper
             self::META_TERMS_CONDITIONS => 'nullable|string',
             self::META_AUTO_APPLY => 'nullable|boolean',
         ];
+    }
+
+    /**
+     * Cek apakah promo masih valid (aktif, dalam periode, ada kuota)
+     *
+     * @param Promo $promo
+     * @return bool
+     */
+    public static function isValid(Promo $promo): bool
+    {
+        $now = now();
+
+        return $promo->status === 'Aktif'
+            && $promo->tanggal_mulai <= $now
+            && $promo->tanggal_berakhir >= $now
+            && ($promo->kuota_total === null || $promo->kuota_terpakai < $promo->kuota_total);
+    }
+
+    /**
+     * Cek apakah masih ada kuota
+     *
+     * @param Promo $promo
+     * @return bool
+     */
+    public static function hasQuota(Promo $promo): bool
+    {
+        return $promo->kuota_total === null || $promo->kuota_terpakai < $promo->kuota_total;
+    }
+
+    /**
+     * Tambah counter penggunaan dan update status jika habis
+     *
+     * @param Promo $promo
+     * @return void
+     * @throws \Exception
+     */
+    public static function incrementUsage(Promo $promo): void
+    {
+        try {
+            $promo->increment('kuota_terpakai');
+
+            if ($promo->kuota_total && $promo->kuota_terpakai >= $promo->kuota_total) {
+                $promo->update(['status' => 'Habis']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to increment Promo usage', [
+                'promo_id' => $promo->id,
+                'kode_promo' => $promo->kode_promo,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 }

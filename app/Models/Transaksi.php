@@ -89,49 +89,4 @@ class Transaksi extends Model
     {
         return $this->hasMany(Pembayaran::class, 'transaksi_id');
     }
-
-    // * Hitung ulang total dari detail layanan
-    // * Digunakan saat ada perubahan di transaksi_layanan
-    public function hitungUlangTotal(): void
-    {
-        $totalBerat = 0;
-        $totalItem = 0;
-        $subtotal = 0;
-
-        foreach ($this->transaksiLayanan as $tl) {
-            if ($tl->isPerKg()) {
-                $totalBerat += $tl->berat_kg;
-            } else {
-                $totalItem += $tl->jumlah_satuan;
-            }
-            $subtotal += $tl->subtotal;
-        }
-
-        $this->update([
-            'total_berat' => $totalBerat,
-            'total_item' => $totalItem,
-            'jumlah_layanan' => $this->transaksiLayanan()->count(),
-            'subtotal' => $subtotal,
-            'total' => $subtotal - $this->diskon,
-        ]);
-    }
-
-    // * Dapatkan estimasi tanggal selesai berdasarkan durasi layanan terlama
-    public function getTanggalSelesaiTerlama()
-    {
-        $tanggalTerlama = null;
-
-        foreach ($this->transaksiLayanan as $tl) {
-            if ($tl->layanan && $tl->layanan->durasi_jam > 0) {
-                $tanggalSelesai = \Carbon\Carbon::parse($this->tanggal_masuk)
-                    ->addHours($tl->layanan->durasi_jam);
-
-                if (!$tanggalTerlama || $tanggalSelesai > $tanggalTerlama) {
-                    $tanggalTerlama = $tanggalSelesai;
-                }
-            }
-        }
-
-        return $tanggalTerlama;
-    }
 }

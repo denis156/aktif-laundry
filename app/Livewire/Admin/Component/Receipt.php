@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire\Admin\Component;
 
 use Exception;
-use App\Models\Pengaturan;
 use Livewire\Component;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
 use App\Helper\QrisConvert;
 use App\Helper\PhoneNumber;
+use App\Helper\Database\PengaturanHelper;
 use Illuminate\Support\Facades\Log;
 
 class Receipt extends Component
@@ -52,15 +52,15 @@ class Receipt extends Component
                 'jumlah_layanan' => $transaksi->jumlah_layanan,
             ];
 
-            // Get Setting Data menggunakan Model method
+            // Get Setting Data menggunakan PengaturanHelper
             $this->setting = [
-                'nama_toko' => Pengaturan::getValue('nama_toko', 'Aktif Laundry'),
-                'alamat' => Pengaturan::getValue('alamat', ''),
-                'telepon' => Pengaturan::getValue('telepon', ''),
-                'whatsapp' => Pengaturan::getValue('whatsapp', ''),
-                'email' => Pengaturan::getValue('email', ''),
-                'jam_buka' => Pengaturan::getValue('jam_buka', '08:00'),
-                'jam_tutup' => Pengaturan::getValue('jam_tutup', '21:00'),
+                'nama_toko' => PengaturanHelper::getValue('nama_toko', 'Aktif Laundry'),
+                'alamat' => PengaturanHelper::getValue('alamat', ''),
+                'telepon' => PengaturanHelper::getValue('telepon', ''),
+                'whatsapp' => PengaturanHelper::getValue('whatsapp', ''),
+                'email' => PengaturanHelper::getValue('email', ''),
+                'jam_buka' => PengaturanHelper::getValue('jam_buka', '08:00'),
+                'jam_tutup' => PengaturanHelper::getValue('jam_tutup', '21:00'),
             ];
 
             // Get Pelanggan Data menggunakan Helper PhoneNumber untuk format
@@ -131,13 +131,13 @@ class Receipt extends Component
 
             // Get Setting Data
             $setting = [
-                'nama_toko' => Pengaturan::getValue('nama_toko', 'Aktif Laundry'),
-                'alamat' => Pengaturan::getValue('alamat', ''),
-                'telepon' => Pengaturan::getValue('telepon', ''),
-                'whatsapp' => Pengaturan::getValue('whatsapp', ''),
-                'email' => Pengaturan::getValue('email', ''),
-                'jam_buka' => Pengaturan::getValue('jam_buka', '08:00'),
-                'jam_tutup' => Pengaturan::getValue('jam_tutup', '21:00'),
+                'nama_toko' => PengaturanHelper::getValue('nama_toko', 'Aktif Laundry'),
+                'alamat' => PengaturanHelper::getValue('alamat', ''),
+                'telepon' => PengaturanHelper::getValue('telepon', ''),
+                'whatsapp' => PengaturanHelper::getValue('whatsapp', ''),
+                'email' => PengaturanHelper::getValue('email', ''),
+                'jam_buka' => PengaturanHelper::getValue('jam_buka', '08:00'),
+                'jam_tutup' => PengaturanHelper::getValue('jam_tutup', '21:00'),
             ];
 
             // Get Pelanggan Data menggunakan PhoneNumber Helper

@@ -8,7 +8,6 @@ use Exception;
 use Carbon\Carbon;
 use Mary\Traits\Toast;
 use App\Models\Layanan;
-use App\Models\Pengaturan;
 use Livewire\Component;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
@@ -17,6 +16,7 @@ use App\Helper\PhoneNumber;
 use App\Helper\AddressMetadata;
 use App\Helper\RegionalLocation;
 use App\Helper\Database\PelangganHelper;
+use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\TransaksiHelper;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Layout;
@@ -138,7 +138,7 @@ class Kasir extends Component
 
     protected function generateKode(): string
     {
-        $prefix = Pengaturan::getValue('format_id_transaksi', 'TRX');
+        $prefix = PengaturanHelper::getValue('format_id_transaksi', 'TRX');
         $prefixLength = strlen($prefix);
 
         $lastTransaksi = Transaksi::withTrashed()->orderBy('kode_transaksi', 'desc')->first();

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helper\Database;
 
 use App\Models\Layanan;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola metadata Layanan
 //
@@ -36,15 +37,35 @@ class LayananHelper
     // * Set nilai ke metadata
     public static function setMetadata(Layanan $layanan, string $key, mixed $value): void
     {
-        $metadata = $layanan->metadata ?? [];
-        data_set($metadata, $key, $value);
-        $layanan->metadata = $metadata;
+        try {
+            $metadata = $layanan->metadata ?? [];
+            data_set($metadata, $key, $value);
+            $layanan->metadata = $metadata;
+        } catch (\Exception $e) {
+            Log::error('Failed to set Layanan metadata', [
+                'layanan_id' => $layanan->id,
+                'key' => $key,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Merge data ke metadata
     public static function mergeMetadata(Layanan $layanan, array $data): void
     {
-        $layanan->metadata = array_merge($layanan->metadata ?? [], $data);
+        try {
+            $layanan->metadata = array_merge($layanan->metadata ?? [], $data);
+        } catch (\Exception $e) {
+            Log::error('Failed to merge Layanan metadata', [
+                'layanan_id' => $layanan->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil daftar apa yang termasuk dalam layanan

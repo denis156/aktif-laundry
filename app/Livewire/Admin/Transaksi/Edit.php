@@ -12,6 +12,7 @@ use App\Models\Transaksi;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Layout;
 use App\Models\TransaksiLayanan;
+use App\Helper\Database\TransaksiLayananHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -130,7 +131,7 @@ class Edit extends Component
                     'satuan' => $layanan->satuan ?? 'kg',
                 ];
 
-                if ($tl->isPerKg()) {
+                if (TransaksiLayananHelper::isPerKg($tl)) {
                     $item['berat_kg'] = $tl->berat_kg ?? 0;
                     $item['harga_per_kg'] = $tl->harga_per_kg ?? $layanan->harga_per_kg ?? 0;
 

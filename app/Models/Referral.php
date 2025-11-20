@@ -53,17 +53,4 @@ class Referral extends Model
     {
         return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
     }
-
-    // * Tambah counter total referral (saat ada yang pakai kode)
-    public function incrementReferral(): void
-    {
-        $this->increment('total_referral');
-    }
-
-    // * Tambah successful referral dan poin (saat referee sudah transaksi)
-    public function addSuccessfulReferral(): void
-    {
-        $this->increment('total_berhasil');
-        $this->increment('total_poin', $this->poin_referrer);
-    }
 }

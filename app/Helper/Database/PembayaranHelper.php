@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helper\Database;
 
 use App\Models\Pembayaran;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola metadata Pembayaran
 //
@@ -30,15 +31,35 @@ class PembayaranHelper
     // * Set nilai ke metadata
     public static function setMetadata(Pembayaran $pembayaran, string $key, mixed $value): void
     {
-        $metadata = $pembayaran->metadata ?? [];
-        data_set($metadata, $key, $value);
-        $pembayaran->metadata = $metadata;
+        try {
+            $metadata = $pembayaran->metadata ?? [];
+            data_set($metadata, $key, $value);
+            $pembayaran->metadata = $metadata;
+        } catch (\Exception $e) {
+            Log::error('Failed to set Pembayaran metadata', [
+                'pembayaran_id' => $pembayaran->id,
+                'key' => $key,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Merge data ke metadata
     public static function mergeMetadata(Pembayaran $pembayaran, array $data): void
     {
-        $pembayaran->metadata = array_merge($pembayaran->metadata ?? [], $data);
+        try {
+            $pembayaran->metadata = array_merge($pembayaran->metadata ?? [], $data);
+        } catch (\Exception $e) {
+            Log::error('Failed to merge Pembayaran metadata', [
+                'pembayaran_id' => $pembayaran->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil nama bank pengirim

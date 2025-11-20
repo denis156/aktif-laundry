@@ -2,7 +2,7 @@
 
 namespace App\Livewire\LandingPage;
 
-use App\Models\Pengaturan;
+use App\Helper\Database\PengaturanHelper;
 use Livewire\Component;
 
 class Pesan extends Component
@@ -12,7 +12,7 @@ class Pesan extends Component
     public function mount()
     {
         // Ambil nomor WhatsApp dari database
-        $this->whatsappNumber = Pengaturan::getValue('whatsapp', '82156912202');
+        $this->whatsappNumber = PengaturanHelper::getValue('whatsapp', '82156912202');
     }
 
     /**

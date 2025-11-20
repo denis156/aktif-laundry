@@ -9,6 +9,7 @@ use App\Models\Pengaturan;
 use App\Helper\AddressMetadata;
 use App\Helper\PhoneNumber;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola data Kurir
 //
@@ -102,20 +103,29 @@ class KurirHelper
         ?float $latitude = null,
         ?float $longitude = null
     ): void {
-        // Set metadata alamat menggunakan AddressMetadata
-        AddressMetadata::set(
-            $kurir,
-            $detailAlamat,
-            $kelurahan,
-            $kecamatan,
-            $kabupatenKota,
-            $provinsi,
-            $latitude,
-            $longitude
-        );
+        try {
+            // Set metadata alamat menggunakan AddressMetadata
+            AddressMetadata::set(
+                $kurir,
+                $detailAlamat,
+                $kelurahan,
+                $kecamatan,
+                $kabupatenKota,
+                $provinsi,
+                $latitude,
+                $longitude
+            );
 
-        // Sync kolom alamat (text) dengan metadata
-        AddressMetadata::syncAlamatColumn($kurir);
+            // Sync kolom alamat (text) dengan metadata
+            AddressMetadata::syncAlamatColumn($kurir);
+        } catch (\Exception $e) {
+            Log::error('Failed to set Kurir alamat regional', [
+                'kurir_id' => $kurir->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Get alamat lengkap dari metadata
@@ -127,85 +137,112 @@ class KurirHelper
     // * Update alamat regional dari array data
     public static function updateAlamatRegional(Kurir $kurir, array $data): void
     {
-        $addressData = AddressMetadata::generate(
-            $data['detail_alamat'] ?? '',
-            $data['kelurahan'] ?? '',
-            $data['kecamatan'] ?? '',
-            $data['kabupaten_kota'] ?? '',
-            $data['provinsi'] ?? '',
-            isset($data['latitude']) ? (float) $data['latitude'] : null,
-            isset($data['longitude']) ? (float) $data['longitude'] : null
-        );
+        try {
+            $addressData = AddressMetadata::generate(
+                $data['detail_alamat'] ?? '',
+                $data['kelurahan'] ?? '',
+                $data['kecamatan'] ?? '',
+                $data['kabupaten_kota'] ?? '',
+                $data['provinsi'] ?? '',
+                isset($data['latitude']) ? (float) $data['latitude'] : null,
+                isset($data['longitude']) ? (float) $data['longitude'] : null
+            );
 
-        AddressMetadata::update($kurir, $addressData);
-        AddressMetadata::syncAlamatColumn($kurir);
+            AddressMetadata::update($kurir, $addressData);
+            AddressMetadata::syncAlamatColumn($kurir);
+        } catch (\Exception $e) {
+            Log::error('Failed to update Kurir alamat regional', [
+                'kurir_id' => $kurir->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Generate kode kurir unik
     public static function generateKodeKurir(): string
     {
-        $prefix = Pengaturan::getValue('format_id_kurir', 'KUR');
-        $prefixLength = strlen($prefix);
+        try {
+            $prefix = Pengaturan::getValue('format_id_kurir', 'KUR');
+            $prefixLength = strlen($prefix);
 
-        $lastKurir = Kurir::withTrashed()->orderBy('kode_kurir', 'desc')->first();
+            $lastKurir = Kurir::withTrashed()->orderBy('kode_kurir', 'desc')->first();
 
-        if (!$lastKurir) {
-            return $prefix . '001';
+            if (!$lastKurir) {
+                return $prefix . '001';
+            }
+
+            $lastNumber = (int) substr($lastKurir->kode_kurir, $prefixLength);
+            $nextNumber = $lastNumber + 1;
+
+            // Check if there are any gaps in the numbering
+            while (Kurir::where('kode_kurir', $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+                $nextNumber++;
+            }
+
+            return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate kode kurir', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
-
-        $lastNumber = (int) substr($lastKurir->kode_kurir, $prefixLength);
-        $nextNumber = $lastNumber + 1;
-
-        // Check if there are any gaps in the numbering
-        while (Kurir::where('kode_kurir', $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
-            $nextNumber++;
-        }
-
-        return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
     }
 
     // * Create kurir baru dengan alamat regional dan GPS
     public static function createKurir(array $data): Kurir
     {
-        // Normalize nomor HP
-        $normalizedPhone = PhoneNumber::normalize($data['no_hp'] ?? '');
-        if (!$normalizedPhone) {
-            throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+        try {
+            // Normalize nomor HP
+            $normalizedPhone = PhoneNumber::normalize($data['no_hp'] ?? '');
+            if (!$normalizedPhone) {
+                throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+            }
+
+            // Generate metadata alamat dengan GPS
+            $addressMetadata = AddressMetadata::generate(
+                $data['detail_alamat'] ?? '',
+                $data['kelurahan'] ?? '',
+                $data['kecamatan'] ?? '',
+                $data['kabupaten_kota'] ?? '',
+                $data['provinsi'] ?? '',
+                isset($data['latitude']) ? (float) $data['latitude'] : null,
+                isset($data['longitude']) ? (float) $data['longitude'] : null
+            );
+
+            // Build alamat lengkap untuk kolom alamat (text)
+            $alamatLengkap = AddressMetadata::buildAlamatFromArray($data);
+
+            // Create kurir
+            $kurir = Kurir::create([
+                'kode_kurir' => self::generateKodeKurir(),
+                'nama' => $data['nama'],
+                'no_hp' => $normalizedPhone,
+                'email' => $data['email'] ?? null,
+                'alamat' => $alamatLengkap,
+                'no_kendaraan' => $data['no_kendaraan'] ?? null,
+                'jenis_kendaraan' => $data['jenis_kendaraan'] ?? null,
+                'foto_profil' => $data['foto_profil'] ?? null,
+                'tanggal_bergabung' => $data['tanggal_bergabung'] ?? now(),
+                'status' => 'Aktif',
+                'total_antar' => 0,
+                'total_jemput' => 0,
+                'password' => isset($data['password']) ? Hash::make($data['password']) : null,
+                'metadata' => $addressMetadata,
+            ]);
+
+            return $kurir;
+        } catch (\Exception $e) {
+            Log::error('Failed to create kurir', [
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
         }
-
-        // Generate metadata alamat dengan GPS
-        $addressMetadata = AddressMetadata::generate(
-            $data['detail_alamat'] ?? '',
-            $data['kelurahan'] ?? '',
-            $data['kecamatan'] ?? '',
-            $data['kabupaten_kota'] ?? '',
-            $data['provinsi'] ?? '',
-            isset($data['latitude']) ? (float) $data['latitude'] : null,
-            isset($data['longitude']) ? (float) $data['longitude'] : null
-        );
-
-        // Build alamat lengkap untuk kolom alamat (text)
-        $alamatLengkap = AddressMetadata::buildAlamatFromArray($data);
-
-        // Create kurir
-        $kurir = Kurir::create([
-            'kode_kurir' => self::generateKodeKurir(),
-            'nama' => $data['nama'],
-            'no_hp' => $normalizedPhone,
-            'email' => $data['email'] ?? null,
-            'alamat' => $alamatLengkap,
-            'no_kendaraan' => $data['no_kendaraan'] ?? null,
-            'jenis_kendaraan' => $data['jenis_kendaraan'] ?? null,
-            'foto_profil' => $data['foto_profil'] ?? null,
-            'tanggal_bergabung' => $data['tanggal_bergabung'] ?? now(),
-            'status' => 'Aktif',
-            'total_antar' => 0,
-            'total_jemput' => 0,
-            'password' => isset($data['password']) ? Hash::make($data['password']) : null,
-            'metadata' => $addressMetadata,
-        ]);
-
-        return $kurir;
     }
 
     // * Validate password strength

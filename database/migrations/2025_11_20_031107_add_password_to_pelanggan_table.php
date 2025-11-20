@@ -28,9 +28,6 @@ return new class extends Migration
                 ->nullable()
                 ->after('password')
                 ->comment('FCM token untuk push notification');
-
-            // Tambahkan index untuk performa login
-            $table->index('password');
         });
     }
 
@@ -42,7 +39,6 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pelanggan', function (Blueprint $table) {
-            $table->dropIndex(['password']);
             $table->dropColumn(['password', 'device_token']);
         });
     }

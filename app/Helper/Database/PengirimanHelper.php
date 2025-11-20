@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Helper\Database;
 
 use App\Models\Pengiriman;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola metadata Pengiriman
 //
@@ -28,15 +29,35 @@ class PengirimanHelper
     // * Set nilai ke metadata
     public static function setMetadata(Pengiriman $pengiriman, string $key, mixed $value): void
     {
-        $metadata = $pengiriman->metadata ?? [];
-        data_set($metadata, $key, $value);
-        $pengiriman->metadata = $metadata;
+        try {
+            $metadata = $pengiriman->metadata ?? [];
+            data_set($metadata, $key, $value);
+            $pengiriman->metadata = $metadata;
+        } catch (\Exception $e) {
+            Log::error('Failed to set Pengiriman metadata', [
+                'pengiriman_id' => $pengiriman->id,
+                'key' => $key,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Merge data ke metadata
     public static function mergeMetadata(Pengiriman $pengiriman, array $data): void
     {
-        $pengiriman->metadata = array_merge($pengiriman->metadata ?? [], $data);
+        try {
+            $pengiriman->metadata = array_merge($pengiriman->metadata ?? [], $data);
+        } catch (\Exception $e) {
+            Log::error('Failed to merge Pengiriman metadata', [
+                'pengiriman_id' => $pengiriman->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil data lokasi pengambilan cucian (GPS)
@@ -64,15 +85,25 @@ class PengirimanHelper
     // * Tambah checkpoint tracking (status, waktu, lokasi, keterangan)
     public static function addTracking(Pengiriman $pengiriman, string $status, ?float $lat = null, ?float $lng = null, ?string $keterangan = null): void
     {
-        $tracking = self::getTracking($pengiriman);
-        $tracking[] = [
-            'status' => $status,
-            'waktu' => now()->toIso8601String(),
-            'lat' => $lat,
-            'lng' => $lng,
-            'keterangan' => $keterangan,
-        ];
-        self::setMetadata($pengiriman, self::META_TRACKING, $tracking);
+        try {
+            $tracking = self::getTracking($pengiriman);
+            $tracking[] = [
+                'status' => $status,
+                'waktu' => now()->toIso8601String(),
+                'lat' => $lat,
+                'lng' => $lng,
+                'keterangan' => $keterangan,
+            ];
+            self::setMetadata($pengiriman, self::META_TRACKING, $tracking);
+        } catch (\Exception $e) {
+            Log::error('Failed to add Pengiriman tracking', [
+                'pengiriman_id' => $pengiriman->id,
+                'status' => $status,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil review dari customer untuk delivery

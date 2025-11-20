@@ -7,6 +7,7 @@ namespace App\Helper\Database;
 use App\Models\User;
 use App\Helper\AddressMetadata;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 // ! Helper untuk mengelola data User
 //
@@ -58,20 +59,29 @@ class UserHelper
         ?float $latitude = null,
         ?float $longitude = null
     ): void {
-        // Set metadata alamat menggunakan AddressMetadata
-        AddressMetadata::set(
-            $user,
-            $detailAlamat,
-            $kelurahan,
-            $kecamatan,
-            $kabupatenKota,
-            $provinsi,
-            $latitude,
-            $longitude
-        );
+        try {
+            // Set metadata alamat menggunakan AddressMetadata
+            AddressMetadata::set(
+                $user,
+                $detailAlamat,
+                $kelurahan,
+                $kecamatan,
+                $kabupatenKota,
+                $provinsi,
+                $latitude,
+                $longitude
+            );
 
-        // Sync kolom alamat (text) dengan metadata
-        AddressMetadata::syncAlamatColumn($user);
+            // Sync kolom alamat (text) dengan metadata
+            AddressMetadata::syncAlamatColumn($user);
+        } catch (\Exception $e) {
+            Log::error('Failed to set User alamat regional', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Get alamat lengkap dari metadata
@@ -83,18 +93,28 @@ class UserHelper
     // * Update alamat regional dari array data
     public static function updateAlamatRegional(User $user, array $data): void
     {
-        $addressData = AddressMetadata::generate(
-            $data['detail_alamat'] ?? '',
-            $data['kelurahan'] ?? '',
-            $data['kecamatan'] ?? '',
-            $data['kabupaten_kota'] ?? '',
-            $data['provinsi'] ?? '',
-            isset($data['latitude']) ? (float) $data['latitude'] : null,
-            isset($data['longitude']) ? (float) $data['longitude'] : null
-        );
+        try {
+            $addressData = AddressMetadata::generate(
+                $data['detail_alamat'] ?? '',
+                $data['kelurahan'] ?? '',
+                $data['kecamatan'] ?? '',
+                $data['kabupaten_kota'] ?? '',
+                $data['provinsi'] ?? '',
+                isset($data['latitude']) ? (float) $data['latitude'] : null,
+                isset($data['longitude']) ? (float) $data['longitude'] : null
+            );
 
-        AddressMetadata::update($user, $addressData);
-        AddressMetadata::syncAlamatColumn($user);
+            AddressMetadata::update($user, $addressData);
+            AddressMetadata::syncAlamatColumn($user);
+        } catch (\Exception $e) {
+            Log::error('Failed to update User alamat regional', [
+                'user_id' => $user->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // * Ambil shift kerja user
@@ -124,39 +144,48 @@ class UserHelper
     // * Create user baru dengan alamat regional dan GPS
     public static function createUser(array $data): User
     {
-        // Generate metadata alamat dengan GPS
-        $addressMetadata = AddressMetadata::generate(
-            $data['detail_alamat'] ?? '',
-            $data['kelurahan'] ?? '',
-            $data['kecamatan'] ?? '',
-            $data['kabupaten_kota'] ?? '',
-            $data['provinsi'] ?? '',
-            isset($data['latitude']) ? (float) $data['latitude'] : null,
-            isset($data['longitude']) ? (float) $data['longitude'] : null
-        );
+        try {
+            // Generate metadata alamat dengan GPS
+            $addressMetadata = AddressMetadata::generate(
+                $data['detail_alamat'] ?? '',
+                $data['kelurahan'] ?? '',
+                $data['kecamatan'] ?? '',
+                $data['kabupaten_kota'] ?? '',
+                $data['provinsi'] ?? '',
+                isset($data['latitude']) ? (float) $data['latitude'] : null,
+                isset($data['longitude']) ? (float) $data['longitude'] : null
+            );
 
-        // Build alamat lengkap untuk kolom alamat (text)
-        $alamatLengkap = AddressMetadata::buildAlamatFromArray($data);
+            // Build alamat lengkap untuk kolom alamat (text)
+            $alamatLengkap = AddressMetadata::buildAlamatFromArray($data);
 
-        // Prepare metadata (merge alamat + shift + gaji)
-        $metadata = array_merge($addressMetadata, [
-            self::META_SHIFT => $data['shift'] ?? null,
-            self::META_GAJI => $data['gaji'] ?? null,
-        ]);
+            // Prepare metadata (merge alamat + shift + gaji)
+            $metadata = array_merge($addressMetadata, [
+                self::META_SHIFT => $data['shift'] ?? null,
+                self::META_GAJI => $data['gaji'] ?? null,
+            ]);
 
-        // Create user
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'no_hp' => $data['no_hp'] ?? null,
-            'password' => Hash::make($data['password']),
-            'alamat' => $alamatLengkap,
-            'avatar_url' => $data['avatar_url'] ?? null,
-            'super_admin' => $data['super_admin'] ?? false,
-            'metadata' => $metadata,
-        ]);
+            // Create user
+            $user = User::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'no_hp' => $data['no_hp'] ?? null,
+                'password' => Hash::make($data['password']),
+                'alamat' => $alamatLengkap,
+                'avatar_url' => $data['avatar_url'] ?? null,
+                'super_admin' => $data['super_admin'] ?? false,
+                'metadata' => $metadata,
+            ]);
 
-        return $user;
+            return $user;
+        } catch (\Exception $e) {
+            Log::error('Failed to create user', [
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     // ! Rules validasi untuk metadata
