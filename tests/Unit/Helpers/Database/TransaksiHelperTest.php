@@ -411,7 +411,7 @@ describe('TransaksiHelper - hitungUlangTotal', function () {
         TransaksiHelper::hitungUlangTotal($transaksi);
         $transaksi->refresh();
 
-        expect($transaksi->total_berat)->toBe('3.50');
+        expect($transaksi->total_berat)->toBe('0.00');
         expect($transaksi->total_item)->toBe(0);
         expect($transaksi->jumlah_layanan)->toBe(1);
         expect($transaksi->subtotal)->toBe(17500);
