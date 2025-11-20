@@ -1,35 +1,42 @@
 <?php
 
-use App\Livewire\Management\Auth\Login;
-use App\Livewire\Management\Component\Receipt;
-use App\Livewire\Management\Dashboard;
-use App\Livewire\Management\JenisPakaian\Create as JenisPakaianCreate;
-use App\Livewire\Management\JenisPakaian\Edit as JenisPakaianEdit;
-use App\Livewire\Management\JenisPakaian\Index as JenisPakaianIndex;
+use App\Livewire\Kurir\Beranda;
+use App\Livewire\Kurir\Pesanan;
+use App\Livewire\Kurir\Rute;
+use App\Livewire\Kurir\Info;
 use App\Livewire\Management\Kasir;
-use App\Livewire\Management\Layanan\Create as LayananCreate;
-use App\Livewire\Management\Layanan\Edit as LayananEdit;
-use App\Livewire\Management\Layanan\Index as LayananIndex;
-use App\Livewire\Management\Pelanggan\Create as PelangganCreate;
-use App\Livewire\Management\Pelanggan\Edit as PelangganEdit;
-use App\Livewire\Management\Pelanggan\Index as PelangganIndex;
-use App\Livewire\Management\Pengaturan;
 use App\Livewire\Management\Profile;
-use App\Livewire\Management\Staf\Create as StafCreate;
-use App\Livewire\Management\Staf\Edit as StafEdit;
-use App\Livewire\Management\Staf\Index as StafIndex;
-use App\Livewire\Management\Transaksi\Create as TransaksiCreate;
-use App\Livewire\Management\Transaksi\Edit as TransaksiEdit;
-use App\Livewire\Management\Transaksi\Index as TransaksiIndex;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Livewire\Management\Dashboard;
+use App\Livewire\Management\Auth\Login;
+use App\Livewire\Management\Pengaturan;
+use App\Livewire\Management\Component\Receipt;
+use App\Livewire\Management\Staf\Edit as StafEdit;
+use App\Livewire\Management\Staf\Index as StafIndex;
+use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
+use App\Livewire\Management\Staf\Create as StafCreate;
+use App\Livewire\Management\Layanan\Edit as LayananEdit;
+use App\Livewire\Management\Layanan\Index as LayananIndex;
+use App\Livewire\Management\Layanan\Create as LayananCreate;
+use App\Livewire\Management\Pelanggan\Edit as PelangganEdit;
+use App\Livewire\Management\Transaksi\Edit as TransaksiEdit;
+use App\Livewire\Management\Pelanggan\Index as PelangganIndex;
+use App\Livewire\Management\Transaksi\Index as TransaksiIndex;
+use App\Livewire\Management\Pelanggan\Create as PelangganCreate;
+use App\Livewire\Management\Transaksi\Create as TransaksiCreate;
+use App\Livewire\Management\JenisPakaian\Edit as JenisPakaianEdit;
+use App\Livewire\Management\JenisPakaian\Index as JenisPakaianIndex;
+use App\Livewire\Management\JenisPakaian\Create as JenisPakaianCreate;
 
 // Landing Page Route - Public
 Route::view('/', 'pages.landingpage')->name('landing-page');
 
-Route::get('/kurir', function () {
-    return view('layouts/kurir/app');
-});
+Route::get('/kurir', Beranda::class)->name('beranda.kurir');
+Route::get('/kurir/pesanan', Pesanan::class)->name('pesanan.kurir');
+Route::get('/kurir/rute', Rute::class)->name('rute.kurir');
+Route::get('/kurir/info', Info::class)->name('info.kurir');
+Route::get('/kurir/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
 
 // Public Routes - tanpa auth
 Route::prefix('management')->group(function () {
@@ -51,7 +58,6 @@ Route::middleware('auth')->prefix('management')->group(function () {
 
     // Dashboard di /management
     Route::get('/', Dashboard::class)->name('dashboard');
-    Route::get('/dashboard', Dashboard::class)->name('dashboard.alternative');
 
     // Kasir Route di /management/kasir
     Route::get('/kasir', Kasir::class)->name('kasir');

@@ -11,12 +11,6 @@
         "Noto Color Emoji";
 }
 
-/**
-    The lines above are intact.
-    The lines below were added by maryUI installer.
-*/
-
-/** daisyUI */
 @plugin "daisyui" {
     themes: light --default, dark --prefersdark;
 }
@@ -24,7 +18,7 @@
 /* maryUI */
 @source "../../vendor/robsontenorio/mary/src/View/Components/**/*.php";
 
-/* Theme toggle */
+/* Dark theme variant support */
 @custom-variant dark (&:where(.dark, .dark *));
 
 /* add the code bellow */
