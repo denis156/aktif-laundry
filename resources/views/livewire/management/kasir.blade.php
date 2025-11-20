@@ -135,7 +135,7 @@
                         required />
 
                     <!-- Multi Layanan Form -->
-                    <livewire:admin.component.multi-layanan-form :key="'multi-layanan-'.$this->getId()" />
+                    <livewire:management.component.multi-layanan-form :key="'multi-layanan-'.$this->getId()" />
 
                     <!-- Diskon -->
                     <x-input

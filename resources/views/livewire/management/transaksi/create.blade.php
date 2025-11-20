@@ -80,7 +80,7 @@
                         <span class="text-sm text-base-content/70">Tambahkan satu atau lebih layanan</span>
                     </div>
 
-                    <livewire:component.multi-layanan-form />
+                    <livewire:management.component.multi-layanan-form />
                 </div>
 
                 {{-- Subtotal, Diskon, Total --}}

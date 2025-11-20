@@ -2,7 +2,7 @@
     <x-header title="Edit Transaksi" separator progress-indicator>
         <x-slot:actions>
             <x-button label="Kembali" link="{{ route('transaksi.index') }}" wire:navigate.hover icon="o-arrow-left" class="btn-outline" />
-            <livewire:component.whats-app-button :transaksi-id="$transaksiId" size="md" :key="'wa-edit-'.$transaksiId" />
+            <livewire:management.component.whats-app-button :transaksi-id="$transaksiId" size="md" :key="'wa-edit-'.$transaksiId" />
             <x-button label="Print Struk" wire:click="printReceipt" icon="o-printer" class="btn-secondary" />
         </x-slot:actions>
     </x-header>
@@ -82,7 +82,7 @@
                         <span class="text-sm text-base-content/70">Edit layanan dalam transaksi</span>
                     </div>
 
-                    <livewire:component.multi-layanan-form :items="$multiLayananData['items']" />
+                    <livewire:management.component.multi-layanan-form :items="$multiLayananData['items']" />
                 </div>
 
                 {{-- Subtotal, Diskon, Total --}}
