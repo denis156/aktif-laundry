@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Helper\Database;
 
 use App\Models\Pelanggan;
-use App\Models\Pengaturan;
 use App\Helper\PhoneNumber;
 use App\Helper\AddressMetadata;
 use App\Helper\RegionalLocation;
@@ -100,7 +99,7 @@ class PelangganHelper
     public static function generateKodePelanggan(): string
     {
         try {
-            $prefix = Pengaturan::getValue('format_id_pelanggan', 'PLG');
+            $prefix = PengaturanHelper::getValue('format_id_pelanggan', 'PLG');
             $prefixLength = strlen($prefix);
 
             $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();

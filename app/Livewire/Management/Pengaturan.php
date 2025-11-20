@@ -7,6 +7,7 @@ namespace App\Livewire\Management;
 use Exception;
 use Mary\Traits\Toast;
 use App\Models\Pengaturan as PengaturanModel;
+use App\Helper\Database\PengaturanHelper;
 use Livewire\Component;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Layout;
@@ -70,35 +71,35 @@ class Pengaturan extends Component
     protected function loadSettings(): void
     {
         // General
-        $this->nama_toko = (string) PengaturanModel::getValue('nama_toko', 'Aktif Laundry');
+        $this->nama_toko = (string) PengaturanHelper::getValue('nama_toko', 'Aktif Laundry');
 
         // Contact
-        $this->whatsapp = (string) PengaturanModel::getValue('whatsapp', '');
-        $this->email = (string) PengaturanModel::getValue('email', '');
+        $this->whatsapp = (string) PengaturanHelper::getValue('whatsapp', '');
+        $this->email = (string) PengaturanHelper::getValue('email', '');
 
         // Operasional
-        $this->jam_buka = (string) PengaturanModel::getValue('jam_buka', '08:00');
-        $this->jam_tutup = (string) PengaturanModel::getValue('jam_tutup', '21:00');
+        $this->jam_buka = (string) PengaturanHelper::getValue('jam_buka', '08:00');
+        $this->jam_tutup = (string) PengaturanHelper::getValue('jam_tutup', '21:00');
 
         // Format
-        $this->format_id_jenis_pakaian = (string) PengaturanModel::getValue('format_id_jenis_pakaian', 'JNS');
-        $this->format_id_layanan = (string) PengaturanModel::getValue('format_id_layanan', 'LYN');
-        $this->format_id_pelanggan = (string) PengaturanModel::getValue('format_id_pelanggan', 'PLG');
-        $this->format_id_transaksi = (string) PengaturanModel::getValue('format_id_transaksi', 'TRX');
-        $this->format_id_kurir = (string) PengaturanModel::getValue('format_id_kurir', 'KUR');
-        $this->format_id_pengiriman = (string) PengaturanModel::getValue('format_id_pengiriman', 'PNG');
-        $this->format_id_pembayaran = (string) PengaturanModel::getValue('format_id_pembayaran', 'PBY');
-        $this->format_id_promo = (string) PengaturanModel::getValue('format_id_promo', 'PROMO');
-        $this->format_id_referral = (string) PengaturanModel::getValue('format_id_referral', 'REF');
+        $this->format_id_jenis_pakaian = (string) PengaturanHelper::getValue('format_id_jenis_pakaian', 'JNS');
+        $this->format_id_layanan = (string) PengaturanHelper::getValue('format_id_layanan', 'LYN');
+        $this->format_id_pelanggan = (string) PengaturanHelper::getValue('format_id_pelanggan', 'PLG');
+        $this->format_id_transaksi = (string) PengaturanHelper::getValue('format_id_transaksi', 'TRX');
+        $this->format_id_kurir = (string) PengaturanHelper::getValue('format_id_kurir', 'KUR');
+        $this->format_id_pengiriman = (string) PengaturanHelper::getValue('format_id_pengiriman', 'PNG');
+        $this->format_id_pembayaran = (string) PengaturanHelper::getValue('format_id_pembayaran', 'PBY');
+        $this->format_id_promo = (string) PengaturanHelper::getValue('format_id_promo', 'PROMO');
+        $this->format_id_referral = (string) PengaturanHelper::getValue('format_id_referral', 'REF');
 
         // Pricing
-        $this->biaya_antar_per_km = (float) PengaturanModel::getValue('biaya_antar_per_km', 2000);
-        $this->min_berat_kg = (float) PengaturanModel::getValue('min_berat_kg', 2);
-        $this->pajak_persen = (float) PengaturanModel::getValue('pajak_persen', 10);
+        $this->biaya_antar_per_km = (float) PengaturanHelper::getValue('biaya_antar_per_km', 2000);
+        $this->min_berat_kg = (float) PengaturanHelper::getValue('min_berat_kg', 2);
+        $this->pajak_persen = (float) PengaturanHelper::getValue('pajak_persen', 10);
 
         // Features
-        $this->enable_referral = (bool) PengaturanModel::getValue('enable_referral', true);
-        $this->enable_promo = (bool) PengaturanModel::getValue('enable_promo', true);
+        $this->enable_referral = (bool) PengaturanHelper::getValue('enable_referral', true);
+        $this->enable_promo = (bool) PengaturanHelper::getValue('enable_promo', true);
     }
 
     /**
@@ -262,7 +263,7 @@ class Pengaturan extends Component
             DB::beginTransaction();
 
             // Save General Settings
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'nama_toko',
                 $this->nama_toko,
                 'string',
@@ -271,14 +272,14 @@ class Pengaturan extends Component
             );
 
             // Save Contact Settings
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'whatsapp',
                 $this->whatsapp,
                 'string',
                 'contact',
                 'Nomor WhatsApp (format: 8xxx tanpa 0)'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'email',
                 $this->email,
                 'string',
@@ -287,14 +288,14 @@ class Pengaturan extends Component
             );
 
             // Save Operasional Settings
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'jam_buka',
                 $this->jam_buka,
                 'string',
                 'operasional',
                 'Jam buka toko'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'jam_tutup',
                 $this->jam_tutup,
                 'string',
@@ -303,63 +304,63 @@ class Pengaturan extends Component
             );
 
             // Save Format Settings
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_jenis_pakaian',
                 $this->format_id_jenis_pakaian,
                 'string',
                 'format',
                 'Format ID untuk Jenis Pakaian'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_layanan',
                 $this->format_id_layanan,
                 'string',
                 'format',
                 'Format ID untuk Layanan'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_pelanggan',
                 $this->format_id_pelanggan,
                 'string',
                 'format',
                 'Format ID untuk Pelanggan'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_transaksi',
                 $this->format_id_transaksi,
                 'string',
                 'format',
                 'Format ID untuk Transaksi'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_kurir',
                 $this->format_id_kurir,
                 'string',
                 'format',
                 'Format ID untuk Kurir'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_pengiriman',
                 $this->format_id_pengiriman,
                 'string',
                 'format',
                 'Format ID untuk Pengiriman'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_pembayaran',
                 $this->format_id_pembayaran,
                 'string',
                 'format',
                 'Format ID untuk Pembayaran'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_promo',
                 $this->format_id_promo,
                 'string',
                 'format',
                 'Format ID untuk Promo'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'format_id_referral',
                 $this->format_id_referral,
                 'string',
@@ -368,21 +369,21 @@ class Pengaturan extends Component
             );
 
             // Save Pricing Settings
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'biaya_antar_per_km',
                 $this->biaya_antar_per_km,
                 'number',
                 'pricing',
                 'Biaya antar per kilometer'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'min_berat_kg',
                 $this->min_berat_kg,
                 'number',
                 'pricing',
                 'Minimum berat kiloan'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'pajak_persen',
                 $this->pajak_persen,
                 'number',
@@ -391,14 +392,14 @@ class Pengaturan extends Component
             );
 
             // Save Features Settings
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'enable_referral',
                 $this->enable_referral,
                 'boolean',
                 'features',
                 'Aktifkan sistem referral'
             );
-            PengaturanModel::setValue(
+            PengaturanHelper::setValue(
                 'enable_promo',
                 $this->enable_promo,
                 'boolean',

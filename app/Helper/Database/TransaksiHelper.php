@@ -318,4 +318,43 @@ class TransaksiHelper
 
         return $tanggalTerlama;
     }
+
+    /**
+     * Generate kode transaksi otomatis dengan prefix dari pengaturan
+     * Menghindari gap numbering dan duplicate kode
+     *
+     * @return string
+     * @throws \Exception
+     */
+    public static function generateKodeTransaksi(): string
+    {
+        try {
+            $prefix = PengaturanHelper::getValue('format_id_transaksi', 'TRX');
+            $prefixLength = strlen($prefix);
+
+            $lastTransaksi = Transaksi::withTrashed()->orderBy('kode_transaksi', 'desc')->first();
+
+            if (!$lastTransaksi) {
+                return $prefix.'001';
+            }
+
+            $lastNumber = (int) substr($lastTransaksi->kode_transaksi, $prefixLength);
+
+            // Check if there are any gaps in the numbering by finding the next available number
+            $nextNumber = $lastNumber + 1;
+
+            // Verify if this number is already used (in case of deletions)
+            while (Transaksi::where('kode_transaksi', $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+                $nextNumber++;
+            }
+
+            return $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate kode transaksi', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
 }

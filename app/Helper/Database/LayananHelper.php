@@ -153,4 +153,39 @@ class LayananHelper
             self::META_DESKRIPSI_DETAIL => 'nullable|string',
         ];
     }
+
+    /**
+     * Dapatkan array options layanan untuk dropdown/select
+     * Format: ['id' => id, 'name' => 'Nama Layanan - Rp x.xxx/satuan']
+     *
+     * @param string $status Filter berdasarkan status (default: 'Aktif')
+     * @return array
+     */
+    public static function getLayananOptions(string $status = 'Aktif'): array
+    {
+        try {
+            return Layanan::where('status', $status)
+                ->orderBy('nama_layanan')
+                ->get(['id', 'nama_layanan', 'tipe_layanan', 'harga_per_kg', 'harga_per_satuan', 'satuan'])
+                ->map(function (Layanan $layanan) {
+                    $harga = $layanan->tipe_layanan === 'per_kg'
+                        ? 'Rp '.number_format($layanan->harga_per_kg, 0, ',', '.').'/'.$layanan->satuan
+                        : 'Rp '.number_format($layanan->harga_per_satuan, 0, ',', '.').'/'.$layanan->satuan;
+
+                    return [
+                        'id' => $layanan->id,
+                        'name' => $layanan->nama_layanan.' - '.$harga,
+                    ];
+                })
+                ->toArray();
+        } catch (\Exception $e) {
+            Log::error('Failed to get layanan options', [
+                'status' => $status,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return [];
+        }
+    }
 }

@@ -165,41 +165,16 @@
                 </div>
 
                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['metode_pembayaran'] == 'Tunai' ? 'bg-primary/10 border-primary' : '' }}">
-                        <input
-                            type="radio"
-                            value="Tunai"
-                            wire:model.live="formData.metode_pembayaran"
-                            class="radio radio-primary" />
-                        <span class="label-text font-medium">Tunai</span>
-                    </label>
-
-                    <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['metode_pembayaran'] == 'Transfer' ? 'bg-primary/10 border-primary' : '' }}">
-                        <input
-                            type="radio"
-                            value="Transfer"
-                            wire:model.live="formData.metode_pembayaran"
-                            class="radio radio-primary" />
-                        <span class="label-text font-medium">Transfer</span>
-                    </label>
-
-                    <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['metode_pembayaran'] == 'QRIS' ? 'bg-primary/10 border-primary' : '' }}">
-                        <input
-                            type="radio"
-                            value="QRIS"
-                            wire:model.live="formData.metode_pembayaran"
-                            class="radio radio-primary" />
-                        <span class="label-text font-medium">QRIS</span>
-                    </label>
-
-                    <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['metode_pembayaran'] == 'Debit' ? 'bg-primary/10 border-primary' : '' }}">
-                        <input
-                            type="radio"
-                            value="Debit"
-                            wire:model.live="formData.metode_pembayaran"
-                            class="radio radio-primary" />
-                        <span class="label-text font-medium">Debit</span>
-                    </label>
+                    @foreach($metodePembayaranOptions as $metode)
+                        <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['metode_pembayaran'] == $metode['id'] ? 'bg-primary/10 border-primary' : '' }}">
+                            <input
+                                type="radio"
+                                value="{{ $metode['id'] }}"
+                                wire:model.live="formData.metode_pembayaran"
+                                class="radio radio-primary" />
+                            <span class="label-text font-medium">{{ $metode['name'] }}</span>
+                        </label>
+                    @endforeach
                 </div>
             </x-card>
 
