@@ -99,7 +99,7 @@ class TransaksiLayananHelper
      */
     public static function isPerKg(TransaksiLayanan $transaksiLayanan): bool
     {
-        return $transaksiLayanan->berat_kg !== null;
+        return $transaksiLayanan->layanan && $transaksiLayanan->layanan->tipe_layanan === 'per_kg';
     }
 
     /**
@@ -110,7 +110,7 @@ class TransaksiLayananHelper
      */
     public static function isPerSatuan(TransaksiLayanan $transaksiLayanan): bool
     {
-        return $transaksiLayanan->jumlah_satuan !== null;
+        return $transaksiLayanan->layanan && $transaksiLayanan->layanan->tipe_layanan === 'per_satuan';
     }
 
     /**

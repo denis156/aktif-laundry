@@ -1,48 +1,53 @@
 <?php
 
-use App\Livewire\Admin\Kasir;
-use App\Livewire\Admin\Profile;
-use App\Livewire\Admin\Dashboard;
-use App\Livewire\Admin\Pengaturan;
 use App\Livewire\Admin\Auth\Login;
 use App\Livewire\Admin\Component\Receipt;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use App\Livewire\Admin\Staf\Edit as StafEdit;
-use App\Livewire\Admin\Staf\Index as StafIndex;
-use App\Livewire\Admin\Staf\Create as StafCreate;
-use App\Livewire\Admin\Layanan\Edit as LayananEdit;
-use App\Livewire\Admin\Layanan\Index as LayananIndex;
-use App\Livewire\Admin\Layanan\Create as LayananCreate;
-use App\Livewire\Admin\Pelanggan\Edit as PelangganEdit;
-use App\Livewire\Admin\Transaksi\Edit as TransaksiEdit;
-use App\Livewire\Admin\Pelanggan\Index as PelangganIndex;
-use App\Livewire\Admin\Transaksi\Index as TransaksiIndex;
-use App\Livewire\Admin\Pelanggan\Create as PelangganCreate;
-use App\Livewire\Admin\Transaksi\Create as TransaksiCreate;
+use App\Livewire\Admin\Dashboard;
+use App\Livewire\Admin\JenisPakaian\Create as JenisPakaianCreate;
 use App\Livewire\Admin\JenisPakaian\Edit as JenisPakaianEdit;
 use App\Livewire\Admin\JenisPakaian\Index as JenisPakaianIndex;
-use App\Livewire\Admin\JenisPakaian\Create as JenisPakaianCreate;
+use App\Livewire\Admin\Kasir;
+use App\Livewire\Admin\Layanan\Create as LayananCreate;
+use App\Livewire\Admin\Layanan\Edit as LayananEdit;
+use App\Livewire\Admin\Layanan\Index as LayananIndex;
+use App\Livewire\Admin\Pelanggan\Create as PelangganCreate;
+use App\Livewire\Admin\Pelanggan\Edit as PelangganEdit;
+use App\Livewire\Admin\Pelanggan\Index as PelangganIndex;
+use App\Livewire\Admin\Pengaturan;
+use App\Livewire\Admin\Profile;
+use App\Livewire\Admin\Staf\Create as StafCreate;
+use App\Livewire\Admin\Staf\Edit as StafEdit;
+use App\Livewire\Admin\Staf\Index as StafIndex;
+use App\Livewire\Admin\Transaksi\Create as TransaksiCreate;
+use App\Livewire\Admin\Transaksi\Edit as TransaksiEdit;
+use App\Livewire\Admin\Transaksi\Index as TransaksiIndex;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 // Landing Page Route - Public
 Route::view('/', 'pages.landingpage')->name('landing-page');
 
+Route::get('/kurir', function () {
+    return view('layouts/kurir/app');
+});
+
 // Public Routes - tanpa auth
-Route::prefix('management')->group(function() {
+Route::prefix('management')->group(function () {
     // Login Route di /management/login
     Route::get('/login', Login::class)->name('login');
 
     // Logout Route di /management/logout
-    Route::get('/logout', function() {
+    Route::get('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
+
         return redirect('/');
     })->name('logout');
 });
 
 // Protected Routes dengan prefix /management
-Route::middleware('auth')->prefix('management')->group(function() {
+Route::middleware('auth')->prefix('management')->group(function () {
 
     // Dashboard di /management
     Route::get('/', Dashboard::class)->name('dashboard');
@@ -72,12 +77,12 @@ Route::middleware('auth')->prefix('management')->group(function() {
     Route::get('/transaksi/edit/{id}', TransaksiEdit::class)->name('transaksi.edit');
 
     // Pengaturan Route di /management/pengaturan (Super Admin Only)
-    Route::middleware('super_admin')->group(function() {
+    Route::middleware('super_admin')->group(function () {
         Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
     });
 
     // Staf Routes di /management/staf (Super Admin Only)
-    Route::middleware('super_admin')->group(function() {
+    Route::middleware('super_admin')->group(function () {
         Route::get('/staf', StafIndex::class)->name('staf.index');
         Route::get('/staf/create', StafCreate::class)->name('staf.create');
         Route::get('/staf/edit/{id}', StafEdit::class)->name('staf.edit');
