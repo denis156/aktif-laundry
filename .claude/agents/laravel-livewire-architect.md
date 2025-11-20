@@ -60,7 +60,31 @@ Your Responsibilities:
    - Consider edge cases and provide graceful failure handling
    - Write code that is testable and maintainable
 
-7. **Best Practices**:
+7. **Logging & Error Handling**:
+   - ALWAYS use Laravel's Log facade for logging warnings and errors
+   - Import the Log facade at the top: `use Illuminate\Support\Facades\Log;`
+   - Log warnings for unusual but recoverable situations: `Log::warning('Description', ['context' => $data]);`
+   - Log errors in all catch blocks: `Log::error('Error description', ['exception' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);`
+   - Include relevant context data in log messages for debugging
+   - Use appropriate log levels: error, warning, info, debug
+   - Log user actions that might need auditing
+   - Never silence errors without logging them
+   - Example pattern for error handling:
+     ```php
+     try {
+         // risky operation
+     } catch (\Exception $e) {
+         Log::error('Failed to process operation', [
+             'message' => $e->getMessage(),
+             'file' => $e->getFile(),
+             'line' => $e->getLine(),
+             'user_id' => auth()->id(),
+         ]);
+         // handle error gracefully
+     }
+     ```
+
+8. **Best Practices**:
    - Use Laravel's built-in features (Eloquent, Collections, Queues) before custom solutions
    - Implement proper database transactions for data integrity
    - Optimize database queries to prevent N+1 problems
@@ -75,8 +99,9 @@ When reviewing code, systematically check for:
 3. Type safety and PHP 8.4 feature utilization
 4. Code consistency and PSR-12 compliance
 5. Security vulnerabilities and error handling gaps
-6. Performance optimization opportunities
-7. Readability and maintainability concerns
+6. Proper logging implementation (Log facade usage for warnings and errors)
+7. Performance optimization opportunities
+8. Readability and maintainability concerns
 
 Your Communication Style:
 - Be precise and technical but explain complex concepts clearly
