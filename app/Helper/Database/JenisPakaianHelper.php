@@ -11,10 +11,13 @@ use Illuminate\Support\Facades\Log;
 //
 // ? Metadata yang didukung:
 // * - penanganan_khusus: Instruksi khusus untuk pakaian putih atau baju spesial
+// * - icon: Icon untuk jenis pakaian (iconpark format)
 
 class JenisPakaianHelper
 {
     public const META_PENANGANAN_KHUSUS = 'penanganan_khusus';
+
+    public const META_ICON = 'icon';
 
     // * Ambil nilai dari metadata
     public static function getMetadata(JenisPakaian $jenisPakaian, string $key, mixed $default = null): mixed
@@ -68,11 +71,24 @@ class JenisPakaianHelper
         self::setMetadata($jenisPakaian, self::META_PENANGANAN_KHUSUS, $penanganan);
     }
 
+    // * Ambil icon jenis pakaian
+    public static function getIcon(JenisPakaian $jenisPakaian): ?string
+    {
+        return self::getMetadata($jenisPakaian, self::META_ICON);
+    }
+
+    // * Set icon jenis pakaian
+    public static function setIcon(JenisPakaian $jenisPakaian, string $icon): void
+    {
+        self::setMetadata($jenisPakaian, self::META_ICON, $icon);
+    }
+
     // ! Rules validasi untuk metadata
     public static function metadataRules(): array
     {
         return [
             self::META_PENANGANAN_KHUSUS => 'nullable|string',
+            self::META_ICON => 'nullable|string|max:100',
         ];
     }
 }

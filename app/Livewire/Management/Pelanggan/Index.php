@@ -1,14 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Management\Pelanggan;
 
-use Exception;
-use Mary\Traits\Toast;
-use Livewire\Component;
 use App\Models\Pelanggan;
-use Livewire\WithPagination;
-use Livewire\Attributes\Title;
+use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithPagination;
+use Mary\Traits\Toast;
 
 #[Title('Daftar Pelanggan')]
 #[Layout('layouts.management.app')]
@@ -17,12 +22,19 @@ class Index extends Component
     use Toast, WithPagination;
 
     public string $search = '';
+
     public bool $drawer = false;
+
     public bool $deleteModal = false;
+
     public int $deleteId = 0;
+
     public string $deleteName = '';
+
     public array $sortBy = ['column' => 'kode_pelanggan', 'direction' => 'desc'];
+
     public string $statusFilter = '';
+
     public int $perPage = 10;
 
     public function clear(): void
@@ -42,13 +54,26 @@ class Index extends Component
     {
         try {
             $pelanggan = Pelanggan::findOrFail($this->deleteId);
+
+            Log::info('Pelanggan deleted', [
+                'pelanggan_id' => $pelanggan->id,
+                'kode_pelanggan' => $pelanggan->kode_pelanggan,
+                'nama' => $pelanggan->nama,
+                'deleted_by' => auth()->id(),
+            ]);
+
             $pelanggan->delete();
 
             $this->success("Pelanggan {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
             $this->deleteModal = false;
             $this->reset(['deleteId', 'deleteName']);
         } catch (Exception $e) {
-            $this->error('Gagal menghapus pelanggan: ' . $e->getMessage(), position: 'toast-bottom');
+            Log::error('Failed to delete pelanggan', [
+                'pelanggan_id' => $this->deleteId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->error('Gagal menghapus pelanggan. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
@@ -65,30 +90,30 @@ class Index extends Component
         ];
     }
 
-    public function pelanggan()
+    public function pelanggan(): LengthAwarePaginator
     {
         return Pelanggan::query()
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
+            ->when($this->search, function (Builder $query): void {
+                $query->where(function (Builder $q): void {
                     $q->where('nama', 'like', "%{$this->search}%")
-                      ->orWhere('kode_pelanggan', 'like', "%{$this->search}%")
-                      ->orWhere('no_hp', 'like', "%{$this->search}%")
-                      ->orWhere('email', 'like', "%{$this->search}%")
-                      ->orWhere('alamat', 'like', "%{$this->search}%");
+                        ->orWhere('kode_pelanggan', 'like', "%{$this->search}%")
+                        ->orWhere('no_hp', 'like', "%{$this->search}%")
+                        ->orWhere('email', 'like', "%{$this->search}%")
+                        ->orWhere('alamat', 'like', "%{$this->search}%");
                 });
             })
-            ->when($this->statusFilter, function ($query) {
+            ->when($this->statusFilter, function (Builder $query): void {
                 $query->where('status', $this->statusFilter);
             })
             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
             ->paginate($this->perPage);
     }
 
-    public function render()
+    public function render(): mixed
     {
         return view('livewire.management.pelanggan.index', [
             'pelanggan' => $this->pelanggan(),
-            'headers' => $this->headers()
+            'headers' => $this->headers(),
         ]);
     }
 }

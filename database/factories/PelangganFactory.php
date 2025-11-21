@@ -82,9 +82,9 @@ class PelangganFactory extends Factory
         $email = $hasEmail ? fake()->unique()->safeEmail() : null;
 
         return [
-            'kode_pelanggan' => 'PLG' . str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_pelanggan' => 'PLG'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
             'nama' => fake()->name(),
-            'no_hp' => '8' . fake()->numerify('##########'),
+            'no_hp' => '8'.fake()->numerify('##########'),
             'email' => $email,
             'alamat' => $alamatLengkap, // Alamat lengkap (auto-generated dari metadata)
             'password' => null, // Nullable - customer may not have registered on mobile app yet
@@ -106,8 +106,7 @@ class PelangganFactory extends Factory
      * Indicate that the customer has registered on mobile app with a password.
      * Creates a customer with hashed password (default: 'password').
      *
-     * @param string|null $password The password to set, or null to use default 'password'
-     * @return static
+     * @param  string|null  $password  The password to set, or null to use default 'password'
      */
     public function withPassword(?string $password = null): static
     {
@@ -115,6 +114,7 @@ class PelangganFactory extends Factory
             if ($password === null) {
                 // Use shared static password for performance
                 static::$password ??= Hash::make('password');
+
                 return ['password' => static::$password];
             }
 
@@ -125,8 +125,6 @@ class PelangganFactory extends Factory
     /**
      * Indicate that the customer has NOT registered on mobile app (no password).
      * This is the default state, but can be explicitly used for clarity.
-     *
-     * @return static
      */
     public function withoutPassword(): static
     {
@@ -138,8 +136,7 @@ class PelangganFactory extends Factory
     /**
      * Indicate that the customer has a device token for push notifications.
      *
-     * @param string|null $token The device token, or null to generate a fake one
-     * @return static
+     * @param  string|null  $token  The device token, or null to generate a fake one
      */
     public function withDeviceToken(?string $token = null): static
     {
@@ -152,8 +149,7 @@ class PelangganFactory extends Factory
      * Indicate that the customer is a registered mobile app user.
      * Sets password and device token automatically.
      *
-     * @param string|null $password The password to set, or null to use default 'password'
-     * @return static
+     * @param  string|null  $password  The password to set, or null to use default 'password'
      */
     public function registered(?string $password = null): static
     {
@@ -162,8 +158,6 @@ class PelangganFactory extends Factory
 
     /**
      * Indicate that the customer is currently inactive.
-     *
-     * @return static
      */
     public function inactive(): static
     {
@@ -174,8 +168,6 @@ class PelangganFactory extends Factory
 
     /**
      * Indicate that the customer is a loyal customer with many transactions.
-     *
-     * @return static
      */
     public function loyal(): static
     {
@@ -183,7 +175,7 @@ class PelangganFactory extends Factory
             'total_transaksi' => fake()->numberBetween(20, 100),
             'tanggal_daftar' => fake()->dateTimeBetween('-3 years', '-1 year'),
             'metadata' => array_merge($attributes['metadata'], [
-                'member_card' => 'MEMBER' . fake()->numerify('###########'),
+                'member_card' => 'MEMBER'.fake()->numerify('###########'),
                 'loyalty_points' => fake()->numberBetween(500, 2000),
             ]),
         ]);
@@ -192,9 +184,8 @@ class PelangganFactory extends Factory
     /**
      * Indicate that the customer was referred by another customer.
      *
-     * @param int $referrerId The ID of the referring customer
-     * @param string|null $referralCode The referral code used
-     * @return static
+     * @param  int  $referrerId  The ID of the referring customer
+     * @param  string|null  $referralCode  The referral code used
      */
     public function referred(int $referrerId, ?string $referralCode = null): static
     {

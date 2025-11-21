@@ -71,9 +71,9 @@
                                         @if ($index === 0)
                                             <x-icon name="s-trophy" class="w-5 h-5 text-warning" />
                                         @elseif($index === 1)
-                                            <x-icon name="s-trophy" class="w-5 h-5 text-gray-400" />
+                                            <x-icon name="s-trophy" class="w-5 h-5 text-base-content/40" />
                                         @elseif($index === 2)
-                                            <x-icon name="s-trophy" class="w-5 h-5 text-orange-600" />
+                                            <x-icon name="s-trophy" class="w-5 h-5 text-warning" />
                                         @else
                                             <span class="font-bold text-base-content/50">{{ $index + 1 }}</span>
                                         @endif

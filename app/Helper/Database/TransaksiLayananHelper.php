@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 class TransaksiLayananHelper
 {
     public const META_CATATAN = 'catatan';
+
     public const META_PETUGAS = 'petugas';
 
     // * Ambil nilai dari metadata
@@ -93,9 +94,6 @@ class TransaksiLayananHelper
 
     /**
      * Cek apakah layanan per kilogram
-     *
-     * @param TransaksiLayanan $transaksiLayanan
-     * @return bool
      */
     public static function isPerKg(TransaksiLayanan $transaksiLayanan): bool
     {
@@ -104,9 +102,6 @@ class TransaksiLayananHelper
 
     /**
      * Cek apakah layanan per satuan
-     *
-     * @param TransaksiLayanan $transaksiLayanan
-     * @return bool
      */
     public static function isPerSatuan(TransaksiLayanan $transaksiLayanan): bool
     {
@@ -116,9 +111,6 @@ class TransaksiLayananHelper
     /**
      * Dapatkan label untuk tampilan
      * Contoh: "Cuci Kering (3.5 kg)" atau "Setrika (10 pcs)"
-     *
-     * @param TransaksiLayanan $transaksiLayanan
-     * @return string
      */
     public static function getDisplayLabel(TransaksiLayanan $transaksiLayanan): string
     {
@@ -132,24 +124,21 @@ class TransaksiLayananHelper
     /**
      * Dapatkan label perhitungan untuk display
      * Contoh: "3.5 kg × Rp 7.000 - Kemeja (5), Celana (3)"
-     *
-     * @param TransaksiLayanan $transaksiLayanan
-     * @return string
      */
     public static function getPerhitunganLabel(TransaksiLayanan $transaksiLayanan): string
     {
         if (self::isPerKg($transaksiLayanan)) {
             $jenisPakaian = '';
-            if (!empty($transaksiLayanan->jenis_pakaian)) {
+            if (! empty($transaksiLayanan->jenis_pakaian)) {
                 $items = collect($transaksiLayanan->jenis_pakaian)->map(function ($item) {
                     return "{$item['nama']} ({$item['jumlah']})";
                 })->implode(', ');
                 $jenisPakaian = " - {$items}";
             }
 
-            return "{$transaksiLayanan->berat_kg} kg × Rp " . number_format($transaksiLayanan->harga_per_kg, 0, ',', '.') . $jenisPakaian;
+            return "{$transaksiLayanan->berat_kg} kg × Rp ".number_format($transaksiLayanan->harga_per_kg, 0, ',', '.').$jenisPakaian;
         }
 
-        return "{$transaksiLayanan->jumlah_satuan} pcs × Rp " . number_format($transaksiLayanan->harga_per_satuan, 0, ',', '.');
+        return "{$transaksiLayanan->jumlah_satuan} pcs × Rp ".number_format($transaksiLayanan->harga_per_satuan, 0, ',', '.');
     }
 }

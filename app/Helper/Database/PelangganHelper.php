@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Helper\Database;
 
-use App\Models\Pelanggan;
-use App\Helper\PhoneNumber;
 use App\Helper\AddressMetadata;
+use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
+use App\Models\Pelanggan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -29,11 +29,14 @@ class PelangganHelper
 {
     // * Password validation constants
     public const PASSWORD_MIN_LENGTH = 8;
+
     public const PASSWORD_MAX_LENGTH = 255;
 
     // * Metadata constants
     public const META_MEMBER_CARD = 'member_card';
+
     public const META_LOYALTY_POINTS = 'loyalty_points';
+
     public const META_PREFERENSI_PENGIRIMAN = 'preferensi_pengiriman';
 
     // * Ambil nilai dari metadata
@@ -173,19 +176,19 @@ class PelangganHelper
 
             $lastPelanggan = Pelanggan::withTrashed()->orderBy('kode_pelanggan', 'desc')->first();
 
-            if (!$lastPelanggan) {
-                return $prefix . '001';
+            if (! $lastPelanggan) {
+                return $prefix.'001';
             }
 
             $lastNumber = (int) substr($lastPelanggan->kode_pelanggan, $prefixLength);
             $nextNumber = $lastNumber + 1;
 
             // Check if there are any gaps in the numbering
-            while (Pelanggan::where('kode_pelanggan', $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+            while (Pelanggan::where('kode_pelanggan', $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
                 $nextNumber++;
             }
 
-            return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+            return $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
         } catch (\Exception $e) {
             Log::error('Failed to generate kode pelanggan', [
                 'error' => $e->getMessage(),
@@ -201,7 +204,7 @@ class PelangganHelper
         try {
             // Normalize nomor HP
             $normalizedPhone = PhoneNumber::normalize($data['no_hp'] ?? '');
-            if (!$normalizedPhone) {
+            if (! $normalizedPhone) {
                 throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
             }
 
@@ -247,9 +250,9 @@ class PelangganHelper
         try {
             return Pelanggan::where('status', 'Aktif')
                 ->where(function ($query) use ($search) {
-                    if (!empty($search)) {
+                    if (! empty($search)) {
                         $query->where('nama', 'like', "%{$search}%")
-                              ->orWhere('no_hp', 'like', "%{$search}%");
+                            ->orWhere('no_hp', 'like', "%{$search}%");
                     }
                 })
                 ->take($limit)
@@ -302,8 +305,8 @@ class PelangganHelper
         }
 
         $rules[] = 'string';
-        $rules[] = 'min:' . self::PASSWORD_MIN_LENGTH;
-        $rules[] = 'max:' . self::PASSWORD_MAX_LENGTH;
+        $rules[] = 'min:'.self::PASSWORD_MIN_LENGTH;
+        $rules[] = 'max:'.self::PASSWORD_MAX_LENGTH;
 
         return implode('|', $rules);
     }
@@ -321,7 +324,7 @@ class PelangganHelper
     public static function setPassword(Pelanggan $pelanggan, string $password): void
     {
         try {
-            if (!self::validatePassword($password)) {
+            if (! self::validatePassword($password)) {
                 throw new \InvalidArgumentException(self::getPasswordRequirementsMessage());
             }
 
@@ -342,13 +345,13 @@ class PelangganHelper
     // * Check apakah pelanggan memiliki password (sudah terdaftar di app)
     public static function hasPassword(Pelanggan $pelanggan): bool
     {
-        return !empty($pelanggan->password);
+        return ! empty($pelanggan->password);
     }
 
     // * Verify password pelanggan
     public static function verifyPassword(Pelanggan $pelanggan, string $password): bool
     {
-        if (!self::hasPassword($pelanggan)) {
+        if (! self::hasPassword($pelanggan)) {
             return false;
         }
 

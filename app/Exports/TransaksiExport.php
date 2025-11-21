@@ -2,30 +2,23 @@
 
 namespace App\Exports;
 
-use App\Models\Transaksi;
 use App\Helper\Database\TransaksiLayananHelper;
+use App\Models\Transaksi;
 use Maatwebsite\Excel\Concerns\FromCollection;
-use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
-use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnFormatting;
 use Maatwebsite\Excel\Concerns\WithEvents;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Events\AfterSheet;
-use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class TransaksiExport implements
-    FromCollection,
-    WithHeadings,
-    WithMapping,
-    ShouldAutoSize,
-    WithStyles,
-    WithColumnFormatting,
-    WithEvents
+class TransaksiExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings, WithMapping, WithStyles
 {
     protected $selectedIds;
 
@@ -41,7 +34,7 @@ class TransaksiExport implements
     {
         $query = Transaksi::with(['kasir', 'pelanggan', 'transaksiLayanan.layanan']);
 
-        if (!empty($this->selectedIds)) {
+        if (! empty($this->selectedIds)) {
             $query->whereIn('id', $this->selectedIds);
         }
 
@@ -87,18 +80,18 @@ class TransaksiExport implements
             $layananNames[] = $tl->nama_layanan;
 
             if (TransaksiLayananHelper::isPerKg($tl)) {
-                $detail = $tl->nama_layanan . ': ' . $tl->berat_kg . ' kg x Rp ' . number_format($tl->harga_per_kg, 0, ',', '.');
+                $detail = $tl->nama_layanan.': '.$tl->berat_kg.' kg x Rp '.number_format($tl->harga_per_kg, 0, ',', '.');
 
                 // Add jenis pakaian if exists
-                if (!empty($tl->jenis_pakaian)) {
+                if (! empty($tl->jenis_pakaian)) {
                     $jenisList = [];
                     foreach ($tl->jenis_pakaian as $jp) {
-                        $jenisList[] = $jp['nama'] . ' (' . $jp['jumlah'] . ')';
+                        $jenisList[] = $jp['nama'].' ('.$jp['jumlah'].')';
                     }
-                    $detail .= ' [' . implode(', ', $jenisList) . ']';
+                    $detail .= ' ['.implode(', ', $jenisList).']';
                 }
             } else {
-                $detail = $tl->nama_layanan . ': ' . $tl->jumlah_satuan . ' pcs x Rp ' . number_format($tl->harga_per_satuan, 0, ',', '.');
+                $detail = $tl->nama_layanan.': '.$tl->jumlah_satuan.' pcs x Rp '.number_format($tl->harga_per_satuan, 0, ',', '.');
             }
 
             $layananDetails[] = $detail;
@@ -151,7 +144,7 @@ class TransaksiExport implements
     public function registerEvents(): array
     {
         return [
-            AfterSheet::class => function(AfterSheet $event) {
+            AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
                 // Insert 1 row at the top for app name and date
@@ -167,18 +160,18 @@ class TransaksiExport implements
                 // Row 1: App Name + Tanggal Export (centered, merged)
                 $appName = config('app.name', 'Aplikasi Laundry');
                 $tanggalExport = now()->format('d-m-Y H:i:s');
-                $headerText = 'Data Transaksi ' . $appName . "\n" . 'Tanggal Export: ' . $tanggalExport;
+                $headerText = 'Data Transaksi '.$appName."\n".'Tanggal Export: '.$tanggalExport;
 
                 $sheet->setCellValue('A1', $headerText);
-                $sheet->mergeCells('A1:' . $lastColumn . '1');
+                $sheet->mergeCells('A1:'.$lastColumn.'1');
                 $sheet->getStyle('A1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 14,
                         'name' => 'Arial',
                         'color' => [
-                            'argb' => 'FFFD191A' // Red #FD191A
-                        ]
+                            'argb' => 'FFFD191A', // Red #FD191A
+                        ],
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
@@ -191,14 +184,14 @@ class TransaksiExport implements
                 $lastRow = $sheet->getHighestRow();
 
                 // Style header row (row 2)
-                $sheet->getStyle('A2:' . $lastColumn . '2')->applyFromArray([
+                $sheet->getStyle('A2:'.$lastColumn.'2')->applyFromArray([
                     'font' => [
                         'name' => 'Arial',
                         'bold' => true,
                         'size' => 11,
                         'color' => [
-                            'argb' => 'FFFFFFFF' // White text
-                        ]
+                            'argb' => 'FFFFFFFF', // White text
+                        ],
                     ],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
@@ -219,7 +212,7 @@ class TransaksiExport implements
 
                 // Style data rows (row 3 onwards)
                 if ($lastRow > 2) {
-                    $sheet->getStyle('A3:' . $lastColumn . $lastRow)->applyFromArray([
+                    $sheet->getStyle('A3:'.$lastColumn.$lastRow)->applyFromArray([
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
@@ -235,5 +228,4 @@ class TransaksiExport implements
             },
         ];
     }
-
 }

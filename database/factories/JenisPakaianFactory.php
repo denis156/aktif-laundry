@@ -42,7 +42,7 @@ class JenisPakaianFactory extends Factory
         $item = $jenisPakaian[$index];
 
         return [
-            'kode_jenis' => 'JNS' . str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_jenis' => 'JNS'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
             'nama_jenis' => $item['nama'],
             'keterangan' => $item['keterangan'],
             'status' => 'Aktif',

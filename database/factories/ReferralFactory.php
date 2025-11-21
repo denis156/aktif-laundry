@@ -22,7 +22,7 @@ class ReferralFactory extends Factory
     {
         return [
             'pelanggan_id' => Pelanggan::factory(),
-            'kode_referral' => 'REF' . strtoupper(Str::random(6)),
+            'kode_referral' => 'REF'.strtoupper(Str::random(6)),
             'poin_referrer' => fake()->numberBetween(5000, 20000),
             'diskon_referee' => fake()->numberBetween(5000, 15000),
             'min_transaksi_referee' => fake()->numberBetween(25000, 100000),

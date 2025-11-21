@@ -4,27 +4,26 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management;
 
-use Exception;
-use Carbon\Carbon;
-use Mary\Traits\Toast;
-use App\Models\Layanan;
-use Livewire\Component;
-use App\Models\Pelanggan;
-use App\Models\Transaksi;
-use App\Models\TransaksiLayanan;
-use App\Helper\PhoneNumber;
 use App\Helper\AddressMetadata;
-use App\Helper\RegionalLocation;
 use App\Helper\Database\LayananHelper;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\TransaksiHelper;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
+use App\Helper\PhoneNumber;
+use App\Helper\RegionalLocation;
+use App\Models\Layanan;
+use App\Models\Pelanggan;
+use App\Models\Transaksi;
+use App\Models\TransaksiLayanan;
+use Exception;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Database\QueryException;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Mary\Traits\Toast;
 
 #[Title('Kasir')]
 #[Layout('layouts.management.app')]
@@ -55,7 +54,9 @@ class Kasir extends Component
     ];
 
     public string $lastTransactionId = '';
+
     public bool $showReceipt = false;
+
     public array $pelangganOptions = [];
 
     // Toggle antara pilih pelanggan existing atau input pelanggan baru
@@ -225,21 +226,22 @@ class Kasir extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
-            if (!empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+            if (! empty($item['layanan_id'])) {
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
+
                 return $tempTransaksiLayanan;
             }
+
             return null;
         })->filter());
 
         $tanggalTerlama = TransaksiHelper::getTanggalSelesaiTerlama($tempTransaksi);
         $this->formData['tanggal_selesai'] = $tanggalTerlama ? $tanggalTerlama->format('Y-m-d H:i') : '';
     }
-
 
     public function save(): void
     {
@@ -248,44 +250,50 @@ class Kasir extends Component
             if (empty($this->pelangganBaru['nama'])) {
                 Log::warning('Kasir validation failed: nama pelanggan kosong');
                 $this->error('Nama pelanggan wajib diisi!', position: 'toast-bottom');
+
                 return;
             }
 
             if (empty($this->pelangganBaru['no_hp'])) {
                 Log::warning('Kasir validation failed: no_hp pelanggan kosong');
                 $this->error('Nomor HP wajib diisi!', position: 'toast-bottom');
+
                 return;
             }
 
             if (empty($this->pelangganBaru['detail_alamat'])) {
                 Log::warning('Kasir validation failed: detail_alamat pelanggan kosong');
                 $this->error('Detail alamat wajib diisi!', position: 'toast-bottom');
+
                 return;
             }
         }
 
         // VALIDASI PELANGGAN EXISTING (jika mode pilih pelanggan)
-        if (!$this->isPelangganBaru && empty($this->formData['pelanggan_id'])) {
+        if (! $this->isPelangganBaru && empty($this->formData['pelanggan_id'])) {
             Log::warning('Kasir validation failed: pelanggan_id kosong');
             $this->error('Pilih pelanggan terlebih dahulu!', position: 'toast-bottom');
+
             return;
         }
 
         // Validasi metode pembayaran
-        if (!TransaksiHelper::isValidMetodePembayaran($this->formData['metode_pembayaran'])) {
+        if (! TransaksiHelper::isValidMetodePembayaran($this->formData['metode_pembayaran'])) {
             Log::warning('Kasir validation failed: metode_pembayaran invalid', [
                 'metode_pembayaran' => $this->formData['metode_pembayaran'],
             ]);
             $this->error('Metode pembayaran tidak valid!', position: 'toast-bottom');
+
             return;
         }
 
         // Validasi status
-        if (!TransaksiHelper::isValidStatus($this->formData['status'])) {
+        if (! TransaksiHelper::isValidStatus($this->formData['status'])) {
             Log::warning('Kasir validation failed: status invalid', [
                 'status' => $this->formData['status'],
             ]);
             $this->error('Status transaksi tidak valid!', position: 'toast-bottom');
+
             return;
         }
 
@@ -293,6 +301,7 @@ class Kasir extends Component
         if (empty($this->multiLayananData['items'])) {
             Log::warning('Kasir validation failed: items layanan kosong');
             $this->error('Tambahkan minimal 1 layanan!', position: 'toast-bottom');
+
             return;
         }
 
@@ -302,7 +311,7 @@ class Kasir extends Component
         $minBeratKg = (float) PengaturanHelper::getValue('min_berat_kg', 2);
 
         foreach ($this->multiLayananData['items'] as $index => $item) {
-            if (!empty($item['layanan_id'])) {
+            if (! empty($item['layanan_id'])) {
                 if ($item['tipe_layanan'] === 'per_kg') {
                     if (empty($item['berat_kg']) || $item['berat_kg'] < $minBeratKg) {
                         Log::warning('Kasir validation failed: berat_kg invalid', [
@@ -311,7 +320,8 @@ class Kasir extends Component
                             'berat_kg' => $item['berat_kg'] ?? null,
                             'min_berat_kg_required' => $minBeratKg,
                         ]);
-                        $this->error("Berat minimal {$minBeratKg} kg untuk layanan " . $item['nama_layanan'] . '!', position: 'toast-bottom');
+                        $this->error("Berat minimal {$minBeratKg} kg untuk layanan ".$item['nama_layanan'].'!', position: 'toast-bottom');
+
                         return;
                     }
                     if (empty($item['jenis_pakaian']) || count($item['jenis_pakaian']) === 0) {
@@ -319,7 +329,8 @@ class Kasir extends Component
                             'layanan_index' => $index,
                             'layanan_nama' => $item['nama_layanan'] ?? '',
                         ]);
-                        $this->error('Jenis pakaian wajib diisi untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
+                        $this->error('Jenis pakaian wajib diisi untuk layanan '.$item['nama_layanan'].'!', position: 'toast-bottom');
+
                         return;
                     }
                 } else {
@@ -329,7 +340,8 @@ class Kasir extends Component
                             'layanan_nama' => $item['nama_layanan'] ?? '',
                             'jumlah_satuan' => $item['jumlah_satuan'] ?? null,
                         ]);
-                        $this->error('Jumlah minimal 1 untuk layanan ' . $item['nama_layanan'] . '!', position: 'toast-bottom');
+                        $this->error('Jumlah minimal 1 untuk layanan '.$item['nama_layanan'].'!', position: 'toast-bottom');
+
                         return;
                     }
                 }
@@ -337,9 +349,10 @@ class Kasir extends Component
             }
         }
 
-        if (!$hasValidLayanan) {
+        if (! $hasValidLayanan) {
             Log::warning('Kasir validation failed: tidak ada layanan valid');
             $this->error('Pilih layanan yang valid terlebih dahulu!', position: 'toast-bottom');
+
             return;
         }
 
@@ -401,11 +414,11 @@ class Kasir extends Component
 
                 // Simpan detail transaksi layanan
                 foreach ($this->multiLayananData['items'] as $index => $item) {
-                    if (!empty($item['layanan_id'])) {
+                    if (! empty($item['layanan_id'])) {
                         // Get layanan data untuk backup jika item data kosong
                         $layanan = Layanan::find($item['layanan_id']);
 
-                        if (!$layanan) {
+                        if (! $layanan) {
                             Log::error('Kasir: Layanan not found', [
                                 'layanan_id' => $item['layanan_id'],
                                 'index' => $index,
@@ -422,7 +435,7 @@ class Kasir extends Component
 
                         if ($item['tipe_layanan'] === 'per_kg') {
                             // Prepare data untuk per_kg
-                            $transaksiLayananData['jenis_pakaian'] = !empty($item['jenis_pakaian']) ? $item['jenis_pakaian'] : null;
+                            $transaksiLayananData['jenis_pakaian'] = ! empty($item['jenis_pakaian']) ? $item['jenis_pakaian'] : null;
                             $transaksiLayananData['berat_kg'] = $item['berat_kg'] ?? 0;
                             $transaksiLayananData['harga_per_kg'] = $item['harga_per_kg'] ?? $layanan->harga_per_kg;
                             $transaksiLayananData['jumlah_satuan'] = null;
@@ -510,6 +523,7 @@ class Kasir extends Component
                 ]);
                 $this->refreshKodeTransaksi();
                 $this->success('Kode transaksi di-regenerate, silakan coba lagi', position: 'toast-bottom');
+
                 return;
             }
 
@@ -530,11 +544,10 @@ class Kasir extends Component
         }
     }
 
-
     public function printReceipt(?string $transactionId = null): void
     {
         $kode = $transactionId ?? $this->lastTransactionId;
-        if (!empty($kode)) {
+        if (! empty($kode)) {
             // Cari transaksi by kode untuk dapat ID
             $transaksi = Transaksi::where('kode_transaksi', $kode)->first();
             if ($transaksi instanceof Transaksi) {
@@ -556,18 +569,21 @@ class Kasir extends Component
         if (empty($this->pelangganBaru['nama'])) {
             Log::warning('Kasir: savePelangganBaru validation failed - nama kosong');
             $this->error('Nama pelanggan wajib diisi!', position: 'toast-bottom');
+
             return;
         }
 
         if (empty($this->pelangganBaru['no_hp'])) {
             Log::warning('Kasir: savePelangganBaru validation failed - no_hp kosong');
             $this->error('Nomor HP wajib diisi!', position: 'toast-bottom');
+
             return;
         }
 
         if (empty($this->pelangganBaru['detail_alamat'])) {
             Log::warning('Kasir: savePelangganBaru validation failed - detail_alamat kosong');
             $this->error('Detail alamat wajib diisi!', position: 'toast-bottom');
+
             return;
         }
 
@@ -612,6 +628,7 @@ class Kasir extends Component
             // Handle unique constraint violation
             if (isset($e->errorInfo[1]) && $e->errorInfo[1] == 1062) { // Duplicate entry
                 $this->error('Nomor HP atau email sudah terdaftar. Silakan gunakan data lain.', position: 'toast-bottom');
+
                 return;
             }
 
@@ -631,7 +648,6 @@ class Kasir extends Component
         }
     }
 
-
     public function getPelangganOptions(): array
     {
         try {
@@ -639,6 +655,7 @@ class Kasir extends Component
             return PelangganHelper::getPelangganOptions('', 100);
         } catch (\Exception $e) {
             Log::error('Error getting pelanggan options: '.$e->getMessage());
+
             return [];
         }
     }
@@ -681,7 +698,7 @@ class Kasir extends Component
             }
         }
 
-        if (!$districtCode) {
+        if (! $districtCode) {
             return [];
         }
 

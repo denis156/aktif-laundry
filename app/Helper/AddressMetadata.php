@@ -31,11 +31,17 @@ class AddressMetadata
 {
     // Key constants untuk metadata
     public const META_DETAIL_ALAMAT = 'detail_alamat';
+
     public const META_KELURAHAN = 'kelurahan';
+
     public const META_KECAMATAN = 'kecamatan';
+
     public const META_KABUPATEN_KOTA = 'kabupaten_kota';
+
     public const META_PROVINSI = 'provinsi';
+
     public const META_LATITUDE = 'latitude';
+
     public const META_LONGITUDE = 'longitude';
 
     /**
@@ -104,6 +110,7 @@ class AddressMetadata
     public static function get(object $model, string $key, mixed $default = null): mixed
     {
         $metadata = $model->metadata ?? [];
+
         return $metadata[$key] ?? $default;
     }
 
@@ -212,6 +219,7 @@ class AddressMetadata
     public static function hasCompleteAddress(object $model): bool
     {
         $metadata = $model->metadata ?? [];
+
         return self::isValid($metadata, true);
     }
 
@@ -307,7 +315,7 @@ class AddressMetadata
         $alamatString = self::buildAlamatFromArray($metadata);
 
         // Set alamat jika alamat_string tidak kosong
-        if (!empty($alamatString)) {
+        if (! empty($alamatString)) {
             $model->alamat = $alamatString;
         } else {
             Log::warning('AddressMetadata: Failed to sync alamat - alamat_string is empty', [

@@ -1,14 +1,17 @@
 <div>
     <x-header title="Edit Layanan" separator progress-indicator>
-        <x-slot:actions>
-            <x-button label="Kembali" link="{{ route('layanan.index') }}" wire:navigate.hover icon="o-arrow-left" class="btn-outline" />
-        </x-slot:actions>
+        <x-slot:subtitle>
+            Perbarui informasi layanan
+        </x-slot:subtitle>
     </x-header>
 
-    <x-card class="max-w-4xl mx-auto shadow-sm">
-        <x-form wire:submit="save">
-            <div class="space-y-5">
-                <!-- Informasi Dasar -->
+    <x-form wire:submit="save" no-separator>
+        {{-- Informasi Dasar section --}}
+        <div class="lg:grid grid-cols-5">
+            <div class="col-span-2">
+                <x-header title="Informasi Dasar" subtitle="Data identitas layanan" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-input
                         label="Kode Layanan"
@@ -27,78 +30,6 @@
                     />
                 </div>
 
-                <!-- Tipe Layanan -->
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium">Tipe Layanan</span>
-                    </label>
-                    <div class="grid grid-cols-2 gap-4">
-                        <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-4 hover:bg-base-200 transition {{ $formData['tipe_layanan'] == 'per_kg' ? 'bg-primary/10 border-primary' : '' }}">
-                            <input
-                                type="radio"
-                                value="per_kg"
-                                wire:model.live="formData.tipe_layanan"
-                                class="radio radio-primary" />
-                            <div>
-                                <span class="label-text font-medium">Per Kilogram (Kg)</span>
-                                <p class="text-xs opacity-70">Untuk pakaian, bahan, dll yang dihitung per berat</p>
-                            </div>
-                        </label>
-
-                        <label class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-4 hover:bg-base-200 transition {{ $formData['tipe_layanan'] == 'per_satuan' ? 'bg-primary/10 border-primary' : '' }}">
-                            <input
-                                type="radio"
-                                value="per_satuan"
-                                wire:model.live="formData.tipe_layanan"
-                                class="radio radio-primary" />
-                            <div>
-                                <span class="label-text font-medium">Per Satuan (Pieces)</span>
-                                <p class="text-xs opacity-70">Untuk bed cover, karpet, gorden, dll</p>
-                            </div>
-                        </label>
-                    </div>
-                </div>
-
-                <!-- Harga & Durasi - Dynamic based on tipe layanan -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    @if($formData['tipe_layanan'] === 'per_kg')
-                        <x-input
-                            label="Harga per Kg"
-                            type="number"
-                            wire:model="formData.harga_per_kg"
-                            placeholder="Contoh: 8000"
-                            prefix="Rp"
-                            required
-                        />
-                    @else
-                        <x-input
-                            label="Harga per Satuan"
-                            type="number"
-                            wire:model="formData.harga_per_satuan"
-                            placeholder="Contoh: 25000"
-                            prefix="Rp"
-                            required
-                        />
-                        <x-input
-                            label="Satuan"
-                            wire:model="formData.satuan"
-                            placeholder="Contoh: pcs"
-                            hint="Contoh: pcs, lembar, item"
-                            required
-                        />
-                    @endif
-
-                    <x-input
-                        label="Durasi (Jam)"
-                        type="number"
-                        wire:model="formData.durasi_jam"
-                        placeholder="Contoh: 24"
-                        suffix="jam"
-                        required
-                    />
-                </div>
-
-                <!-- Deskripsi -->
                 <x-textarea
                     label="Deskripsi"
                     wire:model="formData.deskripsi"
@@ -106,26 +37,96 @@
                     rows="3"
                     hint="Opsional, maksimal 200 karakter"
                 />
+            </x-card>
+        </div>
 
-                <!-- Status -->
-                <x-select
-                    label="Status"
-                    wire:model="formData.status"
-                    icon="o-check-circle"
-                    :options="[
-                        ['id' => 'Aktif', 'name' => 'Aktif'],
-                        ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']
-                    ]"
-                    option-value="id"
-                    option-label="name"
-                    required
-                />
+        {{-- Tipe & Harga section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Tipe & Harga" subtitle="Pengaturan tipe dan harga layanan" size="text-lg" />
             </div>
+            <x-card class="col-span-3">
+                <x-group label="Tipe Layanan" wire:model.live="formData.tipe_layanan" :options="$tipeLayananOptions"
+                    hint="Pilih tipe layanan sesuai kebutuhan" class="checked:btn-primary!" inline />
 
-            <x-slot:actions>
-                <x-button label="Batal" link="{{ route('layanan.index') }}" wire:navigate.hover class="btn-ghost" />
-                <x-button label="Update" type="submit" spinner="save" class="btn-primary" icon="o-check" />
-            </x-slot:actions>
-        </x-form>
-    </x-card>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    @if ($formData['tipe_layanan'] === 'per_kg')
+                        <x-input label="Harga per Kg" type="number" wire:model="formData.harga_per_kg"
+                            placeholder="Contoh: 8000" prefix="Rp" required />
+                    @else
+                        <x-input label="Harga per Satuan" type="number" wire:model="formData.harga_per_satuan"
+                            placeholder="Contoh: 25000" prefix="Rp" required />
+                        <x-input label="Satuan" wire:model="formData.satuan" placeholder="Contoh: pcs"
+                            hint="Contoh: pcs, lembar, item" />
+                    @endif
+
+                    <x-input label="Durasi (Jam)" type="number" wire:model="formData.durasi_jam"
+                        placeholder="Contoh: 24" suffix="jam" required />
+                    <x-select label="Status" wire:model="formData.status" icon="o-check-circle" :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"
+                        option-value="id" option-label="name" required />
+                </div>
+            </x-card>
+        </div>
+
+        {{-- Informasi Tambahan section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Informasi Tambahan" subtitle="Metadata layanan (Opsional)" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Minimum Order" type="number" wire:model="minOrder" placeholder="Contoh: 2"
+                        hint="Jumlah minimum order (opsional)"
+                        suffix="{{ $formData['tipe_layanan'] === 'per_kg' ? 'kg' : 'pcs' }}" />
+                    <x-input label="Maximum Order" type="number" wire:model="maxOrder" placeholder="Contoh: 50"
+                        hint="Jumlah maksimum order (opsional)"
+                        suffix="{{ $formData['tipe_layanan'] === 'per_kg' ? 'kg' : 'pcs' }}" />
+                </div>
+
+                <div class="space-y-4 my-2">
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium mb-2">Yang Termasuk dalam Layanan</span>
+                        </label>
+                        <livewire:management.component.string-list-input :initialValue="$include" eventName="includeUpdated"
+                            placeholder="Contoh: Cuci bersih dengan detergen premium" />
+                        <p class="text-xs opacity-70 mt-1">Daftar fasilitas atau hal yang termasuk dalam layanan ini
+                        </p>
+                    </div>
+
+                    <div class="form-control">
+                        <label class="label">
+                            <span class="label-text font-medium mb-2">Yang Tidak Termasuk dalam Layanan</span>
+                        </label>
+                        <livewire:management.component.string-list-input :initialValue="$exclude" eventName="excludeUpdated"
+                            placeholder="Contoh: Tidak termasuk pengharum pakaian" />
+                        <p class="text-xs opacity-70 mt-1">Daftar hal yang tidak termasuk atau ada batasan dalam
+                            layanan</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <livewire:management.component.icon-picker
+                        :initialValue="$icon"
+                        eventName="iconSelected"
+                        label="Icon"
+                        placeholder="Cari icon..."
+                        hint="Ketik minimal 2 huruf untuk mencari icon" />
+
+                    <x-group label="Layanan Populer" wire:model="popular" :options="$popularOptions"
+                        hint="Layanan populer akan ditampilkan lebih menonjol" class="checked:btn-primary!" inline />
+                </div>
+
+                <x-textarea label="Deskripsi Detail Layanan" wire:model="deskripsiDetail"
+                    placeholder="Jelaskan layanan ini secara detail untuk pelanggan..." rows="4"
+                    hint="Deskripsi lengkap untuk ditampilkan ke pelanggan (opsional)" />
+            </x-card>
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Batal" link="{{ route('layanan.index') }}" wire:navigate />
+            <x-button label="Update" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+        </x-slot:actions>
+    </x-form>
 </div>

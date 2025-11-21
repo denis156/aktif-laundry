@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Component;
 
-use Livewire\Component;
-use App\Models\Transaksi;
 use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\TransaksiLayananHelper;
 use App\Helper\PhoneNumber;
+use App\Models\Transaksi;
+use Livewire\Component;
 
 class WhatsAppButton extends Component
 {
     public int $transaksiId;
+
     public string $phoneNumber = '';
+
     public string $size = 'sm'; // default sm, bisa di-override dengan md, lg
+
     public string $btnClass = 'btn-success'; // default success, bisa btn-primary, btn-soft-success, dll
 
     public function mount(int $transaksiId, string $size = 'sm', string $btnClass = 'btn-success'): void
@@ -33,7 +36,7 @@ class WhatsAppButton extends Component
         $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])
             ->find($this->transaksiId);
 
-        if (!$transaksi) {
+        if (! $transaksi) {
             $this->dispatch('notify', type: 'error', message: 'Transaksi tidak ditemukan');
 
             return;
@@ -45,7 +48,7 @@ class WhatsAppButton extends Component
         // Normalize phone number menggunakan PhoneNumber Helper
         $normalizedPhone = PhoneNumber::normalize($this->phoneNumber);
 
-        if (!$normalizedPhone) {
+        if (! $normalizedPhone) {
             $this->dispatch('notify', type: 'error', message: 'Nomor telepon tidak valid');
 
             return;
@@ -54,7 +57,7 @@ class WhatsAppButton extends Component
         // Generate WhatsApp URL menggunakan PhoneNumber Helper
         $whatsappUrl = PhoneNumber::getWhatsAppUrl($normalizedPhone, $message);
 
-        if (!$whatsappUrl) {
+        if (! $whatsappUrl) {
             $this->dispatch('notify', type: 'error', message: 'Gagal membuat URL WhatsApp');
 
             return;
@@ -73,10 +76,10 @@ class WhatsAppButton extends Component
         $jamTutup = PengaturanHelper::getValue('jam_tutup', '21:00');
 
         $text = '*'.strtoupper($namaToko)."*\n";
-        if (!empty($whatsapp)) {
+        if (! empty($whatsapp)) {
             $text .= "WA: {$whatsapp}\n";
         }
-        if (!empty($email)) {
+        if (! empty($email)) {
             $text .= "Email: {$email}\n";
         }
         $text .= "Buka: {$jamBuka} - Tutup: {$jamTutup}\n";
@@ -110,7 +113,7 @@ class WhatsAppButton extends Component
                 $text .= 'Harga: Rp '.number_format($item->harga_per_kg, 0, ',', '.')."/Kg\n";
 
                 // Jenis Pakaian
-                if (!empty($item->jenis_pakaian)) {
+                if (! empty($item->jenis_pakaian)) {
                     $jenisPakaian = is_string($item->jenis_pakaian)
                         ? json_decode($item->jenis_pakaian, true)
                         : $item->jenis_pakaian;
@@ -150,7 +153,7 @@ class WhatsAppButton extends Component
         }
 
         // Catatan
-        if (!empty($transaksi->catatan)) {
+        if (! empty($transaksi->catatan)) {
             $text .= "\nCatatan: {$transaksi->catatan}\n";
         }
 

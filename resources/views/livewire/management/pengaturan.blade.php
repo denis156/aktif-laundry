@@ -44,7 +44,6 @@
                                 wire:model="whatsapp"
                                 prefix="+62"
                                 placeholder="81234567890"
-                                icon="o-chat-bubble-left-right"
                                 required
                                 hint="Format: 8xxx (tanpa 0 atau +62)" />
 

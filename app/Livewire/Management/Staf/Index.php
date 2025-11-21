@@ -1,15 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Management\Staf;
 
-use Exception;
 use App\Models\User;
-use Mary\Traits\Toast;
+use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
-use Illuminate\Support\Facades\Auth;
+use Mary\Traits\Toast;
 
 #[Title('Daftar Staf')]
 #[Layout('layouts.management.app')]
@@ -18,18 +21,23 @@ class Index extends Component
     use Toast, WithPagination;
 
     public string $search = '';
+
     public bool $drawer = false;
+
     public bool $deleteModal = false;
+
     public ?int $deleteId = null;
+
     public string $deleteName = '';
 
     public array $sortBy = ['column' => 'created_at', 'direction' => 'desc'];
+
     public int $perPage = 10;
 
     // Filters
     public string $roleFilter = '';
 
-    public function updatedSearch()
+    public function updatedSearch(): void
     {
         $this->resetPage();
     }
@@ -40,14 +48,14 @@ class Index extends Component
         $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
     }
 
-    public function confirmDelete($id, $name)
+    public function confirmDelete($id, $name): void
     {
         $this->deleteId = $id;
         $this->deleteName = $name;
         $this->deleteModal = true;
     }
 
-    public function delete()
+    public function delete(): void
     {
         if ($this->deleteId) {
             try {
@@ -55,14 +63,29 @@ class Index extends Component
 
                 // Prevent deleting yourself
                 if ($user->id === Auth::id()) {
+                    Log::warning('Staf Index: Attempted to delete own account', [
+                        'user_id' => Auth::id(),
+                    ]);
                     $this->error('Tidak dapat menghapus akun Anda sendiri!', position: 'toast-bottom');
+
                     return;
                 }
 
                 $user->delete();
+
+                Log::info('Staf deleted successfully', [
+                    'deleted_user_id' => $this->deleteId,
+                    'deleted_by' => Auth::id(),
+                ]);
+
                 $this->success('Staf berhasil dihapus!', position: 'toast-bottom');
             } catch (Exception $e) {
-                $this->error('Gagal menghapus staf: ' . $e->getMessage(), position: 'toast-bottom');
+                Log::error('Staf Index: Failed to delete user', [
+                    'user_id' => $this->deleteId,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+                $this->error('Gagal menghapus staf. Silakan coba lagi.', position: 'toast-bottom');
             }
         }
 
@@ -84,15 +107,15 @@ class Index extends Component
         ];
     }
 
-    public function users()
+    public function users(): mixed
     {
         return User::query()
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('name', 'like', "%{$this->search}%")
-                      ->orWhere('email', 'like', "%{$this->search}%")
-                      ->orWhere('no_hp', 'like', "%{$this->search}%")
-                      ->orWhere('alamat', 'like', "%{$this->search}%");
+                        ->orWhere('email', 'like', "%{$this->search}%")
+                        ->orWhere('no_hp', 'like', "%{$this->search}%")
+                        ->orWhere('alamat', 'like', "%{$this->search}%");
                 });
             })
             ->when($this->roleFilter !== '', function ($query) {
@@ -103,7 +126,7 @@ class Index extends Component
             ->paginate($this->perPage);
     }
 
-    public function render()
+    public function render(): mixed
     {
         return view('livewire.management.staf.index', [
             'users' => $this->users(),

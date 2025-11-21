@@ -7,9 +7,13 @@ use Livewire\Component;
 class DarkModeSwap extends Component
 {
     public string $trueIcon = 'o-moon';
+
     public string $falseIcon = 'o-sun';
+
     public string $iconSize = 'h-6 w-6';
+
     public string $swapClass = 'swap-rotate';
+
     public string $swapId = 'dark-mode-swap';
 
     public function mount(

@@ -16,15 +16,18 @@ class PengaturanHelper
 {
     // * Type Constants
     public const TYPE_STRING = 'string';
+
     public const TYPE_NUMBER = 'number';
+
     public const TYPE_BOOLEAN = 'boolean';
+
     public const TYPE_JSON = 'json';
 
     /**
      * Ambil nilai setting berdasarkan key dengan auto casting
      *
-     * @param string $key Setting key to retrieve
-     * @param mixed $default Default value if setting not found
+     * @param  string  $key  Setting key to retrieve
+     * @param  mixed  $default  Default value if setting not found
      * @return mixed The casted value or default
      */
     public static function getValue(string $key, mixed $default = null): mixed
@@ -32,7 +35,7 @@ class PengaturanHelper
         try {
             $setting = Pengaturan::where('key', $key)->first();
 
-            if (!$setting) {
+            if (! $setting) {
                 return $default;
             }
 
@@ -50,12 +53,13 @@ class PengaturanHelper
     /**
      * Set nilai setting dengan auto detect type
      *
-     * @param string $key Setting key
-     * @param mixed $value Value to set
-     * @param string|null $type Explicit type (auto-detected if null)
-     * @param string|null $group Setting group
-     * @param string|null $deskripsi Setting description
+     * @param  string  $key  Setting key
+     * @param  mixed  $value  Value to set
+     * @param  string|null  $type  Explicit type (auto-detected if null)
+     * @param  string|null  $group  Setting group
+     * @param  string|null  $deskripsi  Setting description
      * @return Pengaturan The created or updated setting
+     *
      * @throws \Exception
      */
     public static function setValue(
@@ -93,8 +97,8 @@ class PengaturanHelper
     /**
      * Cast nilai sesuai tipe data
      *
-     * @param string $value The string value to cast
-     * @param string $type The target type
+     * @param  string  $value  The string value to cast
+     * @param  string  $type  The target type
      * @return mixed The casted value
      */
     public static function castValue(string $value, string $type): mixed
@@ -110,7 +114,7 @@ class PengaturanHelper
     /**
      * Deteksi tipe data dari nilai
      *
-     * @param mixed $value The value to detect type from
+     * @param  mixed  $value  The value to detect type from
      * @return string The detected type
      */
     public static function detectType(mixed $value): string
@@ -126,8 +130,9 @@ class PengaturanHelper
     /**
      * Ambil semua setting dalam satu group
      *
-     * @param string $group The group name
+     * @param  string  $group  The group name
      * @return \Illuminate\Support\Collection Collection of key-value pairs
+     *
      * @throws \Exception
      */
     public static function getByGroup(string $group): \Illuminate\Support\Collection
@@ -148,8 +153,6 @@ class PengaturanHelper
 
     /**
      * Get all available types
-     *
-     * @return array
      */
     public static function getAllTypes(): array
     {
@@ -163,9 +166,6 @@ class PengaturanHelper
 
     /**
      * Check apakah type valid
-     *
-     * @param string $type
-     * @return bool
      */
     public static function isValidType(string $type): bool
     {

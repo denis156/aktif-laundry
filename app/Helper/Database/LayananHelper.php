@@ -21,11 +21,17 @@ use Illuminate\Support\Facades\Log;
 class LayananHelper
 {
     public const META_INCLUDE = 'include';
+
     public const META_EXCLUDE = 'exclude';
+
     public const META_MIN_ORDER = 'min_order';
+
     public const META_MAX_ORDER = 'max_order';
+
     public const META_POPULAR = 'popular';
+
     public const META_ICON = 'icon';
+
     public const META_DESKRIPSI_DETAIL = 'deskripsi_detail';
 
     // * Ambil nilai dari metadata
@@ -158,8 +164,7 @@ class LayananHelper
      * Dapatkan array options layanan untuk dropdown/select
      * Format: ['id' => id, 'name' => 'Nama Layanan - Rp x.xxx/satuan']
      *
-     * @param string $status Filter berdasarkan status (default: 'Aktif')
-     * @return array
+     * @param  string  $status  Filter berdasarkan status (default: 'Aktif')
      */
     public static function getLayananOptions(string $status = 'Aktif'): array
     {

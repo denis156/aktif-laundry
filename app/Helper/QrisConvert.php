@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 // ! Helper untuk konversi QRIS Static menjadi Dynamic
 //
@@ -38,7 +38,7 @@ class QrisConvert
 
             return $dynamicQris;
         } catch (Exception $e) {
-            Log::error('QRIS Generation Error: ' . $e->getMessage());
+            Log::error('QRIS Generation Error: '.$e->getMessage());
             throw $e;
         }
     }
@@ -59,12 +59,12 @@ class QrisConvert
                 ->generate($qrisData);
 
             // Save ke storage
-            $path = $storageConfig['path'] . "/{$filename}";
+            $path = $storageConfig['path']."/{$filename}";
             Storage::disk('public')->put($path, $qrCode);
 
             return $path;
         } catch (Exception $e) {
-            Log::error('QR Code Image Generation Error: ' . $e->getMessage());
+            Log::error('QR Code Image Generation Error: '.$e->getMessage());
             throw $e;
         }
     }
@@ -83,7 +83,7 @@ class QrisConvert
                 'transaction_id' => $transactionId,
             ];
         } catch (Exception $e) {
-            Log::error('Payment QR Code Generation Error: ' . $e->getMessage());
+            Log::error('Payment QR Code Generation Error: '.$e->getMessage());
             throw $e;
         }
     }
@@ -96,29 +96,29 @@ class QrisConvert
         $qris = substr($qris, 0, -4);
 
         // Change from static to dynamic
-        $step1 = str_replace("010211", "010212", $qris);
+        $step1 = str_replace('010211', '010212', $qris);
 
         // Split at merchant info
-        $step2 = explode("5802ID", $step1);
+        $step2 = explode('5802ID', $step1);
 
         // Build amount string
-        $amountStr = "54" . sprintf("%02d", strlen($amount)) . $amount;
+        $amountStr = '54'.sprintf('%02d', strlen($amount)).$amount;
 
         // Handle fee jika ada
         $feeStr = '';
         if ($feeType && $feeAmount) {
             if ($feeType === 'rupiah') {
-                $feeStr = "55020256" . sprintf("%02d", strlen((string)$feeAmount)) . $feeAmount;
+                $feeStr = '55020256'.sprintf('%02d', strlen((string) $feeAmount)).$feeAmount;
             } elseif ($feeType === 'persen') {
-                $feeStr = "55020357" . sprintf("%02d", strlen((string)$feeAmount)) . $feeAmount;
+                $feeStr = '55020357'.sprintf('%02d', strlen((string) $feeAmount)).$feeAmount;
             }
         }
 
         // Combine all parts
-        $uang = $amountStr . $feeStr . "5802ID";
+        $uang = $amountStr.$feeStr.'5802ID';
 
         // Final QRIS string
-        $fix = trim($step2[0]) . $uang . trim($step2[1]);
+        $fix = trim($step2[0]).$uang.trim($step2[1]);
 
         // Add CRC16
         $fix .= self::calculateCRC16($fix);
@@ -173,7 +173,7 @@ class QrisConvert
 
             return (string) $qrCode;
         } catch (Exception $e) {
-            Log::error('QR Code On-Demand Generation Error: ' . $e->getMessage());
+            Log::error('QR Code On-Demand Generation Error: '.$e->getMessage());
             throw $e;
         }
     }
@@ -190,8 +190,8 @@ class QrisConvert
 
             // Generate filename unik dengan timestamp yang lebih pendek
             $timestamp = time();
-            $shortTimestamp = substr((string)$timestamp, -6); // 6 digit terakhir
-            $filename = 'qr-' . $transactionId . '-' . $shortTimestamp . '.svg';
+            $shortTimestamp = substr((string) $timestamp, -6); // 6 digit terakhir
+            $filename = 'qr-'.$transactionId.'-'.$shortTimestamp.'.svg';
 
             // Generate QR Code SVG (lebih kecil dari PNG)
             $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
@@ -206,18 +206,18 @@ class QrisConvert
             // Save ke storage
             $storageConfig = config('qrisconvert.storage');
             $disk = $storageConfig['disk'];
-            $path = $storageConfig['path'] . "/{$filename}";
+            $path = $storageConfig['path']."/{$filename}";
             Storage::disk($disk)->put($path, $qrCodeString);
 
             return [
                 'qris_data' => $dynamicQris,
                 'image_path' => $path,
-                'image_url' => asset('storage/' . $path),
+                'image_url' => asset('storage/'.$path),
                 'amount' => $amount,
                 'file_size' => strlen($qrCodeString),
             ];
         } catch (Exception $e) {
-            Log::error('QR Code Storable Generation Error: ' . $e->getMessage());
+            Log::error('QR Code Storable Generation Error: '.$e->getMessage());
             throw $e;
         }
     }
@@ -236,7 +236,7 @@ class QrisConvert
 
             foreach ($files as $file) {
                 $fileName = basename($file);
-                if (!str_starts_with($fileName, 'qr-')) {
+                if (! str_starts_with($fileName, 'qr-')) {
                     continue; // skip non-QR files
                 }
 
@@ -267,7 +267,7 @@ class QrisConvert
                 'files' => $deletedFiles,
             ];
         } catch (Exception $e) {
-            Log::error('QR Code Cleanup Error: ' . $e->getMessage());
+            Log::error('QR Code Cleanup Error: '.$e->getMessage());
             throw $e;
         }
     }
@@ -288,7 +288,7 @@ class QrisConvert
 
             foreach ($files as $file) {
                 $fileName = basename($file);
-                if (!str_starts_with($fileName, 'qr-')) {
+                if (! str_starts_with($fileName, 'qr-')) {
                     continue;
                 }
 
@@ -299,7 +299,7 @@ class QrisConvert
                 $totalFiles++;
                 $totalSize += $fileSize;
 
-                if (!$oldestFile || $lastModified < $oldestFile['time']) {
+                if (! $oldestFile || $lastModified < $oldestFile['time']) {
                     $oldestFile = [
                         'file' => $fileName,
                         'time' => $lastModified,
@@ -307,7 +307,7 @@ class QrisConvert
                     ];
                 }
 
-                if (!$newestFile || $lastModified > $newestFile['time']) {
+                if (! $newestFile || $lastModified > $newestFile['time']) {
                     $newestFile = [
                         'file' => $fileName,
                         'time' => $lastModified,
@@ -324,7 +324,8 @@ class QrisConvert
                 'newest_file' => $newestFile,
             ];
         } catch (Exception $e) {
-            Log::error('QR Code Storage Stats Error: ' . $e->getMessage());
+            Log::error('QR Code Storage Stats Error: '.$e->getMessage());
+
             return [
                 'total_files' => 0,
                 'total_size_bytes' => 0,
@@ -343,7 +344,7 @@ class QrisConvert
             $cleanupConfig = config('qrisconvert.cleanup');
 
             // Skip jika auto_cleanup disabled
-            if (!$cleanupConfig['auto_cleanup']) {
+            if (! $cleanupConfig['auto_cleanup']) {
                 return;
             }
 
@@ -359,18 +360,18 @@ class QrisConvert
 
             // Log hasil cleanup (hanya jika ada file yang dihapus)
             if ($result['deleted_count'] > 0) {
-                Log::info('QR Code Auto Cleanup: Deleted ' . $result['deleted_count'] .
-                         ' old QR files, freed up ' . $result['total_size_mb'] . ' MB');
+                Log::info('QR Code Auto Cleanup: Deleted '.$result['deleted_count'].
+                         ' old QR files, freed up '.$result['total_size_mb'].' MB');
             }
         } catch (Exception $e) {
             // Log error tapi jangan block proses generate QR
-            Log::warning('QR Code Auto Cleanup failed: ' . $e->getMessage());
+            Log::warning('QR Code Auto Cleanup failed: '.$e->getMessage());
         }
     }
 
     // * Format amount untuk display
     public static function formatAmount(float $amount): string
     {
-        return 'Rp ' . number_format($amount, 0, ',', '.');
+        return 'Rp '.number_format($amount, 0, ',', '.');
     }
 }

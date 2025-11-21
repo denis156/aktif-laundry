@@ -5,36 +5,48 @@
     </label>
 
     @foreach($items as $index => $item)
-        <div class="join w-full">
-            {{-- Select Jenis Pakaian --}}
-            <select
-                wire:model.live="items.{{ $index }}.jenis_id"
-                class="select select-bordered join-item flex-1"
-            >
-                <option value="">Pilih Jenis Pakaian</option>
-                @foreach($jenisPakaianOptions as $option)
-                    <option value="{{ $option['id'] }}">{{ $option['name'] }}</option>
-                @endforeach
-            </select>
+        @php
+            $selectedOption = !empty($item['jenis_id']) ? $jenisPakaianOptions->firstWhere('id', $item['jenis_id']) : null;
+        @endphp
+        <div class="flex items-center gap-2">
+            {{-- Icon --}}
+            @if($selectedOption && !empty($selectedOption['icon']))
+                <x-icon name="{{ $selectedOption['icon'] }}" class="w-5 h-5 shrink-0" />
+            @else
+                <x-icon name="o-square-3-stack-3d" class="w-5 h-5 shrink-0 opacity-30" />
+            @endif
 
-            {{-- Input Jumlah --}}
-            <input
-                type="number"
-                wire:model.live="items.{{ $index }}.jumlah"
-                class="input input-bordered join-item w-24"
-                placeholder="Qty"
-                min="1"
-            />
+            <div class="join flex-1">
+                {{-- Select Jenis Pakaian --}}
+                <select
+                    wire:model.live="items.{{ $index }}.jenis_id"
+                    class="select select-bordered join-item flex-1"
+                >
+                    <option value="">Pilih Jenis Pakaian</option>
+                    @foreach($jenisPakaianOptions as $option)
+                        <option value="{{ $option['id'] }}">{{ $option['name'] }}</option>
+                    @endforeach
+                </select>
 
-            {{-- Button Remove --}}
-            <button
-                type="button"
-                wire:click="removeRow({{ $index }})"
-                class="btn btn-error join-item"
-                @if(count($items) === 1) disabled @endif
-            >
-                <x-icon name="o-trash" class="w-4 h-4" />
-            </button>
+                {{-- Input Jumlah --}}
+                <input
+                    type="number"
+                    wire:model.live="items.{{ $index }}.jumlah"
+                    class="input input-bordered join-item w-24"
+                    placeholder="Qty"
+                    min="1"
+                />
+
+                {{-- Button Remove --}}
+                <button
+                    type="button"
+                    wire:click="removeRow({{ $index }})"
+                    class="btn btn-error join-item"
+                    @if(count($items) === 1) disabled @endif
+                >
+                    <x-icon name="o-trash" class="w-4 h-4" />
+                </button>
+            </div>
         </div>
     @endforeach
 

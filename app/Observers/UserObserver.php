@@ -2,10 +2,9 @@
 
 namespace App\Observers;
 
-use App\Models\User;
 use App\Helper\AddressMetadata;
+use App\Models\User;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Log;
 
 class UserObserver
 {
@@ -19,7 +18,7 @@ class UserObserver
         // Sync jika metadata punya data alamat
         $metadata = $user->metadata ?? [];
 
-        if (!empty($metadata['detail_alamat']) || !empty($metadata['kelurahan']) || !empty($metadata['kecamatan'])) {
+        if (! empty($metadata['detail_alamat']) || ! empty($metadata['kelurahan']) || ! empty($metadata['kecamatan'])) {
             AddressMetadata::syncAlamatColumn($user);
         }
     }

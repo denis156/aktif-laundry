@@ -19,13 +19,13 @@
 
                 <!-- Mode Pelanggan Toggle -->
                 <div class="flex items-center justify-between mb-4 pb-3 border-b border-base-300">
-                    <span class="text-sm font-medium text-gray-600">Mode Pelanggan</span>
+                    <span class="text-sm font-medium text-base-content/70">Mode Pelanggan</span>
                     <div class="flex items-center gap-3">
-                        <span class="text-sm {{ !$isPelangganBaru ? 'font-bold text-primary' : 'text-gray-400' }}">
+                        <span class="text-sm {{ !$isPelangganBaru ? 'font-bold text-primary' : 'text-base-content/40' }}">
                             Pilih Pelanggan
                         </span>
                         <x-toggle wire:model.live="isPelangganBaru" />
-                        <span class="text-sm {{ $isPelangganBaru ? 'font-bold text-success' : 'text-gray-400' }}">
+                        <span class="text-sm {{ $isPelangganBaru ? 'font-bold text-success' : 'text-base-content/40' }}">
                             Pelanggan Baru
                         </span>
                     </div>
@@ -288,7 +288,7 @@
                 </svg>
             </div>
             <h3 class="text-xl font-bold mb-2">Transaksi Berhasil Disimpan!</h3>
-            <p class="text-sm text-gray-600">Kode: <span class="font-mono font-bold">{{ $lastTransactionId }}</span></p>
+            <p class="text-sm text-base-content/70">Kode: <span class="font-mono font-bold">{{ $lastTransactionId }}</span></p>
         </div>
 
         <x-slot:actions>

@@ -1,15 +1,18 @@
 <div>
     <x-header title="Tambah Transaksi Baru" separator progress-indicator>
-        <x-slot:actions>
-            <x-button label="Kembali" link="{{ route('transaksi.index') }}" wire:navigate.hover icon="o-arrow-left" class="btn-outline" />
-        </x-slot:actions>
+        <x-slot:subtitle>
+            Buat transaksi laundry baru
+        </x-slot:subtitle>
     </x-header>
 
-    <x-card class="max-w-6xl mx-auto shadow-sm">
-        <x-form wire:submit="save">
-            <div class="space-y-5">
-                {{-- Informasi Transaksi --}}
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <x-form wire:submit="save" no-separator>
+        {{-- Informasi Transaksi section --}}
+        <div class="lg:grid grid-cols-5">
+            <div class="col-span-2">
+                <x-header title="Informasi Transaksi" subtitle="Data dasar transaksi" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-input
                         label="Kode Transaksi"
                         wire:model="formData.kode_transaksi"
@@ -25,7 +28,9 @@
                         hint="Auto dari login"
                         icon="o-user-circle"
                     />
+                </div>
 
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-datetime
                         label="Tanggal Masuk"
                         type="datetime-local"
@@ -51,39 +56,38 @@
                     />
                 </div>
 
-                {{-- Pelanggan --}}
-                <div class="form-control">
-                    <label class="label">
-                        <span class="label-text font-medium">Pelanggan</span>
-                    </label>
-                    <x-choices
-                        wire:model.live="formData.pelanggan_id"
-                        :options="$pelangganOptions"
-                        option-label="nama"
-                        option-sub-label="no_hp"
-                        single
-                        searchable
-                        clearable
-                        icon="o-user"
-                        height="max-h-86"
-                        hint="Ketik nama atau nomor HP untuk mencari"
-                    />
-                </div>
+                <x-choices
+                    label="Pelanggan"
+                    wire:model.live="formData.pelanggan_id"
+                    :options="$pelangganOptions"
+                    option-label="nama"
+                    option-sub-label="no_hp"
+                    single
+                    searchable
+                    clearable
+                    icon="o-user"
+                    height="max-h-86"
+                    hint="Ketik nama atau nomor HP untuk mencari"
+                />
+            </x-card>
+        </div>
 
-                {{-- Multi-Layanan Form --}}
-                <div class="border border-base-300 rounded-lg p-4 bg-base-50">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-lg font-semibold flex items-center gap-2">
-                            <x-icon name="o-sparkles" class="w-5 h-5" />
-                            Layanan
-                        </h3>
-                        <span class="text-sm text-base-content/70">Tambahkan satu atau lebih layanan</span>
-                    </div>
+        {{-- Layanan section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Layanan" subtitle="Pilih layanan yang digunakan" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <livewire:management.component.multi-layanan-form />
+            </x-card>
+        </div>
 
-                    <livewire:management.component.multi-layanan-form />
-                </div>
-
-                {{-- Subtotal, Diskon, Total --}}
+        {{-- Pembayaran section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Pembayaran" subtitle="Detail pembayaran transaksi" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <x-input
                         label="Subtotal"
@@ -114,7 +118,6 @@
                     />
                 </div>
 
-                {{-- Metode Pembayaran & Tanggal Selesai --}}
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-select
                         label="Metode Pembayaran"
@@ -141,7 +144,6 @@
                     />
                 </div>
 
-                {{-- Catatan --}}
                 <x-textarea
                     label="Catatan"
                     wire:model="formData.catatan"
@@ -149,12 +151,76 @@
                     rows="3"
                     hint="Opsional"
                 />
-            </div>
+            </x-card>
+        </div>
 
-            <x-slot:actions>
-                <x-button label="Batal" link="{{ route('transaksi.index') }}" wire:navigate.hover class="btn-ghost" />
-                <x-button label="Simpan" type="submit" spinner="save" class="btn-primary" icon="o-check" />
-            </x-slot:actions>
-        </x-form>
-    </x-card>
+        {{-- Promo & Referral section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Promo & Referral" subtitle="Opsional - Kode promo atau referral" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-select
+                        label="Kode Promo"
+                        wire:model.live="selectedPromoId"
+                        icon="o-ticket"
+                        :options="$promoOptions"
+                        option-value="id"
+                        option-label="name"
+                        placeholder="Pilih promo..."
+                        hint="Diskon otomatis diterapkan"
+                    />
+
+                    <x-select
+                        label="Kode Referral"
+                        wire:model="selectedReferralId"
+                        icon="o-user-group"
+                        :options="$referralOptions"
+                        option-value="id"
+                        option-label="name"
+                        placeholder="Pilih referral..."
+                        hint="Untuk tracking referral"
+                    />
+                </div>
+            </x-card>
+        </div>
+
+        {{-- Kurir section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Kurir" subtitle="Opsional - Kurir jemput dan antar" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-select
+                        label="Kurir Jemput"
+                        wire:model="kurirJemputId"
+                        icon="o-arrow-up-tray"
+                        :options="$kurirOptions"
+                        option-value="id"
+                        option-label="name"
+                        placeholder="Pilih kurir jemput..."
+                        hint="Kurir yang menjemput cucian"
+                    />
+
+                    <x-select
+                        label="Kurir Antar"
+                        wire:model="kurirAntarId"
+                        icon="o-arrow-down-tray"
+                        :options="$kurirOptions"
+                        option-value="id"
+                        option-label="name"
+                        placeholder="Pilih kurir antar..."
+                        hint="Kurir yang mengantar cucian"
+                    />
+                </div>
+            </x-card>
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Batal" link="{{ route('transaksi.index') }}" wire:navigate />
+            <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+        </x-slot:actions>
+    </x-form>
 </div>

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Helper\Database\TransaksiHelper;
 use App\Models\Pelanggan;
 use App\Models\User;
-use App\Helper\Database\TransaksiHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -45,7 +45,7 @@ class TransaksiFactory extends Factory
         $tanggalSelesai = (clone $tanggalMasuk)->modify("+{$durasiJam} hours");
 
         return [
-            'kode_transaksi' => 'TRX' . str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_transaksi' => 'TRX'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
             'tanggal_masuk' => $tanggalMasuk,
             'kasir_id' => $kasir ? $kasir->id : User::factory(),
             'pelanggan_id' => $pelanggan ? $pelanggan->id : Pelanggan::factory(),

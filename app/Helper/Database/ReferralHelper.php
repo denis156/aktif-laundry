@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Log;
 class ReferralHelper
 {
     public const META_REWARD_HISTORY = 'reward_history';
+
     public const META_SPECIAL_REWARD = 'special_reward';
 
     // * Ambil nilai dari metadata
@@ -113,8 +114,6 @@ class ReferralHelper
     /**
      * Tambah counter total referral (saat ada yang pakai kode)
      *
-     * @param Referral $referral
-     * @return void
      * @throws \Exception
      */
     public static function incrementReferral(Referral $referral): void
@@ -135,8 +134,6 @@ class ReferralHelper
     /**
      * Tambah successful referral dan poin (saat referee sudah transaksi)
      *
-     * @param Referral $referral
-     * @return void
      * @throws \Exception
      */
     public static function addSuccessfulReferral(Referral $referral): void
@@ -157,8 +154,6 @@ class ReferralHelper
 
     /**
      * Get referral options untuk dropdown (hanya yang aktif)
-     *
-     * @return array
      */
     public static function getReferralOptions(): array
     {
@@ -166,9 +161,9 @@ class ReferralHelper
             return Referral::where('status', 'Aktif')
                 ->orderBy('kode_referral')
                 ->get()
-                ->map(fn($referral) => [
+                ->map(fn ($referral) => [
                     'id' => $referral->id,
-                    'name' => $referral->kode_referral . ' - ' . ($referral->pelanggan->nama ?? 'Unknown') . ' (Poin: ' . $referral->poin_referrer . ')',
+                    'name' => $referral->kode_referral.' - '.($referral->pelanggan->nama ?? 'Unknown').' (Poin: '.$referral->poin_referrer.')',
                 ])
                 ->toArray();
         } catch (\Exception $e) {
@@ -176,6 +171,7 @@ class ReferralHelper
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }

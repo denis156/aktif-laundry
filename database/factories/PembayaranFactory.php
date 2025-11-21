@@ -39,7 +39,7 @@ class PembayaranFactory extends Factory
 
         $status = fake()->randomElement(['Verified', 'Verified', 'Verified', 'Pending']);
         $buktiTransfer = ($metode === 'Transfer' || $metode === 'QRIS') && $status === 'Verified'
-            ? 'bukti_transfer_' . fake()->uuid() . '.jpg'
+            ? 'bukti_transfer_'.fake()->uuid().'.jpg'
             : null;
 
         $metadata = [];
@@ -53,7 +53,7 @@ class PembayaranFactory extends Factory
         }
 
         return [
-            'kode_pembayaran' => 'PAY' . str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_pembayaran' => 'PAY'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
             'transaksi_id' => $transaksi ? $transaksi->id : Transaksi::factory(),
             'jumlah_bayar' => $jumlahBayar,
             'kembalian' => $kembalian,

@@ -17,12 +17,12 @@ class SuperAdminMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Cek apakah user sudah login
-        if (!Auth::check()) {
+        if (! Auth::check()) {
             return redirect()->route('login');
         }
 
         // Cek apakah user adalah super admin
-        if (!Auth::user()->super_admin) {
+        if (! Auth::user()->super_admin) {
             abort(403, 'Akses ditolak. Hanya Super Admin yang dapat mengakses halaman ini.');
         }
 

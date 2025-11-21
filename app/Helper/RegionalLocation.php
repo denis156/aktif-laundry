@@ -43,10 +43,11 @@ class RegionalLocation
         return Cache::remember('regional_provinces', now()->addDays(self::CACHE_DURATION_DAYS), function () {
             try {
                 $response = Http::timeout(self::HTTP_TIMEOUT)
-                    ->get(self::BASE_URL . '/provinces.json');
+                    ->get(self::BASE_URL.'/provinces.json');
 
                 if ($response->successful()) {
                     $data = $response->json();
+
                     return $data['data'] ?? [];
                 }
 
@@ -55,6 +56,7 @@ class RegionalLocation
                 logger()->error('Failed to fetch provinces', [
                     'error' => $e->getMessage(),
                 ]);
+
                 return [];
             }
         });
@@ -69,13 +71,14 @@ class RegionalLocation
     // * Get kabupaten/kota berdasarkan kode provinsi
     public static function getRegenciesByProvince(string $provinceCode): array
     {
-        return Cache::remember('regional_regencies_' . $provinceCode, now()->addDays(self::CACHE_DURATION_DAYS), function () use ($provinceCode) {
+        return Cache::remember('regional_regencies_'.$provinceCode, now()->addDays(self::CACHE_DURATION_DAYS), function () use ($provinceCode) {
             try {
                 $response = Http::timeout(self::HTTP_TIMEOUT)
-                    ->get(self::BASE_URL . '/regencies/' . $provinceCode . '.json');
+                    ->get(self::BASE_URL.'/regencies/'.$provinceCode.'.json');
 
                 if ($response->successful()) {
                     $data = $response->json();
+
                     return $data['data'] ?? [];
                 }
 
@@ -85,6 +88,7 @@ class RegionalLocation
                     'province_code' => $provinceCode,
                     'error' => $e->getMessage(),
                 ]);
+
                 return [];
             }
         });
@@ -93,13 +97,14 @@ class RegionalLocation
     // * Get kecamatan berdasarkan kode kabupaten/kota
     public static function getDistrictsByRegency(string $regencyCode): array
     {
-        return Cache::remember('regional_districts_' . $regencyCode, now()->addDays(self::CACHE_DURATION_DAYS), function () use ($regencyCode) {
+        return Cache::remember('regional_districts_'.$regencyCode, now()->addDays(self::CACHE_DURATION_DAYS), function () use ($regencyCode) {
             try {
                 $response = Http::timeout(self::HTTP_TIMEOUT)
-                    ->get(self::BASE_URL . '/districts/' . $regencyCode . '.json');
+                    ->get(self::BASE_URL.'/districts/'.$regencyCode.'.json');
 
                 if ($response->successful()) {
                     $data = $response->json();
+
                     return $data['data'] ?? [];
                 }
 
@@ -109,6 +114,7 @@ class RegionalLocation
                     'regency_code' => $regencyCode,
                     'error' => $e->getMessage(),
                 ]);
+
                 return [];
             }
         });
@@ -117,13 +123,14 @@ class RegionalLocation
     // * Get kelurahan/desa berdasarkan kode kecamatan
     public static function getVillagesByDistrict(string $districtCode): array
     {
-        return Cache::remember('regional_villages_' . $districtCode, now()->addDays(self::CACHE_DURATION_DAYS), function () use ($districtCode) {
+        return Cache::remember('regional_villages_'.$districtCode, now()->addDays(self::CACHE_DURATION_DAYS), function () use ($districtCode) {
             try {
                 $response = Http::timeout(self::HTTP_TIMEOUT)
-                    ->get(self::BASE_URL . '/villages/' . $districtCode . '.json');
+                    ->get(self::BASE_URL.'/villages/'.$districtCode.'.json');
 
                 if ($response->successful()) {
                     $data = $response->json();
+
                     return $data['data'] ?? [];
                 }
 
@@ -133,6 +140,7 @@ class RegionalLocation
                     'district_code' => $districtCode,
                     'error' => $e->getMessage(),
                 ]);
+
                 return [];
             }
         });
@@ -244,7 +252,7 @@ class RegionalLocation
     // * Get URL API untuk endpoint tertentu
     public static function getApiUrl(string $endpoint): string
     {
-        return self::BASE_URL . '/' . ltrim($endpoint, '/');
+        return self::BASE_URL.'/'.ltrim($endpoint, '/');
     }
 
     // ? Validate apakah kode wilayah valid (format check)

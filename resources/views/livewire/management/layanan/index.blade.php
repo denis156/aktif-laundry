@@ -20,6 +20,30 @@
             <x-slot:empty>
                 <x-icon name="o-cube" label="Tidak ada data layanan." />
             </x-slot:empty>
+
+            @scope('cell_icon', $item)
+                @php
+                    $icon = \App\Helper\Database\LayananHelper::getIcon($item);
+                @endphp
+                @if($icon)
+                    <x-icon name="{{ $icon }}" class="w-6 h-6" />
+                @else
+                    <x-icon name="o-sparkles" class="w-6 h-6 opacity-30" />
+                @endif
+            @endscope
+
+            @scope('cell_nama_layanan', $item)
+                @php
+                    $isPopular = \App\Helper\Database\LayananHelper::isPopular($item);
+                @endphp
+                <div class="flex flex-col">
+                    <span class="font-medium">{{ $item->nama_layanan }}</span>
+                    @if($isPopular)
+                        <span class="badge badge-warning badge-xs mt-1 w-fit">Popular</span>
+                    @endif
+                </div>
+            @endscope
+
             @scope('cell_tipe_layanan', $item)
                 @if ($item->tipe_layanan === 'per_kg')
                     <span class="badge badge-primary badge-sm truncate">Per Kg</span>

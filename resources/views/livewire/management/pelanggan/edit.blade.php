@@ -1,33 +1,33 @@
 <div>
     <x-header title="Edit Pelanggan" separator progress-indicator>
-        <x-slot:actions>
-            <x-button label="Kembali" link="{{ route('pelanggan.index') }}" wire:navigate.hover icon="o-arrow-left" class="btn-outline" />
-        </x-slot:actions>
+        <x-slot:subtitle>
+            Perbarui informasi pelanggan
+        </x-slot:subtitle>
     </x-header>
 
-    <x-card class="max-w-4xl mx-auto shadow-sm">
-        <x-form wire:submit="save">
-            <div class="space-y-5">
-                <!-- Informasi Dasar -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input
-                        label="Kode Pelanggan"
-                        wire:model="formData.kode_pelanggan"
-                        readonly
-                        hint="Kode tidak dapat diubah"
-                        icon="o-hashtag"
-                    />
+    <x-form wire:submit="save" no-separator>
+        {{-- Informasi Dasar section --}}
+        <div class="lg:grid grid-cols-5">
+            <div class="col-span-2">
+                <x-header title="Informasi Dasar" subtitle="Data identitas pelanggan" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <x-input
+                    label="Kode Pelanggan"
+                    wire:model="formData.kode_pelanggan"
+                    readonly
+                    hint="Kode tidak dapat diubah"
+                    icon="o-hashtag"
+                />
 
-                    <x-input
-                        label="Nama Pelanggan"
-                        wire:model="formData.nama"
-                        placeholder="Contoh: Ahmad Rizki"
-                        icon="o-user"
-                        required
-                    />
-                </div>
+                <x-input
+                    label="Nama Pelanggan"
+                    wire:model="formData.nama"
+                    placeholder="Contoh: Ahmad Rizki"
+                    icon="o-user"
+                    required
+                />
 
-                <!-- Kontak -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-input
                         label="No. HP"
@@ -47,7 +47,6 @@
                     />
                 </div>
 
-                <!-- Alamat -->
                 <x-textarea
                     label="Alamat"
                     wire:model="formData.alamat"
@@ -55,8 +54,15 @@
                     rows="3"
                     required
                 />
+            </x-card>
+        </div>
 
-                <!-- Tanggal Daftar & Status -->
+        {{-- Status & Tanggal section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Status & Tanggal" subtitle="Status dan tanggal registrasi" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-datetime
                         label="Tanggal Daftar"
@@ -79,12 +85,12 @@
                         required
                     />
                 </div>
-            </div>
+            </x-card>
+        </div>
 
-            <x-slot:actions>
-                <x-button label="Batal" link="{{ route('pelanggan.index') }}" wire:navigate.hover class="btn-ghost" />
-                <x-button label="Update" type="submit" spinner="save" class="btn-primary" icon="o-check" />
-            </x-slot:actions>
-        </x-form>
-    </x-card>
+        <x-slot:actions>
+            <x-button label="Batal" link="{{ route('pelanggan.index') }}" wire:navigate />
+            <x-button label="Update" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+        </x-slot:actions>
+    </x-form>
 </div>

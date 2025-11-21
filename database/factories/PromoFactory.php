@@ -25,7 +25,7 @@ class PromoFactory extends Factory
         $diskonMaksimal = $tipeDiskon === 'persen' ? fake()->numberBetween(10000, 100000) : null;
 
         $tanggalMulai = fake()->dateTimeBetween('-1 month', '+1 month');
-        $tanggalBerakhir = (clone $tanggalMulai)->modify('+' . fake()->numberBetween(7, 90) . ' days');
+        $tanggalBerakhir = (clone $tanggalMulai)->modify('+'.fake()->numberBetween(7, 90).' days');
 
         $promoNames = [
             'WELCOME10' => ['nama' => 'Diskon Pelanggan Baru', 'deskripsi' => 'Diskon untuk pelanggan baru'],

@@ -23,6 +23,17 @@
                 <x-icon name="o-cube" label="Tidak ada data jenis pakaian." />
             </x-slot:empty>
 
+            @scope('cell_icon', $item)
+                @php
+                    $icon = \App\Helper\Database\JenisPakaianHelper::getIcon($item);
+                @endphp
+                @if($icon)
+                    <x-icon name="{{ $icon }}" class="w-6 h-6" />
+                @else
+                    <x-icon name="o-square-3-stack-3d" class="w-6 h-6 opacity-30" />
+                @endif
+            @endscope
+
             @scope('cell_status', $item)
                 @if ($item->status == 'Aktif')
                     <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />

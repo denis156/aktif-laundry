@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management;
 
-use Exception;
-use Mary\Traits\Toast;
-use App\Models\Pengaturan as PengaturanModel;
 use App\Helper\Database\PengaturanHelper;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
+use Exception;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Mary\Traits\Toast;
 
 #[Title('Pengaturan')]
 #[Layout('layouts.management.app')]
@@ -24,30 +23,43 @@ class Pengaturan extends Component
 
     // * Contact Settings
     public string $whatsapp = '';
+
     public string $email = '';
 
     // * Operasional Settings
     public string $jam_buka = '';
+
     public string $jam_tutup = '';
 
     // * Format Settings
     public string $format_id_jenis_pakaian = '';
+
     public string $format_id_layanan = '';
+
     public string $format_id_pelanggan = '';
+
     public string $format_id_transaksi = '';
+
     public string $format_id_kurir = '';
+
     public string $format_id_pengiriman = '';
+
     public string $format_id_pembayaran = '';
+
     public string $format_id_promo = '';
+
     public string $format_id_referral = '';
 
     // * Pricing Settings
     public float $biaya_antar_per_km = 0;
+
     public float $min_berat_kg = 0;
+
     public float $pajak_persen = 0;
 
     // * Features Settings
     public bool $enable_referral = false;
+
     public bool $enable_promo = false;
 
     // * Original values for dirty checking
@@ -419,7 +431,7 @@ class Pengaturan extends Component
             DB::rollBack();
 
             $this->error(
-                'Gagal menyimpan pengaturan: ' . $e->getMessage(),
+                'Gagal menyimpan pengaturan: '.$e->getMessage(),
                 position: 'toast-bottom'
             );
         }
@@ -432,6 +444,7 @@ class Pengaturan extends Component
     {
         if (empty($this->originalValues)) {
             $this->warning('Tidak ada perubahan untuk direset', position: 'toast-bottom');
+
             return;
         }
 

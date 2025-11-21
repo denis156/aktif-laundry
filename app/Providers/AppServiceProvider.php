@@ -2,12 +2,12 @@
 
 namespace App\Providers;
 
-use App\Models\User;
-use App\Models\Pelanggan;
 use App\Models\Kurir;
-use App\Observers\UserObserver;
-use App\Observers\PelangganObserver;
+use App\Models\Pelanggan;
+use App\Models\User;
 use App\Observers\KurirObserver;
+use App\Observers\PelangganObserver;
+use App\Observers\UserObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider

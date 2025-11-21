@@ -2,22 +2,21 @@
 
 namespace App\Livewire\Management;
 
-use Exception;
+use App\Helper\AddressMetadata;
+use App\Helper\Database\UserHelper;
+use App\Helper\PhoneNumber;
+use App\Helper\RegionalLocation;
 use App\Models\User;
-use Mary\Traits\Toast;
-use Livewire\Component;
-use Livewire\Attributes\Rule;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
-use Livewire\WithFileUploads;
+use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use App\Helper\PhoneNumber;
-use App\Helper\AddressMetadata;
-use App\Helper\RegionalLocation;
-use App\Helper\Database\UserHelper;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Mary\Traits\Toast;
 
 #[Title('Profil Saya')]
 #[Layout('layouts.management.app')]
@@ -27,8 +26,11 @@ class Profile extends Component
 
     // Profile Information
     public string $name = '';
+
     public string $email = '';
+
     public string $no_hp = '';
+
     public string $currentAvatarUrl = '';
 
     // Avatar validation akan dihandle di save() method untuk pakai constant
@@ -36,31 +38,48 @@ class Profile extends Component
 
     // Address Information
     public string $detail_alamat = '';
+
     public string $kelurahan = '';
+
     public string $kecamatan = '';
+
     public string $kabupaten_kota = '';
+
     public string $provinsi = '';
+
     public string $alamat = ''; // Generated full address (read-only)
 
     // Options untuk select
     public array $kelurahanOptions = [];
+
     public array $kecamatanOptions = [];
+
     public array $kabupatenKotaOptions = [];
+
     public array $provinsiOptions = [];
 
     // Change Password
     public string $current_password = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     // Original data untuk compare
     public string $originalName = '';
+
     public string $originalEmail = '';
+
     public string $originalNoHp = '';
+
     public string $originalDetailAlamat = '';
+
     public string $originalKelurahan = '';
+
     public string $originalKecamatan = '';
+
     public string $originalKabupatenKota = '';
+
     public string $originalProvinsi = '';
 
     public function mount()
@@ -104,12 +123,12 @@ class Profile extends Component
         $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions();
 
         // Load kecamatan options jika kabupaten/kota sudah dipilih
-        if (!empty($this->kabupaten_kota)) {
+        if (! empty($this->kabupaten_kota)) {
             $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
         }
 
         // Load kelurahan options jika kecamatan sudah dipilih
-        if (!empty($this->kecamatan)) {
+        if (! empty($this->kecamatan)) {
             $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
         }
     }
@@ -123,7 +142,7 @@ class Profile extends Component
         $this->kelurahanOptions = [];
 
         // Load kecamatan options
-        if (!empty($this->kabupaten_kota)) {
+        if (! empty($this->kabupaten_kota)) {
             $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
         }
     }
@@ -135,7 +154,7 @@ class Profile extends Component
         $this->kelurahanOptions = [];
 
         // Load kelurahan options
-        if (!empty($this->kecamatan)) {
+        if (! empty($this->kecamatan)) {
             $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
         }
     }
@@ -156,9 +175,9 @@ class Profile extends Component
                          $this->provinsi !== $this->originalProvinsi;
 
         // Cek perubahan password
-        $passwordChanged = !empty($this->current_password) ||
-                          !empty($this->password) ||
-                          !empty($this->password_confirmation);
+        $passwordChanged = ! empty($this->current_password) ||
+                          ! empty($this->password) ||
+                          ! empty($this->password_confirmation);
 
         return $profileChanged || $addressChanged || $passwordChanged;
     }
@@ -168,9 +187,9 @@ class Profile extends Component
         // Validasi profil
         $rules = [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . Auth::id(),
+            'email' => 'required|email|unique:users,email,'.Auth::id(),
             'no_hp' => 'required|string|max:20',
-            'avatar' => 'nullable|image|max:' . UserHelper::AVATAR_MAX_SIZE_KB,
+            'avatar' => 'nullable|image|max:'.UserHelper::AVATAR_MAX_SIZE_KB,
             'detail_alamat' => 'required|string|max:500',
             'kelurahan' => 'required|string',
             'kecamatan' => 'required|string',
@@ -200,14 +219,14 @@ class Profile extends Component
         ];
 
         // Validasi password jika diisi
-        $isChangingPassword = !empty($this->current_password) || !empty($this->password) || !empty($this->password_confirmation);
+        $isChangingPassword = ! empty($this->current_password) || ! empty($this->password) || ! empty($this->password_confirmation);
 
         if ($isChangingPassword) {
             $rules['current_password'] = 'required';
-            $rules['password'] = 'required|min:' . UserHelper::PASSWORD_MIN_LENGTH . '|confirmed';
+            $rules['password'] = 'required|min:'.UserHelper::PASSWORD_MIN_LENGTH.'|confirmed';
             $messages['current_password.required'] = 'Password saat ini wajib diisi';
             $messages['password.required'] = 'Password baru wajib diisi';
-            $messages['password.min'] = 'Password baru minimal ' . UserHelper::PASSWORD_MIN_LENGTH . ' karakter';
+            $messages['password.min'] = 'Password baru minimal '.UserHelper::PASSWORD_MIN_LENGTH.' karakter';
             $messages['password.confirmed'] = 'Konfirmasi password tidak cocok';
         }
 
@@ -220,7 +239,7 @@ class Profile extends Component
 
                 // Validasi dan normalize nomor HP
                 $normalizedPhone = PhoneNumber::normalize($this->no_hp);
-                if (!$normalizedPhone) {
+                if (! $normalizedPhone) {
                     Log::warning('Profile: Invalid phone number format', [
                         'user_id' => $user->id,
                         'no_hp' => $this->no_hp,
@@ -282,7 +301,7 @@ class Profile extends Component
                         $this->password
                     );
 
-                    if (!$passwordUpdated) {
+                    if (! $passwordUpdated) {
                         throw new Exception('WRONG_PASSWORD');
                     }
                 }
@@ -310,12 +329,14 @@ class Profile extends Component
             // Handle specific error messages
             if ($e->getMessage() === 'WRONG_PASSWORD') {
                 $this->error('Password saat ini tidak sesuai!', position: 'toast-bottom');
+
                 return;
             }
 
             // Handle phone number format error
             if (str_contains($e->getMessage(), 'Format nomor HP tidak valid')) {
                 $this->error($e->getMessage(), position: 'toast-bottom');
+
                 return;
             }
 

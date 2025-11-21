@@ -45,7 +45,7 @@ class PengaturanFactory extends Factory
         if ($counter >= count($settings)) {
             // Random setting jika sudah melewati list
             return [
-                'key' => 'custom_' . fake()->word(),
+                'key' => 'custom_'.fake()->word(),
                 'value' => fake()->word(),
                 'type' => 'string',
                 'group' => 'custom',

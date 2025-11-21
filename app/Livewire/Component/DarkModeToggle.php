@@ -7,6 +7,7 @@ use Livewire\Component;
 class DarkModeToggle extends Component
 {
     public string $toggleClass = 'toggle-success';
+
     public bool $right = false;
 
     public function mount(

@@ -69,8 +69,45 @@
                     {{-- Fallback for old single-layanan transactions --}}
                     <span class="truncate">{{ $item->nama_layanan ?? '-' }}</span>
                 @else
-                    <span class="text-gray-500">-</span>
+                    <span class="text-base-content/50">-</span>
                 @endif
+            @endscope
+
+            @scope('cell_metadata_info', $item)
+                <div class="flex flex-col gap-1">
+                    @php
+                        $promoInfo = \App\Helper\Database\TransaksiHelper::getPromoInfo($item);
+                        $referralInfo = \App\Helper\Database\TransaksiHelper::getReferralInfo($item);
+                        $kurirJemput = \App\Helper\Database\TransaksiHelper::getKurirJemput($item);
+                        $kurirAntar = \App\Helper\Database\TransaksiHelper::getKurirAntar($item);
+                    @endphp
+
+                    @if($promoInfo)
+                        <x-badge value="{{ $promoInfo['kode_promo'] ?? 'Promo' }}" class="badge-primary badge-xs" />
+                    @endif
+
+                    @if($referralInfo)
+                        <x-badge value="{{ $referralInfo['kode_referral'] ?? 'Referral' }}" class="badge-secondary badge-xs" />
+                    @endif
+
+                    @if($kurirJemput)
+                        <span class="text-xs text-info flex items-center gap-1">
+                            <x-icon name="o-arrow-up-tray" class="w-3 h-3" />
+                            {{ Str::limit($kurirJemput, 10) }}
+                        </span>
+                    @endif
+
+                    @if($kurirAntar)
+                        <span class="text-xs text-success flex items-center gap-1">
+                            <x-icon name="o-arrow-down-tray" class="w-3 h-3" />
+                            {{ Str::limit($kurirAntar, 10) }}
+                        </span>
+                    @endif
+
+                    @if(!$promoInfo && !$referralInfo && !$kurirJemput && !$kurirAntar)
+                        <span class="text-xs text-base-content/40">-</span>
+                    @endif
+                </div>
             @endscope
 
             @scope('cell_total', $item)

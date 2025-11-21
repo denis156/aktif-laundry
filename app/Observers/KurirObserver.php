@@ -2,8 +2,8 @@
 
 namespace App\Observers;
 
-use App\Models\Kurir;
 use App\Helper\AddressMetadata;
+use App\Models\Kurir;
 
 class KurirObserver
 {
@@ -16,7 +16,7 @@ class KurirObserver
         // Auto-sync kolom alamat dari metadata
         $metadata = $kurir->metadata ?? [];
 
-        if (!empty($metadata['detail_alamat']) || !empty($metadata['kelurahan']) || !empty($metadata['kecamatan'])) {
+        if (! empty($metadata['detail_alamat']) || ! empty($metadata['kelurahan']) || ! empty($metadata['kecamatan'])) {
             AddressMetadata::syncAlamatColumn($kurir);
         }
     }

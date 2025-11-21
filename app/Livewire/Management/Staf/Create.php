@@ -2,18 +2,18 @@
 
 namespace App\Livewire\Management\Staf;
 
-use Exception;
-use App\Models\User;
-use Mary\Traits\Toast;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
-use Livewire\WithFileUploads;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
 use App\Helper\Database\UserHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
+use App\Models\User;
+use Exception;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Mary\Traits\Toast;
 
 #[Title('Tambah Staf')]
 #[Layout('layouts.management.app')]
@@ -22,9 +22,13 @@ class Create extends Component
     use Toast, WithFileUploads;
 
     public string $name = '';
+
     public string $email = '';
+
     public string $no_hp = '';
+
     public string $password = '';
+
     public string $password_confirmation = '';
 
     // Avatar validation akan dihandle di save() method untuk pakai constant
@@ -34,20 +38,29 @@ class Create extends Component
 
     // Address Information
     public string $detail_alamat = '';
+
     public string $kelurahan = '';
+
     public string $kecamatan = '';
+
     public string $kabupaten_kota = '';
+
     public string $provinsi = '';
 
     // Options untuk select
     public array $kelurahanOptions = [];
+
     public array $kecamatanOptions = [];
+
     public array $kabupatenKotaOptions = [];
+
     public array $provinsiOptions = [];
 
     // Metadata untuk staf
     public string $jam_masuk = '';
+
     public string $jam_keluar = '';
+
     public string $gaji = '';
 
     // Alamat lengkap (read-only, auto-generated)
@@ -72,12 +85,12 @@ class Create extends Component
         $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions();
 
         // Load kecamatan options jika kabupaten/kota sudah dipilih
-        if (!empty($this->kabupaten_kota)) {
+        if (! empty($this->kabupaten_kota)) {
             $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
         }
 
         // Load kelurahan options jika kecamatan sudah dipilih
-        if (!empty($this->kecamatan)) {
+        if (! empty($this->kecamatan)) {
             $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
         }
     }
@@ -91,7 +104,7 @@ class Create extends Component
         $this->kelurahanOptions = [];
 
         // Load kecamatan options
-        if (!empty($this->kabupaten_kota)) {
+        if (! empty($this->kabupaten_kota)) {
             $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
         }
     }
@@ -103,7 +116,7 @@ class Create extends Component
         $this->kelurahanOptions = [];
 
         // Load kelurahan options
-        if (!empty($this->kecamatan)) {
+        if (! empty($this->kecamatan)) {
             $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
         }
 
@@ -124,7 +137,7 @@ class Create extends Component
     private function updateAlamatPreview()
     {
         // Generate alamat preview dari komponen yang sudah diisi
-        if (!empty($this->detail_alamat) || !empty($this->kelurahan) || !empty($this->kecamatan)) {
+        if (! empty($this->detail_alamat) || ! empty($this->kelurahan) || ! empty($this->kecamatan)) {
             $this->alamat = RegionalLocation::formatFullAddress(
                 $this->detail_alamat,
                 $this->kelurahan,
@@ -154,8 +167,8 @@ class Create extends Component
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'no_hp' => 'required|string|max:20',
-            'password' => 'required|min:' . UserHelper::PASSWORD_MIN_LENGTH . '|confirmed',
-            'avatar' => 'nullable|image|max:' . UserHelper::AVATAR_MAX_SIZE_KB,
+            'password' => 'required|min:'.UserHelper::PASSWORD_MIN_LENGTH.'|confirmed',
+            'avatar' => 'nullable|image|max:'.UserHelper::AVATAR_MAX_SIZE_KB,
             'super_admin' => 'boolean',
             'detail_alamat' => 'required|string|max:500',
             'kelurahan' => 'required|string',
@@ -175,7 +188,7 @@ class Create extends Component
             'no_hp.required' => 'Nomor HP wajib diisi',
             'no_hp.max' => 'Nomor HP maksimal 20 karakter',
             'password.required' => 'Password wajib diisi',
-            'password.min' => 'Password minimal ' . UserHelper::PASSWORD_MIN_LENGTH . ' karakter',
+            'password.min' => 'Password minimal '.UserHelper::PASSWORD_MIN_LENGTH.' karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
             'avatar.image' => 'File harus berupa gambar',
             'avatar.max' => "Ukuran file maksimal {$avatarMaxSizeMB} MB",
@@ -196,7 +209,7 @@ class Create extends Component
             DB::transaction(function () {
                 // Validasi dan normalize nomor HP
                 $normalizedPhone = PhoneNumber::normalize($this->no_hp);
-                if (!$normalizedPhone) {
+                if (! $normalizedPhone) {
                     Log::warning('Staf Create: Invalid phone number format', [
                         'no_hp' => $this->no_hp,
                     ]);
@@ -218,13 +231,13 @@ class Create extends Component
 
                 // Prepare metadata jam kerja & gaji
                 $metadata = [];
-                if (!empty($this->jam_masuk)) {
+                if (! empty($this->jam_masuk)) {
                     $metadata['jam_masuk'] = $this->jam_masuk;
                 }
-                if (!empty($this->jam_keluar)) {
+                if (! empty($this->jam_keluar)) {
                     $metadata['jam_keluar'] = $this->jam_keluar;
                 }
-                if (!empty($this->gaji)) {
+                if (! empty($this->gaji)) {
                     $metadata['gaji'] = (int) $this->gaji;
                 }
 
@@ -245,7 +258,7 @@ class Create extends Component
                 ]);
 
                 // Update metadata jam kerja & gaji
-                if (!empty($metadata)) {
+                if (! empty($metadata)) {
                     UserHelper::mergeMetadata($user, $metadata);
                     $user->save();
                 }
@@ -256,12 +269,14 @@ class Create extends Component
             // Handle phone number format error
             if (str_contains($e->getMessage(), 'Format nomor HP tidak valid')) {
                 $this->error($e->getMessage(), position: 'toast-bottom');
+
                 return;
             }
 
             // Handle avatar upload error
             if (str_contains($e->getMessage(), 'Gagal upload avatar')) {
                 $this->error($e->getMessage(), position: 'toast-bottom');
+
                 return;
             }
 

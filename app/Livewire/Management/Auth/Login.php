@@ -1,13 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Management\Auth;
 
 use Exception;
-use Mary\Traits\Toast;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Mary\Traits\Toast;
 
 #[Title('Masuk')]
 #[Layout('layouts.management.guest')]
@@ -16,10 +19,12 @@ class Login extends Component
     use Toast;
 
     public string $email = '';
+
     public string $password = '';
+
     public bool $remember = false;
 
-    public function login()
+    public function login(): void
     {
         // Validasi
         $this->validate([
@@ -37,20 +42,35 @@ class Login extends Component
                 // Regenerate session to prevent session fixation
                 request()->session()->regenerate();
 
-                $this->success('Login berhasil! Selamat datang ' . Auth::user()->name, position: 'toast-bottom');
+                Log::info('User login successful', [
+                    'user_id' => Auth::id(),
+                    'email' => $this->email,
+                ]);
+
+                $this->success('Login berhasil! Selamat datang '.Auth::user()->name, position: 'toast-bottom');
 
                 // Redirect ke dashboard
-                return $this->redirect(route('dashboard'), navigate: false);
+                $this->redirect(route('dashboard'), navigate: false);
+
+                return;
             } else {
+                Log::warning('Login attempt failed', [
+                    'email' => $this->email,
+                ]);
                 $this->error('Email atau password salah!', position: 'toast-bottom');
             }
 
         } catch (Exception $e) {
-            $this->error('Terjadi kesalahan: ' . $e->getMessage(), position: 'toast-bottom');
+            Log::error('Login error occurred', [
+                'email' => $this->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->error('Terjadi kesalahan sistem. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
-    public function render()
+    public function render(): mixed
     {
         return view('livewire.management.auth.login');
     }

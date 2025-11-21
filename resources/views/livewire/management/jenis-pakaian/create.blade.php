@@ -1,14 +1,17 @@
 <div>
     <x-header title="Tambah Jenis Pakaian Baru" separator progress-indicator>
-        <x-slot:actions>
-            <x-button label="Kembali" link="{{ route('jenis-pakaian.index') }}" wire:navigate.hover icon="o-arrow-left" class="btn-outline" />
-        </x-slot:actions>
+        <x-slot:subtitle>
+            Tambahkan jenis pakaian baru ke sistem
+        </x-slot:subtitle>
     </x-header>
 
-    <x-card class="max-w-4xl mx-auto shadow-sm">
-        <x-form wire:submit="save">
-            <div class="space-y-5">
-                <!-- Informasi Dasar -->
+    <x-form wire:submit="save" no-separator>
+        {{-- Informasi Dasar section --}}
+        <div class="lg:grid grid-cols-5">
+            <div class="col-span-2">
+                <x-header title="Informasi Dasar" subtitle="Data identitas jenis pakaian" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-input
                         label="Kode Jenis"
@@ -28,7 +31,6 @@
                     />
                 </div>
 
-                <!-- Keterangan -->
                 <x-textarea
                     label="Keterangan"
                     wire:model="formData.keterangan"
@@ -37,7 +39,6 @@
                     hint="Opsional"
                 />
 
-                <!-- Status -->
                 <x-select
                     label="Status"
                     wire:model="formData.status"
@@ -50,12 +51,36 @@
                     option-label="name"
                     required
                 />
-            </div>
+            </x-card>
+        </div>
 
-            <x-slot:actions>
-                <x-button label="Batal" link="{{ route('jenis-pakaian.index') }}" wire:navigate.hover class="btn-ghost" />
-                <x-button label="Simpan" type="submit" spinner="save" class="btn-primary" icon="o-check" />
-            </x-slot:actions>
-        </x-form>
-    </x-card>
+        {{-- Informasi Tambahan section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Informasi Tambahan" subtitle="Metadata jenis pakaian (Opsional)" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <livewire:management.component.icon-picker
+                    :initialValue="$icon"
+                    eventName="iconSelected"
+                    label="Icon"
+                    placeholder="Cari icon..."
+                    hint="Ketik minimal 2 huruf untuk mencari icon" />
+
+                <x-textarea
+                    label="Penanganan Khusus"
+                    wire:model="penangananKhusus"
+                    placeholder="Contoh: Harus dicuci terpisah, gunakan pewangi khusus..."
+                    rows="3"
+                    hint="Opsional - Instruksi khusus untuk pakaian putih atau baju spesial"
+                    icon="o-information-circle"
+                />
+            </x-card>
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Batal" link="{{ route('jenis-pakaian.index') }}" wire:navigate />
+            <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+        </x-slot:actions>
+    </x-form>
 </div>

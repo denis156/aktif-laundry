@@ -107,7 +107,7 @@ class LayananFactory extends Factory
         $item = $layanan[$index];
 
         return [
-            'kode_layanan' => 'LYN' . str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_layanan' => 'LYN'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
             'nama_layanan' => $item['nama'],
             'tipe_layanan' => $item['tipe'],
             'harga_per_kg' => $item['harga_kg'],

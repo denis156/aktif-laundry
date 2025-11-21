@@ -18,8 +18,11 @@ use Illuminate\Support\Facades\Log;
 class PembayaranHelper
 {
     public const META_BANK_PENGIRIM = 'bank_pengirim';
+
     public const META_REKENING_PENGIRIM = 'rekening_pengirim';
+
     public const META_NAMA_PENGIRIM = 'nama_pengirim';
+
     public const META_WAKTU_TRANSFER = 'waktu_transfer';
 
     // * Ambil nilai dari metadata

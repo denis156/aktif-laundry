@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Helper\Database;
 
-use App\Models\User;
 use App\Helper\AddressMetadata;
+use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -28,6 +28,7 @@ class UserHelper
 {
     // * Password validation constants
     public const PASSWORD_MIN_LENGTH = 8;
+
     public const PASSWORD_MAX_LENGTH = 255;
 
     // * Avatar upload constants (in KB)
@@ -223,11 +224,12 @@ class UserHelper
     {
         try {
             // Validasi current password
-            if (!Hash::check($currentPassword, $user->password)) {
+            if (! Hash::check($currentPassword, $user->password)) {
                 Log::warning('UserHelper: Wrong current password attempt', [
                     'user_id' => $user->id,
                     'email' => $user->email,
                 ]);
+
                 return false;
             }
 

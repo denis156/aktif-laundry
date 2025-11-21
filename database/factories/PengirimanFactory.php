@@ -29,18 +29,18 @@ class PengirimanFactory extends Factory
         $status = fake()->randomElement(['Dijadwalkan', 'Dalam Perjalanan', 'Selesai', 'Batal']);
 
         $waktuMulai = $status !== 'Dijadwalkan' ? $jadwalWaktu : null;
-        $waktuSelesai = $status === 'Selesai' ? (clone $waktuMulai)->modify('+' . fake()->numberBetween(10, 60) . ' minutes') : null;
+        $waktuSelesai = $status === 'Selesai' ? (clone $waktuMulai)->modify('+'.fake()->numberBetween(10, 60).' minutes') : null;
 
-        $fotoBukti = $status === 'Selesai' ? 'bukti_' . fake()->uuid() . '.jpg' : null;
+        $fotoBukti = $status === 'Selesai' ? 'bukti_'.fake()->uuid().'.jpg' : null;
 
         return [
-            'kode_pengiriman' => 'PGR' . str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_pengiriman' => 'PGR'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
             'transaksi_id' => $transaksi ? $transaksi->id : Transaksi::factory(),
             'kurir_id' => Kurir::inRandomOrder()->first()?->id ?? Kurir::factory(),
             'tipe' => $tipe,
             'alamat_tujuan' => fake()->address(),
             'nama_penerima' => fake()->name(),
-            'no_hp_penerima' => '8' . fake()->numerify('##########'),
+            'no_hp_penerima' => '8'.fake()->numerify('##########'),
             'latitude' => fake()->latitude(-7.3, -7.0),
             'longitude' => fake()->longitude(107.5, 107.8),
             'jadwal_waktu' => $jadwalWaktu,

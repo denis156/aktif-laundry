@@ -24,18 +24,27 @@
                 <!-- Header Layanan -->
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-3">
-                        <x-icon name="o-sparkles" class="w-5 h-5 text-primary" />
+                        @php
+                            $layananIcon = null;
+                            $layananModel = null;
+                            if (!empty($item['layanan_id'])) {
+                                $layananModel = \App\Models\Layanan::find($item['layanan_id']);
+                                if ($layananModel) {
+                                    $layananIcon = \App\Helper\Database\LayananHelper::getIcon($layananModel);
+                                }
+                            }
+                        @endphp
+                        @if($layananIcon)
+                            <x-icon name="{{ $layananIcon }}" class="w-5 h-5 text-primary" />
+                        @else
+                            <x-icon name="o-sparkles" class="w-5 h-5 text-primary" />
+                        @endif
                         <span class="font-bold">Layanan {{ $index + 1 }}</span>
-                        @if(!empty($item['layanan_id']))
-                            @php
-                                $layanan = \App\Models\Layanan::find($item['layanan_id']);
-                            @endphp
-                            @if($layanan)
-                                @if($layanan->tipe_layanan === 'per_kg')
-                                    <span class="badge badge-info badge-sm">Per Kg</span>
-                                @elseif($layanan->tipe_layanan === 'per_satuan')
-                                    <span class="badge badge-warning badge-sm">Per Satuan</span>
-                                @endif
+                        @if($layananModel)
+                            @if($layananModel->tipe_layanan === 'per_kg')
+                                <span class="badge badge-info badge-sm">Per Kg</span>
+                            @elseif($layananModel->tipe_layanan === 'per_satuan')
+                                <span class="badge badge-warning badge-sm">Per Satuan</span>
                             @endif
                         @endif
                     </div>
@@ -55,16 +64,29 @@
                     <label class="label">
                         <span class="label-text font-medium">Pilih Layanan & Jumlah</span>
                     </label>
-                    <div class="join w-full">
-                        <select
-                            wire:model.live="items.{{ $index }}.layanan_id"
-                            class="select select-bordered join-item flex-1"
-                        >
-                            <option value="">-- Pilih Layanan --</option>
-                            @foreach($layananOptions as $option)
-                                <option value="{{ $option['id'] }}">{{ $option['name'] }}</option>
-                            @endforeach
-                        </select>
+
+                    @php
+                        $selectedLayanan = !empty($item['layanan_id']) ? collect($layananOptions)->firstWhere('id', $item['layanan_id']) : null;
+                    @endphp
+
+                    <div class="flex items-center gap-2">
+                        {{-- Icon Layanan --}}
+                        @if($selectedLayanan && !empty($selectedLayanan['icon']))
+                            <x-icon name="{{ $selectedLayanan['icon'] }}" class="w-5 h-5 shrink-0" />
+                        @else
+                            <x-icon name="o-sparkles" class="w-5 h-5 shrink-0 opacity-30" />
+                        @endif
+
+                        <div class="join flex-1">
+                            <select
+                                wire:model.live="items.{{ $index }}.layanan_id"
+                                class="select select-bordered join-item flex-1"
+                            >
+                                <option value="">-- Pilih Layanan --</option>
+                                @foreach($layananOptions as $option)
+                                    <option value="{{ $option['id'] }}">{{ $option['name'] }}</option>
+                                @endforeach
+                            </select>
 
                         <!-- Dynamic input based on layanan type -->
                         @if(!empty($item['layanan_id']))
@@ -96,6 +118,7 @@
                                 </div>
                             @endif
                         @endif
+                        </div>
                     </div>
                 </div>
 
@@ -113,32 +136,42 @@
                                 <label class="block text-sm font-medium mb-2">Jenis Pakaian & Jumlah</label>
                                 <div class="space-y-2">
                                     @foreach($item['jenis_pakaian'] as $idx => $jp)
-                                        <div class="join w-full">
-                                            <select
-                                                wire:model.live="items.{{ $index }}.jenis_pakaian.{{ $idx }}.jenis_id"
-                                                class="select select-bordered join-item flex-1"
-                                            >
-                                                <option value="">Pilih Jenis</option>
-                                                @foreach($jenisPakaianOptions as $jpOption)
-                                                    <option value="{{ $jpOption['id'] }}">{{ $jpOption['name'] }}</option>
-                                                @endforeach
-                                            </select>
-                                            <input
-                                                type="number"
-                                                wire:model.live="items.{{ $index }}.jenis_pakaian.{{ $idx }}.jumlah"
-                                                class="input input-bordered join-item w-20"
-                                                placeholder="Qty"
-                                                min="1"
-                                            />
-                                            @if(count($item['jenis_pakaian']) > 1)
-                                                <button
-                                                    type="button"
-                                                    wire:click="removeJenisPakaian({{ $index }}, {{ $idx }})"
-                                                    class="btn btn-error join-item"
-                                                >
-                                                    <x-icon name="o-trash" class="w-4 h-4" />
-                                                </button>
+                                        @php
+                                            $selectedJp = !empty($jp['jenis_id']) ? collect($jenisPakaianOptions)->firstWhere('id', $jp['jenis_id']) : null;
+                                        @endphp
+                                        <div class="flex items-center gap-2">
+                                            @if($selectedJp && !empty($selectedJp['icon']))
+                                                <x-icon name="{{ $selectedJp['icon'] }}" class="w-5 h-5 shrink-0" />
+                                            @else
+                                                <x-icon name="o-square-3-stack-3d" class="w-5 h-5 shrink-0 opacity-30" />
                                             @endif
+                                            <div class="join flex-1">
+                                                <select
+                                                    wire:model.live="items.{{ $index }}.jenis_pakaian.{{ $idx }}.jenis_id"
+                                                    class="select select-bordered join-item flex-1"
+                                                >
+                                                    <option value="">Pilih Jenis</option>
+                                                    @foreach($jenisPakaianOptions as $jpOption)
+                                                        <option value="{{ $jpOption['id'] }}">{{ $jpOption['name'] }}</option>
+                                                    @endforeach
+                                                </select>
+                                                <input
+                                                    type="number"
+                                                    wire:model.live="items.{{ $index }}.jenis_pakaian.{{ $idx }}.jumlah"
+                                                    class="input input-bordered join-item w-20"
+                                                    placeholder="Qty"
+                                                    min="1"
+                                                />
+                                                @if(count($item['jenis_pakaian']) > 1)
+                                                    <button
+                                                        type="button"
+                                                        wire:click="removeJenisPakaian({{ $index }}, {{ $idx }})"
+                                                        class="btn btn-error join-item"
+                                                    >
+                                                        <x-icon name="o-trash" class="w-4 h-4" />
+                                                    </button>
+                                                @endif
+                                            </div>
                                         </div>
                                     @endforeach
                                 </div>

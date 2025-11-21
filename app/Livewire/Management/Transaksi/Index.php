@@ -1,17 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Management\Transaksi;
 
-use Exception;
-use App\Models\User;
-use Mary\Traits\Toast;
-use Livewire\Component;
-use App\Models\Transaksi;
-use Livewire\WithPagination;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
 use App\Exports\TransaksiExport;
+use App\Models\Transaksi;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithPagination;
 use Maatwebsite\Excel\Facades\Excel;
+use Mary\Traits\Toast;
 
 #[Title('Daftar Transaksi')]
 #[Layout('layouts.management.app')]
@@ -20,16 +22,27 @@ class Index extends Component
     use Toast, WithPagination;
 
     public string $search = '';
+
     public bool $drawer = false;
+
     public bool $deleteModal = false;
+
     public int $deleteId = 0;
+
     public string $deleteName = '';
+
     public array $sortBy = ['column' => 'kode_transaksi', 'direction' => 'desc'];
+
     public string $statusFilter = '';
+
     public string $metodePembayaranFilter = '';
+
     public string $tanggalMulai = '';
+
     public string $tanggalAkhir = '';
+
     public int $perPage = 10;
+
     public array $selected = [];
 
     public function clear(): void
@@ -61,20 +74,31 @@ class Index extends Component
             $this->deleteModal = false;
             $this->reset(['deleteId', 'deleteName']);
         } catch (Exception $e) {
-            $this->error('Gagal menghapus transaksi: ' . $e->getMessage(), position: 'toast-bottom');
+            Log::error('Transaksi Index: Failed to delete transaksi', [
+                'transaksi_id' => $this->deleteId,
+                'kode_transaksi' => $this->deleteName,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->error('Gagal menghapus transaksi. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
     public function exportExcel()
     {
         try {
-            $filename = 'transaksi_' . now()->format('Y-m-d_His') . '.xlsx';
+            $filename = 'transaksi_'.now()->format('Y-m-d_His').'.xlsx';
 
-            $this->info('Mengunduh ' . count($this->selected) . ' transaksi...', position: 'toast-bottom');
+            $this->info('Mengunduh '.count($this->selected).' transaksi...', position: 'toast-bottom');
 
             return Excel::download(new TransaksiExport($this->selected), $filename);
         } catch (Exception $e) {
-            $this->error('Gagal export Excel: ' . $e->getMessage(), position: 'toast-bottom');
+            Log::error('Transaksi Index: Failed to export Excel', [
+                'selected_count' => count($this->selected),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->error('Gagal export Excel. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
@@ -86,6 +110,7 @@ class Index extends Component
             ['key' => 'tanggal_masuk', 'label' => 'Tgl Masuk', 'class' => 'w-32'],
             ['key' => 'nama_pelanggan', 'label' => 'Pelanggan', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'layanan_info', 'label' => 'Layanan', 'class' => 'w-40', 'sortable' => false],
+            ['key' => 'metadata_info', 'label' => 'Promo/Kurir', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'total', 'label' => 'Total', 'class' => 'w-28'],
             ['key' => 'metode_pembayaran', 'label' => 'Pembayaran', 'class' => 'w-24', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
@@ -127,7 +152,7 @@ class Index extends Component
     {
         return view('livewire.management.transaksi.index', [
             'transaksi' => $this->transaksi(),
-            'headers' => $this->headers()
+            'headers' => $this->headers(),
         ]);
     }
 }

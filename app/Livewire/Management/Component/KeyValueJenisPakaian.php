@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Component;
 
-use Exception;
-use Livewire\Component;
+use App\Helper\Database\JenisPakaianHelper;
 use App\Models\JenisPakaian;
+use Exception;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Livewire\Component;
 
 class KeyValueJenisPakaian extends Component
 {
     public array $items = [];
+
     public Collection $jenisPakaianOptions;
+
     public string $outputString = '';
 
     public function mount(string $value = ''): void
@@ -21,7 +24,7 @@ class KeyValueJenisPakaian extends Component
         $this->loadJenisPakaianOptions();
 
         // Parse initial value jika ada (format: "Kemeja (3), Celana (2)")
-        if (!empty($value)) {
+        if (! empty($value)) {
             $this->parseInitialValue($value);
         } else {
             // Default: 1 baris kosong
@@ -35,11 +38,12 @@ class KeyValueJenisPakaian extends Component
             // Load dari database dengan query builder approach yang lebih efisien
             $this->jenisPakaianOptions = JenisPakaian::where('status', 'Aktif')
                 ->orderBy('nama_jenis')
-                ->get(['id', 'kode_jenis', 'nama_jenis'])
+                ->get(['id', 'kode_jenis', 'nama_jenis', 'metadata'])
                 ->map(fn ($item) => [
                     'id' => $item->id,
                     'kode' => $item->kode_jenis,
                     'name' => $item->nama_jenis,
+                    'icon' => JenisPakaianHelper::getIcon($item),
                 ]);
         } catch (Exception $e) {
             Log::error('Failed to load jenis pakaian options', [
@@ -55,7 +59,7 @@ class KeyValueJenisPakaian extends Component
         // Try to decode JSON first
         $jsonData = json_decode($value, true);
 
-        if (is_array($jsonData) && !empty($jsonData)) {
+        if (is_array($jsonData) && ! empty($jsonData)) {
             // Parse dari JSON format: [{"nama": "Kemeja", "jumlah": 3}]
             foreach ($jsonData as $item) {
                 if (isset($item['nama'], $item['jumlah'])) {
@@ -139,7 +143,7 @@ class KeyValueJenisPakaian extends Component
         // Filter items yang sudah terisi menggunakan arrow function
         $validItems = array_filter(
             $this->items,
-            fn (array $item) => !empty($item['jenis_id']) && !empty($item['nama']) && $item['jumlah'] > 0
+            fn (array $item) => ! empty($item['jenis_id']) && ! empty($item['nama']) && $item['jumlah'] > 0
         );
 
         // Format JSON: [{"nama": "Kemeja", "jumlah": 3}, {"nama": "Celana", "jumlah": 2}]

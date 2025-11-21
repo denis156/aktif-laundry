@@ -90,9 +90,9 @@ class KurirFactory extends Factory
         $selected = fake()->randomElement($jenisKendaraan);
 
         return [
-            'kode_kurir' => 'KUR' . str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_kurir' => 'KUR'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
             'nama' => fake()->name(),
-            'no_hp' => '8' . fake()->numerify('##########'),
+            'no_hp' => '8'.fake()->numerify('##########'),
             'email' => fake()->unique()->safeEmail(),
             'alamat' => $alamatLengkap, // Alamat lengkap (auto-generated dari metadata)
             'no_kendaraan' => fake()->regexify('[A-Z]{1,2} [0-9]{1,4} [A-Z]{1,3}'),
@@ -113,7 +113,7 @@ class KurirFactory extends Factory
                 ],
                 'emergency_contact' => [
                     'nama' => fake()->name(),
-                    'no_hp' => '8' . fake()->numerify('##########'),
+                    'no_hp' => '8'.fake()->numerify('##########'),
                     'hubungan' => fake()->randomElement(['Orang Tua', 'Saudara', 'Teman']),
                 ],
             ]),
@@ -123,8 +123,7 @@ class KurirFactory extends Factory
     /**
      * Indicate that the courier should have a custom password.
      *
-     * @param string $password The password to set (will be hashed)
-     * @return static
+     * @param  string  $password  The password to set (will be hashed)
      */
     public function withPassword(string $password): static
     {
@@ -136,8 +135,7 @@ class KurirFactory extends Factory
     /**
      * Indicate that the courier should have a device token for push notifications.
      *
-     * @param string|null $token The device token, or null to generate a fake one
-     * @return static
+     * @param  string|null  $token  The device token, or null to generate a fake one
      */
     public function withDeviceToken(?string $token = null): static
     {
@@ -148,8 +146,6 @@ class KurirFactory extends Factory
 
     /**
      * Indicate that the courier is currently inactive.
-     *
-     * @return static
      */
     public function inactive(): static
     {
@@ -160,8 +156,6 @@ class KurirFactory extends Factory
 
     /**
      * Indicate that the courier has extensive delivery experience.
-     *
-     * @return static
      */
     public function experienced(): static
     {

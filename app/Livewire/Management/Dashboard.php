@@ -4,13 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management;
 
-use Carbon\Carbon;
-use Mary\Traits\Toast;
-use Livewire\Component;
+use App\Helper\Dashboard\ChartDataHelper;
 use App\Models\Transaksi;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Mary\Traits\Toast;
 
 #[Title('Dashboard')]
 #[Layout('layouts.management.app')]
@@ -19,7 +20,9 @@ class Dashboard extends Component
     use Toast;
 
     public string $currentDateTime = '';
+
     public bool $isLineChart = true;
+
     public bool $isLineChartMonthly = false;
 
     // Chart data - Line/Bar Chart
@@ -51,8 +54,8 @@ class Dashboard extends Component
                     'borderColor' => 'rgb(168, 85, 247)',
                     'borderWidth' => 2,
                     'yAxisID' => 'y1',
-                ]
-            ]
+                ],
+            ],
         ],
         'options' => [
             'responsive' => true,
@@ -72,8 +75,8 @@ class Dashboard extends Component
                     'beginAtZero' => true,
                     'title' => [
                         'display' => true,
-                        'text' => 'Jumlah Transaksi'
-                    ]
+                        'text' => 'Jumlah Transaksi',
+                    ],
                 ],
                 'y1' => [
                     'type' => 'linear',
@@ -82,14 +85,14 @@ class Dashboard extends Component
                     'beginAtZero' => true,
                     'title' => [
                         'display' => true,
-                        'text' => 'Berat (Kg) / Item'
+                        'text' => 'Berat (Kg) / Item',
                     ],
                     'grid' => [
                         'drawOnChartArea' => false,
                     ],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ];
 
     // Chart data - Donut Chart (Status)
@@ -107,8 +110,8 @@ class Dashboard extends Component
                         'rgba(34, 197, 94, 0.8)',   // Success - Selesai
                     ],
                     'borderWidth' => 2,
-                ]
-            ]
+                ],
+            ],
         ],
         'options' => [
             'responsive' => true,
@@ -121,9 +124,9 @@ class Dashboard extends Component
                     'labels' => [
                         'padding' => 10,
                         'font' => [
-                            'size' => 11
-                        ]
-                    ]
+                            'size' => 11,
+                        ],
+                    ],
                 ],
             ],
             'layout' => [
@@ -131,10 +134,10 @@ class Dashboard extends Component
                     'top' => 15,
                     'bottom' => 10,
                     'left' => 25,
-                    'right' => 25
-                ]
-            ]
-        ]
+                    'right' => 25,
+                ],
+            ],
+        ],
     ];
 
     // Chart data - Monthly Chart (12 months)
@@ -166,8 +169,8 @@ class Dashboard extends Component
                     'borderColor' => 'rgb(168, 85, 247)',
                     'borderWidth' => 2,
                     'yAxisID' => 'y1',
-                ]
-            ]
+                ],
+            ],
         ],
         'options' => [
             'responsive' => true,
@@ -187,8 +190,8 @@ class Dashboard extends Component
                     'beginAtZero' => true,
                     'title' => [
                         'display' => true,
-                        'text' => 'Jumlah Transaksi'
-                    ]
+                        'text' => 'Jumlah Transaksi',
+                    ],
                 ],
                 'y1' => [
                     'type' => 'linear',
@@ -197,17 +200,17 @@ class Dashboard extends Component
                     'beginAtZero' => true,
                     'title' => [
                         'display' => true,
-                        'text' => 'Berat (Kg) / Item'
+                        'text' => 'Berat (Kg) / Item',
                     ],
                     'grid' => [
                         'drawOnChartArea' => false,
                     ],
-                ]
-            ]
-        ]
+                ],
+            ],
+        ],
     ];
 
-    public function mount()
+    public function mount(): void
     {
         $this->updateDateTime();
         $this->loadChartData();
@@ -215,50 +218,23 @@ class Dashboard extends Component
         $this->loadMonthlyChart();
     }
 
-    public function updateDateTime()
+    public function updateDateTime(): void
     {
         $this->currentDateTime = now()->isoFormat('dddd, D MMMM YYYY - HH:mm');
     }
 
-    public function loadChartData()
+    public function loadChartData(): void
     {
-        // Get last 7 days transactions
-        $last7Days = collect();
-        for ($i = 6; $i >= 0; $i--) {
-            $date = now()->subDays($i);
+        // Use ChartDataHelper untuk get data 7 hari terakhir
+        $data = ChartDataHelper::getLast7DaysData();
 
-            // Count transaksi
-            $count = Transaksi::whereDate('tanggal_masuk', $date)->count();
-
-            // Sum total berat from transaksi_layanan (per kg)
-            $totalBerat = DB::table('transaksi_layanan')
-                ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
-                ->whereDate('transaksi.tanggal_masuk', $date)
-                ->whereNull('transaksi_layanan.deleted_at')
-                ->sum('transaksi_layanan.berat_kg');
-
-            // Sum total item satuan from transaksi_layanan (per satuan)
-            $totalItemSatuan = DB::table('transaksi_layanan')
-                ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
-                ->whereDate('transaksi.tanggal_masuk', $date)
-                ->whereNull('transaksi_layanan.deleted_at')
-                ->sum('transaksi_layanan.jumlah_satuan');
-
-            $last7Days->push([
-                'label' => $date->locale('id')->isoFormat('ddd, D MMM'),
-                'count' => $count,
-                'berat' => round((float) $totalBerat, 1),
-                'item' => (int) $totalItemSatuan,
-            ]);
-        }
-
-        $this->transaksiChart['data']['labels'] = $last7Days->pluck('label')->toArray();
-        $this->transaksiChart['data']['datasets'][0]['data'] = $last7Days->pluck('count')->toArray();
-        $this->transaksiChart['data']['datasets'][1]['data'] = $last7Days->pluck('berat')->toArray();
-        $this->transaksiChart['data']['datasets'][2]['data'] = $last7Days->pluck('item')->toArray();
+        $this->transaksiChart['data']['labels'] = $data->pluck('label')->toArray();
+        $this->transaksiChart['data']['datasets'][0]['data'] = $data->pluck('count')->toArray();
+        $this->transaksiChart['data']['datasets'][1]['data'] = $data->pluck('berat')->toArray();
+        $this->transaksiChart['data']['datasets'][2]['data'] = $data->pluck('item')->toArray();
     }
 
-    public function loadStatusChart()
+    public function loadStatusChart(): void
     {
         // Get count by status (only Menunggu, Proses, Selesai)
         $statuses = ['Menunggu', 'Proses', 'Selesai'];
@@ -271,61 +247,30 @@ class Dashboard extends Component
         $this->statusChart['data']['datasets'][0]['data'] = $statusCounts;
     }
 
-    public function updatedIsLineChart()
+    public function updatedIsLineChart(): void
     {
         // Update chart type when toggle changes
         $this->transaksiChart['type'] = $this->isLineChart ? 'line' : 'bar';
     }
 
-    public function updatedIsLineChartMonthly()
+    public function updatedIsLineChartMonthly(): void
     {
         // Update monthly chart type when toggle changes
         $this->monthlyChart['type'] = $this->isLineChartMonthly ? 'line' : 'bar';
     }
 
-    public function loadMonthlyChart()
+    public function loadMonthlyChart(): void
     {
-        // Get last 12 months transactions (including current month)
-        $last12Months = collect();
-        for ($i = 11; $i >= 0; $i--) {
-            $date = now()->subMonths($i);
+        // Use ChartDataHelper untuk get data 12 bulan terakhir
+        $data = ChartDataHelper::getLast12MonthsData();
 
-            // Count transaksi
-            $count = Transaksi::whereMonth('tanggal_masuk', $date->month)
-                ->whereYear('tanggal_masuk', $date->year)
-                ->count();
-
-            // Sum total berat from transaksi_layanan (per kg)
-            $totalBerat = DB::table('transaksi_layanan')
-                ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
-                ->whereMonth('transaksi.tanggal_masuk', $date->month)
-                ->whereYear('transaksi.tanggal_masuk', $date->year)
-                ->whereNull('transaksi_layanan.deleted_at')
-                ->sum('transaksi_layanan.berat_kg');
-
-            // Sum total item satuan from transaksi_layanan (per satuan)
-            $totalItemSatuan = DB::table('transaksi_layanan')
-                ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
-                ->whereMonth('transaksi.tanggal_masuk', $date->month)
-                ->whereYear('transaksi.tanggal_masuk', $date->year)
-                ->whereNull('transaksi_layanan.deleted_at')
-                ->sum('transaksi_layanan.jumlah_satuan');
-
-            $last12Months->push([
-                'label' => $date->locale('id')->isoFormat('MMM YYYY'),
-                'count' => $count,
-                'berat' => round((float) $totalBerat, 1),
-                'item' => (int) $totalItemSatuan,
-            ]);
-        }
-
-        $this->monthlyChart['data']['labels'] = $last12Months->pluck('label')->toArray();
-        $this->monthlyChart['data']['datasets'][0]['data'] = $last12Months->pluck('count')->toArray();
-        $this->monthlyChart['data']['datasets'][1]['data'] = $last12Months->pluck('berat')->toArray();
-        $this->monthlyChart['data']['datasets'][2]['data'] = $last12Months->pluck('item')->toArray();
+        $this->monthlyChart['data']['labels'] = $data->pluck('label')->toArray();
+        $this->monthlyChart['data']['datasets'][0]['data'] = $data->pluck('count')->toArray();
+        $this->monthlyChart['data']['datasets'][1]['data'] = $data->pluck('berat')->toArray();
+        $this->monthlyChart['data']['datasets'][2]['data'] = $data->pluck('item')->toArray();
     }
 
-    public function refreshDashboard()
+    public function refreshDashboard(): void
     {
         $this->updateDateTime();
         $this->loadChartData();

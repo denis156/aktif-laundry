@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Kurir\Component;
 
-use Livewire\Component;
 use Illuminate\Support\Facades\Route;
+use Livewire\Component;
 
 class BottomNav extends Component
 {
@@ -81,7 +81,7 @@ class BottomNav extends Component
         $baseClasses = '';
 
         if ($this->isActive($routeName)) {
-            return $baseClasses . ' dock-active';
+            return $baseClasses.' dock-active';
         }
 
         return $baseClasses;

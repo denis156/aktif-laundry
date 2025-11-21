@@ -2,8 +2,8 @@
 
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
@@ -46,7 +46,7 @@ return new class extends Migration
 
         foreach ($layananToAdd as $lay) {
             $exists = DB::table('layanan')->where('id', $lay['id'])->exists();
-            if (!$exists) {
+            if (! $exists) {
                 DB::table('layanan')->insert([
                     'id' => $lay['id'],
                     'kode_layanan' => $lay['kode'],
@@ -57,7 +57,7 @@ return new class extends Migration
                     'harga_per_satuan' => $lay['harga'],
                     'durasi_jam' => 48,
                     'status' => 'Aktif',
-                    'deskripsi' => 'Cuci ' . strtolower($lay['nama']) . ' per lembar',
+                    'deskripsi' => 'Cuci '.strtolower($lay['nama']).' per lembar',
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
@@ -108,8 +108,9 @@ return new class extends Migration
                 ->where('id', $transaksi->layanan_id)
                 ->first();
 
-            if (!$layanan) {
+            if (! $layanan) {
                 echo "⚠️  Skipping transaksi {$transaksi->id} - layanan not found\n";
+
                 continue;
             }
 
@@ -124,20 +125,20 @@ return new class extends Migration
             ];
 
             // Tentukan apakah per_kg atau per_satuan
-            if ($layanan->tipe_layanan === 'per_kg' || !empty($transaksi->berat_kg)) {
+            if ($layanan->tipe_layanan === 'per_kg' || ! empty($transaksi->berat_kg)) {
                 // Layanan per kg
                 $transaksiLayananData['berat_kg'] = $transaksi->berat_kg ?? 0;
                 $transaksiLayananData['harga_per_kg'] = $transaksi->harga_per_kg ?? $layanan->harga_per_kg ?? 0;
 
                 // Decode dan encode ulang jenis_pakaian untuk fix double escape
                 // DAN pisahkan Bed Cover, Selimut, Seprai jadi layanan terpisah
-                if (!empty($transaksi->jenis_pakaian)) {
+                if (! empty($transaksi->jenis_pakaian)) {
                     $decoded = null;
 
                     // Decode JSON
                     if (is_string($transaksi->jenis_pakaian)) {
                         $decoded = json_decode($transaksi->jenis_pakaian, true);
-                        if (!is_array($decoded)) {
+                        if (! is_array($decoded)) {
                             // Try double decode
                             $decoded = json_decode(json_decode($transaksi->jenis_pakaian, true), true);
                         }
@@ -157,14 +158,14 @@ return new class extends Migration
                                 $separateLayananItems[] = [
                                     'layanan_id' => $itemToLayananMap[$namaItem],
                                     'jumlah' => (int) ($jp['jumlah'] ?? 1),
-                                    'nama' => $namaItem
+                                    'nama' => $namaItem,
                                 ];
                             } else {
                                 // Ini jenis pakaian normal
-                                if (!isset($jp['jenis_id']) && !empty($namaItem)) {
+                                if (! isset($jp['jenis_id']) && ! empty($namaItem)) {
                                     // Cari jenis_id berdasarkan nama
                                     $jenisPakaian = DB::table('jenis_pakaian')
-                                        ->where('nama_jenis', 'LIKE', '%' . $namaItem . '%')
+                                        ->where('nama_jenis', 'LIKE', '%'.$namaItem.'%')
                                         ->first();
                                     if ($jenisPakaian) {
                                         $jp['jenis_id'] = (string) $jenisPakaian->id;
@@ -177,17 +178,17 @@ return new class extends Migration
                         }
 
                         // Set jenis_pakaian hanya untuk yang normal
-                        if (!empty($normalJenisPakaian)) {
+                        if (! empty($normalJenisPakaian)) {
                             $transaksiLayananData['jenis_pakaian'] = json_encode($normalJenisPakaian);
                         }
 
                         // Simpan info separate layanan untuk diproses nanti
-                        if (!empty($separateLayananItems)) {
+                        if (! empty($separateLayananItems)) {
                             $transaksi->_separateLayananItems = $separateLayananItems;
                         }
 
                         // SKIP layanan per kg jika SEMUA item sudah jadi layanan terpisah
-                        if (empty($normalJenisPakaian) && !empty($separateLayananItems)) {
+                        if (empty($normalJenisPakaian) && ! empty($separateLayananItems)) {
                             $transaksi->_skipMainLayanan = true;
                             echo "  - Skipping main layanan for transaksi {$transaksi->id} (all items converted to separate layanan)\n";
                         }
@@ -214,12 +215,12 @@ return new class extends Migration
             }
 
             // Insert ke transaksi_layanan (layanan utama) - skip jika semua item jadi layanan terpisah
-            if (!isset($transaksi->_skipMainLayanan) || !$transaksi->_skipMainLayanan) {
+            if (! isset($transaksi->_skipMainLayanan) || ! $transaksi->_skipMainLayanan) {
                 DB::table('transaksi_layanan')->insert($transaksiLayananData);
             }
 
             // Insert layanan terpisah (Bed Cover, Selimut, Seprai) jika ada
-            if (isset($transaksi->_separateLayananItems) && !empty($transaksi->_separateLayananItems)) {
+            if (isset($transaksi->_separateLayananItems) && ! empty($transaksi->_separateLayananItems)) {
                 foreach ($transaksi->_separateLayananItems as $sepItem) {
                     $sepLayanan = DB::table('layanan')->where('id', $sepItem['layanan_id'])->first();
 

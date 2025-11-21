@@ -23,27 +23,43 @@ class TransaksiHelper
 {
     // * Status Transaksi Constants
     public const STATUS_MENUNGGU = 'Menunggu';
+
     public const STATUS_PROSES = 'Proses';
+
     public const STATUS_SELESAI = 'Selesai';
+
     public const STATUS_DIAMBIL = 'Diambil';
+
     public const STATUS_BATAL = 'Batal';
 
     // * Metode Pembayaran Constants
     public const METODE_TUNAI = 'Tunai';
+
     public const METODE_NON_TUNAI = 'Non-Tunai';
+
     public const METODE_TRANSFER = 'Transfer';
+
     public const METODE_QRIS = 'QRIS';
+
     public const METODE_EWALLET = 'E-Wallet';
+
     public const METODE_DEBIT = 'Debit';
+
     public const METODE_KREDIT = 'Kredit';
 
     // * Metadata Keys
     public const META_PEMBAYARAN = 'pembayaran';
+
     public const META_PROMO = 'promo';
+
     public const META_REFERRAL = 'referral';
+
     public const META_FOTO_BUKTI_TIMBANGAN = 'foto_bukti_timbangan';
+
     public const META_FOTO_BUKTI_PEMBAYARAN = 'foto_bukti_pembayaran';
+
     public const META_KURIR_JEMPUT = 'kurir_jemput';
+
     public const META_KURIR_ANTAR = 'kurir_antar';
 
     // * Ambil nilai dari metadata
@@ -250,8 +266,6 @@ class TransaksiHelper
      * Hitung ulang total dari detail layanan
      * Digunakan saat ada perubahan di transaksi_layanan
      *
-     * @param Transaksi $transaksi
-     * @return void
      * @throws \Exception
      */
     public static function hitungUlangTotal(Transaksi $transaksi): void
@@ -297,9 +311,6 @@ class TransaksiHelper
 
     /**
      * Dapatkan estimasi tanggal selesai berdasarkan durasi layanan terlama
-     *
-     * @param Transaksi $transaksi
-     * @return \Carbon\Carbon|null
      */
     public static function getTanggalSelesaiTerlama(Transaksi $transaksi): ?\Carbon\Carbon
     {
@@ -310,7 +321,7 @@ class TransaksiHelper
                 $tanggalSelesai = \Carbon\Carbon::parse($transaksi->tanggal_masuk)
                     ->addHours($tl->layanan->durasi_jam);
 
-                if (!$tanggalTerlama || $tanggalSelesai > $tanggalTerlama) {
+                if (! $tanggalTerlama || $tanggalSelesai > $tanggalTerlama) {
                     $tanggalTerlama = $tanggalSelesai;
                 }
             }
@@ -323,7 +334,6 @@ class TransaksiHelper
      * Generate kode transaksi otomatis dengan prefix dari pengaturan
      * Menghindari gap numbering dan duplicate kode
      *
-     * @return string
      * @throws \Exception
      */
     public static function generateKodeTransaksi(): string
@@ -334,7 +344,7 @@ class TransaksiHelper
 
             $lastTransaksi = Transaksi::withTrashed()->orderBy('kode_transaksi', 'desc')->first();
 
-            if (!$lastTransaksi) {
+            if (! $lastTransaksi) {
                 return $prefix.'001';
             }
 

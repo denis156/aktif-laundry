@@ -19,9 +19,13 @@ use Illuminate\Support\Facades\Log;
 class PromoHelper
 {
     public const META_LAYANAN_ID = 'layanan_id';
+
     public const META_EXCLUDE_PELANGGAN_ID = 'exclude_pelanggan_id';
+
     public const META_BANNER_IMAGE = 'banner_image';
+
     public const META_TERMS_CONDITIONS = 'terms_conditions';
+
     public const META_AUTO_APPLY = 'auto_apply';
 
     // * Ambil nilai dari metadata
@@ -105,6 +109,7 @@ class PromoHelper
     public static function isPelangganExcluded(Promo $promo, int $pelangganId): bool
     {
         $excludedIds = self::getExcludePelangganId($promo);
+
         return in_array($pelangganId, $excludedIds, true);
     }
 
@@ -158,9 +163,6 @@ class PromoHelper
 
     /**
      * Cek apakah promo masih valid (aktif, dalam periode, ada kuota)
-     *
-     * @param Promo $promo
-     * @return bool
      */
     public static function isValid(Promo $promo): bool
     {
@@ -174,9 +176,6 @@ class PromoHelper
 
     /**
      * Cek apakah masih ada kuota
-     *
-     * @param Promo $promo
-     * @return bool
      */
     public static function hasQuota(Promo $promo): bool
     {
@@ -186,8 +185,6 @@ class PromoHelper
     /**
      * Tambah counter penggunaan dan update status jika habis
      *
-     * @param Promo $promo
-     * @return void
      * @throws \Exception
      */
     public static function incrementUsage(Promo $promo): void
@@ -211,8 +208,6 @@ class PromoHelper
 
     /**
      * Get promo options untuk dropdown (hanya yang valid)
-     *
-     * @return array
      */
     public static function getPromoOptions(): array
     {
@@ -222,10 +217,10 @@ class PromoHelper
                 ->where('tanggal_berakhir', '>=', now())
                 ->orderBy('kode_promo')
                 ->get()
-                ->filter(fn($promo) => self::hasQuota($promo))
-                ->map(fn($promo) => [
+                ->filter(fn ($promo) => self::hasQuota($promo))
+                ->map(fn ($promo) => [
                     'id' => $promo->id,
-                    'name' => $promo->kode_promo . ' - ' . $promo->nama_promo . ' (' . ($promo->tipe_diskon === 'persen' ? $promo->nilai_diskon . '%' : 'Rp ' . number_format($promo->nilai_diskon, 0, ',', '.')) . ')',
+                    'name' => $promo->kode_promo.' - '.$promo->nama_promo.' ('.($promo->tipe_diskon === 'persen' ? $promo->nilai_diskon.'%' : 'Rp '.number_format($promo->nilai_diskon, 0, ',', '.')).')',
                 ])
                 ->toArray();
         } catch (\Exception $e) {
@@ -233,6 +228,7 @@ class PromoHelper
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }

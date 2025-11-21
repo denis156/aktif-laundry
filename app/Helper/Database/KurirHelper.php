@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Helper\Database;
 
-use App\Models\Kurir;
-use App\Models\Pengaturan;
 use App\Helper\AddressMetadata;
 use App\Helper\PhoneNumber;
+use App\Models\Kurir;
+use App\Models\Pengaturan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -29,11 +29,14 @@ class KurirHelper
 {
     // * Password validation constants
     public const PASSWORD_MIN_LENGTH = 8;
+
     public const PASSWORD_MAX_LENGTH = 255;
 
     // * Metadata constants
     public const META_AREA_COVERAGE = 'area_coverage';
+
     public const META_BANK_INFO = 'bank_info';
+
     public const META_EMERGENCY_CONTACT = 'emergency_contact';
 
     // * Ambil nilai dari metadata
@@ -169,19 +172,19 @@ class KurirHelper
 
             $lastKurir = Kurir::withTrashed()->orderBy('kode_kurir', 'desc')->first();
 
-            if (!$lastKurir) {
-                return $prefix . '001';
+            if (! $lastKurir) {
+                return $prefix.'001';
             }
 
             $lastNumber = (int) substr($lastKurir->kode_kurir, $prefixLength);
             $nextNumber = $lastNumber + 1;
 
             // Check if there are any gaps in the numbering
-            while (Kurir::where('kode_kurir', $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+            while (Kurir::where('kode_kurir', $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
                 $nextNumber++;
             }
 
-            return $prefix . str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+            return $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
         } catch (\Exception $e) {
             Log::error('Failed to generate kode kurir', [
                 'error' => $e->getMessage(),
@@ -197,7 +200,7 @@ class KurirHelper
         try {
             // Normalize nomor HP
             $normalizedPhone = PhoneNumber::normalize($data['no_hp'] ?? '');
-            if (!$normalizedPhone) {
+            if (! $normalizedPhone) {
                 throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
             }
 
@@ -274,8 +277,8 @@ class KurirHelper
         }
 
         $rules[] = 'string';
-        $rules[] = 'min:' . self::PASSWORD_MIN_LENGTH;
-        $rules[] = 'max:' . self::PASSWORD_MAX_LENGTH;
+        $rules[] = 'min:'.self::PASSWORD_MIN_LENGTH;
+        $rules[] = 'max:'.self::PASSWORD_MAX_LENGTH;
 
         return implode('|', $rules);
     }
@@ -301,8 +304,6 @@ class KurirHelper
 
     /**
      * Get kurir options untuk dropdown (hanya yang aktif)
-     *
-     * @return array
      */
     public static function getKurirOptions(): array
     {
@@ -310,9 +311,9 @@ class KurirHelper
             return Kurir::where('status', 'Aktif')
                 ->orderBy('nama')
                 ->get()
-                ->map(fn($kurir) => [
+                ->map(fn ($kurir) => [
                     'id' => $kurir->id,
-                    'name' => $kurir->nama . ' - ' . $kurir->no_hp,
+                    'name' => $kurir->nama.' - '.$kurir->no_hp,
                 ])
                 ->toArray();
         } catch (\Exception $e) {
@@ -320,6 +321,7 @@ class KurirHelper
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return [];
         }
     }

@@ -1,14 +1,18 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Management\JenisPakaian;
 
-use Exception;
-use Mary\Traits\Toast;
-use Livewire\Component;
 use App\Models\JenisPakaian;
-use Livewire\WithPagination;
-use Livewire\Attributes\Title;
+use Exception;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithPagination;
+use Mary\Traits\Toast;
 
 #[Title('Daftar Jenis Pakaian')]
 #[Layout('layouts.management.app')]
@@ -17,12 +21,19 @@ class Index extends Component
     use Toast, WithPagination;
 
     public string $search = '';
+
     public bool $drawer = false;
+
     public bool $deleteModal = false;
+
     public int $deleteId = 0;
+
     public string $deleteName = '';
+
     public array $sortBy = ['column' => 'kode_jenis', 'direction' => 'desc'];
+
     public string $statusFilter = '';
+
     public int $perPage = 10;
 
     public function clear(): void
@@ -42,19 +53,49 @@ class Index extends Component
     {
         try {
             $jenisPakaian = JenisPakaian::findOrFail($this->deleteId);
+
+            Log::info('Deleting jenis pakaian', [
+                'id' => $jenisPakaian->id,
+                'kode_jenis' => $jenisPakaian->kode_jenis,
+                'nama_jenis' => $jenisPakaian->nama_jenis,
+            ]);
+
             $jenisPakaian->delete();
 
             $this->success("Jenis Pakaian {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
             $this->deleteModal = false;
             $this->reset(['deleteId', 'deleteName']);
+        } catch (QueryException $e) {
+            Log::error('Database error deleting jenis pakaian', [
+                'id' => $this->deleteId,
+                'nama' => $this->deleteName,
+                'error' => $e->getMessage(),
+                'error_code' => $e->errorInfo[1] ?? null,
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Check for foreign key constraint violation
+            if ($e->errorInfo[1] == 1451) {
+                $this->error('Jenis Pakaian tidak dapat dihapus karena masih digunakan.', position: 'toast-bottom');
+            } else {
+                $this->error('Gagal menghapus jenis pakaian. Silakan coba lagi.', position: 'toast-bottom');
+            }
         } catch (Exception $e) {
-            $this->error('Gagal menghapus jenis pakaian: ' . $e->getMessage(), position: 'toast-bottom');
+            Log::error('General error deleting jenis pakaian', [
+                'id' => $this->deleteId,
+                'nama' => $this->deleteName,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $this->error('Terjadi kesalahan. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
     public function headers(): array
     {
         return [
+            ['key' => 'icon', 'label' => '', 'class' => 'w-12', 'sortable' => false],
             ['key' => 'kode_jenis', 'label' => 'Kode', 'class' => 'w-24'],
             ['key' => 'nama_jenis', 'label' => 'Nama Jenis', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'keterangan', 'label' => 'Keterangan', 'sortable' => false],
@@ -62,28 +103,44 @@ class Index extends Component
         ];
     }
 
-    public function jenisPakaian()
+    public function jenisPakaian(): mixed
     {
-        return JenisPakaian::query()
-            ->when($this->search, function ($query) {
-                $query->where(function ($q) {
-                    $q->where('nama_jenis', 'like', "%{$this->search}%")
-                      ->orWhere('keterangan', 'like', "%{$this->search}%")
-                      ->orWhere('kode_jenis', 'like', "%{$this->search}%");
-                });
-            })
-            ->when($this->statusFilter, function ($query) {
-                $query->where('status', $this->statusFilter);
-            })
-            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-            ->paginate($this->perPage);
+        try {
+            return JenisPakaian::query()
+                ->when($this->search, function ($query): void {
+                    $query->where(function ($q): void {
+                        $q->where('nama_jenis', 'like', "%{$this->search}%")
+                            ->orWhere('keterangan', 'like', "%{$this->search}%")
+                            ->orWhere('kode_jenis', 'like', "%{$this->search}%");
+                    });
+                })
+                ->when($this->statusFilter, function ($query): void {
+                    $query->where('status', $this->statusFilter);
+                })
+                ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
+                ->paginate($this->perPage);
+        } catch (Exception $e) {
+            Log::error('Error fetching jenis pakaian list', [
+                'search' => $this->search,
+                'status_filter' => $this->statusFilter,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            // Return empty paginator on error
+            return new \Illuminate\Pagination\LengthAwarePaginator(
+                [],
+                0,
+                $this->perPage
+            );
+        }
     }
 
-    public function render()
+    public function render(): mixed
     {
         return view('livewire.management.jenis-pakaian.index', [
             'jenisPakaian' => $this->jenisPakaian(),
-            'headers' => $this->headers()
+            'headers' => $this->headers(),
         ]);
     }
 }
