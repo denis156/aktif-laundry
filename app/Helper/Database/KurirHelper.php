@@ -105,6 +105,7 @@ class KurirHelper
     ): void {
         try {
             // Set metadata alamat menggunakan AddressMetadata
+            // Kolom alamat akan otomatis di-sync oleh KurirObserver saat save
             AddressMetadata::set(
                 $kurir,
                 $detailAlamat,
@@ -115,9 +116,6 @@ class KurirHelper
                 $latitude,
                 $longitude
             );
-
-            // Sync kolom alamat (text) dengan metadata
-            AddressMetadata::syncAlamatColumn($kurir);
         } catch (\Exception $e) {
             Log::error('Failed to set Kurir alamat regional', [
                 'kurir_id' => $kurir->id,
@@ -135,6 +133,7 @@ class KurirHelper
     }
 
     // * Update alamat regional dari array data
+    // * Kolom alamat akan otomatis di-sync oleh KurirObserver saat save
     public static function updateAlamatRegional(Kurir $kurir, array $data): void
     {
         try {
@@ -148,8 +147,8 @@ class KurirHelper
                 isset($data['longitude']) ? (float) $data['longitude'] : null
             );
 
+            // Update metadata saja, Observer akan auto-sync kolom alamat
             AddressMetadata::update($kurir, $addressData);
-            AddressMetadata::syncAlamatColumn($kurir);
         } catch (\Exception $e) {
             Log::error('Failed to update Kurir alamat regional', [
                 'kurir_id' => $kurir->id,

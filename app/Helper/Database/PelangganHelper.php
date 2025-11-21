@@ -56,6 +56,75 @@ class PelangganHelper
         $pelanggan->metadata = array_merge($pelanggan->metadata ?? [], $data);
     }
 
+    // * Set alamat regional ke metadata
+    // * Kolom alamat akan otomatis di-sync oleh PelangganObserver saat save
+    public static function setAlamatRegional(
+        Pelanggan $pelanggan,
+        string $detailAlamat,
+        string $kelurahan,
+        string $kecamatan,
+        string $kabupatenKota,
+        string $provinsi,
+        ?float $latitude = null,
+        ?float $longitude = null
+    ): void {
+        try {
+            // Set metadata alamat menggunakan AddressMetadata
+            // Kolom alamat akan otomatis di-sync oleh PelangganObserver saat save
+            AddressMetadata::set(
+                $pelanggan,
+                $detailAlamat,
+                $kelurahan,
+                $kecamatan,
+                $kabupatenKota,
+                $provinsi,
+                $latitude,
+                $longitude
+            );
+        } catch (\Exception $e) {
+            Log::error('Failed to set Pelanggan alamat regional', [
+                'pelanggan_id' => $pelanggan->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
+    // * Get alamat lengkap dari metadata
+    public static function getAlamatLengkap(Pelanggan $pelanggan): string
+    {
+        return AddressMetadata::formatAddress($pelanggan, true);
+    }
+
+    // * Update alamat regional dari array data
+    // * Kolom alamat akan otomatis di-sync oleh PelangganObserver saat save
+    public static function updateAlamatRegional(Pelanggan $pelanggan, array $data): void
+    {
+        try {
+            $addressData = AddressMetadata::generate(
+                $data['detail_alamat'] ?? '',
+                $data['kelurahan'] ?? '',
+                $data['kecamatan'] ?? '',
+                $data['kabupaten_kota'] ?? '',
+                $data['provinsi'] ?? '',
+                isset($data['latitude']) ? (float) $data['latitude'] : null,
+                isset($data['longitude']) ? (float) $data['longitude'] : null
+            );
+
+            // Update metadata saja, Observer akan auto-sync kolom alamat
+            AddressMetadata::update($pelanggan, $addressData);
+        } catch (\Exception $e) {
+            Log::error('Failed to update Pelanggan alamat regional', [
+                'pelanggan_id' => $pelanggan->id,
+                'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
     // * Ambil total poin loyalty pelanggan
     public static function getLoyaltyPoints(Pelanggan $pelanggan): int
     {

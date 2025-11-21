@@ -25,6 +25,14 @@ use Illuminate\Support\Facades\Log;
 
 class UserHelper
 {
+    // * Password validation constants
+    public const PASSWORD_MIN_LENGTH = 8;
+    public const PASSWORD_MAX_LENGTH = 255;
+
+    // * Avatar upload constants (in KB)
+    public const AVATAR_MAX_SIZE_KB = 2048; // 2 MB
+
+    // * Metadata constants
     public const META_SHIFT = 'shift';
     public const META_GAJI = 'gaji';
 
@@ -91,6 +99,7 @@ class UserHelper
     }
 
     // * Update alamat regional dari array data
+    // * Kolom alamat akan otomatis di-sync oleh UserObserver saat save
     public static function updateAlamatRegional(User $user, array $data): void
     {
         try {
@@ -104,8 +113,8 @@ class UserHelper
                 isset($data['longitude']) ? (float) $data['longitude'] : null
             );
 
+            // Update metadata saja, Observer akan auto-sync kolom alamat
             AddressMetadata::update($user, $addressData);
-            AddressMetadata::syncAlamatColumn($user);
         } catch (\Exception $e) {
             Log::error('Failed to update User alamat regional', [
                 'user_id' => $user->id,
@@ -181,6 +190,76 @@ class UserHelper
         } catch (\Exception $e) {
             Log::error('Failed to create user', [
                 'data' => $data,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
+    // * Update profil user (nama, email, avatar)
+    public static function updateProfile(
+        User $user,
+        string $name,
+        string $email,
+        ?string $avatarPath = null
+    ): User {
+        try {
+            $changes = [
+                'name_changed' => $name !== $user->name,
+                'email_changed' => $email !== $user->email,
+                'avatar_changed' => $avatarPath !== null && $avatarPath !== $user->avatar_url,
+            ];
+
+            $user->update([
+                'name' => $name,
+                'email' => $email,
+                'avatar_url' => $avatarPath ?? $user->avatar_url,
+            ]);
+
+            Log::info('UserHelper: Profile updated successfully', [
+                'user_id' => $user->id,
+                'changes' => $changes,
+            ]);
+
+            return $user->fresh();
+        } catch (\Exception $e) {
+            Log::error('UserHelper: Failed to update profile', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
+    // * Update password user dengan validasi current password
+    public static function updatePassword(User $user, string $currentPassword, string $newPassword): bool
+    {
+        try {
+            // Validasi current password
+            if (!Hash::check($currentPassword, $user->password)) {
+                Log::warning('UserHelper: Wrong current password attempt', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                ]);
+                return false;
+            }
+
+            // Update password
+            $user->update([
+                'password' => Hash::make($newPassword),
+            ]);
+
+            Log::info('UserHelper: Password updated successfully', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+            ]);
+
+            return true;
+        } catch (\Exception $e) {
+            Log::error('UserHelper: Failed to update password', [
+                'user_id' => $user->id,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);

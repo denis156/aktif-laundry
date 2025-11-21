@@ -3,7 +3,11 @@
 namespace App\Providers;
 
 use App\Models\User;
+use App\Models\Pelanggan;
+use App\Models\Kurir;
 use App\Observers\UserObserver;
+use App\Observers\PelangganObserver;
+use App\Observers\KurirObserver;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -25,7 +29,9 @@ class AppServiceProvider extends ServiceProvider
             \URL::forceScheme('https');
         }
 
-        // Register UserObserver
+        // Register Observers
         User::observe(UserObserver::class);
+        Pelanggan::observe(PelangganObserver::class);
+        Kurir::observe(KurirObserver::class);
     }
 }

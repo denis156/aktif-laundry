@@ -4,7 +4,8 @@
             Kelola informasi profil dan keamanan akun Anda
         </x-slot:subtitle>
         <x-slot:actions>
-            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle" link="{{ route('logout') }}" no-wire-navigate class="btn-error" responsive />
+            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle" link="{{ route('logout') }}" no-wire-navigate
+                class="btn-error" responsive />
         </x-slot:actions>
     </x-header>
 
@@ -14,8 +15,8 @@
             <div class="col-span-2">
                 <x-header title="Informasi Profil" subtitle="Perbarui data profil Anda" size="text-lg" />
             </div>
-            <x-card class="col-span-3 grid gap-3">
-                <x-file wire:model="avatar" label="Avatar" hint="Upload foto avatar baru (max 2MB)"
+            <x-card class="col-span-3">
+                <x-file wire:model="avatar" label="Avatar" hint="Upload foto avatar baru (max {{ $avatarMaxSizeMB }} MB)"
                     accept="image/png, image/jpeg, image/jpg">
                     <img src="{{ $currentAvatarUrl ? asset('storage/' . $currentAvatarUrl) : asset('images/Logo.png') }}"
                         class="h-40 rounded-lg" />
@@ -26,6 +27,36 @@
 
                 <x-input label="Email" type="email" wire:model.live="email" placeholder="email@example.com"
                     icon="o-envelope" required />
+
+                <x-input label="Nomor HP" wire:model.live="no_hp" placeholder="08xx atau +62xxx" icon="o-phone"
+                    hint="Format: +62, 62, 08, atau 8" required />
+            </x-card>
+        </div>
+
+        {{-- Alamat section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Alamat" subtitle="Informasi alamat lengkap" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <x-textarea label="Detail Alamat" wire:model.live="detail_alamat" placeholder="Jalan, nomor, RT/RW, dll"
+                    hint="Detail Alamat seperti jalan, nomor, RT/RW" rows="3" required />
+
+                <x-select label="Provinsi" wire:model.live="provinsi" :options="$provinsiOptions" disabled required />
+
+                <x-select label="Kabupaten/Kota" wire:model.live="kabupaten_kota" :options="$kabupatenKotaOptions"
+                    placeholder="Pilih kabupaten/kota" required />
+
+                <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions" placeholder="Pilih kecamatan"
+                    :disabled="empty($kabupaten_kota)" hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}"
+                    required />
+
+                <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
+                    placeholder="Pilih kelurahan/desa" :disabled="empty($kecamatan)"
+                    hint="{{ empty($kecamatan) ? 'Pilih kecamatan terlebih dahulu' : '' }}" required />
+
+                <x-textarea label="Alamat Lengkap" wire:model="alamat"
+                    hint="Alamat otomatis di-generate dari data di atas" rows="3" disabled />
             </x-card>
         </div>
 
@@ -34,18 +65,15 @@
             <div class="col-span-2">
                 <x-header title="Ubah Password" subtitle="Perbarui password untuk keamanan akun" size="text-lg" />
             </div>
-            <x-card class="col-span-3 grid gap-3">
+            <x-card class="col-span-3">
                 <x-password label="Password Saat Ini" wire:model.live="current_password"
-                    placeholder="Masukkan password saat ini" password-icon="o-lock-closed"
-                    password-visible-icon="o-lock-open" />
+                    placeholder="Masukkan password saat ini" icon="o-lock-closed" right />
 
-                <x-password label="Password Baru" wire:model.live="password" placeholder="Minimal 8 karakter"
-                    hint="Password baru minimal 8 karakter" password-icon="o-lock-closed"
-                    password-visible-icon="o-lock-open" />
+                <x-password label="Password Baru" wire:model.live="password" placeholder="Minimal {{ $passwordMinLength }} karakter"
+                    hint="Password baru minimal {{ $passwordMinLength }} karakter" icon="o-lock-closed" right />
 
                 <x-password label="Konfirmasi Password Baru" wire:model.live="password_confirmation"
-                    placeholder="Ketik ulang password baru" password-icon="o-lock-closed"
-                    password-visible-icon="o-lock-open" />
+                    placeholder="Ketik ulang password baru" icon="o-lock-closed" right />
             </x-card>
         </div>
 

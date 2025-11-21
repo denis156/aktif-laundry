@@ -3,10 +3,27 @@
 namespace App\Observers;
 
 use App\Models\User;
+use App\Helper\AddressMetadata;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
 
 class UserObserver
 {
+    /**
+     * Handle the User "saving" event.
+     * Auto-sync kolom alamat dari metadata sebelum save
+     */
+    public function saving(User $user): void
+    {
+        // Auto-sync kolom alamat dari metadata
+        // Sync jika metadata punya data alamat
+        $metadata = $user->metadata ?? [];
+
+        if (!empty($metadata['detail_alamat']) || !empty($metadata['kelurahan']) || !empty($metadata['kecamatan'])) {
+            AddressMetadata::syncAlamatColumn($user);
+        }
+    }
+
     /**
      * Handle the User "updating" event.
      * Event ini dipanggil sebelum update, jadi kita bisa cek avatar lama

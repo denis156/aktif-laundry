@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace App\Helper;
 
+use Illuminate\Support\Facades\Log;
+
 /**
  * Helper untuk mengelola metadata alamat wilayah Indonesia
  *
@@ -298,10 +300,20 @@ class AddressMetadata
      */
     public static function syncAlamatColumn(object $model): void
     {
-        $alamatString = self::buildAlamatString($model);
+        // Extract metadata untuk build alamat
+        $metadata = $model->metadata ?? [];
 
-        if (!empty($alamatString) && property_exists($model, 'alamat')) {
+        // Build alamat dari metadata langsung (lebih reliable)
+        $alamatString = self::buildAlamatFromArray($metadata);
+
+        // Set alamat jika alamat_string tidak kosong
+        if (!empty($alamatString)) {
             $model->alamat = $alamatString;
+        } else {
+            Log::warning('AddressMetadata: Failed to sync alamat - alamat_string is empty', [
+                'model_class' => get_class($model),
+                'model_id' => $model->id ?? null,
+            ]);
         }
     }
 

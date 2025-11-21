@@ -271,4 +271,87 @@ class RegionalLocation
                 return false;
         }
     }
+
+    // * Get options untuk select provinsi (format untuk Mary UI)
+    // Fixed ke Sulawesi Tenggara saja
+    public static function getProvinceOptions(): array
+    {
+        return [
+            [
+                'id' => self::getProvinceName(),
+                'name' => self::getProvinceName(),
+            ],
+        ];
+    }
+
+    // * Get options untuk select kabupaten/kota di Sulawesi Tenggara (format untuk Mary UI)
+    public static function getRegencyOptions(?string $provinceName = null): array
+    {
+        // Hanya Sulawesi Tenggara yang didukung
+        $regencies = self::getRegenciesByProvince(self::SULAWESI_TENGGARA_CODE);
+        $options = [];
+
+        foreach ($regencies as $regency) {
+            $options[] = [
+                'id' => $regency['name'] ?? '',
+                'name' => $regency['name'] ?? '',
+            ];
+        }
+
+        return $options;
+    }
+
+    // * Get options untuk select kecamatan berdasarkan nama kabupaten/kota (format untuk Mary UI)
+    public static function getDistrictOptions(string $regencyName): array
+    {
+        // Search regency code di Sulawesi Tenggara
+        $regencies = self::getRegenciesByProvince(self::SULAWESI_TENGGARA_CODE);
+
+        foreach ($regencies as $regency) {
+            if (($regency['name'] ?? '') === $regencyName) {
+                $districts = self::getDistrictsByRegency($regency['code']);
+                $options = [];
+
+                foreach ($districts as $district) {
+                    $options[] = [
+                        'id' => $district['name'] ?? '',
+                        'name' => $district['name'] ?? '',
+                    ];
+                }
+
+                return $options;
+            }
+        }
+
+        return [];
+    }
+
+    // * Get options untuk select kelurahan berdasarkan nama kecamatan (format untuk Mary UI)
+    public static function getVillageOptions(string $districtName): array
+    {
+        // Search district code di Sulawesi Tenggara
+        $regencies = self::getRegenciesByProvince(self::SULAWESI_TENGGARA_CODE);
+
+        foreach ($regencies as $regency) {
+            $districts = self::getDistrictsByRegency($regency['code']);
+
+            foreach ($districts as $district) {
+                if (($district['name'] ?? '') === $districtName) {
+                    $villages = self::getVillagesByDistrict($district['code']);
+                    $options = [];
+
+                    foreach ($villages as $village) {
+                        $options[] = [
+                            'id' => $village['name'] ?? '',
+                            'name' => $village['name'] ?? '',
+                        ];
+                    }
+
+                    return $options;
+                }
+            }
+        }
+
+        return [];
+    }
 }
