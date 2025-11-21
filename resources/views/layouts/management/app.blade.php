@@ -59,22 +59,22 @@
 
                 <x-menu-separator />
 
-                <x-menu-item title="Kasir" icon="o-calculator" link="{{ route('kasir') }}" wire:navigate.hover exact />
-                <x-menu-item title="Transaksi" icon="o-clipboard-document-list" link="{{ route('transaksi.index') }}" wire:navigate.hover exact />
+                <x-menu-item title="Kasir" icon="o-calculator" link="{{ route('kasir') }}" wire:navigate.hover />
+                <x-menu-item title="Transaksi" icon="o-clipboard-document-list" link="{{ route('transaksi.index') }}" wire:navigate.hover />
 
                 <x-menu-separator />
 
-                <x-menu-item title="Layanan" icon="o-sparkles" link="{{ route('layanan.index') }}" wire:navigate.hover exact />
-                <x-menu-item title="Pelanggan" icon="o-users" link="{{ route('pelanggan.index') }}" wire:navigate.hover exact />
-                <x-menu-item title="Jenis Pakaian" icon="o-square-3-stack-3d" link="{{ route('jenis-pakaian.index') }}" wire:navigate.hover exact />
+                <x-menu-item title="Layanan" icon="o-sparkles" link="{{ route('layanan.index') }}" wire:navigate.hover />
+                <x-menu-item title="Pelanggan" icon="o-users" link="{{ route('pelanggan.index') }}" wire:navigate.hover />
+                <x-menu-item title="Jenis Pakaian" icon="o-square-3-stack-3d" link="{{ route('jenis-pakaian.index') }}" wire:navigate.hover />
 
                 <x-menu-separator />
 
                 @if(Auth::user()->super_admin)
-                    <x-menu-item title="Staf" icon="o-user-group" link="{{ route('staf.index') }}" wire:navigate.hover exact />
-                    <x-menu-item title="Pengaturan" icon="o-cog-6-tooth" link="{{ route('pengaturan') }}" wire:navigate.hover exact />
+                    <x-menu-item title="Staf" icon="o-user-group" link="{{ route('staf.index') }}" wire:navigate.hover />
+                    <x-menu-item title="Pengaturan" icon="o-cog-6-tooth" link="{{ route('pengaturan') }}" wire:navigate.hover />
                 @endif
-                <x-menu-item title="Profil Saya" icon="o-user-circle" link="{{ route('profile') }}" wire:navigate.hover exact />
+                <x-menu-item title="Profil Saya" icon="o-user-circle" link="{{ route('profile') }}" wire:navigate.hover />
 
                 <x-menu-separator />
 
