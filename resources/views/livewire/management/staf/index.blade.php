@@ -62,7 +62,7 @@
                 @php
                     $gaji = \App\Helper\Database\UserHelper::getGaji($user);
                 @endphp
-                <span class="text-sm">{{ $gaji ? 'Rp ' . number_format($gaji, 0, ',', '.') : '-' }}</span>
+                <span class="text-xs font-extrabold text-success">{{ $gaji ? 'Rp ' . number_format($gaji, 0, ',', '.') : '-' }}</span>
             @endscope
 
             @scope('cell_super_admin', $user)
