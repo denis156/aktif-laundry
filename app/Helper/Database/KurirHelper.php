@@ -298,4 +298,29 @@ class KurirHelper
             self::META_EMERGENCY_CONTACT => 'nullable|array',
         ];
     }
+
+    /**
+     * Get kurir options untuk dropdown (hanya yang aktif)
+     *
+     * @return array
+     */
+    public static function getKurirOptions(): array
+    {
+        try {
+            return Kurir::where('status', 'Aktif')
+                ->orderBy('nama')
+                ->get()
+                ->map(fn($kurir) => [
+                    'id' => $kurir->id,
+                    'name' => $kurir->nama . ' - ' . $kurir->no_hp,
+                ])
+                ->toArray();
+        } catch (\Exception $e) {
+            Log::error('Failed to get kurir options', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return [];
+        }
+    }
 }

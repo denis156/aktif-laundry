@@ -154,4 +154,29 @@ class ReferralHelper
             throw $e;
         }
     }
+
+    /**
+     * Get referral options untuk dropdown (hanya yang aktif)
+     *
+     * @return array
+     */
+    public static function getReferralOptions(): array
+    {
+        try {
+            return Referral::where('status', 'Aktif')
+                ->orderBy('kode_referral')
+                ->get()
+                ->map(fn($referral) => [
+                    'id' => $referral->id,
+                    'name' => $referral->kode_referral . ' - ' . ($referral->pelanggan->nama ?? 'Unknown') . ' (Poin: ' . $referral->poin_referrer . ')',
+                ])
+                ->toArray();
+        } catch (\Exception $e) {
+            Log::error('Failed to get referral options', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return [];
+        }
+    }
 }

@@ -208,4 +208,32 @@ class PromoHelper
             throw $e;
         }
     }
+
+    /**
+     * Get promo options untuk dropdown (hanya yang valid)
+     *
+     * @return array
+     */
+    public static function getPromoOptions(): array
+    {
+        try {
+            return Promo::where('status', 'Aktif')
+                ->where('tanggal_mulai', '<=', now())
+                ->where('tanggal_berakhir', '>=', now())
+                ->orderBy('kode_promo')
+                ->get()
+                ->filter(fn($promo) => self::hasQuota($promo))
+                ->map(fn($promo) => [
+                    'id' => $promo->id,
+                    'name' => $promo->kode_promo . ' - ' . $promo->nama_promo . ' (' . ($promo->tipe_diskon === 'persen' ? $promo->nilai_diskon . '%' : 'Rp ' . number_format($promo->nilai_diskon, 0, ',', '.')) . ')',
+                ])
+                ->toArray();
+        } catch (\Exception $e) {
+            Log::error('Failed to get promo options', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return [];
+        }
+    }
 }
