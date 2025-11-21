@@ -22,6 +22,10 @@
                 <x-icon name="o-cube" label="Tidak ada data pelanggan." />
             </x-slot:empty>
 
+            @scope('cell_no_hp', $item)
+                <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($item->no_hp) ?? '-' }}</span>
+            @endscope
+
             @scope('cell_tanggal_daftar', $item)
                 <span class="text-sm truncate"
                     title="{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d F Y H:i:s') }}">{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y H:i') }}</span>

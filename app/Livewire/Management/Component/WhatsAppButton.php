@@ -110,7 +110,7 @@ class WhatsAppButton extends Component
 
             // Per Kg - menggunakan method isPerKg() dari Helper
             if (TransaksiLayananHelper::isPerKg($item)) {
-                $text .= 'Harga: Rp '.number_format($item->harga_per_kg, 0, ',', '.')."/Kg\n";
+                $text .= 'Harga: Rp '.number_format((float) $item->harga_per_kg, 0, ',', '.')."/Kg\n";
 
                 // Jenis Pakaian
                 if (! empty($item->jenis_pakaian)) {
@@ -125,23 +125,23 @@ class WhatsAppButton extends Component
                     }
                 }
 
-                $text .= 'Berat: '.number_format($item->berat_kg, 1, '.', '')." Kg\n";
+                $text .= 'Berat: '.number_format((float) $item->berat_kg, 1, '.', '')." Kg\n";
             } elseif (TransaksiLayananHelper::isPerSatuan($item)) {
                 // Per Satuan - menggunakan method isPerSatuan() dari Helper
                 $satuan = $item->layanan?->satuan ?? 'pcs';
-                $text .= 'Harga: Rp '.number_format($item->harga_per_satuan, 0, ',', '.')."/{$satuan}\n";
-                $text .= $item->jumlah_satuan.' '.ucfirst($satuan)."\n";
+                $text .= 'Harga: Rp '.number_format((float) $item->harga_per_satuan, 0, ',', '.')."/{$satuan}\n";
+                $text .= ((int) $item->jumlah_satuan).' '.ucfirst($satuan)."\n";
             }
 
-            $text .= '*Rp '.number_format($item->subtotal, 0, ',', '.')."*\n\n";
+            $text .= '*Rp '.number_format((float) $item->subtotal, 0, ',', '.')."*\n\n";
         }
 
         $text .= str_repeat('-', 25)."\n";
 
         // Ringkasan Pembayaran
-        $text .= 'Subtotal: Rp '.number_format($transaksi->subtotal, 0, ',', '.')."\n";
-        $text .= 'Diskon: Rp '.number_format($transaksi->diskon, 0, ',', '.')."\n";
-        $text .= '*TOTAL: Rp '.number_format($transaksi->total, 0, ',', '.')."*\n";
+        $text .= 'Subtotal: Rp '.number_format((float) $transaksi->subtotal, 0, ',', '.')."\n";
+        $text .= 'Diskon: Rp '.number_format((float) $transaksi->diskon, 0, ',', '.')."\n";
+        $text .= '*TOTAL: Rp '.number_format((float) $transaksi->total, 0, ',', '.')."*\n";
         $text .= str_repeat('-', 25)."\n\n";
 
         // Status & Pembayaran
