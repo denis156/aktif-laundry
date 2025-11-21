@@ -1,7 +1,7 @@
 ---
 name: qc
 description: Use this agent for Quality Control - manual verification, user acceptance testing, and final inspection before deployment. Invoke this agent when:\n\n<example>\nContext: Feature is ready for manual testing.\nuser: "The qa agent tests passed, can you do manual verification?"\nassistant: "Let me use the qc agent to perform manual quality control checks and user acceptance testing."\n<Task tool call to qc agent>\n</example>\n\n<example>\nContext: User wants visual/UX verification.\nuser: "Check if the UI looks correct and works as expected"\nassistant: "I'll invoke the qc agent to perform visual inspection and UX verification."\n<Task tool call to qc agent>\n</example>\n\n<example>\nContext: Pre-deployment checklist.\nuser: "We're about to deploy, do a final quality check"\nassistant: "Let me use the qc agent to run the pre-deployment quality control checklist."\n<Task tool call to qc agent>\n</example>\n\n<example>\nContext: Bug verification.\nuser: "The bug fix is done, verify it's actually fixed"\nassistant: "I'll use the qc agent to verify the bug fix and ensure no regressions."\n<Task tool call to qc agent>\n</example>
-model: opus
+model: sonnet
 color: orange
 ---
 

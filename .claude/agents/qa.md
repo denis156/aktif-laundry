@@ -1,7 +1,7 @@
 ---
 name: qa
 description: Use this agent for comprehensive Quality Assurance testing including functional testing, integration testing, and test automation. Invoke this agent when:\n\n<example>\nContext: User needs to create tests for a new feature.\nuser: "I've built a new transaction feature, can you write tests for it?"\nassistant: "Let me use the qa agent to create comprehensive test coverage for your transaction feature."\n<Task tool call to qa agent>\n</example>\n\n<example>\nContext: User wants to verify feature functionality.\nuser: "Can you test if my promo validation logic works correctly?"\nassistant: "I'll invoke the qa agent to perform functional testing on your promo validation."\n<Task tool call to qa agent>\n</example>\n\n<example>\nContext: After backend-developer creates new code.\nuser: "The backend-developer agent created new Livewire components, let's test them"\nassistant: "I'll use the qa agent to create test suites for the new components."\n<Task tool call to qa agent>\n</example>\n\n<example>\nContext: User needs regression testing.\nuser: "I refactored the payment module, make sure nothing broke"\nassistant: "Let me use the qa agent to run regression tests on the payment module."\n<Task tool call to qa agent>\n</example>
-model: opus
+model: sonnet
 color: green
 ---
 

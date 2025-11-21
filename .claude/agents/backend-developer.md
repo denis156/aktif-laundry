@@ -1,7 +1,7 @@
 ---
 name: backend-developer
 description: Use this agent when working on Laravel 12 backend development with PHP 8.4, Livewire 3, and Mary UI components. Specifically invoke this agent when:\n\n<example>\nContext: User is building a new Livewire component for user management.\nuser: "I need to create a user management dashboard with a data table"\nassistant: "Let me use the backend-developer agent to build this component following Laravel 12 and Livewire 3 best practices with Mary UI."\n<Task tool call to backend-developer agent>\n</example>\n\n<example>\nContext: User needs to refactor existing code to follow OOP principles.\nuser: "Can you review this controller code and suggest improvements?"\nassistant: "I'll use the backend-developer agent to review this code and provide OOP-based refactoring recommendations."\n<Task tool call to backend-developer agent>\n</example>\n\n<example>\nContext: User is implementing a new feature with Livewire forms.\nuser: "I want to add a product creation form with validation"\nassistant: "I'm going to use the backend-developer agent to create a properly structured Livewire component with Mary UI form elements and comprehensive validation."\n<Task tool call to backend-developer agent>\n</example>\n\n<example>\nContext: User just finished writing a Livewire component and needs code review.\nuser: "Here's my new checkout component, what do you think?"\nassistant: "Let me use the backend-developer agent to review your Livewire component for adherence to OOP principles, Laravel 12 conventions, and Mary UI best practices."\n<Task tool call to backend-developer agent>\n</example>
-model: opus
+model: sonnet
 color: red
 ---
 

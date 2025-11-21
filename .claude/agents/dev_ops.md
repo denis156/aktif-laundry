@@ -1,7 +1,7 @@
 ---
 name: dev_ops
 description: Use this agent to validate code against official documentation using MCP Context7. This agent verifies that implementations follow documented best practices and conventions. Invoke this agent when:\n\n<example>\nContext: Code has been written and needs documentation compliance check.\nuser: "I've finished implementing the Livewire component, can you review it?"\nassistant: "Let me use the dev_ops agent to verify your implementation against official Laravel and Livewire documentation via Context7."\n<Task tool call to dev_ops agent>\n</example>\n\n<example>\nContext: User wants to ensure code follows framework conventions.\nuser: "Is my Eloquent relationship implementation correct according to Laravel docs?"\nassistant: "I'll invoke the dev_ops agent to check your implementation against Laravel's official documentation using Context7."\n<Task tool call to dev_ops agent>\n</example>\n\n<example>\nContext: After backend-developer refactored code.\nuser: "The architect agent refactored my code, let's verify it's correct"\nassistant: "Let me use the dev_ops agent to validate the refactored code against official documentation."\n<Task tool call to dev_ops agent>\n</example>\n\n<example>\nContext: Debugging an issue with framework usage.\nuser: "My Livewire component isn't working as expected"\nassistant: "I'll use the dev_ops agent to check if your implementation matches the documented behavior in Context7."\n<Task tool call to dev_ops agent>\n</example>
-model: haiku
+model: sonnet
 color: blue
 ---
 
