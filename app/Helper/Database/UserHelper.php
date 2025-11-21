@@ -19,7 +19,8 @@ use Illuminate\Support\Facades\Log;
 // * - provinsi: Provinsi
 // * - latitude: Koordinat GPS latitude
 // * - longitude: Koordinat GPS longitude
-// * - shift: Shift kerja (pagi/siang/malam)
+// * - jam_masuk: Jam masuk kerja (HH:MM)
+// * - jam_keluar: Jam keluar kerja (HH:MM)
 // * - gaji: Gaji pokok
 // * - target_bulanan: Target penjualan/kinerja bulanan
 
@@ -33,7 +34,6 @@ class UserHelper
     public const AVATAR_MAX_SIZE_KB = 2048; // 2 MB
 
     // * Metadata constants
-    public const META_SHIFT = 'shift';
     public const META_GAJI = 'gaji';
 
     // * Ambil nilai dari metadata
@@ -126,18 +126,6 @@ class UserHelper
         }
     }
 
-    // * Ambil shift kerja user
-    public static function getShift(User $user): ?string
-    {
-        return self::getMetadata($user, self::META_SHIFT);
-    }
-
-    // * Set shift kerja user
-    public static function setShift(User $user, string $shift): void
-    {
-        self::setMetadata($user, self::META_SHIFT, $shift);
-    }
-
     // * Ambil gaji pokok user
     public static function getGaji(User $user): ?int
     {
@@ -168,11 +156,8 @@ class UserHelper
             // Build alamat lengkap untuk kolom alamat (text)
             $alamatLengkap = AddressMetadata::buildAlamatFromArray($data);
 
-            // Prepare metadata (merge alamat + shift + gaji)
-            $metadata = array_merge($addressMetadata, [
-                self::META_SHIFT => $data['shift'] ?? null,
-                self::META_GAJI => $data['gaji'] ?? null,
-            ]);
+            // Prepare metadata (merge alamat)
+            $metadata = $addressMetadata;
 
             // Create user
             $user = User::create([

@@ -8,6 +8,7 @@
         <x-slot:actions>
             <x-button label="Tambah Staf" link="{{ route('staf.create') }}" wire:navigate.hover responsive icon="o-plus"
                 class="btn-success" />
+            <x-button label="Filters" @click="$wire.drawer = true" responsive icon="o-funnel" class="btn-primary" />
         </x-slot:actions>
     </x-header>
 
@@ -26,6 +27,44 @@
                 </div>
             @endscope
 
+            @scope('cell_name', $user)
+                <div class="flex flex-col">
+                    <span class="font-semibold" title="{{ $user->name }}">
+                        {{ Str::words($user->name, 3, '...') }}
+                    </span>
+                    <span class="text-xs text-gray-500">{{ $user->email }}</span>
+                </div>
+            @endscope
+
+            @scope('cell_no_hp', $user)
+                <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($user->no_hp) ?? '-' }}</span>
+            @endscope
+
+            @scope('cell_alamat', $user)
+                <span class="text-sm" title="{{ $user->alamat ?? '-' }}">
+                    {{ Str::words($user->alamat ?? '-', 5, '...') }}
+                </span>
+            @endscope
+
+            @scope('cell_jam_kerja', $user)
+                @php
+                    $jamMasuk = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_masuk');
+                    $jamKeluar = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_keluar');
+                @endphp
+                @if($jamMasuk && $jamKeluar)
+                    <span class="text-sm">{{ $jamMasuk }} - {{ $jamKeluar }}</span>
+                @else
+                    <span class="text-sm">-</span>
+                @endif
+            @endscope
+
+            @scope('cell_gaji', $user)
+                @php
+                    $gaji = \App\Helper\Database\UserHelper::getGaji($user);
+                @endphp
+                <span class="text-sm">{{ $gaji ? 'Rp ' . number_format($gaji, 0, ',', '.') : '-' }}</span>
+            @endscope
+
             @scope('cell_super_admin', $user)
                 <div class="flex items-center justify-center">
                     @if($user->super_admin)
@@ -34,10 +73,6 @@
                         <x-icon name="o-x-circle" class="w-6 h-6 text-error" />
                     @endif
                 </div>
-            @endscope
-
-            @scope('cell_created_at', $user)
-                <span class="text-sm">{{ $user->created_at->format('d M Y H:i') }}</span>
             @endscope
 
             @scope('actions', $user)
@@ -71,4 +106,22 @@
             <x-button label="Hapus" wire:click="delete" spinner class="btn-error btn-block" icon="o-trash" />
         </x-slot:actions>
     </x-modal>
+
+    <!-- FILTER DRAWER -->
+    <x-drawer wire:model="drawer" title="Filter Staf" subtitle="Saring data sesuai kebutuhan" right separator
+        with-close-button class="lg:w-1/3">
+        <div class="space-y-5">
+            <x-select label="Role" wire:model.live="roleFilter" icon="o-funnel" :options="[
+                ['id' => '', 'name' => 'Semua Role'],
+                ['id' => '1', 'name' => 'Super Admin'],
+                ['id' => '0', 'name' => 'Staf'],
+            ]"
+                option-value="id" option-label="name" />
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Reset Filter" icon="o-x-mark" wire:click="clear" spinner class="btn-outline btn-error" />
+            <x-button label="Terapkan" icon="o-check" class="btn-primary" @click="$wire.drawer = false" />
+        </x-slot:actions>
+    </x-drawer>
 </div>

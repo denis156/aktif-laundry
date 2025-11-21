@@ -13,7 +13,7 @@ use Illuminate\Notifications\Notifiable;
 //
 // ? Menyimpan data pengguna sistem (bukan pelanggan)
 // ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
-// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, shift, gaji, target_bulanan
+// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, jam_masuk, jam_keluar, gaji, target_bulanan
 
 class User extends Authenticatable
 {

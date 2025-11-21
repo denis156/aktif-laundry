@@ -18,6 +18,7 @@ class Index extends Component
     use Toast, WithPagination;
 
     public string $search = '';
+    public bool $drawer = false;
     public bool $deleteModal = false;
     public ?int $deleteId = null;
     public string $deleteName = '';
@@ -25,9 +26,18 @@ class Index extends Component
     public array $sortBy = ['column' => 'created_at', 'direction' => 'desc'];
     public int $perPage = 10;
 
+    // Filters
+    public string $roleFilter = '';
+
     public function updatedSearch()
     {
         $this->resetPage();
+    }
+
+    public function clear(): void
+    {
+        $this->reset(['search', 'roleFilter']);
+        $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
     }
 
     public function confirmDelete($id, $name)
@@ -65,25 +75,38 @@ class Index extends Component
     {
         return [
             ['key' => 'avatar_url', 'label' => 'Avatar', 'class' => 'w-16', 'sortable' => false],
-            ['key' => 'name', 'label' => 'Nama', 'class' => 'w-1/4', 'sortable' => false],
-            ['key' => 'email', 'label' => 'Email', 'class' => 'w-1/4', 'sortable' => false],
+            ['key' => 'name', 'label' => 'Nama', 'sortable' => false],
+            ['key' => 'no_hp', 'label' => 'No HP', 'sortable' => false],
+            ['key' => 'alamat', 'label' => 'Alamat', 'sortable' => false],
+            ['key' => 'jam_kerja', 'label' => 'Jam Kerja', 'class' => 'w-32', 'sortable' => false],
+            ['key' => 'gaji', 'label' => 'Gaji', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'super_admin', 'label' => 'Super Admin', 'class' => 'w-24', 'sortable' => false],
-            ['key' => 'created_at', 'label' => 'Dibuat', 'class' => 'w-1/5']
         ];
+    }
+
+    public function users()
+    {
+        return User::query()
+            ->when($this->search, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('name', 'like', "%{$this->search}%")
+                      ->orWhere('email', 'like', "%{$this->search}%")
+                      ->orWhere('no_hp', 'like', "%{$this->search}%")
+                      ->orWhere('alamat', 'like', "%{$this->search}%");
+                });
+            })
+            ->when($this->roleFilter !== '', function ($query) {
+                $isSuperAdmin = $this->roleFilter === '1';
+                $query->where('super_admin', $isSuperAdmin);
+            })
+            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
+            ->paginate($this->perPage);
     }
 
     public function render()
     {
-        $users = User::query()
-            ->when($this->search, function ($query) {
-                $query->where('name', 'like', '%' . $this->search . '%')
-                    ->orWhere('email', 'like', '%' . $this->search . '%');
-            })
-            ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-            ->paginate($this->perPage);
-
         return view('livewire.management.staf.index', [
-            'users' => $users,
+            'users' => $this->users(),
             'headers' => $this->headers(),
         ]);
     }
