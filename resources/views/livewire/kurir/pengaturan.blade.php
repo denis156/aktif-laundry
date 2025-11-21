@@ -17,10 +17,15 @@
             <p class="font-bold text-base-content/60 text-md ml-2">Tema</p>
             <x-card class="shadow-lg border border-primary">
                 <div class="flex justify-between items-center">
-                    <span class="text-lg font-medium">Mode Gelap</span>
-                    <x-theme-toggle class="btn btn-neutral btn-circle" @click="$dispatch('mary-toggle-theme')" />
+                    <span class="text-lg font-medium">Mode Gelap (Toggle)</span>
+                    <livewire:component.dark-mode-toggle toggle-class="toggle-success toggle-xl" :right="true" />
                 </div>
                 <div class="divider"></div>
+                {{-- <div class="flex justify-between items-center">
+                    <span class="text-lg font-medium">Mode Gelap (Swap)</span>
+                    <livewire:component.dark-mode-swap swap-class="swap-rotate" icon-size="h-8 w-8" />
+                </div>
+                <div class="divider"></div> --}}
                 <p class="text-sm text-base-content/60">Aktifkan mode gelap untuk mengurangi ketegangan mata dan
                     menghemat baterai perangkat</p>
             </x-card>
@@ -32,7 +37,7 @@
             <x-card class="shadow-lg border border-primary">
                 <div class="flex justify-between items-center">
                     <span class="text-lg font-medium">Notif Pesanan</span>
-                    <x-toggle class="toggle-success toggle-xl" wire:model="dark-theme" right />
+                    <x-toggle class="toggle-success toggle-xl" right />
                 </div>
                 <div class="divider"></div>
                 <p class="text-sm text-base-content/60">Terima notifikasi instan saat ada pesanan laundry yang perlu
@@ -48,7 +53,8 @@
                     {{-- Nama --}}
                     <div class="flex justify-between items-center">
                         <span class="text-lg font-medium truncate">Endors Team Hehehe</span>
-                        <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" @click="$wire.modalUbahNama = true" />
+                        <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm"
+                            @click="$wire.modalUbahNama = true" />
                     </div>
                     <div class="divider"></div>
                     {{-- No Telepon --}}
@@ -94,7 +100,8 @@
     </div>
 
 
-    <x-modal wire:model="modalUbahNama" title="Ubah Nama" subtitle="Isi form dibawah untuk mengubah nama kamu" class="modal-bottom w-full backdrop-blur">
+    <x-modal wire:model="modalUbahNama" title="Ubah Nama" subtitle="Isi form dibawah untuk mengubah nama kamu"
+        class="modal-bottom w-full backdrop-blur">
         <x-form no-separator>
             <x-input placeholder="Masukan nama lengkapmu" />
 
@@ -105,3 +112,4 @@
         </x-form>
     </x-modal>
 </div>
+

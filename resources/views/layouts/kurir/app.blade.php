@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth no-scrollbar">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth no-scrollbar" data-theme="light">
 
 <head>
     <meta charset="utf-8">
@@ -20,9 +20,6 @@
     </main>
 
     <livewire:kurir.component.bottom-nav />
-
-    {{-- Theme Contrroller --}}
-    <x-theme-toggle class="hidden" />
 
     {{--  TOAST area --}}
     <x-toast />
