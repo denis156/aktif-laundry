@@ -53,6 +53,15 @@
                         icon="o-envelope"
                         hint="Opsional"
                     />
+
+                    <x-input
+                        label="Password"
+                        type="password"
+                        wire:model="formData.password"
+                        placeholder="Kosongkan jika tidak ingin mengubah"
+                        icon="o-lock-closed"
+                        hint="Isi jika ingin mengubah password"
+                    />
                 </div>
             </x-card>
         </div>

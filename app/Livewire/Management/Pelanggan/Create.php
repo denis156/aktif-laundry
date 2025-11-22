@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -36,11 +37,9 @@ class Create extends Component
         'kecamatan' => '',
         'kabupaten_kota' => '',
         'provinsi' => '',
+        'password' => '',
         'tanggal_daftar' => '',
         'status' => 'Aktif',
-        'total_transaksi' => 0,
-        'kode_referral_dipakai' => '',
-        'direferensikan_oleh' => null,
     ];
 
     public $avatar;
@@ -76,6 +75,7 @@ class Create extends Component
             'formData.no_hp' => 'required|string|max:15',
             'formData.detail_alamat' => 'required|string',
             'formData.email' => 'nullable|email|max:255',
+            'formData.password' => PelangganHelper::passwordRules(false),
             'formData.tanggal_daftar' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
             'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
@@ -111,6 +111,11 @@ class Create extends Component
                     'status' => $this->formData['status'],
                     'total_transaksi' => 0,
                 ];
+
+                // Tambahkan password jika diisi
+                if (! empty($this->formData['password'])) {
+                    $data['password'] = Hash::make($this->formData['password']);
+                }
 
                 // Create pelanggan
                 $pelanggan = Pelanggan::create($data);

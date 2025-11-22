@@ -12,6 +12,7 @@ use App\Models\Pelanggan;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -38,6 +39,7 @@ class Edit extends Component
         'kabupaten_kota' => '',
         'provinsi' => '',
         'alamat' => '',
+        'password' => '',
         'tanggal_daftar' => '',
         'status' => 'Aktif',
         'total_transaksi' => 0,
@@ -100,6 +102,7 @@ class Edit extends Component
             'formData.no_hp' => 'required|string|max:15',
             'formData.detail_alamat' => 'required|string',
             'formData.email' => 'nullable|email|max:255',
+            'formData.password' => PelangganHelper::passwordRules(false),
             'formData.tanggal_daftar' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
             'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
@@ -128,6 +131,11 @@ class Edit extends Component
                 'tanggal_daftar' => Carbon::parse($this->formData['tanggal_daftar'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s'),
                 'status' => $this->formData['status'],
             ];
+
+            // Update password jika diisi
+            if (! empty($this->formData['password'])) {
+                $data['password'] = Hash::make($this->formData['password']);
+            }
 
             $pelanggan->update($data);
 

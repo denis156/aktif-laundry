@@ -23,10 +23,9 @@ return new class extends Migration
 
             // Vehicle info
             $table->string('no_kendaraan')->nullable()->comment('Plat nomor');
-            $table->enum('jenis_kendaraan', ['Motor', 'Mobil', 'Sepeda'])->nullable();
+            $table->enum('jenis_kendaraan', ['Motor', 'Mobil'])->nullable();
 
             // Profile
-            $table->string('foto_profil')->nullable();
             $table->date('tanggal_bergabung');
             $table->enum('status', ['Aktif', 'Tidak Aktif', 'Cuti'])->default('Aktif');
 

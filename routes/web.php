@@ -12,6 +12,9 @@ use App\Livewire\Management\JenisPakaian\Create as JenisPakaianCreate;
 use App\Livewire\Management\JenisPakaian\Edit as JenisPakaianEdit;
 use App\Livewire\Management\JenisPakaian\Index as JenisPakaianIndex;
 use App\Livewire\Management\Kasir;
+use App\Livewire\Management\Kurir\Create as KurirCreate;
+use App\Livewire\Management\Kurir\Edit as KurirEdit;
+use App\Livewire\Management\Kurir\Index as KurirIndex;
 use App\Livewire\Management\Layanan\Create as LayananCreate;
 use App\Livewire\Management\Layanan\Edit as LayananEdit;
 use App\Livewire\Management\Layanan\Index as LayananIndex;
@@ -93,6 +96,11 @@ Route::middleware('auth')->prefix('management')->group(function () {
         Route::get('/staf/create', StafCreate::class)->name('staf.create');
         Route::get('/staf/edit/{id}', StafEdit::class)->name('staf.edit');
     });
+
+    // Kurir Routes di /management/kurir
+    Route::get('/kurir', KurirIndex::class)->name('kurir.index');
+    Route::get('/kurir/create', KurirCreate::class)->name('kurir.create');
+    Route::get('/kurir/edit/{id}', KurirEdit::class)->name('kurir.edit');
 
     // Profile Route di /management/profile
     Route::get('/profile', Profile::class)->name('profile');

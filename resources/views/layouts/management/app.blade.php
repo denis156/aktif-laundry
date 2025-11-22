@@ -67,6 +67,7 @@
                 <x-menu-item title="Layanan" icon="o-sparkles" link="{{ route('layanan.index') }}" wire:navigate.hover />
                 <x-menu-item title="Pelanggan" icon="o-users" link="{{ route('pelanggan.index') }}" wire:navigate.hover />
                 <x-menu-item title="Jenis Pakaian" icon="o-square-3-stack-3d" link="{{ route('jenis-pakaian.index') }}" wire:navigate.hover />
+                <x-menu-item title="Kurir" icon="o-truck" link="{{ route('kurir.index') }}" wire:navigate.hover />
 
                 <x-menu-separator />
 
