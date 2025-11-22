@@ -480,16 +480,6 @@ class Kasir extends Component
                     }
                 }
 
-                // Update total transaksi pelanggan dengan lock
-                $pelanggan = Pelanggan::lockForUpdate()->find($this->formData['pelanggan_id']);
-                if ($pelanggan) {
-                    $pelanggan->increment('total_transaksi');
-                } else {
-                    Log::warning('Kasir: Pelanggan not found for increment', [
-                        'pelanggan_id' => $this->formData['pelanggan_id'],
-                    ]);
-                }
-
                 // Simpan kode transaksi terakhir untuk struk
                 $this->lastTransactionId = $transaksi->kode_transaksi;
             });

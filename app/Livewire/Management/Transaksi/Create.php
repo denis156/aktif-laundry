@@ -442,16 +442,6 @@ class Create extends Component
                         }
                     }
                 }
-
-                // Update total transaksi pelanggan dengan lock
-                $pelanggan = Pelanggan::lockForUpdate()->find($this->formData['pelanggan_id']);
-                if ($pelanggan) {
-                    $pelanggan->increment('total_transaksi');
-                } else {
-                    Log::warning('Transaksi Create: Pelanggan not found for increment', [
-                        'pelanggan_id' => $this->formData['pelanggan_id'],
-                    ]);
-                }
             });
 
             $this->success('Transaksi berhasil ditambahkan!', position: 'toast-bottom');
