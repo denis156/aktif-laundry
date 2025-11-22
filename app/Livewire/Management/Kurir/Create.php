@@ -42,8 +42,6 @@ class Create extends Component
         'password' => '',
         'tanggal_bergabung' => '',
         'status' => 'Aktif',
-        'total_jemput' => 0,
-        'total_antar' => 0,
     ];
 
     public $avatar;

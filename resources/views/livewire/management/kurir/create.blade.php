@@ -90,10 +90,10 @@
             </x-card>
         </div>
 
-        {{-- Status & Informasi Tambahan section --}}
+        {{-- Status section --}}
         <div class="lg:grid grid-cols-5 mt-8">
             <div class="col-span-2">
-                <x-header title="Status & Informasi Tambahan" subtitle="Status dan statistik pengiriman"
+                <x-header title="Status" subtitle="Status dan tanggal bergabung"
                     size="text-lg" />
             </div>
             <x-card class="col-span-3">
@@ -103,12 +103,6 @@
 
                     <x-select label="Status" wire:model="formData.status" icon="o-check-circle" :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"
                         option-value="id" option-label="name" required />
-
-                    <x-input label="Total Jemput" wire:model="formData.total_jemput" type="number"
-                        icon="o-arrow-up-tray" hint="Auto-increment saat jemput" disabled />
-
-                    <x-input label="Total Antar" wire:model="formData.total_antar" type="number"
-                        icon="o-arrow-down-tray" hint="Auto-increment saat antar" disabled />
                 </div>
             </x-card>
         </div>
