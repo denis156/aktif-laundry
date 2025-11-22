@@ -54,13 +54,23 @@
                         hint="Opsional"
                     />
 
-                    <x-input
-                        label="Password"
-                        type="password"
+                    <x-password
+                        label="Password Baru"
                         wire:model="formData.password"
                         placeholder="Kosongkan jika tidak ingin mengubah"
-                        icon="o-lock-closed"
-                        hint="Isi jika ingin mengubah password"
+                        hint="Minimal 8 karakter, kosongkan jika tidak ingin mengubah password"
+                        password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open"
+                        clearable
+                    />
+
+                    <x-password
+                        label="Konfirmasi Password Baru"
+                        wire:model="password_confirmation"
+                        placeholder="Ketik ulang password baru"
+                        password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open"
+                        clearable
                     />
                 </div>
             </x-card>

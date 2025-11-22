@@ -31,9 +31,13 @@
                     <x-input label="Email" type="email" wire:model="formData.email"
                         placeholder="Contoh: pelanggan@email.com" icon="o-envelope" hint="Opsional" />
 
-                    <x-input label="Password" type="password" wire:model="formData.password"
-                        placeholder="Minimal 8 karakter" icon="o-lock-closed"
-                        hint="Opsional - untuk login aplikasi customer" />
+                    <x-password label="Password" wire:model="formData.password"
+                        placeholder="Minimal 8 karakter" hint="Opsional - untuk login aplikasi customer"
+                        password-icon="o-lock-closed" password-visible-icon="o-lock-open" clearable />
+
+                    <x-password label="Konfirmasi Password" wire:model="password_confirmation"
+                        placeholder="Ketik ulang password" password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open" clearable />
                 </div>
             </x-card>
         </div>

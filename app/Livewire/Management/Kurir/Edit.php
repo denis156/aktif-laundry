@@ -52,6 +52,8 @@ class Edit extends Component
 
     public ?string $currentAvatarUrl = null;
 
+    public string $password_confirmation = '';
+
     // * Coverage Area - untuk area layanan kurir
     public array $coverageKecamatan = []; // Motor: single, Mobil: multiple
 
@@ -116,20 +118,26 @@ class Edit extends Component
 
     public function save(): void
     {
-        $this->validate([
+        $rules = [
             'formData.nama' => 'required|string|max:255',
             'formData.no_hp' => 'required|string|max:15|unique:kurir,no_hp,'.$this->kurirId,
             'formData.detail_alamat' => 'required|string',
             'formData.email' => 'nullable|email|max:255|unique:kurir,email,'.$this->kurirId,
             'formData.no_kendaraan' => 'nullable|string|max:20',
             'formData.jenis_kendaraan' => 'nullable|string|max:50',
-            'formData.password' => KurirHelper::passwordRules(false),
             'formData.tanggal_bergabung' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
             'avatar' => 'nullable|image|max:'.KurirHelper::AVATAR_MAX_SIZE_KB,
             'coverageKecamatan' => 'nullable|array',
             'coverageKelurahan' => 'nullable|array',
-        ]);
+        ];
+
+        // Jika password diisi, tambahkan validasi password confirmation
+        if (! empty($this->formData['password'])) {
+            $rules['formData.password'] = 'min:'.KurirHelper::PASSWORD_MIN_LENGTH.'|confirmed';
+        }
+
+        $this->validate($rules);
 
         try {
             $kurir = Kurir::findOrFail($this->kurirId);

@@ -30,6 +30,15 @@
 
                     <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions" class="checked:btn-primary!"
                         hint="Pilih role untuk pengguna ini" />
+
+                    <x-password label="Password Baru" wire:model="password"
+                        placeholder="Kosongkan jika tidak ingin mengubah"
+                        hint="Minimal {{ $passwordMinLength }} karakter, kosongkan jika tidak ingin mengubah password"
+                        password-icon="o-lock-closed" password-visible-icon="o-lock-open" clearable />
+
+                    <x-password label="Konfirmasi Password Baru" wire:model="password_confirmation"
+                        placeholder="Ketik ulang password baru" password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open" clearable />
                 </div>
             </x-card>
         </div>
@@ -76,24 +85,6 @@
                 <x-input label="Gaji Pokok" type="number" wire:model="gaji"
                     placeholder="Masukkan gaji pokok (opsional)" icon="o-banknotes" hint="Gaji dalam rupiah"
                     min="0" />
-            </x-card>
-        </div>
-
-        {{-- Ubah Password section --}}
-        <div class="lg:grid grid-cols-5 mt-8">
-            <div class="col-span-2">
-                <x-header title="Ubah Password (Opsional)" subtitle="Kosongkan jika tidak ingin mengubah"
-                    size="text-lg" />
-            </div>
-            <x-card class="col-span-3">
-                <x-password label="Password Baru" wire:model="password"
-                    placeholder="Kosongkan jika tidak ingin mengubah"
-                    hint="Minimal {{ $passwordMinLength }} karakter, kosongkan jika tidak ingin mengubah password"
-                    password-icon="o-lock-closed" password-visible-icon="o-lock-open" clearable />
-
-                <x-password label="Konfirmasi Password Baru" wire:model="password_confirmation"
-                    placeholder="Ketik ulang password baru" password-icon="o-lock-closed"
-                    password-visible-icon="o-lock-open" clearable />
             </x-card>
         </div>
 

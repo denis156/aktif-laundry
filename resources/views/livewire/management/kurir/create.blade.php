@@ -11,16 +11,17 @@
             <div class="col-span-2">
                 <x-header title="Informasi Dasar" subtitle="Data identitas kurir" size="text-lg" />
             </div>
+            
             <x-card class="col-span-3">
                 <x-file label="Avatar (Opsional)" wire:model="avatar" accept="image/png, image/jpeg, image/jpg"
                     hint="Ukuran maksimal 2MB. Format: JPG, PNG">
                     <img src="{{ asset('images/Logo.png') }}" class="h-40 rounded-lg" />
                 </x-file>
 
-                <x-input label="Kode Kurir" wire:model="formData.kode_kurir" placeholder="Auto Generate" readonly
-                    hint="Kode dibuat otomatis" icon="o-hashtag" />
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Kode Kurir" wire:model="formData.kode_kurir" placeholder="Auto Generate" readonly
+                        hint="Kode dibuat otomatis" icon="o-hashtag" />
+
                     <x-input label="Nama Kurir" wire:model="formData.nama" placeholder="Contoh: Budi Santoso"
                         icon="o-user" required />
                     <x-input label="No. HP" wire:model="formData.no_hp" placeholder="Contoh: 08123456789" icon="o-phone"
@@ -29,9 +30,13 @@
                     <x-input label="Email" type="email" wire:model="formData.email"
                         placeholder="Contoh: kurir@email.com" icon="o-envelope" hint="Opsional" />
 
-                    <x-input label="Password" type="password" wire:model="formData.password"
-                        placeholder="Minimal 8 karakter" icon="o-lock-closed" hint="Password untuk login aplikasi kurir"
-                        required />
+                    <x-password label="Password" wire:model="formData.password" placeholder="Minimal 8 karakter"
+                        hint="Password untuk login aplikasi kurir" password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open" required />
+
+                    <x-password label="Konfirmasi Password" wire:model="password_confirmation"
+                        placeholder="Ketik ulang password" password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open" required />
                 </div>
             </x-card>
         </div>
@@ -43,8 +48,8 @@
             </div>
             <x-card class="col-span-3">
                 <x-textarea label="Detail Alamat" wire:model="formData.detail_alamat"
-                    placeholder="Jalan, nomor rumah, RT/RW" rows="2"
-                    hint="Contoh: Jl. Merdeka No. 123, RT 01/RW 02" required />
+                    placeholder="Jalan, nomor rumah, RT/RW" rows="2" hint="Contoh: Jl. Merdeka No. 123, RT 01/RW 02"
+                    required />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-select label="Kecamatan" wire:model.live="formData.kecamatan" :options="$kecamatanOptions"
@@ -75,17 +80,20 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     {{-- Kolom 1: Informasi Kendaraan --}}
                     <x-select label="Jenis Kendaraan" wire:model.live="formData.jenis_kendaraan" icon="o-truck"
-                        :options="[['id' => 'Motor', 'name' => 'Motor'], ['id' => 'Mobil', 'name' => 'Mobil']]" option-value="id" option-label="name" placeholder="Pilih jenis kendaraan" />
+                        :options="[['id' => 'Motor', 'name' => 'Motor'], ['id' => 'Mobil', 'name' => 'Mobil']]"
+                        option-value="id" option-label="name" placeholder="Pilih jenis kendaraan" />
 
                     <x-input label="No. Kendaraan/Plat" wire:model="formData.no_kendaraan"
                         placeholder="Contoh: DT 1234 AB" icon="o-identification" />
 
                     {{-- Kolom 2: Area Layanan --}}
-                    <x-choices label="Kecamatan Layanan" wire:model.live="coverageKecamatan" :options="$coverageKecamatanOptions"
-                        icon="o-map-pin" hint="Pilih jenis kendaraan dulu" :disabled="empty($formData['jenis_kendaraan'])" searchable />
+                    <x-choices label="Kecamatan Layanan" wire:model.live="coverageKecamatan"
+                        :options="$coverageKecamatanOptions" icon="o-map-pin" hint="Pilih jenis kendaraan dulu"
+                        :disabled="empty($formData['jenis_kendaraan'])" searchable />
 
-                    <x-choices label="Kelurahan/Desa Layanan" wire:model="coverageKelurahan" :options="$coverageKelurahanOptions"
-                        icon="o-map" hint="Pilih kecamatan dulu" :disabled="empty($coverageKecamatan)" searchable />
+                    <x-choices label="Kelurahan/Desa Layanan" wire:model="coverageKelurahan"
+                        :options="$coverageKelurahanOptions" icon="o-map" hint="Pilih kecamatan dulu"
+                        :disabled="empty($coverageKecamatan)" searchable />
                 </div>
             </x-card>
         </div>
@@ -93,15 +101,15 @@
         {{-- Status section --}}
         <div class="lg:grid grid-cols-5 mt-8">
             <div class="col-span-2">
-                <x-header title="Status" subtitle="Status dan tanggal bergabung"
-                    size="text-lg" />
+                <x-header title="Status" subtitle="Status dan tanggal bergabung" size="text-lg" />
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-datetime label="Tanggal Bergabung" wire:model="formData.tanggal_bergabung" icon="o-calendar"
                         required />
 
-                    <x-select label="Status" wire:model="formData.status" icon="o-check-circle" :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"
+                    <x-select label="Status" wire:model="formData.status" icon="o-check-circle"
+                        :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"
                         option-value="id" option-label="name" required />
                 </div>
             </x-card>

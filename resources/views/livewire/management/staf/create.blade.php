@@ -29,6 +29,15 @@
 
                     <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions" class="checked:btn-primary!"
                         hint="Pilih role untuk pengguna ini" />
+
+                    <x-password label="Password" wire:model="password"
+                        placeholder="Minimal {{ $passwordMinLength }} karakter"
+                        hint="Password minimal {{ $passwordMinLength }} karakter" password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open" required />
+
+                    <x-password label="Konfirmasi Password" wire:model="password_confirmation"
+                        placeholder="Ketik ulang password" password-icon="o-lock-closed" password-visible-icon="o-lock-open"
+                        required />
                 </div>
             </x-card>
         </div>
@@ -75,23 +84,6 @@
                 <x-input label="Gaji Pokok" type="number" wire:model="gaji"
                     placeholder="Masukkan gaji pokok (opsional)" icon="o-banknotes" hint="Gaji dalam rupiah"
                     min="0" />
-            </x-card>
-        </div>
-
-        {{-- Password section --}}
-        <div class="lg:grid grid-cols-5 mt-8">
-            <div class="col-span-2">
-                <x-header title="Password" subtitle="Password untuk login staf" size="text-lg" />
-            </div>
-            <x-card class="col-span-3">
-                <x-password label="Password" wire:model="password"
-                    placeholder="Minimal {{ $passwordMinLength }} karakter"
-                    hint="Password minimal {{ $passwordMinLength }} karakter" password-icon="o-lock-closed"
-                    password-visible-icon="o-lock-open" required />
-
-                <x-password label="Konfirmasi Password" wire:model="password_confirmation"
-                    placeholder="Ketik ulang password" password-icon="o-lock-closed" password-visible-icon="o-lock-open"
-                    required />
             </x-card>
         </div>
 

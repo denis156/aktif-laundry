@@ -51,6 +51,8 @@ class Edit extends Component
 
     public ?string $currentAvatarUrl = null;
 
+    public string $password_confirmation = '';
+
     public function mount($id): void
     {
         $this->pelangganId = (int) $id;
@@ -97,16 +99,22 @@ class Edit extends Component
 
     public function save(): void
     {
-        $this->validate([
+        $rules = [
             'formData.nama' => 'required|string|max:255',
             'formData.no_hp' => 'required|string|max:15',
             'formData.detail_alamat' => 'required|string',
             'formData.email' => 'nullable|email|max:255',
-            'formData.password' => PelangganHelper::passwordRules(false),
             'formData.tanggal_daftar' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
             'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
-        ]);
+        ];
+
+        // Jika password diisi, tambahkan validasi password confirmation
+        if (! empty($this->formData['password'])) {
+            $rules['formData.password'] = 'min:'.PelangganHelper::PASSWORD_MIN_LENGTH.'|confirmed';
+        }
+
+        $this->validate($rules);
 
         try {
             $pelanggan = Pelanggan::findOrFail($this->pelangganId);

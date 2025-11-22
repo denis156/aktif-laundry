@@ -46,6 +46,8 @@ class Create extends Component
 
     public $avatar;
 
+    public string $password_confirmation = '';
+
     // * Coverage Area - untuk area layanan kurir
     public array $coverageKecamatan = []; // Motor: single, Mobil: multiple
 
@@ -84,7 +86,7 @@ class Create extends Component
             'formData.email' => 'nullable|email|max:255|unique:kurir,email',
             'formData.no_kendaraan' => 'nullable|string|max:20',
             'formData.jenis_kendaraan' => 'nullable|string|max:50',
-            'formData.password' => KurirHelper::passwordRules(true),
+            'formData.password' => 'required|min:'.KurirHelper::PASSWORD_MIN_LENGTH.'|confirmed',
             'formData.tanggal_bergabung' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
             'avatar' => 'nullable|image|max:'.KurirHelper::AVATAR_MAX_SIZE_KB,
