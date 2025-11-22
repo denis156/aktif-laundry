@@ -12,14 +12,6 @@
                 <x-header title="Informasi Dasar" subtitle="Data identitas pelanggan" size="text-lg" />
             </div>
             <x-card class="col-span-3">
-                <x-input
-                    label="Kode Pelanggan"
-                    wire:model="formData.kode_pelanggan"
-                    placeholder="Auto Generate"
-                    readonly
-                    hint="Kode dibuat otomatis"
-                    icon="o-hashtag"
-                />
 
                 <x-file
                     label="Avatar (Opsional)"
@@ -31,6 +23,16 @@
                 </x-file>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+                    <x-input
+                        label="Kode Pelanggan"
+                        wire:model="formData.kode_pelanggan"
+                        placeholder="Auto Generate"
+                        readonly
+                        hint="Kode dibuat otomatis"
+                        icon="o-hashtag"
+                    />
+
                     <x-input
                         label="Nama Pelanggan"
                         wire:model="formData.nama"
