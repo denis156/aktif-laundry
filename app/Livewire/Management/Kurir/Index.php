@@ -20,7 +20,8 @@ use Mary\Traits\Toast;
 #[Layout('layouts.management.app')]
 class Index extends Component
 {
-    use Toast, WithPagination;
+    use Toast;
+    use WithPagination;
 
     public string $search = '';
 

@@ -22,7 +22,8 @@ use Mary\Traits\Toast;
 #[Layout('layouts.management.app')]
 class Profile extends Component
 {
-    use Toast, WithFileUploads;
+    use Toast;
+    use WithFileUploads;
 
     // Profile Information
     public string $name = '';

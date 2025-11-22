@@ -24,7 +24,8 @@ use Mary\Traits\Toast;
 #[Layout('layouts.management.app')]
 class Edit extends Component
 {
-    use Toast, WithFileUploads;
+    use Toast;
+    use WithFileUploads;
 
     public int $kurirId;
 

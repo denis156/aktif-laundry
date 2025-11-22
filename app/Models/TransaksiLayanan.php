@@ -18,7 +18,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class TransaksiLayanan extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'transaksi_layanan';
 

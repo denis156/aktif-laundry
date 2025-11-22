@@ -19,7 +19,8 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class Kurir extends Authenticatable
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'kurir';
 

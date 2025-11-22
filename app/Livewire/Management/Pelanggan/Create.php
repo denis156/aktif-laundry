@@ -25,7 +25,8 @@ use Mary\Traits\Toast;
 #[Layout('layouts.management.app')]
 class Create extends Component
 {
-    use Toast, WithFileUploads;
+    use Toast;
+    use WithFileUploads;
 
     public array $formData = [
         'kode_pelanggan' => '',

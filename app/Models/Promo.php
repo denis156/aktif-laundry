@@ -16,7 +16,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Promo extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
+    use SoftDeletes;
 
     protected $table = 'promo';
 
