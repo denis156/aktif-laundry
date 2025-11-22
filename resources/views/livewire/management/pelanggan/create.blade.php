@@ -49,12 +49,49 @@
                 </div>
 
                 <x-textarea
-                    label="Alamat"
-                    wire:model="formData.alamat"
-                    placeholder="Masukkan alamat lengkap pelanggan..."
-                    rows="3"
+                    label="Detail Alamat"
+                    wire:model="formData.detail_alamat"
+                    placeholder="Jalan, nomor rumah, RT/RW"
+                    rows="2"
+                    hint="Contoh: Jl. Merdeka No. 123, RT 01/RW 02"
                     required
                 />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-select
+                        label="Kecamatan"
+                        wire:model.live="formData.kecamatan"
+                        :options="$kecamatanOptions"
+                        placeholder="Pilih kecamatan"
+                        icon="o-map-pin"
+                    />
+
+                    <x-select
+                        label="Kelurahan/Desa"
+                        wire:model="formData.kelurahan"
+                        :options="$kelurahanOptions"
+                        placeholder="Pilih kelurahan"
+                        hint="{{ empty($formData['kecamatan']) ? 'Pilih kecamatan dulu' : '' }}"
+                        icon="o-map"
+                        :disabled="empty($formData['kecamatan'])"
+                    />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input
+                        label="Kabupaten/Kota"
+                        wire:model="formData.kabupaten_kota"
+                        placeholder="Kota Kendari"
+                        disabled
+                    />
+
+                    <x-input
+                        label="Provinsi"
+                        wire:model="formData.provinsi"
+                        placeholder="Sulawesi Tenggara"
+                        disabled
+                    />
+                </div>
             </x-card>
         </div>
 

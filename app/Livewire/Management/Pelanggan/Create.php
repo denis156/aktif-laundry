@@ -4,8 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pelanggan;
 
+use App\Helper\AddressMetadata;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\PhoneNumber;
+use App\Helper\RegionalLocation;
 use App\Models\Pelanggan;
 use Carbon\Carbon;
 use Exception;
@@ -27,8 +29,12 @@ class Create extends Component
         'kode_pelanggan' => '',
         'nama' => '',
         'no_hp' => '',
-        'alamat' => '',
         'email' => '',
+        'detail_alamat' => '',
+        'kelurahan' => '',
+        'kecamatan' => '',
+        'kabupaten_kota' => '',
+        'provinsi' => '',
         'tanggal_daftar' => '',
         'status' => 'Aktif',
     ];
@@ -37,6 +43,10 @@ class Create extends Component
     {
         $this->refreshKodePelanggan();
         $this->formData['tanggal_daftar'] = now()->format('Y-m-d H:i');
+
+        // Set default kabupaten/kota dan provinsi menggunakan RegionalLocation Helper
+        $this->formData['kabupaten_kota'] = RegionalLocation::getRegencyName();
+        $this->formData['provinsi'] = RegionalLocation::getProvinceName();
     }
 
     public function refreshKodePelanggan(): void
@@ -58,7 +68,7 @@ class Create extends Component
             'formData.kode_pelanggan' => 'required|unique:pelanggan,kode_pelanggan',
             'formData.nama' => 'required|string|max:255',
             'formData.no_hp' => 'required|string|max:15',
-            'formData.alamat' => 'required|string',
+            'formData.detail_alamat' => 'required|string',
             'formData.email' => 'nullable|email|max:255',
             'formData.tanggal_daftar' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
@@ -80,13 +90,36 @@ class Create extends Component
                     $this->refreshKodePelanggan();
                 }
 
-                // Konversi format tanggal
-                $data = $this->formData;
-                $data['tanggal_daftar'] = Carbon::parse($this->formData['tanggal_daftar'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s');
-                $data['no_hp'] = $normalizedPhone;
-                $data['total_transaksi'] = 0;
+                // Build alamat lengkap dari komponen regional
+                $alamatLengkap = AddressMetadata::buildAlamatFromArray($this->formData);
 
-                Pelanggan::create($data);
+                // Prepare data untuk create pelanggan
+                $data = [
+                    'kode_pelanggan' => $this->formData['kode_pelanggan'],
+                    'nama' => $this->formData['nama'],
+                    'no_hp' => $normalizedPhone,
+                    'alamat' => $alamatLengkap,
+                    'email' => $this->formData['email'],
+                    'tanggal_daftar' => Carbon::parse($this->formData['tanggal_daftar'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s'),
+                    'status' => $this->formData['status'],
+                    'total_transaksi' => 0,
+                ];
+
+                // Create pelanggan
+                $pelanggan = Pelanggan::create($data);
+
+                // Set metadata alamat menggunakan AddressMetadata helper
+                AddressMetadata::set(
+                    $pelanggan,
+                    $this->formData['detail_alamat'],
+                    $this->formData['kelurahan'],
+                    $this->formData['kecamatan'],
+                    $this->formData['kabupaten_kota'],
+                    $this->formData['provinsi']
+                );
+
+                // Save metadata
+                $pelanggan->save();
             });
 
             $this->success('Pelanggan berhasil ditambahkan!', position: 'toast-bottom');
@@ -121,8 +154,57 @@ class Create extends Component
         }
     }
 
+    public function getKecamatanOptions(): array
+    {
+        // Get kecamatan di Kota Kendari dari API menggunakan RegionalLocation helper
+        $districts = RegionalLocation::getKendariDistricts();
+
+        // Transform ke format yang dibutuhkan oleh x-select component
+        return collect($districts)->map(fn (array $district) => [
+            'id' => $district['name'] ?? '',
+            'name' => $district['name'] ?? '',
+        ])->toArray();
+    }
+
+    public function getKelurahanOptions(): array
+    {
+        // Kelurahan berdasarkan kecamatan yang dipilih menggunakan RegionalLocation Helper
+        $kecamatanName = $this->formData['kecamatan'] ?? '';
+
+        if (empty($kecamatanName)) {
+            return [];
+        }
+
+        // Cari district code berdasarkan nama kecamatan
+        $districts = RegionalLocation::getKendariDistricts();
+        $districtCode = null;
+
+        foreach ($districts as $district) {
+            if (($district['name'] ?? '') === $kecamatanName) {
+                $districtCode = $district['code'] ?? null;
+                break;
+            }
+        }
+
+        if (! $districtCode) {
+            return [];
+        }
+
+        // Get kelurahan/desa berdasarkan district code dari API
+        $villages = RegionalLocation::getVillagesByDistrict($districtCode);
+
+        // Transform ke format yang dibutuhkan oleh x-select component
+        return collect($villages)->map(fn (array $village) => [
+            'id' => $village['name'] ?? '',
+            'name' => $village['name'] ?? '',
+        ])->toArray();
+    }
+
     public function render(): mixed
     {
-        return view('livewire.management.pelanggan.create');
+        return view('livewire.management.pelanggan.create', [
+            'kecamatanOptions' => $this->getKecamatanOptions(),
+            'kelurahanOptions' => $this->getKelurahanOptions(),
+        ]);
     }
 }
