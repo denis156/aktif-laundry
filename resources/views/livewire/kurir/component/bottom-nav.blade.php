@@ -5,9 +5,9 @@
             $contentClasses = $this->getNavContentClasses($item['route']);
         @endphp
 
-        <button {{ $buttonClasses ? "class='{$buttonClasses}'" : '' }} wire:navigate.hover href="{{ route($item['route']) }}">
+        <a {{ $buttonClasses ? "class='{$buttonClasses}'" : '' }} href="{{ route($item['route']) }}" wire:navigate>
             <x-icon name="{{ $item['icon'] }}" class="{{ $item['icon_size'] }} {{ $contentClasses['icon'] }}" />
             <span class="dock-label {{ $contentClasses['label'] }}">{{ $item['name'] }}</span>
-        </button>
+        </a>
     @endforeach
 </nav>

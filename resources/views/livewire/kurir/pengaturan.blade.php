@@ -3,26 +3,25 @@
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 
     <div class="space-y-4 flex flex-col justify-center items-center mb-24">
-
         {{-- Avatar --}}
         <div class="avatar avatar-online avatar-placeholder">
             <div class="w-24 ring-primary ring-offset-base-100 ring-2 ring-offset-2 rounded-full">
                 <img src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp" />
             </div>
         </div>
-        <p class="font-bold text-lg">Endors Team Hehehe</p>
+        <p class="font-bold text-lg">Endors Hehehe</p>
 
         {{-- Tema --}}
         <div class="w-full space-y-2">
             <p class="font-bold text-base-content/60 text-md ml-2">Tema</p>
             <x-card class="shadow-lg border border-primary">
                 <div class="flex justify-between items-center">
-                    <span class="text-lg font-medium">Mode Gelap (Toggle)</span>
+                    <span class="text-md font-medium">Mode Gelap</span>
                     <livewire:component.dark-mode-toggle toggle-class="toggle-success toggle-xl" :right="true" />
                 </div>
                 <div class="divider"></div>
                 {{-- <div class="flex justify-between items-center">
-                    <span class="text-lg font-medium">Mode Gelap (Swap)</span>
+                    <span class="text-md font-medium">Mode Gelap (Swap)</span>
                     <livewire:component.dark-mode-swap swap-class="swap-rotate" icon-size="h-8 w-8" />
                 </div>
                 <div class="divider"></div> --}}
@@ -36,7 +35,7 @@
             <p class="font-bold text-base-content/60 text-md ml-2">Notifikasi</p>
             <x-card class="shadow-lg border border-primary">
                 <div class="flex justify-between items-center">
-                    <span class="text-lg font-medium">Notif Pesanan</span>
+                    <span class="text-md font-medium">Notif Pesanan</span>
                     <x-toggle class="toggle-success toggle-xl" right />
                 </div>
                 <div class="divider"></div>
@@ -52,20 +51,20 @@
                 <div class="space-y-4">
                     {{-- Nama --}}
                     <div class="flex justify-between items-center">
-                        <span class="text-lg font-medium truncate">Endors Team Hehehe</span>
+                        <span class="text-md font-medium truncate">Endors Hehehe</span>
                         <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm"
                             @click="$wire.modalUbahNama = true" />
                     </div>
                     <div class="divider"></div>
                     {{-- No Telepon --}}
                     <div class="flex justify-between items-center">
-                        <span class="text-lg font-medium truncate">+62 88888888889</span>
+                        <span class="text-md font-medium truncate">+62 88888888889</span>
                         <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" />
                     </div>
                     <div class="divider"></div>
                     {{-- Email --}}
                     <div class="flex justify-between items-center">
-                        <span class="text-lg font-medium truncate">endorse@example.com</span>
+                        <span class="text-md font-medium truncate">endorse@example.com</span>
                         <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" />
                     </div>
                 </div>
@@ -82,13 +81,13 @@
                 <div class="space-y-4">
                     {{-- Ubah Sandi --}}
                     <div class="flex justify-between items-center">
-                        <span class="text-lg font-medium">Ubah Sandi</span>
+                        <span class="text-md font-medium">Ubah Sandi</span>
                         <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" />
                     </div>
                     <div class="divider"></div>
                     {{-- Keluar --}}
                     <div class="flex justify-between items-center">
-                        <span class="text-lg font-medium">Keluar dari Sistem</span>
+                        <span class="text-md font-medium">Keluar dari Sistem</span>
                         <x-button label="Keluar" icon="iconpark.pushdoor-o" class="btn-error btn-sm" />
                     </div>
                 </div>

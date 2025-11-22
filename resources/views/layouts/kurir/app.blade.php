@@ -8,6 +8,9 @@
     <title>{{ isset($title) ? $title . ' - ' . config('app.name') : config('app.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
 
+    {{-- Livewire Style --}}
+    @livewireStyles
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
@@ -23,6 +26,12 @@
 
     {{--  TOAST area --}}
     <x-toast />
+
+    {{-- LOADING INDICATOR --}}
+    <livewire:component.loading />
+
+    {{-- Livewire Script --}}
+    @livewireScripts
 </body>
 
 </html>
