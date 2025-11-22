@@ -20,15 +20,23 @@
                     icon="o-hashtag"
                 />
 
-                <x-input
-                    label="Nama Pelanggan"
-                    wire:model="formData.nama"
-                    placeholder="Contoh: Ahmad Rizki"
-                    icon="o-user"
-                    required
-                />
+                <x-file
+                    label="Avatar (Opsional)"
+                    wire:model="avatar"
+                    accept="image/png, image/jpeg, image/jpg"
+                    hint="Ukuran maksimal 2MB. Format: JPG, PNG"
+                >
+                    <img src="{{ $currentAvatarUrl ? asset('storage/' . $currentAvatarUrl) : asset('images/Logo.png') }}" class="h-40 rounded-lg" />
+                </x-file>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input
+                        label="Nama Pelanggan"
+                        wire:model="formData.nama"
+                        placeholder="Contoh: Ahmad Rizki"
+                        icon="o-user"
+                        required
+                    />
                     <x-input
                         label="No. HP"
                         wire:model="formData.no_hp"
@@ -46,7 +54,15 @@
                         hint="Opsional"
                     />
                 </div>
+            </x-card>
+        </div>
 
+        {{-- Alamat section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Alamat" subtitle="Informasi alamat lengkap" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
                 <x-textarea
                     label="Detail Alamat"
                     wire:model="formData.detail_alamat"
@@ -91,22 +107,13 @@
                         disabled
                     />
                 </div>
-
-                <x-textarea
-                    label="Alamat Lengkap"
-                    wire:model="formData.alamat"
-                    placeholder="Alamat lengkap akan dibuat otomatis dari komponen di atas"
-                    rows="3"
-                    disabled
-                    hint="Alamat ini dibuat otomatis dari detail alamat, kelurahan, kecamatan, kabupaten/kota, dan provinsi"
-                />
             </x-card>
         </div>
 
-        {{-- Status & Tanggal section --}}
+        {{-- Status & Informasi Tambahan section --}}
         <div class="lg:grid grid-cols-5 mt-8">
             <div class="col-span-2">
-                <x-header title="Status & Tanggal" subtitle="Status dan tanggal registrasi" size="text-lg" />
+                <x-header title="Status & Informasi Tambahan" subtitle="Status dan informasi pelanggan" size="text-lg" />
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -129,6 +136,34 @@
                         option-value="id"
                         option-label="name"
                         required
+                    />
+
+                    <x-input
+                        label="Total Transaksi"
+                        wire:model="formData.total_transaksi"
+                        type="number"
+                        placeholder="0"
+                        icon="o-shopping-bag"
+                        hint="Auto-increment saat transaksi"
+                        disabled
+                    />
+
+                    <x-input
+                        label="Kode Referral Dipakai"
+                        wire:model="formData.kode_referral_dipakai"
+                        placeholder="Kode referral (jika ada)"
+                        icon="o-ticket"
+                        hint="Opsional"
+                        disabled
+                    />
+
+                    <x-input
+                        label="Direferensikan Oleh"
+                        wire:model="formData.direferensikan_oleh"
+                        placeholder="ID Pelanggan referrer"
+                        icon="o-user-group"
+                        hint="Auto-set dari kode referral"
+                        disabled
                     />
                 </div>
             </x-card>

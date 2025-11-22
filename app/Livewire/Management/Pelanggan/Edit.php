@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Management\Pelanggan;
 
 use App\Helper\AddressMetadata;
+use App\Helper\Database\PelangganHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
 use App\Models\Pelanggan;
@@ -15,13 +16,14 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Mary\Traits\Toast;
 
 #[Title('Edit Pelanggan')]
 #[Layout('layouts.management.app')]
 class Edit extends Component
 {
-    use Toast;
+    use Toast, WithFileUploads;
 
     public int $pelangganId;
 
@@ -38,7 +40,14 @@ class Edit extends Component
         'alamat' => '',
         'tanggal_daftar' => '',
         'status' => 'Aktif',
+        'total_transaksi' => 0,
+        'kode_referral_dipakai' => '',
+        'direferensikan_oleh' => null,
     ];
+
+    public $avatar;
+
+    public ?string $currentAvatarUrl = null;
 
     public function mount($id): void
     {
@@ -66,7 +75,13 @@ class Edit extends Component
                 'alamat' => $pelanggan->alamat ?? '',
                 'tanggal_daftar' => $pelanggan->tanggal_daftar->format('Y-m-d H:i'),
                 'status' => $pelanggan->status,
+                'total_transaksi' => $pelanggan->total_transaksi ?? 0,
+                'kode_referral_dipakai' => $pelanggan->kode_referral_dipakai ?? '',
+                'direferensikan_oleh' => $pelanggan->direferensikan_oleh,
             ];
+
+            // Load current avatar URL
+            $this->currentAvatarUrl = PelangganHelper::getAvatarUrl($pelanggan);
         } catch (Exception $e) {
             Log::error('Failed to load pelanggan for edit', [
                 'pelanggan_id' => $this->pelangganId,
@@ -87,6 +102,7 @@ class Edit extends Component
             'formData.email' => 'nullable|email|max:255',
             'formData.tanggal_daftar' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
+            'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
         ]);
 
         try {
@@ -124,6 +140,12 @@ class Edit extends Component
                 $this->formData['kabupaten_kota'],
                 $this->formData['provinsi']
             );
+
+            // Upload avatar baru jika ada
+            if ($this->avatar) {
+                $avatarPath = $this->avatar->store('avatars/pelanggan', 'public');
+                PelangganHelper::setAvatarUrl($pelanggan, $avatarPath);
+            }
 
             // Save metadata
             $pelanggan->save();

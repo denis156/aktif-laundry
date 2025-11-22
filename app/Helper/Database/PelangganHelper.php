@@ -32,12 +32,17 @@ class PelangganHelper
 
     public const PASSWORD_MAX_LENGTH = 255;
 
+    // * Avatar upload constants (in KB)
+    public const AVATAR_MAX_SIZE_KB = 2048; // 2 MB
+
     // * Metadata constants
     public const META_MEMBER_CARD = 'member_card';
 
     public const META_LOYALTY_POINTS = 'loyalty_points';
 
     public const META_PREFERENSI_PENGIRIMAN = 'preferensi_pengiriman';
+
+    public const META_AVATAR_URL = 'avatar_url';
 
     // * Ambil nilai dari metadata
     public static function getMetadata(Pelanggan $pelanggan, string $key, mixed $default = null): mixed
@@ -157,6 +162,18 @@ class PelangganHelper
         }
     }
 
+    // * Ambil avatar URL dari metadata
+    public static function getAvatarUrl(Pelanggan $pelanggan): ?string
+    {
+        return self::getMetadata($pelanggan, self::META_AVATAR_URL);
+    }
+
+    // * Set avatar URL ke metadata
+    public static function setAvatarUrl(Pelanggan $pelanggan, ?string $avatarUrl): void
+    {
+        self::setMetadata($pelanggan, self::META_AVATAR_URL, $avatarUrl);
+    }
+
     // ! Rules validasi untuk metadata
     public static function metadataRules(): array
     {
@@ -164,6 +181,7 @@ class PelangganHelper
             self::META_MEMBER_CARD => 'nullable|string|max:50',
             self::META_LOYALTY_POINTS => 'nullable|integer|min:0',
             self::META_PREFERENSI_PENGIRIMAN => 'nullable|in:antar_jemput,ambil_sendiri',
+            self::META_AVATAR_URL => 'nullable|string|max:255',
         ];
     }
 

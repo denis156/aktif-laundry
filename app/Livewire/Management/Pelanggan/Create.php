@@ -17,13 +17,14 @@ use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Mary\Traits\Toast;
 
 #[Title('Tambah Pelanggan')]
 #[Layout('layouts.management.app')]
 class Create extends Component
 {
-    use Toast;
+    use Toast, WithFileUploads;
 
     public array $formData = [
         'kode_pelanggan' => '',
@@ -37,7 +38,12 @@ class Create extends Component
         'provinsi' => '',
         'tanggal_daftar' => '',
         'status' => 'Aktif',
+        'total_transaksi' => 0,
+        'kode_referral_dipakai' => '',
+        'direferensikan_oleh' => null,
     ];
+
+    public $avatar;
 
     public function mount(): void
     {
@@ -72,6 +78,7 @@ class Create extends Component
             'formData.email' => 'nullable|email|max:255',
             'formData.tanggal_daftar' => 'required|date',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
+            'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
         ]);
 
         try {
@@ -117,6 +124,12 @@ class Create extends Component
                     $this->formData['kabupaten_kota'],
                     $this->formData['provinsi']
                 );
+
+                // Upload avatar jika ada
+                if ($this->avatar) {
+                    $avatarPath = $this->avatar->store('avatars/pelanggan', 'public');
+                    PelangganHelper::setAvatarUrl($pelanggan, $avatarPath);
+                }
 
                 // Save metadata
                 $pelanggan->save();

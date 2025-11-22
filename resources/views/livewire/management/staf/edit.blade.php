@@ -12,24 +12,25 @@
                 <x-header title="Informasi Profil" subtitle="Data personal staf" size="text-lg" />
             </div>
             <x-card class="col-span-3">
-                <x-file wire:model="avatar" label="Avatar"
-                    hint="Opsional - Upload foto avatar baru (max {{ $avatarMaxSizeMB }} MB)"
+                <x-file wire:model="avatar" label="Avatar (Opsional)"
+                    hint="Ukuran maksimal {{ $avatarMaxSizeMB }} MB. Format: JPG, PNG"
                     accept="image/png, image/jpeg, image/jpg">
                     <img src="{{ $currentAvatarUrl ? asset('storage/' . $currentAvatarUrl) : asset('images/Logo.png') }}"
                         class="h-40 rounded-lg" />
                 </x-file>
 
-                <x-input label="Nama Lengkap" wire:model="name" placeholder="Masukkan nama lengkap" icon="o-user"
-                    required />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Nama Lengkap" wire:model="name" placeholder="Masukkan nama lengkap" icon="o-user"
+                        required />
+                    <x-input label="Nomor HP" wire:model="no_hp" placeholder="08xx atau +62xxx" icon="o-phone"
+                        hint="Format: +62, 62, 08, atau 8" required />
 
-                <x-input label="Email" type="email" wire:model="email" placeholder="email@example.com"
-                    icon="o-envelope" required />
+                    <x-input label="Email" type="email" wire:model="email" placeholder="email@example.com"
+                        icon="o-envelope" required />
 
-                <x-input label="Nomor HP" wire:model="no_hp" placeholder="08xx atau +62xxx" icon="o-phone"
-                    hint="Format: +62, 62, 08, atau 8" required />
-
-                <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions" class="checked:btn-primary!"
-                    hint="Pilih role untuk pengguna ini" />
+                    <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions" class="checked:btn-primary!"
+                        hint="Pilih role untuk pengguna ini" />
+                </div>
             </x-card>
         </div>
 
@@ -40,23 +41,23 @@
             </div>
             <x-card class="col-span-3">
                 <x-textarea label="Detail Alamat" wire:model.live="detail_alamat" placeholder="Jalan, nomor, RT/RW, dll"
-                    hint="Detail Alamat seperti jalan, nomor, RT/RW" rows="3" required />
+                    hint="Detail Alamat seperti jalan, nomor, RT/RW" rows="2" required />
 
-                <x-select label="Provinsi" wire:model.live="provinsi" :options="$provinsiOptions" disabled required />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions" placeholder="Pilih kecamatan"
+                        :disabled="empty($kabupaten_kota)" hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}"
+                        icon="o-map-pin" required />
 
-                <x-select label="Kabupaten/Kota" wire:model.live="kabupaten_kota" :options="$kabupatenKotaOptions"
-                    placeholder="Pilih kabupaten/kota" required />
+                    <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
+                        placeholder="Pilih kelurahan/desa" :disabled="empty($kecamatan)"
+                        hint="{{ empty($kecamatan) ? 'Pilih kecamatan terlebih dahulu' : '' }}" icon="o-map" required />
+                </div>
 
-                <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions" placeholder="Pilih kecamatan"
-                    :disabled="empty($kabupaten_kota)" hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}"
-                    required />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Kabupaten/Kota" wire:model="kabupaten_kota" placeholder="Kota Kendari" disabled />
 
-                <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
-                    placeholder="Pilih kelurahan/desa" :disabled="empty($kecamatan)"
-                    hint="{{ empty($kecamatan) ? 'Pilih kecamatan terlebih dahulu' : '' }}" required />
-
-                <x-textarea label="Alamat Lengkap" wire:model="alamat"
-                    hint="Alamat otomatis di-generate dari data di atas" rows="3" disabled />
+                    <x-input label="Provinsi" wire:model="provinsi" placeholder="Sulawesi Tenggara" disabled />
+                </div>
             </x-card>
         </div>
 

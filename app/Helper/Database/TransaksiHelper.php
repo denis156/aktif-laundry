@@ -109,7 +109,7 @@ class TransaksiHelper
     }
 
     // * Set informasi promo yang digunakan
-    public static function setPromoInfo(Transaksi $transaksi, array $promoData): void
+    public static function setPromoInfo(Transaksi $transaksi, ?array $promoData): void
     {
         self::setMetadata($transaksi, self::META_PROMO, $promoData);
     }
@@ -121,7 +121,7 @@ class TransaksiHelper
     }
 
     // * Set informasi referral yang digunakan
-    public static function setReferralInfo(Transaksi $transaksi, array $referralData): void
+    public static function setReferralInfo(Transaksi $transaksi, ?array $referralData): void
     {
         self::setMetadata($transaksi, self::META_REFERRAL, $referralData);
     }
@@ -133,7 +133,7 @@ class TransaksiHelper
     }
 
     // * Set nama kurir yang jemput cucian
-    public static function setKurirJemput(Transaksi $transaksi, string $kurirName): void
+    public static function setKurirJemput(Transaksi $transaksi, ?string $kurirName): void
     {
         self::setMetadata($transaksi, self::META_KURIR_JEMPUT, $kurirName);
     }
@@ -145,7 +145,7 @@ class TransaksiHelper
     }
 
     // * Set nama kurir yang antar cucian
-    public static function setKurirAntar(Transaksi $transaksi, string $kurirName): void
+    public static function setKurirAntar(Transaksi $transaksi, ?string $kurirName): void
     {
         self::setMetadata($transaksi, self::META_KURIR_ANTAR, $kurirName);
     }

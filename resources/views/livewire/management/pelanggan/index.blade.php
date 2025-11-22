@@ -22,6 +22,15 @@
                 <x-icon name="o-cube" label="Tidak ada data pelanggan." />
             </x-slot:empty>
 
+            @scope('cell_avatar', $item)
+                @php
+                    $avatarUrl = \App\Helper\Database\PelangganHelper::getAvatarUrl($item);
+                @endphp
+                <div class="flex items-center justify-center">
+                    <img src="{{ $avatarUrl ? asset('storage/' . $avatarUrl) : asset('images/Logo.png') }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
+                </div>
+            @endscope
+
             @scope('cell_no_hp', $item)
                 <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($item->no_hp) ?? '-' }}</span>
             @endscope
