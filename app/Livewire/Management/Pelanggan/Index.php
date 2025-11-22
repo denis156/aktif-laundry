@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pelanggan;
 
-use App\Models\Pelanggan;
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
-use Livewire\Component;
-use Livewire\WithPagination;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Models\Pelanggan;
+use Livewire\WithPagination;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 #[Title('Daftar Pelanggan')]
 #[Layout('layouts.management.app')]
@@ -59,7 +60,7 @@ class Index extends Component
                 'pelanggan_id' => $pelanggan->id,
                 'kode_pelanggan' => $pelanggan->kode_pelanggan,
                 'nama' => $pelanggan->nama,
-                'deleted_by' => auth()->id(),
+                'deleted_by' => Auth::id(),
             ]);
 
             $pelanggan->delete();

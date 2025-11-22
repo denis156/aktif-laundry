@@ -4,16 +4,17 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Kurir;
 
-use App\Models\Kurir;
 use Exception;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Log;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
+use App\Models\Kurir;
+use Mary\Traits\Toast;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Mary\Traits\Toast;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 #[Title('Daftar Kurir')]
 #[Layout('layouts.management.app')]
@@ -59,7 +60,7 @@ class Index extends Component
                 'kurir_id' => $kurir->id,
                 'kode_kurir' => $kurir->kode_kurir,
                 'nama' => $kurir->nama,
-                'deleted_by' => auth()->id(),
+                'deleted_by' => Auth::id(),
             ]);
 
             $kurir->delete();
