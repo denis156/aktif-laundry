@@ -4,15 +4,15 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Staf;
 
-use Exception;
 use App\Models\User;
-use Mary\Traits\Toast;
+use Exception;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithPagination;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
+use Mary\Traits\Toast;
 
 #[Title('Daftar Staf')]
 #[Layout('layouts.management.app')]

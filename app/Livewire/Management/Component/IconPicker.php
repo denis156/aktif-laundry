@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Component;
 
-use Livewire\Component;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\File;
+use Livewire\Component;
 
 class IconPicker extends Component
 {
