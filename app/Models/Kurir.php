@@ -32,7 +32,6 @@ class Kurir extends Authenticatable
         'alamat',
         'no_kendaraan',
         'jenis_kendaraan',
-        'foto_profil',
         'tanggal_bergabung',
         'status',
         'total_antar',

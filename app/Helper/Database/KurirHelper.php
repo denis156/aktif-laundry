@@ -7,7 +7,6 @@ namespace App\Helper\Database;
 use App\Helper\AddressMetadata;
 use App\Helper\PhoneNumber;
 use App\Models\Kurir;
-use App\Models\Pengaturan;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 
@@ -21,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 // * - provinsi: Provinsi
 // * - latitude: Koordinat GPS latitude
 // * - longitude: Koordinat GPS longitude
+// * - avatar_url: URL avatar kurir (disimpan di storage/app/public/avatars/kurir)
 // * - area_coverage: Area yang bisa dilayani kurir (array)
 // * - bank_info: Info rekening bank kurir
 // * - emergency_contact: Kontak darurat kurir
@@ -32,12 +32,17 @@ class KurirHelper
 
     public const PASSWORD_MAX_LENGTH = 255;
 
+    // * Avatar upload constants (in KB)
+    public const AVATAR_MAX_SIZE_KB = 2048; // 2 MB
+
     // * Metadata constants
     public const META_AREA_COVERAGE = 'area_coverage';
 
     public const META_BANK_INFO = 'bank_info';
 
     public const META_EMERGENCY_CONTACT = 'emergency_contact';
+
+    public const META_AVATAR_URL = 'avatar_url';
 
     // * Ambil nilai dari metadata
     public static function getMetadata(Kurir $kurir, string $key, mixed $default = null): mixed
@@ -93,6 +98,18 @@ class KurirHelper
     public static function setEmergencyContact(Kurir $kurir, array $contactData): void
     {
         self::setMetadata($kurir, self::META_EMERGENCY_CONTACT, $contactData);
+    }
+
+    // * Ambil avatar URL dari metadata
+    public static function getAvatarUrl(Kurir $kurir): ?string
+    {
+        return self::getMetadata($kurir, self::META_AVATAR_URL);
+    }
+
+    // * Set avatar URL ke metadata
+    public static function setAvatarUrl(Kurir $kurir, ?string $avatarUrl): void
+    {
+        self::setMetadata($kurir, self::META_AVATAR_URL, $avatarUrl);
     }
 
     // * Set alamat regional ke metadata dan sync ke kolom alamat
@@ -167,7 +184,7 @@ class KurirHelper
     public static function generateKodeKurir(): string
     {
         try {
-            $prefix = Pengaturan::getValue('format_id_kurir', 'KUR');
+            $prefix = PengaturanHelper::getValue('format_id_kurir', 'KUR');
             $prefixLength = strlen($prefix);
 
             $lastKurir = Kurir::withTrashed()->orderBy('kode_kurir', 'desc')->first();
@@ -299,6 +316,7 @@ class KurirHelper
             self::META_AREA_COVERAGE => 'nullable|array',
             self::META_BANK_INFO => 'nullable|array',
             self::META_EMERGENCY_CONTACT => 'nullable|array',
+            self::META_AVATAR_URL => 'nullable|string|max:255',
         ];
     }
 
