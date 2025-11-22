@@ -16,7 +16,7 @@
     <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-2" title="Daftar Layanan"
         subtitle="Atur jenis cuci dan harga">
         <x-table :headers="$headers" :rows="$layanan" :sort-by="$sortBy" striped with-pagination per-page="perPage"
-            :per-page-values="[5, 10, 25, 50]">
+            :per-page-values="[5, 10, 25, 50]" link="{{ route('layanan.edit', '[id]') }}">
             <x-slot:empty>
                 <x-icon name="o-cube" label="Tidak ada data layanan." />
             </x-slot:empty>
