@@ -55,7 +55,7 @@
                     class="-mx-2 -my-2! rounded">
                     <x-slot:avatar>
                         <x-avatar :image="$user->avatar_url ? asset('storage/' . $user->avatar_url) : null"
-                            :placeholder="strtoupper(substr($user->name, 0, 2))" class="!w-11" />
+                            :placeholder="strtoupper(substr($user->name, 0, 2))" class="w-11!" />
                     </x-slot:avatar>
                     <x-slot:actions>
                         <livewire:component.dark-mode-swap swap-class="swap-rotate" icon-size="h-6 w-6" />
