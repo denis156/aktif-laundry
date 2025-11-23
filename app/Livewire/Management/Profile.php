@@ -185,6 +185,11 @@ class Profile extends Component
 
     public function save()
     {
+        // Ensure provinsi has default value (karena field disabled, value tidak ter-submit)
+        if (empty($this->provinsi)) {
+            $this->provinsi = RegionalLocation::getProvinceName();
+        }
+
         // Validasi profil
         $rules = [
             'name' => 'required|string|max:255',
@@ -195,7 +200,6 @@ class Profile extends Component
             'kelurahan' => 'required|string',
             'kecamatan' => 'required|string',
             'kabupaten_kota' => 'required|string',
-            'provinsi' => 'required|string',
         ];
 
         $avatarMaxSizeMB = UserHelper::AVATAR_MAX_SIZE_KB / 1024;
@@ -216,7 +220,6 @@ class Profile extends Component
             'kelurahan.required' => 'Kelurahan wajib dipilih',
             'kecamatan.required' => 'Kecamatan wajib dipilih',
             'kabupaten_kota.required' => 'Kabupaten/Kota wajib dipilih',
-            'provinsi.required' => 'Provinsi wajib dipilih',
         ];
 
         // Validasi password jika diisi

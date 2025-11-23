@@ -19,7 +19,7 @@
                 <x-file wire:model="avatar" label="Avatar" hint="Upload foto avatar baru (max {{ $avatarMaxSizeMB }} MB)"
                     accept="image/png, image/jpeg, image/jpg">
                     <img src="{{ $currentAvatarUrl ? asset('storage/' . $currentAvatarUrl) : asset('images/Logo.png') }}"
-                        class="h-40 rounded-lg" />
+                        class="h-38 rounded-lg" />
                 </x-file>
 
                 <x-input label="Nama Lengkap" wire:model.live="name" placeholder="Masukkan nama lengkap" icon="o-user"
@@ -42,7 +42,7 @@
                 <x-textarea label="Detail Alamat" wire:model.live="detail_alamat" placeholder="Jalan, nomor, RT/RW, dll"
                     hint="Detail Alamat seperti jalan, nomor, RT/RW" rows="3" required />
 
-                <x-select label="Provinsi" wire:model.live="provinsi" :options="$provinsiOptions" disabled required />
+                <x-select label="Provinsi" wire:model="provinsi" :options="$provinsiOptions" disabled />
 
                 <x-select label="Kabupaten/Kota" wire:model.live="kabupaten_kota" :options="$kabupatenKotaOptions"
                     placeholder="Pilih kabupaten/kota" required />
