@@ -94,14 +94,14 @@ class BottomNav extends Component
     {
         if ($this->isActive($routeName)) {
             return [
-                'icon' => 'text-neutral-content',
-                'label' => 'text-neutral-content font-bold',
+                'icon' => 'text-primary',
+                'label' => 'text-primary font-extrabold',
             ];
         }
 
         return [
             'icon' => 'text-neutral',
-            'label' => 'text-neutral',
+            'label' => 'text-neutral font-thin',
         ];
     }
 

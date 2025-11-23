@@ -1,6 +1,6 @@
 <nav class="navbar bg-primary text-primary-content sticky top-0 z-50">
     <div class="navbar-start">
-        <x-dropdown no-x-anchor scroll max-height="max-h-64">
+        <x-dropdown no-x-anchor scroll max-height="max-h-64 text-warning-content">
             <x-slot:trigger>
                 <div class="indicator">
                     <span class="indicator-item badge badge-warning badge-xs">2</span>
