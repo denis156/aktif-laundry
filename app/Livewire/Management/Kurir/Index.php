@@ -37,11 +37,13 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public string $jenisKendaraanFilter = '';
+
     public int $perPage = 10;
 
     public function clear(): void
     {
-        $this->reset(['search', 'statusFilter']);
+        $this->reset(['search', 'statusFilter', 'jenisKendaraanFilter']);
         $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
     }
 
@@ -110,6 +112,9 @@ class Index extends Component
             })
             ->when($this->statusFilter, function (Builder $query): void {
                 $query->where('status', $this->statusFilter);
+            })
+            ->when($this->jenisKendaraanFilter, function (Builder $query): void {
+                $query->where('jenis_kendaraan', $this->jenisKendaraanFilter);
             })
             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
             ->paginate($this->perPage);

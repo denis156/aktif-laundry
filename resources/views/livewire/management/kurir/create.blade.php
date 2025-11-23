@@ -87,13 +87,19 @@
                         placeholder="Contoh: DT 1234 AB" icon="o-identification" />
 
                     {{-- Kolom 2: Area Layanan --}}
-                    <x-choices label="Kecamatan Layanan" wire:model.live="coverageKecamatan"
-                        :options="$coverageKecamatanOptions" icon="o-map-pin" hint="Pilih jenis kendaraan dulu"
-                        :disabled="empty($formData['jenis_kendaraan'])" searchable />
+                    <x-choices-offline label="Kecamatan Layanan" wire:model.live="coverageKecamatan"
+                        :options="$coverageKecamatanOptions" icon="o-map-pin"
+                        hint="{{ empty($formData['jenis_kendaraan']) ? 'Pilih jenis kendaraan dulu' : 'Pilih satu atau lebih kecamatan' }}"
+                        :disabled="empty($formData['jenis_kendaraan'])"
+                        searchable
+                        placeholder="Cari kecamatan..." />
 
-                    <x-choices label="Kelurahan/Desa Layanan" wire:model="coverageKelurahan"
-                        :options="$coverageKelurahanOptions" icon="o-map" hint="Pilih kecamatan dulu"
-                        :disabled="empty($coverageKecamatan)" searchable />
+                    <x-choices-offline label="Kelurahan/Desa Layanan" wire:model="coverageKelurahan"
+                        :options="$coverageKelurahanOptions" icon="o-map"
+                        hint="{{ empty($coverageKecamatan) ? 'Pilih kecamatan dulu' : 'Pilih satu atau lebih kelurahan' }}"
+                        :disabled="empty($coverageKecamatan)"
+                        searchable
+                        placeholder="Cari kelurahan..." />
                 </div>
             </x-card>
         </div>
@@ -106,7 +112,7 @@
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-datetime label="Tanggal Bergabung" wire:model="formData.tanggal_bergabung" icon="o-calendar"
-                        required />
+                        type="datetime-local" required />
 
                     <x-select label="Status" wire:model="formData.status" icon="o-check-circle"
                         :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"

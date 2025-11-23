@@ -87,7 +87,7 @@ class Edit extends Component
                 'no_kendaraan' => $kurir->no_kendaraan ?? '',
                 'jenis_kendaraan' => $kurir->jenis_kendaraan ?? '',
                 'password' => '',
-                'tanggal_bergabung' => $kurir->tanggal_bergabung?->format('Y-m-d H:i') ?? now()->format('Y-m-d H:i'),
+                'tanggal_bergabung' => $kurir->tanggal_bergabung?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i'),
                 'status' => $kurir->status,
                 'total_jemput' => $kurir->total_jemput ?? 0,
                 'total_antar' => $kurir->total_antar ?? 0,

@@ -57,7 +57,7 @@ class Create extends Component
     public function mount(): void
     {
         $this->refreshKodeKurir();
-        $this->formData['tanggal_bergabung'] = now()->format('Y-m-d H:i');
+        $this->formData['tanggal_bergabung'] = now()->format('Y-m-d\TH:i');
 
         // Set default kabupaten/kota dan provinsi menggunakan RegionalLocation Helper
         $this->formData['kabupaten_kota'] = RegionalLocation::getRegencyName();
