@@ -38,7 +38,7 @@
     <x-main full-width>
         {{-- SIDEBAR --}}
         <x-slot:sidebar drawer="main-drawer" collapse-text="Tutup" right-mobile collapsible
-            class="bg-base-100 lg:bg-base-100 rounded-l-xl rounded-r-none md:rounded-l-none md:rounded-r-2xl lg:rounded-l-none lg:rounded-r-4xl">
+            class="bg-base-100 lg:bg-base-100 border-r border-primary rounded-l-xl rounded-r-none md:rounded-l-none md:rounded-r-2xl lg:rounded-l-none lg:rounded-r-4xl">
 
             {{-- BRAND --}}
             <x-app-brand class="px-5 pt-4" />
