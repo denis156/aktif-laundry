@@ -61,23 +61,59 @@
                 <h1 class="text-lg font-bold text-base-content/60">Pengiriman Terbaru</h1>
                 <x-button label="Lihat Semua" class="btn-ghost btn-xs btn-primary"/>
             </div>
-            <x-card class="shadow-lg border border-primary" body-class="flex items-center gap-3">
+            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
                 <x-avatar image="https://img.daisyui.com/images/profile/demo/yellingwoman@192.webp"
                     class="w-14 rounded-full avatar-online ring-neutral ring-offset-success ring-2 ring-offset-2" />
                 <div class="flex flex-col flex-1 min-w-0">
                     <h1 class="text-sm font-normal text-base-content">Mbak Ngambek</h1>
                     <p class="text-xs font-thin text-base-content/60 truncate">Jl. Sudirman No. 123, Jakarta</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs text-primary font-medium">Cuci Kering</span>
+                        <span class="text-xs text-base-content/40">•</span>
+                        <span class="text-xs text-base-content/60">3.5 kg</span>
+                    </div>
                 </div>
-                <x-badge value="Antar" class="badge-error badge-sm shrink-0" />
+                <x-badge value="Antar" class="badge-warning badge-dash badge-sm shrink-0" />
             </x-card>
-            <x-card class="shadow-lg border border-primary" body-class="flex items-center gap-3">
+            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
                 <x-avatar image="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
                     class="w-14 rounded-full avatar-online ring-neutral ring-offset-success ring-2 ring-offset-2" />
                 <div class="flex flex-col flex-1 min-w-0">
                     <h1 class="text-sm font-normal text-base-content">Koecing Pant*k</h1>
                     <p class="text-xs font-thin text-base-content/60 truncate">Jl. Sudirman No. 123, Jakarta</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs text-primary font-medium">Setrika</span>
+                        <span class="text-xs text-base-content/40">•</span>
+                        <span class="text-xs text-base-content/60">2 kg</span>
+                    </div>
                 </div>
-                <x-badge value="Proses" class="badge-warning badge-sm shrink-0" />
+                <x-badge value="Proses" class="badge-info badge-dash badge-sm shrink-0" />
+            </x-card>
+            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
+                <x-avatar image="https://img.daisyui.com/images/profile/demo/superperson@192.webp"
+                    class="w-14 rounded-full ring-error ring-2 ring-offset-2" />
+                <div class="flex flex-col flex-1 min-w-0">
+                    <h1 class="text-sm font-normal text-base-content">Pak Budi Santoso</h1>
+                    <p class="text-xs font-thin text-base-content/60 truncate">Jl. Gatot Subroto No. 45, Menteng</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs text-primary font-medium">Express</span>
+                    </div>
+                </div>
+                <x-badge value="Jemput" class="badge-error badge-dash badge-sm shrink-0" />
+            </x-card>
+            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
+                <x-avatar image="https://img.daisyui.com/images/profile/demo/batperson@192.webp"
+                    class="w-14 rounded-full ring-success ring-2 ring-offset-2" />
+                <div class="flex flex-col flex-1 min-w-0">
+                    <h1 class="text-sm font-normal text-base-content">Ibu Siti Nurhaliza</h1>
+                    <p class="text-xs font-thin text-base-content/60 truncate">Jl. M.H. Thamrin No. 88, Tanah Abang</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="text-xs text-primary font-medium">Cuci Setrika</span>
+                        <span class="text-xs text-base-content/40">•</span>
+                        <span class="text-xs text-base-content/60">5 kg</span>
+                    </div>
+                </div>
+                <x-badge value="Antar" class="badge-warning badge-dash badge-sm shrink-0" />
             </x-card>
         </div>
 

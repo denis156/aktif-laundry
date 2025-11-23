@@ -8,12 +8,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Pesanan Kurir')]
+#[Title('Pengiriman Kurir')]
 #[Layout('layouts.kurir.app')]
-class Pesanan extends Component
+class Pengiriman extends Component
 {
     public function render()
     {
-        return view('livewire.kurir.pesanan');
+        return view('livewire.kurir.pengiriman');
     }
 }

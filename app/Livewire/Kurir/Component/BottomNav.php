@@ -20,8 +20,8 @@ class BottomNav extends Component
             'icon_size' => 'size-2',
         ],
         [
-            'name' => 'Pesanan',
-            'route' => 'pesanan.kurir',
+            'name' => 'Pengiriman',
+            'route' => 'pengiriman.kurir',
             'icon' => 'iconpark.listview-o',
             'icon_size' => 'size-4',
         ],

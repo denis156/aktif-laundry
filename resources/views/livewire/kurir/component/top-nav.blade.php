@@ -8,9 +8,9 @@
                 </div>
             </x-slot:trigger>
 
-            <x-menu-item title="Menunggu penjemputan" badge="8" class="text-warning text-xs"
+            <x-menu-item title="Menunggu penjemputan" badge="8" class="text-warningw text-xs"
                 badge-classes="badge-soft badge-warning badge-xs" />
-            <x-menu-item title="Menunggu pengantaran" badge="4" class="text-warning text-xs"
+            <x-menu-item title="Menunggu pengantaran" badge="4" class="text-warningw text-xs"
                 badge-classes="badge-soft badge-warning badge-xs" />
 
             {{-- Todo: Tampilan Jika Notif Kosong --}}
