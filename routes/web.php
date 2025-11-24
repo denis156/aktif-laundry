@@ -1,7 +1,6 @@
 <?php
 
 use App\Livewire\Kurir\Beranda;
-use App\Livewire\Kurir\Info;
 use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
 use App\Livewire\Kurir\Pengiriman;
 use App\Livewire\Kurir\Rute;
@@ -48,7 +47,6 @@ Route::view('/', 'pages.landingpage')->name('landing-page');
 Route::get('/kurir', Beranda::class)->name('beranda.kurir');
 Route::get('/kurir/pengiriman', Pengiriman::class)->name('pengiriman.kurir');
 Route::get('/kurir/rute', Rute::class)->name('rute.kurir');
-Route::get('/kurir/info', Info::class)->name('info.kurir');
 Route::get('/kurir/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
 
 // Management Auth Routes - Guest (tanpa auth)

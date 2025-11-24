@@ -32,12 +32,6 @@ class BottomNav extends Component
             'icon_size' => 'size-4',
         ],
         [
-            'name' => 'Info',
-            'route' => 'info.kurir',
-            'icon' => 'iconpark.info-o',
-            'icon_size' => 'size-4',
-        ],
-        [
             'name' => 'Pengaturan',
             'route' => 'pengaturan.kurir',
             'icon' => 'iconpark.setting-o',
