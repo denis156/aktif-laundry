@@ -23,6 +23,8 @@ class Dashboard extends Component
 
     public bool $isLineChart = true;
 
+    public bool $isLineChartCurrentMonth = false;
+
     public bool $isLineChartMonthly = false;
 
     // Chart data - Line/Bar Chart
@@ -140,6 +142,76 @@ class Dashboard extends Component
         ],
     ];
 
+    // Chart data - Current Month Chart
+    public array $currentMonthChart = [
+        'type' => 'bar',
+        'data' => [
+            'labels' => [],
+            'datasets' => [
+                [
+                    'label' => 'Transaksi',
+                    'data' => [],
+                    'backgroundColor' => 'rgba(59, 130, 246, 0.5)',
+                    'borderColor' => 'rgb(59, 130, 246)',
+                    'borderWidth' => 2,
+                    'yAxisID' => 'y',
+                ],
+                [
+                    'label' => 'Berat (Kg)',
+                    'data' => [],
+                    'backgroundColor' => 'rgba(234, 179, 8, 0.5)',
+                    'borderColor' => 'rgb(234, 179, 8)',
+                    'borderWidth' => 2,
+                    'yAxisID' => 'y1',
+                ],
+                [
+                    'label' => 'Item Satuan',
+                    'data' => [],
+                    'backgroundColor' => 'rgba(168, 85, 247, 0.5)',
+                    'borderColor' => 'rgb(168, 85, 247)',
+                    'borderWidth' => 2,
+                    'yAxisID' => 'y1',
+                ],
+            ],
+        ],
+        'options' => [
+            'responsive' => true,
+            'maintainAspectRatio' => true,
+            'aspectRatio' => 2,
+            'plugins' => [
+                'legend' => [
+                    'display' => true,
+                    'position' => 'top',
+                ],
+            ],
+            'scales' => [
+                'y' => [
+                    'type' => 'linear',
+                    'display' => true,
+                    'position' => 'left',
+                    'beginAtZero' => true,
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Jumlah Transaksi',
+                    ],
+                ],
+                'y1' => [
+                    'type' => 'linear',
+                    'display' => true,
+                    'position' => 'right',
+                    'beginAtZero' => true,
+                    'title' => [
+                        'display' => true,
+                        'text' => 'Berat (Kg) / Item',
+                    ],
+                    'grid' => [
+                        'drawOnChartArea' => false,
+                    ],
+                ],
+            ],
+        ],
+    ];
+
     // Chart data - Monthly Chart (12 months)
     public array $monthlyChart = [
         'type' => 'bar',
@@ -215,6 +287,7 @@ class Dashboard extends Component
         $this->updateDateTime();
         $this->loadChartData();
         $this->loadStatusChart();
+        $this->loadCurrentMonthChart();
         $this->loadMonthlyChart();
     }
 
@@ -253,10 +326,27 @@ class Dashboard extends Component
         $this->transaksiChart['type'] = $this->isLineChart ? 'line' : 'bar';
     }
 
+    public function updatedIsLineChartCurrentMonth(): void
+    {
+        // Update current month chart type when toggle changes
+        $this->currentMonthChart['type'] = $this->isLineChartCurrentMonth ? 'line' : 'bar';
+    }
+
     public function updatedIsLineChartMonthly(): void
     {
         // Update monthly chart type when toggle changes
         $this->monthlyChart['type'] = $this->isLineChartMonthly ? 'line' : 'bar';
+    }
+
+    public function loadCurrentMonthChart(): void
+    {
+        // Use ChartDataHelper untuk get data bulan ini
+        $data = ChartDataHelper::getCurrentMonthData();
+
+        $this->currentMonthChart['data']['labels'] = $data->pluck('label')->toArray();
+        $this->currentMonthChart['data']['datasets'][0]['data'] = $data->pluck('count')->toArray();
+        $this->currentMonthChart['data']['datasets'][1]['data'] = $data->pluck('berat')->toArray();
+        $this->currentMonthChart['data']['datasets'][2]['data'] = $data->pluck('item')->toArray();
     }
 
     public function loadMonthlyChart(): void
@@ -275,6 +365,7 @@ class Dashboard extends Component
         $this->updateDateTime();
         $this->loadChartData();
         $this->loadStatusChart();
+        $this->loadCurrentMonthChart();
         $this->loadMonthlyChart();
 
         $this->success('Data berhasil diperbarui!', position: 'toast-bottom');

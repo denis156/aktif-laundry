@@ -53,6 +53,26 @@ class ChartDataHelper
     }
 
     /**
+     * Get data transaksi untuk bulan ini (per hari)
+     */
+    public static function getCurrentMonthData(): Collection
+    {
+        $startOfMonth = now()->startOfMonth();
+        $daysInMonth = now()->daysInMonth;
+
+        return collect()->times($daysInMonth, function ($i) use ($startOfMonth) {
+            $date = $startOfMonth->copy()->addDays($i - 1);
+
+            return [
+                'label' => $date->locale('id')->isoFormat('D MMM'),
+                'count' => Transaksi::whereDate('tanggal_masuk', $date)->count(),
+                'berat' => self::getTotalBeratForDate($date),
+                'item' => self::getTotalItemForDate($date),
+            ];
+        });
+    }
+
+    /**
      * Get data transaksi untuk 12 bulan terakhir
      */
     public static function getLast12MonthsData(): Collection

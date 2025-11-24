@@ -29,6 +29,9 @@ class Transaksi extends Model
         'tanggal_masuk',
         'kasir_id',
         'pelanggan_id',
+        'promo_id',
+        'referral_id',
+        'kode_promo',
         'nama_pelanggan',
         'total_berat',
         'total_item',
@@ -57,6 +60,8 @@ class Transaksi extends Model
             'total' => 'integer',
             'kasir_id' => 'integer',
             'pelanggan_id' => 'integer',
+            'promo_id' => 'integer',
+            'referral_id' => 'integer',
             'metadata' => 'array',
         ];
     }
@@ -71,6 +76,18 @@ class Transaksi extends Model
     public function pelanggan(): BelongsTo
     {
         return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
+    }
+
+    // * Relasi: Promo yang digunakan
+    public function promo(): BelongsTo
+    {
+        return $this->belongsTo(Promo::class, 'promo_id');
+    }
+
+    // * Relasi: Referral yang digunakan
+    public function referral(): BelongsTo
+    {
+        return $this->belongsTo(Referral::class, 'referral_id');
     }
 
     // * Relasi: Detail layanan transaksi

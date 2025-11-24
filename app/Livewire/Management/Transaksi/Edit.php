@@ -59,6 +59,9 @@ class Edit extends Component
         'tanggal_masuk' => '',
         'kasir_id' => null,
         'pelanggan_id' => '',
+        'promo_id' => null,
+        'referral_id' => null,
+        'kode_promo' => '',
         'nama_pelanggan' => '',
         'subtotal' => 0,
         'diskon' => 0,
@@ -118,6 +121,9 @@ class Edit extends Component
                 'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d\TH:i'),
                 'kasir_id' => $transaksi->kasir_id,
                 'pelanggan_id' => $transaksi->pelanggan_id,
+                'promo_id' => $transaksi->promo_id,
+                'referral_id' => $transaksi->referral_id,
+                'kode_promo' => $transaksi->kode_promo ?? '',
                 'nama_pelanggan' => $transaksi->nama_pelanggan,
                 'subtotal' => $transaksi->subtotal,
                 'diskon' => $transaksi->diskon,
@@ -129,6 +135,16 @@ class Edit extends Component
                 'status' => $transaksi->status,
                 'catatan' => $transaksi->catatan ?? '',
             ];
+
+            // Set selectedPromoId untuk UI dropdown
+            if ($transaksi->promo_id) {
+                $this->selectedPromoId = $transaksi->promo_id;
+            }
+
+            // Set selectedReferralId untuk UI dropdown
+            if ($transaksi->referral_id) {
+                $this->selectedReferralId = $transaksi->referral_id;
+            }
 
             // Load multi-layanan data
             $this->loadMultiLayananData($transaksi);
@@ -329,49 +345,66 @@ class Edit extends Component
     public function updatedSelectedPromoId(?int $value): void
     {
         if ($value) {
-            try {
-                $promo = Promo::find($value);
-
-                if ($promo && PromoHelper::isValid($promo)) {
-                    // Hitung diskon berdasarkan tipe
-                    if ($promo->tipe_diskon === 'persen') {
-                        $diskon = ($this->formData['subtotal'] * $promo->nilai_diskon) / 100;
-
-                        // Check max diskon
-                        if ($promo->maks_diskon && $diskon > $promo->maks_diskon) {
-                            $diskon = $promo->maks_diskon;
-                        }
-                    } else {
-                        $diskon = $promo->nilai_diskon;
-                    }
-
-                    // Check min transaksi
-                    if ($promo->min_transaksi && $this->formData['subtotal'] < $promo->min_transaksi) {
-                        $this->warning('Promo ini memerlukan minimum transaksi Rp '.number_format($promo->min_transaksi, 0, ',', '.'), position: 'toast-bottom');
-                        $this->selectedPromoId = null;
-
-                        return;
-                    }
-
-                    $this->formData['diskon'] = (int) $diskon;
-                    $this->formData['total'] = (float) $this->formData['subtotal'] - (float) $this->formData['diskon'];
-
-                    $this->success("Promo {$promo->kode_promo} diterapkan!", position: 'toast-bottom');
-                } else {
-                    $this->warning('Promo tidak valid atau sudah habis', position: 'toast-bottom');
-                    $this->selectedPromoId = null;
-                }
-            } catch (Exception $e) {
-                Log::error('Error applying promo in Edit', [
-                    'promo_id' => $value,
-                    'error' => $e->getMessage(),
-                ]);
-                $this->error('Gagal menerapkan promo', position: 'toast-bottom');
-                $this->selectedPromoId = null;
-            }
+            $this->formData['promo_id'] = $value;
+            $this->calculatePromoDiskon();
         } else {
-            // Reset diskon jika promo dihapus
+            $this->formData['promo_id'] = null;
+            $this->formData['kode_promo'] = '';
             $this->formData['diskon'] = 0;
+            $this->formData['total'] = (float) $this->formData['subtotal'];
+        }
+    }
+
+    protected function calculatePromoDiskon(): void
+    {
+        $promoId = $this->formData['promo_id'];
+
+        if (! $promoId) {
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
+            $this->formData['total'] = (float) $this->formData['subtotal'];
+
+            return;
+        }
+
+        $promo = PromoHelper::getById($promoId);
+
+        if (! $promo) {
+            $this->warning('Promo tidak ditemukan', position: 'toast-bottom');
+            $this->selectedPromoId = null;
+            $this->formData['promo_id'] = null;
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
+            $this->formData['total'] = (float) $this->formData['subtotal'];
+
+            return;
+        }
+
+        // Hitung total berat dari multiLayananData
+        $totalBerat = 0.0;
+        foreach ($this->multiLayananData['items'] as $item) {
+            if (($item['tipe_layanan'] ?? '') === 'per_kg') {
+                $totalBerat += (float) ($item['berat_kg'] ?? 0);
+            }
+        }
+
+        // Hitung diskon menggunakan PromoHelper
+        $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
+        $subtotal = (int) $this->formData['subtotal'];
+
+        $result = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
+
+        if ($result['valid']) {
+            $this->formData['diskon'] = $result['diskon'];
+            $this->formData['kode_promo'] = $promo->kode_promo;
+            $this->formData['total'] = (float) ($subtotal - $result['diskon']);
+            $this->success("Promo {$promo->kode_promo} diterapkan! {$result['pesan']}", position: 'toast-bottom');
+        } else {
+            $this->warning($result['pesan'], position: 'toast-bottom');
+            $this->selectedPromoId = null;
+            $this->formData['promo_id'] = null;
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
             $this->formData['total'] = (float) $this->formData['subtotal'];
         }
     }

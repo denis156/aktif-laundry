@@ -8,11 +8,13 @@ use App\Helper\AddressMetadata;
 use App\Helper\Database\LayananHelper;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\Database\PengaturanHelper;
+use App\Helper\Database\PromoHelper;
 use App\Helper\Database\TransaksiHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
 use App\Models\Layanan;
 use App\Models\Pelanggan;
+use App\Models\Referral;
 use App\Models\Transaksi;
 use App\Models\TransaksiLayanan;
 use Exception;
@@ -37,6 +39,10 @@ class Kasir extends Component
         'kasir_id' => null,
         'pelanggan_id' => '',
         'nama_pelanggan' => '',
+        'promo_id' => null,
+        'referral_id' => null,
+        'kode_promo' => '',
+        'kode_referral' => '',
         'diskon' => 0,
         'subtotal' => 0,
         'total' => 0,
@@ -44,6 +50,14 @@ class Kasir extends Component
         'tanggal_selesai' => '',
         'status' => TransaksiHelper::STATUS_MENUNGGU,
         'catatan' => '',
+    ];
+
+    // Promo validation result
+    public array $promoResult = [
+        'valid' => false,
+        'diskon' => 0,
+        'pesan' => '',
+        'tipe' => '',
     ];
 
     // Multi-layanan data
@@ -81,7 +95,13 @@ class Kasir extends Component
     {
         $this->multiLayananData = $data;
         $this->formData['subtotal'] = $data['totalSubtotal'];
-        $this->formData['total'] = $data['totalGrandTotal'] - $this->formData['diskon'];
+
+        // Recalculate promo diskon jika ada promo yang dipilih
+        if ($this->formData['promo_id']) {
+            $this->calculatePromoDiskon();
+        } else {
+            $this->formData['total'] = $data['totalGrandTotal'];
+        }
 
         // Calculate tanggal selesai based on layanan with longest duration
         $this->calculateTanggalSelesaiFromMultiLayanan();
@@ -108,6 +128,10 @@ class Kasir extends Component
             'kasir_id' => Auth::id(),
             'pelanggan_id' => '',
             'nama_pelanggan' => '',
+            'promo_id' => null,
+            'referral_id' => null,
+            'kode_promo' => '',
+            'kode_referral' => '',
             'diskon' => 0,
             'subtotal' => 0,
             'total' => 0,
@@ -115,6 +139,13 @@ class Kasir extends Component
             'tanggal_selesai' => '',
             'status' => TransaksiHelper::STATUS_MENUNGGU,
             'catatan' => '',
+        ];
+
+        $this->promoResult = [
+            'valid' => false,
+            'diskon' => 0,
+            'pesan' => '',
+            'tipe' => '',
         ];
 
         $this->multiLayananData = [
@@ -211,16 +242,123 @@ class Kasir extends Component
         }
     }
 
-    public function updatedFormDataDiskon(): void
+    public function updatedFormDataPromoId(): void
     {
+        $this->calculatePromoDiskon();
+    }
+
+    public function updatedFormDataKodeReferral(string $value): void
+    {
+        $this->applyReferralCode($value);
+    }
+
+    protected function applyReferralCode(string $kode): void
+    {
+        if (empty($kode)) {
+            $this->formData['referral_id'] = null;
+
+            return;
+        }
+
+        // Cari referral by kode
+        $referral = Referral::where('kode_referral', strtoupper($kode))
+            ->where('status', 'Aktif')
+            ->first();
+
+        if (! $referral) {
+            $this->formData['referral_id'] = null;
+            $this->warning('Kode referral tidak ditemukan atau tidak aktif', position: 'toast-bottom');
+
+            return;
+        }
+
+        // Pastikan tidak menggunakan kode referral sendiri
+        if ($this->formData['pelanggan_id'] && $referral->pelanggan_id == $this->formData['pelanggan_id']) {
+            $this->formData['referral_id'] = null;
+            $this->error('Tidak dapat menggunakan kode referral sendiri', position: 'toast-bottom');
+
+            return;
+        }
+
+        $this->formData['referral_id'] = $referral->id;
+
+        // Jika referral punya promo referee dan belum ada promo dipilih, auto-apply
+        if ($referral->promo_referee_id && ! $this->formData['promo_id']) {
+            $this->formData['promo_id'] = $referral->promo_referee_id;
+            $this->calculatePromoDiskon();
+        }
+
+        $this->success("Kode referral {$kode} berhasil diterapkan!", position: 'toast-bottom');
+    }
+
+    protected function calculatePromoDiskon(): void
+    {
+        $promoId = $this->formData['promo_id'];
+
+        if (! $promoId) {
+            $this->promoResult = [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => '',
+                'tipe' => '',
+            ];
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
+            $this->updateTotal();
+
+            return;
+        }
+
+        $promo = PromoHelper::getById($promoId);
+
+        if (! $promo) {
+            $this->promoResult = [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => 'Promo tidak ditemukan',
+                'tipe' => '',
+            ];
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
+            $this->updateTotal();
+
+            return;
+        }
+
+        // Hitung total berat dari multiLayananData
+        $totalBerat = 0.0;
+        foreach ($this->multiLayananData['items'] as $item) {
+            if (($item['tipe_layanan'] ?? '') === 'per_kg') {
+                $totalBerat += (float) ($item['berat_kg'] ?? 0);
+            }
+        }
+
+        // Hitung diskon menggunakan PromoHelper
+        $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
+        $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
+
+        $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
+
+        if ($this->promoResult['valid']) {
+            $this->formData['diskon'] = $this->promoResult['diskon'];
+            $this->formData['kode_promo'] = $promo->kode_promo;
+        } else {
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
+            $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
+        }
+
+        $this->updateTotal();
+    }
+
+    protected function updateTotal(): void
+    {
+        $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
         $diskon = (int) ($this->formData['diskon'] ?? 0);
 
-        // Update totalGrandTotal di multiLayananData
-        $this->multiLayananData['totalGrandTotal'] = $this->multiLayananData['totalSubtotal'] - $diskon;
-
-        // Update formData total
+        $this->multiLayananData['totalGrandTotal'] = $subtotal - $diskon;
         $this->formData['total'] = $this->multiLayananData['totalGrandTotal'];
-        $this->formData['subtotal'] = $this->multiLayananData['totalSubtotal'];
+        $this->formData['subtotal'] = $subtotal;
     }
 
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
@@ -468,7 +606,7 @@ class Kasir extends Component
                         $transaksiLayananData['updated_at'] = now();
 
                         try {
-                            $transaksiLayanan = TransaksiLayanan::create($transaksiLayananData);
+                            TransaksiLayanan::create($transaksiLayananData);
                         } catch (Exception $e) {
                             Log::error('Kasir: Failed to create TransaksiLayanan', [
                                 'error' => $e->getMessage(),
@@ -477,6 +615,19 @@ class Kasir extends Component
                             ]);
                             throw $e;
                         }
+                    }
+                }
+
+                // Increment promo usage jika ada promo yang digunakan
+                if ($this->formData['promo_id']) {
+                    $promo = PromoHelper::getById($this->formData['promo_id']);
+                    if ($promo) {
+                        PromoHelper::incrementUsage($promo);
+                        Log::info('Kasir: Promo usage incremented', [
+                            'promo_id' => $promo->id,
+                            'kode_promo' => $promo->kode_promo,
+                            'kuota_terpakai' => $promo->kuota_terpakai + 1,
+                        ]);
                     }
                 }
 
@@ -720,6 +871,12 @@ class Kasir extends Component
         ])->toArray();
     }
 
+    public function getPromoOptions(): array
+    {
+        // Get promo yang aktif dari PromoHelper
+        return PromoHelper::getPromoOptions();
+    }
+
     public function render()
     {
         return view('livewire.management.kasir', [
@@ -729,6 +886,7 @@ class Kasir extends Component
             'kelurahanOptions' => $this->getKelurahanOptions(),
             'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
             'statusOptions' => $this->getStatusOptions(),
+            'promoOptions' => $this->getPromoOptions(),
         ]);
     }
 }

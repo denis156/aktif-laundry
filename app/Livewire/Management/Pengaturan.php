@@ -12,7 +12,7 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Mary\Traits\Toast;
 
-#[Title('Pengaturan')]
+#[Title('Pengaturan Konfigurasi')]
 #[Layout('layouts.management.app')]
 class Pengaturan extends Component
 {

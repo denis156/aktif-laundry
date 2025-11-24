@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Promo;
 
-use Exception;
+use App\Helper\Database\LayananHelper;
+use App\Helper\Database\PromoHelper;
 use App\Models\Promo;
-use Mary\Traits\Toast;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Log;
+use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Mary\Traits\Toast;
 
 #[Title('Edit Promo')]
 #[Layout('layouts.management.app')]
 class Edit extends Component
 {
     use Toast;
+    use WithFileUploads;
 
     public int $promoId;
 
@@ -38,6 +42,21 @@ class Edit extends Component
         'berlaku_untuk' => 'semua',
         'status' => 'Aktif',
     ];
+
+    // * Metadata fields
+    public array $layananIds = [];
+
+    public string $termsConditions = '';
+
+    public bool $autoApply = false;
+
+    public $bannerImage;
+
+    public ?string $currentBannerUrl = null;
+
+    public ?float $minBerat = null;
+
+    public ?float $maxBerat = null;
 
     public function mount(int $id): void
     {
@@ -66,6 +85,17 @@ class Edit extends Component
                 'berlaku_untuk' => $promo->berlaku_untuk,
                 'status' => $promo->status,
             ];
+
+            // Load metadata
+            $this->layananIds = PromoHelper::getLayananId($promo);
+            $this->termsConditions = PromoHelper::getTermsConditions($promo) ?? '';
+            $this->autoApply = PromoHelper::isAutoApply($promo);
+            $this->minBerat = PromoHelper::getMinBerat($promo);
+            $this->maxBerat = PromoHelper::getMaxBerat($promo);
+
+            // Load current banner URL
+            $bannerPath = PromoHelper::getBannerImage($promo);
+            $this->currentBannerUrl = $bannerPath ? Storage::url($bannerPath) : null;
         } catch (Exception $e) {
             Log::error('Promo Edit: Failed to load promo', [
                 'promo_id' => $this->promoId,
@@ -79,20 +109,21 @@ class Edit extends Component
 
     public function updatedFormDataTipeDiskon(mixed $value): void
     {
-        // Reset diskon maksimal jika tipe nominal
-        if ($value === 'nominal') {
+        // Reset diskon maksimal jika bukan persen
+        if ($value !== PromoHelper::TIPE_PERSEN) {
             $this->formData['diskon_maksimal'] = null;
         }
     }
 
     public function save(): void
     {
-        // Validasi
+        $tipeDiskonOptions = collect(PromoHelper::getTipeDiskonOptions())->pluck('id')->implode(',');
+
         $rules = [
             'formData.kode_promo' => 'required|string|max:50|unique:promo,kode_promo,'.$this->promoId,
             'formData.nama_promo' => 'required|string|max:255',
             'formData.deskripsi' => 'nullable|string',
-            'formData.tipe_diskon' => 'required|in:persen,nominal',
+            'formData.tipe_diskon' => 'required|in:'.$tipeDiskonOptions,
             'formData.nilai_diskon' => 'required|integer|min:1',
             'formData.diskon_maksimal' => 'nullable|integer|min:1',
             'formData.min_transaksi' => 'nullable|integer|min:1',
@@ -102,32 +133,52 @@ class Edit extends Component
             'formData.max_per_user' => 'nullable|integer|min:1',
             'formData.berlaku_untuk' => 'required|in:semua,layanan_tertentu,pelanggan_baru',
             'formData.status' => 'required|in:Aktif,Tidak Aktif,Habis',
+            'layananIds' => 'nullable|array',
+            'termsConditions' => 'nullable|string',
+            'bannerImage' => 'nullable|image|max:2048',
+            'minBerat' => 'nullable|numeric|min:0',
+            'maxBerat' => 'nullable|numeric|min:0',
         ];
 
         $this->validate($rules);
 
         try {
-            DB::transaction(function () {
-                $promo = Promo::findOrFail($this->promoId);
+            $promo = Promo::findOrFail($this->promoId);
 
-                $promoData = $this->formData;
+            $promoData = $this->formData;
 
-                // Convert null string to actual null
-                $promoData['diskon_maksimal'] = $this->formData['diskon_maksimal'] ?: null;
-                $promoData['min_transaksi'] = $this->formData['min_transaksi'] ?: null;
-                $promoData['kuota_total'] = $this->formData['kuota_total'] ?: null;
-                $promoData['max_per_user'] = $this->formData['max_per_user'] ?: null;
+            // Convert empty string to null
+            $promoData['diskon_maksimal'] = $this->formData['diskon_maksimal'] ?: null;
+            $promoData['min_transaksi'] = $this->formData['min_transaksi'] ?: null;
+            $promoData['kuota_total'] = $this->formData['kuota_total'] ?: null;
+            $promoData['max_per_user'] = $this->formData['max_per_user'] ?: null;
 
-                // Jangan ubah kuota_terpakai
-                unset($promoData['kuota_terpakai']);
+            // Jangan ubah kuota_terpakai
+            unset($promoData['kuota_terpakai']);
 
-                $promo->update($promoData);
-            });
+            $promo->update($promoData);
+
+            // Update metadata
+            PromoHelper::setLayananId($promo, $this->layananIds);
+            PromoHelper::setTermsConditions($promo, $this->termsConditions);
+            PromoHelper::setAutoApply($promo, $this->autoApply);
+            PromoHelper::setMinBerat($promo, $this->minBerat);
+            PromoHelper::setMaxBerat($promo, $this->maxBerat);
+
+            // Upload banner image baru jika ada
+            if ($this->bannerImage) {
+                $bannerPath = $this->bannerImage->store('promo/banners', 'public');
+                PromoHelper::setBannerImage($promo, $bannerPath);
+            }
+
+            // Save metadata
+            $promo->save();
 
             $this->success('Promo berhasil diupdate!', position: 'toast-bottom');
             $this->redirect('/management/promo', navigate: true);
         } catch (QueryException $e) {
             Log::error('Promo Edit: Database error', [
+                'promo_id' => $this->promoId,
                 'error_code' => $e->errorInfo[1] ?? null,
                 'error_message' => $e->getMessage(),
                 'sql' => $e->getSql() ?? null,
@@ -135,9 +186,10 @@ class Edit extends Component
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $this->error('Gagal menyimpan promo. Silakan coba lagi atau hubungi administrator.', timeout: 10000, position: 'toast-bottom');
+            $this->error('Gagal menyimpan promo. Silakan coba lagi.', position: 'toast-bottom');
         } catch (Exception $e) {
             Log::error('Promo Edit: Unexpected error', [
+                'promo_id' => $this->promoId,
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
@@ -145,12 +197,15 @@ class Edit extends Component
                 'formData' => $this->formData,
             ]);
 
-            $this->error('Terjadi kesalahan sistem. Silakan coba lagi atau hubungi administrator.', timeout: 10000, position: 'toast-bottom');
+            $this->error('Gagal menyimpan promo. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
     public function render(): mixed
     {
-        return view('livewire.management.promo.edit');
+        return view('livewire.management.promo.edit', [
+            'tipeDiskonOptions' => PromoHelper::getTipeDiskonOptions(),
+            'layananOptions' => LayananHelper::getLayananOptions(),
+        ]);
     }
 }

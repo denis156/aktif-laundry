@@ -57,6 +57,9 @@ class Create extends Component
         'tanggal_masuk' => '',
         'kasir_id' => null,
         'pelanggan_id' => '',
+        'promo_id' => null,
+        'referral_id' => null,
+        'kode_promo' => '',
         'nama_pelanggan' => '',
         'subtotal' => 0,
         'diskon' => 0,
@@ -129,7 +132,13 @@ class Create extends Component
     {
         $this->multiLayananData = $data;
         $this->formData['subtotal'] = $data['totalSubtotal'];
-        $this->formData['total'] = $data['totalGrandTotal'] - (float) $this->formData['diskon'];
+
+        // Recalculate promo diskon jika ada promo yang dipilih
+        if ($this->formData['promo_id']) {
+            $this->calculatePromoDiskon();
+        } else {
+            $this->formData['total'] = $data['totalGrandTotal'];
+        }
 
         // Calculate tanggal selesai based on layanan with longest duration
         $this->calculateTanggalSelesaiFromMultiLayanan();
@@ -172,49 +181,66 @@ class Create extends Component
     public function updatedSelectedPromoId(?int $value): void
     {
         if ($value) {
-            try {
-                $promo = Promo::find($value);
-
-                if ($promo && PromoHelper::isValid($promo)) {
-                    // Hitung diskon berdasarkan tipe
-                    if ($promo->tipe_diskon === 'persen') {
-                        $diskon = ($this->formData['subtotal'] * $promo->nilai_diskon) / 100;
-
-                        // Check max diskon
-                        if ($promo->maks_diskon && $diskon > $promo->maks_diskon) {
-                            $diskon = $promo->maks_diskon;
-                        }
-                    } else {
-                        $diskon = $promo->nilai_diskon;
-                    }
-
-                    // Check min transaksi
-                    if ($promo->min_transaksi && $this->formData['subtotal'] < $promo->min_transaksi) {
-                        $this->warning('Promo ini memerlukan minimum transaksi Rp '.number_format($promo->min_transaksi, 0, ',', '.'), position: 'toast-bottom');
-                        $this->selectedPromoId = null;
-
-                        return;
-                    }
-
-                    $this->formData['diskon'] = (int) $diskon;
-                    $this->formData['total'] = (float) $this->formData['subtotal'] - (float) $this->formData['diskon'];
-
-                    $this->success("Promo {$promo->kode_promo} diterapkan!", position: 'toast-bottom');
-                } else {
-                    $this->warning('Promo tidak valid atau sudah habis', position: 'toast-bottom');
-                    $this->selectedPromoId = null;
-                }
-            } catch (Exception $e) {
-                Log::error('Error applying promo in Create', [
-                    'promo_id' => $value,
-                    'error' => $e->getMessage(),
-                ]);
-                $this->error('Gagal menerapkan promo', position: 'toast-bottom');
-                $this->selectedPromoId = null;
-            }
+            $this->formData['promo_id'] = $value;
+            $this->calculatePromoDiskon();
         } else {
-            // Reset diskon jika promo dihapus
+            $this->formData['promo_id'] = null;
+            $this->formData['kode_promo'] = '';
             $this->formData['diskon'] = 0;
+            $this->formData['total'] = (float) $this->formData['subtotal'];
+        }
+    }
+
+    protected function calculatePromoDiskon(): void
+    {
+        $promoId = $this->formData['promo_id'];
+
+        if (! $promoId) {
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
+            $this->formData['total'] = (float) $this->formData['subtotal'];
+
+            return;
+        }
+
+        $promo = PromoHelper::getById($promoId);
+
+        if (! $promo) {
+            $this->warning('Promo tidak ditemukan', position: 'toast-bottom');
+            $this->selectedPromoId = null;
+            $this->formData['promo_id'] = null;
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
+            $this->formData['total'] = (float) $this->formData['subtotal'];
+
+            return;
+        }
+
+        // Hitung total berat dari multiLayananData
+        $totalBerat = 0.0;
+        foreach ($this->multiLayananData['items'] as $item) {
+            if (($item['tipe_layanan'] ?? '') === 'per_kg') {
+                $totalBerat += (float) ($item['berat_kg'] ?? 0);
+            }
+        }
+
+        // Hitung diskon menggunakan PromoHelper
+        $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
+        $subtotal = (int) $this->formData['subtotal'];
+
+        $result = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
+
+        if ($result['valid']) {
+            $this->formData['diskon'] = $result['diskon'];
+            $this->formData['kode_promo'] = $promo->kode_promo;
+            $this->formData['total'] = (float) ($subtotal - $result['diskon']);
+            $this->success("Promo {$promo->kode_promo} diterapkan! {$result['pesan']}", position: 'toast-bottom');
+        } else {
+            $this->warning($result['pesan'], position: 'toast-bottom');
+            $this->selectedPromoId = null;
+            $this->formData['promo_id'] = null;
+            $this->formData['diskon'] = 0;
+            $this->formData['kode_promo'] = '';
             $this->formData['total'] = (float) $this->formData['subtotal'];
         }
     }
@@ -320,39 +346,33 @@ class Create extends Component
                 // Simpan transaksi
                 $transaksi = Transaksi::create($transaksiData);
 
-                // === Handle Metadata ===
+                // === Handle Promo & Referral ===
 
-                // 1. Promo metadata
-                if ($this->selectedPromoId) {
-                    $promo = Promo::find($this->selectedPromoId);
+                // 1. Increment promo usage jika ada promo yang digunakan
+                if ($this->formData['promo_id']) {
+                    $promo = PromoHelper::getById($this->formData['promo_id']);
                     if ($promo) {
-                        TransaksiHelper::setPromoInfo($transaksi, [
+                        PromoHelper::incrementUsage($promo);
+                        Log::info('Transaksi Create: Promo usage incremented', [
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
-                            'nama_promo' => $promo->nama_promo,
-                            'tipe_diskon' => $promo->tipe_diskon,
-                            'nilai_diskon' => $promo->nilai_diskon,
-                            'nilai_diskon_real' => $this->formData['diskon'],
                         ]);
-
-                        // Increment usage counter
-                        PromoHelper::incrementUsage($promo);
                     }
                 }
 
-                // 2. Referral metadata
+                // 2. Increment referral counter jika ada
                 if ($this->selectedReferralId) {
                     $referral = Referral::find($this->selectedReferralId);
                     if ($referral) {
-                        TransaksiHelper::setReferralInfo($transaksi, [
-                            'referral_id' => $referral->id,
-                            'kode_referral' => $referral->kode_referral,
-                            'pelanggan_referrer_id' => $referral->pelanggan_id,
-                            'poin_diberikan' => $referral->poin_referee,
-                        ]);
+                        // Set referral_id ke transaksi
+                        $transaksi->referral_id = $referral->id;
 
                         // Increment referral counter
                         ReferralHelper::incrementReferral($referral);
+                        Log::info('Transaksi Create: Referral incremented', [
+                            'referral_id' => $referral->id,
+                            'kode_referral' => $referral->kode_referral,
+                        ]);
                     }
                 }
 

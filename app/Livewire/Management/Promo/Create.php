@@ -4,21 +4,25 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Promo;
 
-use Exception;
+use App\Helper\Database\LayananHelper;
+use App\Helper\Database\PromoHelper;
 use App\Models\Promo;
-use Mary\Traits\Toast;
-use Livewire\Component;
-use Livewire\Attributes\Title;
-use Livewire\Attributes\Layout;
+use Exception;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Database\QueryException;
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Title;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use Mary\Traits\Toast;
 
 #[Title('Tambah Promo')]
 #[Layout('layouts.management.app')]
 class Create extends Component
 {
     use Toast;
+    use WithFileUploads;
 
     public array $formData = [
         'kode_promo' => '',
@@ -36,28 +40,56 @@ class Create extends Component
         'status' => 'Aktif',
     ];
 
+    // * Metadata fields
+    public array $layananIds = [];
+
+    public string $termsConditions = '';
+
+    public bool $autoApply = false;
+
+    public $bannerImage;
+
+    public ?float $minBerat = null;
+
+    public ?float $maxBerat = null;
+
     public function mount(): void
     {
+        $this->refreshKodePromo();
         $this->formData['tanggal_mulai'] = now()->format('Y-m-d');
         $this->formData['tanggal_berakhir'] = now()->addDays(30)->format('Y-m-d');
     }
 
+    public function refreshKodePromo(): void
+    {
+        try {
+            $this->formData['kode_promo'] = PromoHelper::generateKodePromo();
+        } catch (Exception $e) {
+            Log::error('Failed to generate kode promo', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->error('Gagal generate kode promo. Silakan coba lagi.', position: 'toast-bottom');
+        }
+    }
+
     public function updatedFormDataTipeDiskon(mixed $value): void
     {
-        // Reset diskon maksimal jika tipe nominal
-        if ($value === 'nominal') {
+        // Reset diskon maksimal jika bukan persen
+        if ($value !== PromoHelper::TIPE_PERSEN) {
             $this->formData['diskon_maksimal'] = null;
         }
     }
 
     public function save(): void
     {
-        // Validasi
+        $tipeDiskonOptions = collect(PromoHelper::getTipeDiskonOptions())->pluck('id')->implode(',');
+
         $rules = [
             'formData.kode_promo' => 'required|string|max:50|unique:promo,kode_promo',
             'formData.nama_promo' => 'required|string|max:255',
             'formData.deskripsi' => 'nullable|string',
-            'formData.tipe_diskon' => 'required|in:persen,nominal',
+            'formData.tipe_diskon' => 'required|in:'.$tipeDiskonOptions,
             'formData.nilai_diskon' => 'required|integer|min:1',
             'formData.diskon_maksimal' => 'nullable|integer|min:1',
             'formData.min_transaksi' => 'nullable|integer|min:1',
@@ -67,27 +99,78 @@ class Create extends Component
             'formData.max_per_user' => 'nullable|integer|min:1',
             'formData.berlaku_untuk' => 'required|in:semua,layanan_tertentu,pelanggan_baru',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
+            'layananIds' => 'nullable|array',
+            'termsConditions' => 'nullable|string',
+            'bannerImage' => 'nullable|image|max:2048',
+            'minBerat' => 'nullable|numeric|min:0',
+            'maxBerat' => 'nullable|numeric|min:0',
         ];
 
         $this->validate($rules);
 
         try {
             DB::transaction(function () {
+                // Cek ulang apakah kode promo sudah ada, jika ya generate ulang
+                if (Promo::where('kode_promo', $this->formData['kode_promo'])->exists()) {
+                    $this->refreshKodePromo();
+                }
+
                 $promoData = $this->formData;
                 $promoData['kuota_terpakai'] = 0;
 
-                // Convert null string to actual null
+                // Convert empty string to null
                 $promoData['diskon_maksimal'] = $this->formData['diskon_maksimal'] ?: null;
                 $promoData['min_transaksi'] = $this->formData['min_transaksi'] ?: null;
                 $promoData['kuota_total'] = $this->formData['kuota_total'] ?: null;
                 $promoData['max_per_user'] = $this->formData['max_per_user'] ?: null;
 
-                Promo::create($promoData);
+                // Create promo
+                $promo = Promo::create($promoData);
+
+                // Set metadata
+                if (! empty($this->layananIds)) {
+                    PromoHelper::setLayananId($promo, $this->layananIds);
+                }
+
+                if (! empty($this->termsConditions)) {
+                    PromoHelper::setTermsConditions($promo, $this->termsConditions);
+                }
+
+                PromoHelper::setAutoApply($promo, $this->autoApply);
+
+                // Set min/max berat
+                if ($this->minBerat !== null) {
+                    PromoHelper::setMinBerat($promo, $this->minBerat);
+                }
+                if ($this->maxBerat !== null) {
+                    PromoHelper::setMaxBerat($promo, $this->maxBerat);
+                }
+
+                // Upload banner image
+                if ($this->bannerImage) {
+                    $bannerPath = $this->bannerImage->store('promo/banners', 'public');
+                    PromoHelper::setBannerImage($promo, $bannerPath);
+                }
+
+                // Save metadata
+                $promo->save();
             });
 
             $this->success('Promo berhasil ditambahkan!', position: 'toast-bottom');
             $this->redirect('/management/promo', navigate: true);
         } catch (QueryException $e) {
+            // Handle unique constraint violation
+            if ($e->errorInfo[1] == 1062) { // Duplicate entry
+                Log::warning('Duplicate entry detected when creating promo', [
+                    'kode_promo' => $this->formData['kode_promo'],
+                    'error' => $e->getMessage(),
+                ]);
+                $this->refreshKodePromo();
+                $this->warning('Kode promo di-regenerate, silakan coba lagi', position: 'toast-bottom');
+
+                return;
+            }
+
             Log::error('Promo Create: Database error', [
                 'error_code' => $e->errorInfo[1] ?? null,
                 'error_message' => $e->getMessage(),
@@ -96,7 +179,7 @@ class Create extends Component
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $this->error('Gagal menyimpan promo. Silakan coba lagi atau hubungi administrator.', timeout: 10000, position: 'toast-bottom');
+            $this->error('Gagal menyimpan promo. Silakan coba lagi.', position: 'toast-bottom');
         } catch (Exception $e) {
             Log::error('Promo Create: Unexpected error', [
                 'error' => $e->getMessage(),
@@ -106,12 +189,15 @@ class Create extends Component
                 'formData' => $this->formData,
             ]);
 
-            $this->error('Terjadi kesalahan sistem. Silakan coba lagi atau hubungi administrator.', timeout: 10000, position: 'toast-bottom');
+            $this->error('Gagal menyimpan promo. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
     public function render(): mixed
     {
-        return view('livewire.management.promo.create');
+        return view('livewire.management.promo.create', [
+            'tipeDiskonOptions' => PromoHelper::getTipeDiskonOptions(),
+            'layananOptions' => LayananHelper::getLayananOptions(),
+        ]);
     }
 }

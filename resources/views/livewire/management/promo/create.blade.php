@@ -1,159 +1,133 @@
 <div>
-    <!-- HEADER -->
-    <x-header title="Tambah Promo" icon="o-tag"
-        icon-classes="bg-success text-success-content rounded-full p-1 w-8 h-8" subtitle="Buat Kode Promo Baru" separator
-        progress-indicator>
-        <x-slot:actions>
-            <x-button label="Kembali" link="{{ route('promo.index') }}" wire:navigate.hover responsive icon="o-arrow-left"
-                class="btn-outline" />
-        </x-slot:actions>
+    <x-header title="Tambah Promo Baru" separator progress-indicator>
+        <x-slot:subtitle>
+            Buat kode promo baru untuk pelanggan
+        </x-slot:subtitle>
     </x-header>
 
-    <form wire:submit="save">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Main Form -->
-            <div class="lg:col-span-2 space-y-6">
-                <!-- Informasi Dasar -->
-                <x-card title="Informasi Dasar" subtitle="Detail promo" class="shadow-sm">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-input label="Kode Promo" wire:model="formData.kode_promo" icon="o-hashtag" inline
-                            hint="Contoh: NEWUSER10, WEEKEND20" placeholder="PROMO2025" />
-
-                        <x-input label="Nama Promo" wire:model="formData.nama_promo" icon="o-tag" inline
-                            placeholder="Promo Tahun Baru" />
-                    </div>
-
-                    <x-textarea label="Deskripsi" wire:model="formData.deskripsi" icon="o-document-text" rows="3"
-                        placeholder="Deskripsi promo (opsional)" inline />
-                </x-card>
-
-                <!-- Pengaturan Diskon -->
-                <x-card title="Pengaturan Diskon" subtitle="Tipe dan nilai diskon" class="shadow-sm">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-select label="Tipe Diskon" wire:model.live="formData.tipe_diskon" icon="o-calculator" inline
-                            :options="[
-                                ['id' => 'persen', 'name' => 'Persen (%)'],
-                                ['id' => 'nominal', 'name' => 'Nominal (Rp)'],
-                            ]" option-value="id" option-label="name" />
-
-                        <x-input label="Nilai Diskon" wire:model="formData.nilai_diskon" type="number" icon="o-currency-dollar"
-                            inline :suffix="$formData['tipe_diskon'] === 'persen' ? '%' : 'Rp'" min="1" />
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        @if ($formData['tipe_diskon'] === 'persen')
-                            <x-input label="Diskon Maksimal (Opsional)" wire:model="formData.diskon_maksimal" type="number"
-                                icon="o-banknotes" inline prefix="Rp" min="1"
-                                hint="Batas maksimal diskon dalam rupiah" />
-                        @endif
-
-                        <x-input label="Minimum Transaksi (Opsional)" wire:model="formData.min_transaksi" type="number"
-                            icon="o-receipt-percent" inline prefix="Rp" min="1"
-                            hint="Minimum pembelian untuk gunakan promo" />
-                    </div>
-                </x-card>
-
-                <!-- Periode & Kuota -->
-                <x-card title="Periode & Kuota" subtitle="Waktu aktif dan batasan penggunaan" class="shadow-sm">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-input label="Tanggal Mulai" wire:model="formData.tanggal_mulai" type="date" icon="o-calendar"
-                            inline />
-
-                        <x-input label="Tanggal Berakhir" wire:model="formData.tanggal_berakhir" type="date"
-                            icon="o-calendar-days" inline />
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <x-input label="Kuota Total (Opsional)" wire:model="formData.kuota_total" type="number"
-                            icon="o-ticket" inline min="1" hint="Kosongkan untuk unlimited" />
-
-                        <x-input label="Max per User (Opsional)" wire:model="formData.max_per_user" type="number"
-                            icon="o-user-group" inline min="1" hint="Berapa kali user bisa pakai" />
-                    </div>
-                </x-card>
+    <x-form wire:submit="save" no-separator>
+        {{-- Informasi Dasar section --}}
+        <div class="lg:grid grid-cols-5">
+            <div class="col-span-2">
+                <x-header title="Informasi Dasar" subtitle="Detail identitas promo" size="text-lg" />
             </div>
+            <x-card class="col-span-3">
+                <x-file label="Banner Promo (Opsional)" wire:model="bannerImage"
+                    accept="image/png, image/jpeg, image/jpg" hint="Ukuran maksimal 2MB. Format: JPG, PNG">
+                    <img src="{{ asset('images/Logo.png') }}" class="h-32 rounded-lg" />
+                </x-file>
 
-            <!-- Sidebar -->
-            <div class="space-y-6">
-                <!-- Status & Berlaku Untuk -->
-                <x-card title="Pengaturan" class="shadow-sm">
-                    <x-select label="Status" wire:model="formData.status" icon="o-signal" inline :options="[
-                        ['id' => 'Aktif', 'name' => 'Aktif'],
-                        ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
-                    ]" option-value="id" option-label="name" />
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Kode Promo" wire:model="formData.kode_promo" placeholder="Auto Generate" readonly
+                        hint="Kode dibuat otomatis" icon="o-hashtag" />
 
-                    <x-select label="Berlaku Untuk" wire:model="formData.berlaku_untuk" icon="o-users" inline :options="[
-                        ['id' => 'semua', 'name' => 'Semua Pelanggan'],
-                        ['id' => 'pelanggan_baru', 'name' => 'Pelanggan Baru Saja'],
-                        ['id' => 'layanan_tertentu', 'name' => 'Layanan Tertentu'],
-                    ]" option-value="id" option-label="name" />
-                </x-card>
-
-                <!-- Preview -->
-                <x-card title="Preview Promo" class="shadow-sm bg-base-200">
-                    <div class="space-y-3 text-sm">
-                        <div>
-                            <div class="font-semibold text-base-content/60">Kode:</div>
-                            <div class="font-mono font-bold text-primary text-lg">
-                                {{ $formData['kode_promo'] ?: '-' }}
-                            </div>
-                        </div>
-
-                        <div>
-                            <div class="font-semibold text-base-content/60">Nama:</div>
-                            <div class="font-medium">{{ $formData['nama_promo'] ?: '-' }}</div>
-                        </div>
-
-                        <div>
-                            <div class="font-semibold text-base-content/60">Diskon:</div>
-                            <div class="font-bold text-success text-xl">
-                                @if ($formData['tipe_diskon'] === 'persen')
-                                    {{ $formData['nilai_diskon'] }}%
-                                @else
-                                    Rp {{ number_format($formData['nilai_diskon'], 0, ',', '.') }}
-                                @endif
-                            </div>
-                        </div>
-
-                        @if ($formData['diskon_maksimal'])
-                            <div>
-                                <div class="font-semibold text-base-content/60">Max Diskon:</div>
-                                <div>Rp {{ number_format($formData['diskon_maksimal'], 0, ',', '.') }}</div>
-                            </div>
-                        @endif
-
-                        @if ($formData['min_transaksi'])
-                            <div>
-                                <div class="font-semibold text-base-content/60">Min Transaksi:</div>
-                                <div>Rp {{ number_format($formData['min_transaksi'], 0, ',', '.') }}</div>
-                            </div>
-                        @endif
-
-                        <div>
-                            <div class="font-semibold text-base-content/60">Periode:</div>
-                            <div class="text-xs">
-                                {{ $formData['tanggal_mulai'] ? \Carbon\Carbon::parse($formData['tanggal_mulai'])->format('d M Y') : '-' }}
-                                <br>s/d<br>
-                                {{ $formData['tanggal_berakhir'] ? \Carbon\Carbon::parse($formData['tanggal_berakhir'])->format('d M Y') : '-' }}
-                            </div>
-                        </div>
-
-                        @if ($formData['kuota_total'])
-                            <div>
-                                <div class="font-semibold text-base-content/60">Kuota:</div>
-                                <div>{{ number_format($formData['kuota_total'], 0, ',', '.') }} penggunaan</div>
-                            </div>
-                        @endif
-                    </div>
-                </x-card>
-
-                <!-- Actions -->
-                <div class="flex flex-col gap-3">
-                    <x-button label="Simpan Promo" type="submit" spinner icon="o-check-circle" class="btn-success btn-block" />
-                    <x-button label="Batal" link="{{ route('promo.index') }}" wire:navigate icon="o-x-circle"
-                        class="btn-outline btn-block" />
+                    <x-input label="Nama Promo" wire:model="formData.nama_promo" placeholder="Contoh: Promo Tahun Baru"
+                        icon="o-tag" required />
                 </div>
-            </div>
+
+                <x-textarea label="Deskripsi" wire:model="formData.deskripsi"
+                    placeholder="Deskripsi promo (opsional)..." rows="3" hint="Opsional, jelaskan detail promo ini" />
+            </x-card>
         </div>
-    </form>
+
+        {{-- Pengaturan Diskon section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Pengaturan Diskon" subtitle="Tipe dan nilai diskon" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <x-select label="Tipe Diskon" wire:model.live="formData.tipe_diskon" :options="$tipeDiskonOptions"
+                    option-value="id" option-label="name" required />
+
+                @php
+                $currentTipe = collect($tipeDiskonOptions)->firstWhere('id', $formData['tipe_diskon']);
+                $suffix = $currentTipe['suffix'] ?? '';
+                $hint = $currentTipe['hint'] ?? '';
+                @endphp
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Nilai Diskon" wire:model="formData.nilai_diskon" type="number" :suffix="$suffix"
+                        min="1" :hint="$hint" placeholder="Contoh: 10" required />
+
+                    @if ($formData['tipe_diskon'] === 'persen')
+                    <x-input label="Diskon Maksimal" wire:model="formData.diskon_maksimal" type="number" prefix="Rp"
+                        min="1" hint="Batas maksimal diskon dalam rupiah (opsional)" placeholder="Contoh: 50000" />
+                    @endif
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <x-input label="Minimum Transaksi" wire:model="formData.min_transaksi" type="number" prefix="Rp"
+                        min="1" hint="Min pembelian" placeholder="100000" />
+
+                    <x-input label="Minimum Berat" wire:model="minBerat" type="number" suffix="Kg" min="0" step="0.1"
+                        hint="Min berat" placeholder="3" />
+
+                    <x-input label="Maksimum Berat" wire:model="maxBerat" type="number" suffix="Kg" min="0" step="0.1"
+                        hint="Max berat" placeholder="10" />
+                </div>
+
+                <x-textarea label="Syarat & Ketentuan" wire:model="termsConditions"
+                    placeholder="Tulis syarat dan ketentuan promo di sini..." rows="3"
+                    hint="Opsional, akan ditampilkan ke pelanggan" />
+            </x-card>
+        </div>
+
+        {{-- Periode & Kuota section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Periode & Kuota" subtitle="Waktu aktif dan batasan penggunaan" size="text-lg" />
+            </div>
+            <x-card class="col-span-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Tanggal Mulai" wire:model="formData.tanggal_mulai" type="date" icon="o-calendar"
+                        required />
+
+                    <x-input label="Tanggal Berakhir" wire:model="formData.tanggal_berakhir" type="date"
+                        icon="o-calendar-days" required />
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Kuota Total" wire:model="formData.kuota_total" type="number" icon="o-ticket" min="1"
+                        hint="Kosongkan untuk unlimited" placeholder="Contoh: 100" />
+
+                    <x-input label="Max per User" wire:model="formData.max_per_user" type="number" icon="o-user" min="1"
+                        hint="Berapa kali user bisa pakai (opsional)" placeholder="Contoh: 1" />
+                </div>
+            </x-card>
+        </div>
+
+        {{-- Target Promo section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Target Promo" subtitle="Siapa yang bisa pakai promo ini" size="text-lg" />
+            </div>
+            <x-card class="col-span-3" body-class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-select label="Status" wire:model="formData.status" icon="o-signal" :options="[
+                            ['id' => 'Aktif', 'name' => 'Aktif'],
+                            ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
+                        ]" option-value="id" option-label="name" required />
+
+                    <x-select label="Berlaku Untuk" wire:model.live="formData.berlaku_untuk" icon="o-users" :options="[
+                            ['id' => 'semua', 'name' => 'Semua Pelanggan'],
+                            ['id' => 'pelanggan_baru', 'name' => 'Pelanggan Baru Saja'],
+                            ['id' => 'layanan_tertentu', 'name' => 'Layanan Tertentu'],
+                        ]" option-value="id" option-label="name" required />
+                </div>
+
+                @if ($formData['berlaku_untuk'] === 'layanan_tertentu')
+                <x-choices-offline label="Pilih Layanan" wire:model="layananIds" :options="$layananOptions"
+                    icon="o-sparkles" searchable placeholder="Cari layanan..."
+                    hint="Promo hanya berlaku untuk layanan yang dipilih" />
+                @endif
+                <x-toggle label="Auto Apply" wire:model="autoApply" label="Auto Apply"
+                    hint="Promo otomatis digunakan saat checkout jika memenuhi syarat" right />
+            </x-card>
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Batal" link="{{ route('promo.index') }}" wire:navigate />
+            <x-button label="Simpan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
+        </x-slot:actions>
+    </x-form>
 </div>

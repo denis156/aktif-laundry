@@ -161,6 +161,14 @@
             <x-chart wire:model="transaksiChart" />
         </x-card>
 
+        {{-- CHART BULAN INI - FULL WIDTH --}}
+        <x-card title="Bulan Ini" subtitle="Transaksi harian bulan {{ now()->locale('id')->isoFormat('MMMM YYYY') }}" class="shadow-sm">
+            <x-slot:menu>
+                <x-toggle wire:model.live="isLineChartCurrentMonth" left />
+            </x-slot:menu>
+            <x-chart wire:model="currentMonthChart" />
+        </x-card>
+
         {{-- CHART 12 BULAN - FULL WIDTH --}}
         <x-card title="12 Bulan Terakhir" subtitle="Pertumbuhan transaksi selama tahun ini" class="shadow-sm">
             <x-slot:menu>

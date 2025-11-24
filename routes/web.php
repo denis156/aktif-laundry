@@ -1,36 +1,42 @@
 <?php
 
-use App\Livewire\Kurir\Info;
-use App\Livewire\Kurir\Rute;
 use App\Livewire\Kurir\Beranda;
-use App\Livewire\Kurir\Pengiriman;
-use App\Livewire\Management\Kasir;
-use App\Livewire\Management\Profile;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Route;
-use App\Livewire\Management\Dashboard;
-use App\Livewire\Management\Auth\Login;
-use App\Livewire\Management\Pengaturan;
-use App\Livewire\Management\Component\Receipt;
-use App\Livewire\Management\Staf\Edit as StafEdit;
-use App\Livewire\Management\Kurir\Edit as KurirEdit;
-use App\Livewire\Management\Staf\Index as StafIndex;
+use App\Livewire\Kurir\Info;
 use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
-use App\Livewire\Management\Kurir\Index as KurirIndex;
-use App\Livewire\Management\Staf\Create as StafCreate;
-use App\Livewire\Management\Kurir\Create as KurirCreate;
-use App\Livewire\Management\Layanan\Edit as LayananEdit;
-use App\Livewire\Management\Layanan\Index as LayananIndex;
-use App\Livewire\Management\Layanan\Create as LayananCreate;
-use App\Livewire\Management\Pelanggan\Edit as PelangganEdit;
-use App\Livewire\Management\Transaksi\Edit as TransaksiEdit;
-use App\Livewire\Management\Pelanggan\Index as PelangganIndex;
-use App\Livewire\Management\Transaksi\Index as TransaksiIndex;
-use App\Livewire\Management\Pelanggan\Create as PelangganCreate;
-use App\Livewire\Management\Transaksi\Create as TransaksiCreate;
+use App\Livewire\Kurir\Pengiriman;
+use App\Livewire\Kurir\Rute;
+use App\Livewire\Management\Auth\Login;
+use App\Livewire\Management\Component\Receipt;
+use App\Livewire\Management\Dashboard;
+use App\Livewire\Management\JenisPakaian\Create as JenisPakaianCreate;
 use App\Livewire\Management\JenisPakaian\Edit as JenisPakaianEdit;
 use App\Livewire\Management\JenisPakaian\Index as JenisPakaianIndex;
-use App\Livewire\Management\JenisPakaian\Create as JenisPakaianCreate;
+use App\Livewire\Management\Kasir;
+use App\Livewire\Management\Kurir\Create as KurirCreate;
+use App\Livewire\Management\Kurir\Edit as KurirEdit;
+use App\Livewire\Management\Kurir\Index as KurirIndex;
+use App\Livewire\Management\Layanan\Create as LayananCreate;
+use App\Livewire\Management\Layanan\Edit as LayananEdit;
+use App\Livewire\Management\Layanan\Index as LayananIndex;
+use App\Livewire\Management\Pelanggan\Create as PelangganCreate;
+use App\Livewire\Management\Pelanggan\Edit as PelangganEdit;
+use App\Livewire\Management\Pelanggan\Index as PelangganIndex;
+use App\Livewire\Management\Pengaturan;
+use App\Livewire\Management\Profile;
+use App\Livewire\Management\Promo\Create as PromoCreate;
+use App\Livewire\Management\Promo\Edit as PromoEdit;
+use App\Livewire\Management\Promo\Index as PromoIndex;
+use App\Livewire\Management\Referral\Create as ReferralCreate;
+use App\Livewire\Management\Referral\Edit as ReferralEdit;
+use App\Livewire\Management\Referral\Index as ReferralIndex;
+use App\Livewire\Management\Staf\Create as StafCreate;
+use App\Livewire\Management\Staf\Edit as StafEdit;
+use App\Livewire\Management\Staf\Index as StafIndex;
+use App\Livewire\Management\Transaksi\Create as TransaksiCreate;
+use App\Livewire\Management\Transaksi\Edit as TransaksiEdit;
+use App\Livewire\Management\Transaksi\Index as TransaksiIndex;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Route;
 
 // Landing Page Route - Public
 Route::view('/', 'pages.landingpage')->name('landing-page');
@@ -101,6 +107,16 @@ Route::middleware('auth')->prefix('management')->group(function () {
     Route::get('/kurir', KurirIndex::class)->name('kurir.index');
     Route::get('/kurir/create', KurirCreate::class)->name('kurir.create');
     Route::get('/kurir/edit/{id}', KurirEdit::class)->name('kurir.edit');
+
+    // Promo Routes di /management/promo
+    Route::get('/promo', PromoIndex::class)->name('promo.index');
+    Route::get('/promo/create', PromoCreate::class)->name('promo.create');
+    Route::get('/promo/edit/{id}', PromoEdit::class)->name('promo.edit');
+
+    // Referral Routes di /management/referral
+    Route::get('/referral', ReferralIndex::class)->name('referral.index');
+    Route::get('/referral/create', ReferralCreate::class)->name('referral.create');
+    Route::get('/referral/edit/{id}', ReferralEdit::class)->name('referral.edit');
 
     // Profile Route di /management/profile
     Route::get('/profile', Profile::class)->name('profile');

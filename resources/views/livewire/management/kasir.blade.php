@@ -137,16 +137,32 @@
                     <!-- Multi Layanan Form -->
                     <livewire:management.component.multi-layanan-form :key="'multi-layanan-'.$this->getId()" />
 
-                    <!-- Diskon -->
-                    <x-input
-                        label="Diskon"
-                        type="number"
-                        wire:model.live="formData.diskon"
-                        placeholder="0"
-                        prefix="Rp"
-                        hint="Opsional"
-                        min="0"
-                    />
+                    <!-- Promo & Referral -->
+                    <div class="space-y-4">
+                        <x-select
+                            label="Pilih Promo"
+                            wire:model.live="formData.promo_id"
+                            :options="$promoOptions"
+                            placeholder="Pilih promo (opsional)"
+                            icon="o-tag"
+                            hint="Diskon otomatis dihitung berdasarkan promo"
+                        />
+
+                        @if($promoResult['valid'])
+                            <div class="alert alert-success">
+                                <x-icon name="o-check-circle" class="w-5 h-5" />
+                                <span>{{ $promoResult['pesan'] }} - Diskon: Rp {{ number_format($promoResult['diskon'], 0, ',', '.') }}</span>
+                            </div>
+                        @endif
+
+                        <x-input
+                            label="Kode Referral"
+                            wire:model.blur="formData.kode_referral"
+                            placeholder="Masukkan kode referral (opsional)"
+                            icon="o-users"
+                            hint="Dapatkan promo tambahan dengan kode referral"
+                        />
+                    </div>
 
                     <!-- Catatan -->
                     <x-textarea
@@ -233,6 +249,16 @@
                             <span class="text-sm opacity-90">Subtotal:</span>
                             <span class="font-bold">Rp {{ number_format((float) ($multiLayananData['totalSubtotal'] ?? 0), 0, ',', '.') }}</span>
                         </div>
+
+                        @if($formData['promo_id'] && $promoResult['valid'])
+                            <div class="py-2 border-b border-primary-content/20">
+                                <div class="flex justify-between items-center">
+                                    <span class="text-sm opacity-90">Promo:</span>
+                                    <span class="font-bold text-warning">{{ $formData['kode_promo'] }}</span>
+                                </div>
+                                <div class="text-xs opacity-75 text-right mt-1">{{ $promoResult['pesan'] }}</div>
+                            </div>
+                        @endif
 
                         <div class="flex justify-between items-center py-2 border-b border-primary-content/20">
                             <span class="text-sm opacity-90">Diskon:</span>

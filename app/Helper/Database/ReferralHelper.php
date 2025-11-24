@@ -175,4 +175,48 @@ class ReferralHelper
             return [];
         }
     }
+
+    /**
+     * Generate kode referral unik
+     */
+    public static function generateKodeReferral(): string
+    {
+        try {
+            $prefix = PengaturanHelper::getValue('format_id_referral', 'REF');
+            $prefixLength = strlen($prefix);
+
+            $lastReferral = Referral::orderBy('kode_referral', 'desc')->first();
+
+            if (! $lastReferral) {
+                return $prefix.'001';
+            }
+
+            $lastNumber = (int) substr($lastReferral->kode_referral, $prefixLength);
+            $nextNumber = $lastNumber + 1;
+
+            // Check if there are any gaps in the numbering
+            while (Referral::where('kode_referral', $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
+                $nextNumber++;
+            }
+
+            return $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+        } catch (\Exception $e) {
+            Log::error('Failed to generate kode referral', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Get status options untuk dropdown
+     */
+    public static function getStatusOptions(): array
+    {
+        return [
+            ['id' => 'Aktif', 'name' => 'Aktif'],
+            ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
+        ];
+    }
 }

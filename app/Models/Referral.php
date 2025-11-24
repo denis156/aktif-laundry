@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 // ! Model Referral - Kode Referral
 //
 // ? Menyimpan kode referral milik pelanggan
+// ? Terhubung dengan Promo untuk reward referrer dan referee
 // ? Tracking reward dan statistik penggunaan
 // ? Metadata: reward_history, special_reward
 
@@ -23,6 +24,8 @@ class Referral extends Model
     // * Fillable attributes
     protected $fillable = [
         'pelanggan_id',
+        'promo_referrer_id',
+        'promo_referee_id',
         'kode_referral',
         'poin_referrer',
         'diskon_referee',
@@ -52,5 +55,17 @@ class Referral extends Model
     public function pelanggan(): BelongsTo
     {
         return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
+    }
+
+    // * Relasi: Promo untuk referrer (yang mengajak)
+    public function promoReferrer(): BelongsTo
+    {
+        return $this->belongsTo(Promo::class, 'promo_referrer_id');
+    }
+
+    // * Relasi: Promo untuk referee (yang diajak)
+    public function promoReferee(): BelongsTo
+    {
+        return $this->belongsTo(Promo::class, 'promo_referee_id');
     }
 }
