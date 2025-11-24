@@ -61,7 +61,7 @@
                 <h1 class="text-lg font-bold text-base-content/60">Pengiriman Terbaru</h1>
                 <x-button label="Lihat Semua" class="btn-ghost btn-xs btn-primary"/>
             </div>
-            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
+            <x-card class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
                 <x-avatar image="https://img.daisyui.com/images/profile/demo/yellingwoman@192.webp"
                     class="w-14 rounded-full avatar-online ring-neutral ring-offset-success ring-2 ring-offset-2" />
                 <div class="flex flex-col flex-1 min-w-0">
@@ -75,7 +75,7 @@
                 </div>
                 <x-badge value="Antar" class="badge-warning badge-dash badge-sm shrink-0" />
             </x-card>
-            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
+            <x-card class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
                 <x-avatar image="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp"
                     class="w-14 rounded-full avatar-online ring-neutral ring-offset-success ring-2 ring-offset-2" />
                 <div class="flex flex-col flex-1 min-w-0">
@@ -89,7 +89,7 @@
                 </div>
                 <x-badge value="Proses" class="badge-info badge-dash badge-sm shrink-0" />
             </x-card>
-            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
+            <x-card class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
                 <x-avatar image="https://img.daisyui.com/images/profile/demo/superperson@192.webp"
                     class="w-14 rounded-full ring-error ring-2 ring-offset-2" />
                 <div class="flex flex-col flex-1 min-w-0">
@@ -101,7 +101,7 @@
                 </div>
                 <x-badge value="Jemput" class="badge-error badge-dash badge-sm shrink-0" />
             </x-card>
-            <x-card class="shadow-lg border-t-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
+            <x-card class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer" body-class="flex items-center gap-3">
                 <x-avatar image="https://img.daisyui.com/images/profile/demo/batperson@192.webp"
                     class="w-14 rounded-full ring-success ring-2 ring-offset-2" />
                 <div class="flex flex-col flex-1 min-w-0">
