@@ -60,6 +60,9 @@ class Kasir extends Component
         'tipe' => '',
     ];
 
+    // Cache promo object untuk menghindari duplicate query
+    protected $cachedPromo = null;
+
     // Multi-layanan data
     public array $multiLayananData = [
         'items' => [],
@@ -147,6 +150,8 @@ class Kasir extends Component
             'pesan' => '',
             'tipe' => '',
         ];
+
+        $this->cachedPromo = null;
 
         $this->multiLayananData = [
             'items' => [],
@@ -304,12 +309,19 @@ class Kasir extends Component
             ];
             $this->formData['diskon'] = 0;
             $this->formData['kode_promo'] = '';
+            $this->cachedPromo = null;
             $this->updateTotal();
 
             return;
         }
 
-        $promo = PromoHelper::getById($promoId);
+        // Use cached promo if available
+        if ($this->cachedPromo && $this->cachedPromo->id === $promoId) {
+            $promo = $this->cachedPromo;
+        } else {
+            $promo = PromoHelper::getById($promoId);
+            $this->cachedPromo = $promo;
+        }
 
         if (! $promo) {
             $this->promoResult = [
@@ -320,6 +332,7 @@ class Kasir extends Component
             ];
             $this->formData['diskon'] = 0;
             $this->formData['kode_promo'] = '';
+            $this->cachedPromo = null;
             $this->updateTotal();
 
             return;
@@ -364,11 +377,11 @@ class Kasir extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -550,11 +563,20 @@ class Kasir extends Component
 
                 $transaksi = Transaksi::create($transaksiData);
 
+                // Collect all layanan IDs and load them at once to prevent N+1 queries
+                $layananIds = collect($this->multiLayananData['items'])
+                    ->pluck('layanan_id')
+                    ->filter()
+                    ->unique()
+                    ->toArray();
+
+                $layananMap = Layanan::whereIn('id', $layananIds)->get()->keyBy('id');
+
                 // Simpan detail transaksi layanan
                 foreach ($this->multiLayananData['items'] as $index => $item) {
                     if (! empty($item['layanan_id'])) {
-                        // Get layanan data untuk backup jika item data kosong
-                        $layanan = Layanan::find($item['layanan_id']);
+                        // Get layanan data dari loaded map
+                        $layanan = $layananMap->get($item['layanan_id']);
 
                         if (! $layanan) {
                             Log::error('Kasir: Layanan not found', [
@@ -620,7 +642,8 @@ class Kasir extends Component
 
                 // Increment promo usage jika ada promo yang digunakan
                 if ($this->formData['promo_id']) {
-                    $promo = PromoHelper::getById($this->formData['promo_id']);
+                    // Use cached promo if available
+                    $promo = $this->cachedPromo ?? PromoHelper::getById($this->formData['promo_id']);
                     if ($promo) {
                         PromoHelper::incrementUsage($promo);
                         Log::info('Kasir: Promo usage incremented', [

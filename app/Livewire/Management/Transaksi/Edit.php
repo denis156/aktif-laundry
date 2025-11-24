@@ -278,11 +278,11 @@ class Edit extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -326,19 +326,13 @@ class Edit extends Component
 
         // Load kurir info
         $kurirJemput = TransaksiHelper::getKurirJemput($transaksi);
-        if ($kurirJemput) {
-            $kurir = Kurir::where('nama', $kurirJemput)->first();
-            if ($kurir) {
-                $this->kurirJemputId = $kurir->id;
-            }
+        if ($kurirJemput && isset($kurirJemput['id'])) {
+            $this->kurirJemputId = $kurirJemput['id'];
         }
 
         $kurirAntar = TransaksiHelper::getKurirAntar($transaksi);
-        if ($kurirAntar) {
-            $kurir = Kurir::where('nama', $kurirAntar)->first();
-            if ($kurir) {
-                $this->kurirAntarId = $kurir->id;
-            }
+        if ($kurirAntar && isset($kurirAntar['id'])) {
+            $this->kurirAntarId = $kurirAntar['id'];
         }
     }
 
@@ -549,7 +543,7 @@ class Edit extends Component
                 if ($this->kurirJemputId) {
                     $kurir = Kurir::find($this->kurirJemputId);
                     if ($kurir) {
-                        TransaksiHelper::setKurirJemput($transaksi, $kurir->nama);
+                        TransaksiHelper::setKurirJemput($transaksi, $kurir->id, $kurir->nama);
                     }
                 } else {
                     TransaksiHelper::setKurirJemput($transaksi, null);
@@ -559,7 +553,7 @@ class Edit extends Component
                 if ($this->kurirAntarId) {
                     $kurir = Kurir::find($this->kurirAntarId);
                     if ($kurir) {
-                        TransaksiHelper::setKurirAntar($transaksi, $kurir->nama);
+                        TransaksiHelper::setKurirAntar($transaksi, $kurir->id, $kurir->nama);
                     }
                 } else {
                     TransaksiHelper::setKurirAntar($transaksi, null);
@@ -571,11 +565,20 @@ class Edit extends Component
                 // Hapus transaksi layanan lama (force delete untuk menghindari duplikasi)
                 DB::table('transaksi_layanan')->where('transaksi_id', $transaksi->id)->delete();
 
+                // Collect all layanan IDs and load them at once to prevent N+1 queries
+                $layananIds = collect($this->multiLayananData['items'])
+                    ->pluck('layanan_id')
+                    ->filter()
+                    ->unique()
+                    ->toArray();
+
+                $layananMap = Layanan::whereIn('id', $layananIds)->get()->keyBy('id');
+
                 // Simpan detail transaksi layanan baru
                 foreach ($this->multiLayananData['items'] as $index => $item) {
                     if (! empty($item['layanan_id'])) {
-                        // Get layanan data untuk backup jika item data kosong
-                        $layanan = Layanan::find($item['layanan_id']);
+                        // Get layanan data dari loaded map
+                        $layanan = $layananMap->get($item['layanan_id']);
 
                         if (! $layanan) {
                             Log::error('Transaksi Edit: Layanan not found', [

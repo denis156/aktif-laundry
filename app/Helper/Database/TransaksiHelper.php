@@ -126,28 +126,64 @@ class TransaksiHelper
         self::setMetadata($transaksi, self::META_REFERRAL, $referralData);
     }
 
-    // * Ambil nama kurir yang jemput cucian
-    public static function getKurirJemput(Transaksi $transaksi): ?string
+    // * Ambil info kurir yang jemput cucian
+    public static function getKurirJemput(Transaksi $transaksi): ?array
     {
-        return self::getMetadata($transaksi, self::META_KURIR_JEMPUT);
+        $data = self::getMetadata($transaksi, self::META_KURIR_JEMPUT);
+
+        // Backward compatibility: jika masih string (nama saja), convert ke array
+        if (is_string($data)) {
+            return ['nama' => $data, 'id' => null];
+        }
+
+        return $data;
     }
 
-    // * Set nama kurir yang jemput cucian
-    public static function setKurirJemput(Transaksi $transaksi, ?string $kurirName): void
+    // * Set info kurir yang jemput cucian
+    // * @param int|null $kurirId - ID kurir
+    // * @param string|null $kurirName - Nama kurir (optional, untuk display)
+    public static function setKurirJemput(Transaksi $transaksi, ?int $kurirId, ?string $kurirName = null): void
     {
-        self::setMetadata($transaksi, self::META_KURIR_JEMPUT, $kurirName);
+        if ($kurirId === null) {
+            self::setMetadata($transaksi, self::META_KURIR_JEMPUT, null);
+
+            return;
+        }
+
+        self::setMetadata($transaksi, self::META_KURIR_JEMPUT, [
+            'id' => $kurirId,
+            'nama' => $kurirName,
+        ]);
     }
 
-    // * Ambil nama kurir yang antar cucian
-    public static function getKurirAntar(Transaksi $transaksi): ?string
+    // * Ambil info kurir yang antar cucian
+    public static function getKurirAntar(Transaksi $transaksi): ?array
     {
-        return self::getMetadata($transaksi, self::META_KURIR_ANTAR);
+        $data = self::getMetadata($transaksi, self::META_KURIR_ANTAR);
+
+        // Backward compatibility: jika masih string (nama saja), convert ke array
+        if (is_string($data)) {
+            return ['nama' => $data, 'id' => null];
+        }
+
+        return $data;
     }
 
-    // * Set nama kurir yang antar cucian
-    public static function setKurirAntar(Transaksi $transaksi, ?string $kurirName): void
+    // * Set info kurir yang antar cucian
+    // * @param int|null $kurirId - ID kurir
+    // * @param string|null $kurirName - Nama kurir (optional, untuk display)
+    public static function setKurirAntar(Transaksi $transaksi, ?int $kurirId, ?string $kurirName = null): void
     {
-        self::setMetadata($transaksi, self::META_KURIR_ANTAR, $kurirName);
+        if ($kurirId === null) {
+            self::setMetadata($transaksi, self::META_KURIR_ANTAR, null);
+
+            return;
+        }
+
+        self::setMetadata($transaksi, self::META_KURIR_ANTAR, [
+            'id' => $kurirId,
+            'nama' => $kurirName,
+        ]);
     }
 
     // * Ambil informasi pembayaran transaksi

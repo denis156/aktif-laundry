@@ -147,11 +147,11 @@ class Create extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -380,26 +380,39 @@ class Create extends Component
                 if ($this->kurirJemputId) {
                     $kurir = Kurir::find($this->kurirJemputId);
                     if ($kurir) {
-                        TransaksiHelper::setKurirJemput($transaksi, $kurir->nama);
+                        TransaksiHelper::setKurirJemput($transaksi, $kurir->id, $kurir->nama);
                     }
+                } else {
+                    TransaksiHelper::setKurirJemput($transaksi, null);
                 }
 
                 // 4. Kurir Antar
                 if ($this->kurirAntarId) {
                     $kurir = Kurir::find($this->kurirAntarId);
                     if ($kurir) {
-                        TransaksiHelper::setKurirAntar($transaksi, $kurir->nama);
+                        TransaksiHelper::setKurirAntar($transaksi, $kurir->id, $kurir->nama);
                     }
+                } else {
+                    TransaksiHelper::setKurirAntar($transaksi, null);
                 }
 
                 // Save metadata ke database
                 $transaksi->save();
 
+                // Collect all layanan IDs and load them at once to prevent N+1 queries
+                $layananIds = collect($this->multiLayananData['items'])
+                    ->pluck('layanan_id')
+                    ->filter()
+                    ->unique()
+                    ->toArray();
+
+                $layananMap = Layanan::whereIn('id', $layananIds)->get()->keyBy('id');
+
                 // Simpan detail transaksi layanan
                 foreach ($this->multiLayananData['items'] as $index => $item) {
                     if (! empty($item['layanan_id'])) {
-                        // Get layanan data untuk backup jika item data kosong
-                        $layanan = Layanan::find($item['layanan_id']);
+                        // Get layanan data dari loaded map
+                        $layanan = $layananMap->get($item['layanan_id']);
 
                         if (! $layanan) {
                             Log::error('Transaksi Create: Layanan not found', [

@@ -6,6 +6,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 // ! Model Promo - Kode Promo/Diskon
@@ -54,5 +55,31 @@ class Promo extends Model
             'max_per_user' => 'integer',
             'metadata' => 'array',
         ];
+    }
+
+    // * Relationships
+
+    /**
+     * Relasi: Transaksi yang menggunakan promo ini
+     */
+    public function transaksi(): HasMany
+    {
+        return $this->hasMany(Transaksi::class, 'promo_id');
+    }
+
+    /**
+     * Relasi: Referral yang menggunakan promo ini untuk referrer (yang mengajak)
+     */
+    public function referralsAsReferrer(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'promo_referrer_id');
+    }
+
+    /**
+     * Relasi: Referral yang menggunakan promo ini untuk referee (yang diajak)
+     */
+    public function referralsAsReferee(): HasMany
+    {
+        return $this->hasMany(Referral::class, 'promo_referee_id');
     }
 }

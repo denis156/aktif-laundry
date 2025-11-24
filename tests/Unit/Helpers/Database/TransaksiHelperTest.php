@@ -177,40 +177,60 @@ describe('TransaksiHelper - Referral Operations', function () {
 });
 
 describe('TransaksiHelper - Kurir Operations', function () {
-    test('getKurirJemput retrieves kurir jemput name', function () {
+    test('getKurirJemput retrieves kurir jemput info', function () {
+        $transaksi = Transaksi::factory()->create([
+            'metadata' => [TransaksiHelper::META_KURIR_JEMPUT => ['id' => 1, 'nama' => 'Budi']],
+        ]);
+
+        $result = TransaksiHelper::getKurirJemput($transaksi);
+
+        expect($result)->toBe(['id' => 1, 'nama' => 'Budi']);
+    });
+
+    test('getKurirJemput handles backward compatibility with string value', function () {
         $transaksi = Transaksi::factory()->create([
             'metadata' => [TransaksiHelper::META_KURIR_JEMPUT => 'Budi'],
         ]);
 
         $result = TransaksiHelper::getKurirJemput($transaksi);
 
-        expect($result)->toBe('Budi');
+        expect($result)->toBe(['nama' => 'Budi', 'id' => null]);
     });
 
-    test('setKurirJemput sets kurir jemput name', function () {
+    test('setKurirJemput sets kurir jemput info', function () {
         $transaksi = Transaksi::factory()->create(['metadata' => []]);
 
-        TransaksiHelper::setKurirJemput($transaksi, 'Budi');
+        TransaksiHelper::setKurirJemput($transaksi, 1, 'Budi');
 
-        expect($transaksi->metadata[TransaksiHelper::META_KURIR_JEMPUT])->toBe('Budi');
+        expect($transaksi->metadata[TransaksiHelper::META_KURIR_JEMPUT])->toBe(['id' => 1, 'nama' => 'Budi']);
     });
 
-    test('getKurirAntar retrieves kurir antar name', function () {
+    test('getKurirAntar retrieves kurir antar info', function () {
+        $transaksi = Transaksi::factory()->create([
+            'metadata' => [TransaksiHelper::META_KURIR_ANTAR => ['id' => 2, 'nama' => 'Andi']],
+        ]);
+
+        $result = TransaksiHelper::getKurirAntar($transaksi);
+
+        expect($result)->toBe(['id' => 2, 'nama' => 'Andi']);
+    });
+
+    test('getKurirAntar handles backward compatibility with string value', function () {
         $transaksi = Transaksi::factory()->create([
             'metadata' => [TransaksiHelper::META_KURIR_ANTAR => 'Andi'],
         ]);
 
         $result = TransaksiHelper::getKurirAntar($transaksi);
 
-        expect($result)->toBe('Andi');
+        expect($result)->toBe(['nama' => 'Andi', 'id' => null]);
     });
 
-    test('setKurirAntar sets kurir antar name', function () {
+    test('setKurirAntar sets kurir antar info', function () {
         $transaksi = Transaksi::factory()->create(['metadata' => []]);
 
-        TransaksiHelper::setKurirAntar($transaksi, 'Andi');
+        TransaksiHelper::setKurirAntar($transaksi, 2, 'Andi');
 
-        expect($transaksi->metadata[TransaksiHelper::META_KURIR_ANTAR])->toBe('Andi');
+        expect($transaksi->metadata[TransaksiHelper::META_KURIR_ANTAR])->toBe(['id' => 2, 'nama' => 'Andi']);
     });
 });
 
