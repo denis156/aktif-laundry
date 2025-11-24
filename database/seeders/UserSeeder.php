@@ -21,9 +21,8 @@ class UserSeeder extends Seeder
             'email' => 'admin@aktiflaundry.com',
             'password' => Hash::make('password'),
             'super_admin' => true,
-            'no_hp' => '081234567890',
+            'no_hp' => '81234567890',
             'alamat' => 'Jl. Admin No. 1',
-            'email_verified_at' => now(),
         ]);
     }
 }

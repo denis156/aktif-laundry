@@ -20,7 +20,13 @@
                 <x-password label="Password" wire:model="password" placeholder="Masukkan password" icon="o-lock-closed"
                     hint="Klik icon untuk melihat password" right required />
 
-                <x-checkbox label="Ingat Saya" wire:model="remember" />
+                <div class="flex items-center justify-between">
+                    <x-checkbox label="Ingat Saya" wire:model="remember" />
+                    <a href="{{ route('password.request') }}" class="text-sm text-primary hover:text-primary/80"
+                        wire:navigate>
+                        Lupa Password?
+                    </a>
+                </div>
             </div>
 
             <x-slot:actions>

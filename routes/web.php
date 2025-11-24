@@ -5,7 +5,10 @@ use App\Livewire\Kurir\Info;
 use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
 use App\Livewire\Kurir\Pengiriman;
 use App\Livewire\Kurir\Rute;
+use App\Livewire\Management\Auth\ForgotPassword;
 use App\Livewire\Management\Auth\Login;
+use App\Livewire\Management\Auth\ResetPassword;
+use App\Livewire\Management\Auth\VerifyEmail;
 use App\Livewire\Management\Component\Receipt;
 use App\Livewire\Management\Dashboard;
 use App\Livewire\Management\JenisPakaian\Create as JenisPakaianCreate;
@@ -35,6 +38,7 @@ use App\Livewire\Management\Staf\Index as StafIndex;
 use App\Livewire\Management\Transaksi\Create as TransaksiCreate;
 use App\Livewire\Management\Transaksi\Edit as TransaksiEdit;
 use App\Livewire\Management\Transaksi\Index as TransaksiIndex;
+use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -47,12 +51,20 @@ Route::get('/kurir/rute', Rute::class)->name('rute.kurir');
 Route::get('/kurir/info', Info::class)->name('info.kurir');
 Route::get('/kurir/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
 
-// Public Routes - tanpa auth
-Route::prefix('management')->group(function () {
+// Management Auth Routes - Guest (tanpa auth)
+Route::middleware('guest')->prefix('management')->group(function () {
     // Login Route di /management/login
     Route::get('/login', Login::class)->name('login');
 
-    // Logout Route di /management/logout
+    // Forgot Password Route di /management/forgot-password
+    Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
+
+    // Reset Password Route di /management/reset-password/{token}
+    Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
+});
+
+// Management Logout Route (authenticated)
+Route::middleware('auth')->prefix('management')->group(function () {
     Route::get('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -62,8 +74,22 @@ Route::prefix('management')->group(function () {
     })->name('logout');
 });
 
-// Protected Routes dengan prefix /management
+// Email Verification Routes (authenticated)
 Route::middleware('auth')->prefix('management')->group(function () {
+    // Email Verification Notice Page
+    Route::get('/verify-email', VerifyEmail::class)
+        ->name('verification.notice');
+
+    // Email Verification Handler (Laravel built-in)
+    Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+
+        return redirect()->route('dashboard');
+    })->middleware(['signed'])->name('verification.verify');
+});
+
+// Protected Routes dengan prefix /management
+Route::middleware(['auth', 'verified'])->prefix('management')->group(function () {
 
     // Dashboard di /management
     Route::get('/', Dashboard::class)->name('dashboard');

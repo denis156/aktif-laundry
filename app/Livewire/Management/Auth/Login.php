@@ -45,7 +45,24 @@ class Login extends Component
                 Log::info('User login successful', [
                     'user_id' => Auth::id(),
                     'email' => $this->email,
+                    'email_verified' => Auth::user()->hasVerifiedEmail(),
                 ]);
+
+                // Check if email needs verification
+                if (! Auth::user()->hasVerifiedEmail()) {
+                    Log::info('User redirected to email verification', [
+                        'user_id' => Auth::id(),
+                    ]);
+
+                    $this->info(
+                        'Silakan verifikasi email Anda terlebih dahulu.',
+                        position: 'toast-bottom'
+                    );
+
+                    $this->redirect(route('verification.notice'), navigate: true);
+
+                    return;
+                }
 
                 $this->success('Login berhasil! Selamat datang '.Auth::user()->name, position: 'toast-bottom');
 

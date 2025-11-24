@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
 
 // ! Model User - Pegawai/Admin/Kasir
 //
@@ -15,7 +15,7 @@ use Illuminate\Notifications\Notifiable;
 // ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
 // ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, jam_masuk, jam_keluar, gaji, target_bulanan
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
