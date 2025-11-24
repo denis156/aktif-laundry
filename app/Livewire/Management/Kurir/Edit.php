@@ -43,6 +43,7 @@ class Edit extends Component
         'no_kendaraan' => '',
         'jenis_kendaraan' => '',
         'password' => '',
+        'password_confirmation' => '',
         'tanggal_bergabung' => '',
         'status' => 'Aktif',
         'total_jemput' => 0,
@@ -52,8 +53,6 @@ class Edit extends Component
     public $avatar;
 
     public ?string $currentAvatarUrl = null;
-
-    public string $password_confirmation = '';
 
     // * Coverage Area - untuk area layanan kurir
     public array $coverageKecamatan = []; // Motor: single, Mobil: multiple

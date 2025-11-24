@@ -35,11 +35,10 @@
                     <x-password label="Password Baru" wire:model="formData.password"
                         placeholder="Kosongkan jika tidak ingin mengubah"
                         hint="Minimal 8 karakter, kosongkan jika tidak ingin mengubah password"
-                        password-icon="o-lock-closed" password-visible-icon="o-lock-open" clearable />
+                        password-icon="o-lock-closed" right clearable />
 
-                    <x-password label="Konfirmasi Password Baru" wire:model="password_confirmation"
-                        placeholder="Ketik ulang password baru" password-icon="o-lock-closed"
-                        password-visible-icon="o-lock-open" clearable />
+                    <x-password label="Konfirmasi Password Baru" wire:model="formData.password_confirmation"
+                        placeholder="Ketik ulang password baru" password-icon="o-lock-closed" right clearable />
                 </div>
             </x-card>
         </div>
@@ -93,16 +92,12 @@
                     <x-choices-offline label="Kecamatan Layanan" wire:model.live="coverageKecamatan"
                         :options="$coverageKecamatanOptions" icon="o-map-pin"
                         hint="{{ empty($formData['jenis_kendaraan']) ? 'Pilih jenis kendaraan dulu' : 'Pilih satu atau lebih kecamatan' }}"
-                        :disabled="empty($formData['jenis_kendaraan'])"
-                        searchable
-                        placeholder="Cari kecamatan..." />
+                        :disabled="empty($formData['jenis_kendaraan'])" searchable placeholder="Cari kecamatan..." />
 
                     <x-choices-offline label="Kelurahan/Desa Layanan" wire:model="coverageKelurahan"
                         :options="$coverageKelurahanOptions" icon="o-map"
                         hint="{{ empty($coverageKecamatan) ? 'Pilih kecamatan dulu' : 'Pilih satu atau lebih kelurahan' }}"
-                        :disabled="empty($coverageKecamatan)"
-                        searchable
-                        placeholder="Cari kelurahan..." />
+                        :disabled="empty($coverageKecamatan)" searchable placeholder="Cari kelurahan..." />
                 </div>
             </x-card>
         </div>

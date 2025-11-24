@@ -1,11 +1,15 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="scroll-smooth no-scrollbar" data-theme="light">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ isset($title) ? $title.' - '.config('app.name') : config('app.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+
+    {{-- Livewire Style --}}
+    @livewireStyles
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <script type="text/javascript"
@@ -74,8 +78,8 @@
                 {{-- Operasional --}}
                 <x-menu-sub title="Operasional" icon="o-clipboard-document-check">
                     <x-menu-item title="Kasir" icon="o-calculator" link="{{ route('kasir') }}" wire:navigate.hover />
-                    <x-menu-item title="Transaksi" icon="o-clipboard-document-list" link="{{ route('transaksi.index') }}"
-                        wire:navigate.hover />
+                    <x-menu-item title="Transaksi" icon="o-clipboard-document-list"
+                        link="{{ route('transaksi.index') }}" wire:navigate.hover />
                 </x-menu-sub>
 
                 <x-menu-separator />
@@ -86,8 +90,8 @@
                         wire:navigate.hover />
                     <x-menu-item title="Layanan" icon="o-sparkles" link="{{ route('layanan.index') }}"
                         wire:navigate.hover />
-                    <x-menu-item title="Jenis Pakaian" icon="o-square-3-stack-3d" link="{{ route('jenis-pakaian.index') }}"
-                        wire:navigate.hover />
+                    <x-menu-item title="Jenis Pakaian" icon="o-square-3-stack-3d"
+                        link="{{ route('jenis-pakaian.index') }}" wire:navigate.hover />
                     <x-menu-item title="Kurir" icon="o-truck" link="{{ route('kurir.index') }}" wire:navigate.hover />
                 </x-menu-sub>
 
@@ -96,7 +100,8 @@
                 {{-- Marketing --}}
                 <x-menu-sub title="Marketing" icon="o-megaphone">
                     <x-menu-item title="Promo" icon="o-tag" link="{{ route('promo.index') }}" wire:navigate.hover />
-                    <x-menu-item title="Referral" icon="o-gift" link="{{ route('referral.index') }}" wire:navigate.hover />
+                    <x-menu-item title="Referral" icon="o-gift" link="{{ route('referral.index') }}"
+                        wire:navigate.hover />
                 </x-menu-sub>
 
                 <x-menu-separator />
@@ -104,7 +109,8 @@
                 {{-- Pengaturan (Super Admin only) --}}
                 @if(Auth::user()->super_admin)
                 <x-menu-sub title="Pengaturan" icon="o-cog-6-tooth">
-                    <x-menu-item title="Staf" icon="o-user-group" link="{{ route('staf.index') }}" wire:navigate.hover />
+                    <x-menu-item title="Staf" icon="o-user-group" link="{{ route('staf.index') }}"
+                        wire:navigate.hover />
                     <x-menu-item title="Konfigurasi" icon="o-adjustments-horizontal" link="{{ route('pengaturan') }}"
                         wire:navigate.hover />
                 </x-menu-sub>
@@ -131,6 +137,9 @@
 
     {{-- TOAST area --}}
     <x-toast />
+
+    {{-- Livewire Script --}}
+    @livewireScripts
 </body>
 
 </html>

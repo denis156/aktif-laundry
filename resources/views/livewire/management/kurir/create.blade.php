@@ -11,7 +11,7 @@
             <div class="col-span-2">
                 <x-header title="Informasi Dasar" subtitle="Data identitas kurir" size="text-lg" />
             </div>
-            
+
             <x-card class="col-span-3">
                 <x-file label="Avatar (Opsional)" wire:model="avatar" accept="image/png, image/jpeg, image/jpg"
                     hint="Ukuran maksimal 2MB. Format: JPG, PNG">
@@ -31,12 +31,10 @@
                         placeholder="Contoh: kurir@email.com" icon="o-envelope" hint="Opsional" />
 
                     <x-password label="Password" wire:model="formData.password" placeholder="Minimal 8 karakter"
-                        hint="Password untuk login aplikasi kurir" password-icon="o-lock-closed"
-                        password-visible-icon="o-lock-open" required />
+                        hint="Password untuk login aplikasi kurir" icon="o-lock-closed" right required />
 
-                    <x-password label="Konfirmasi Password" wire:model="password_confirmation"
-                        placeholder="Ketik ulang password" password-icon="o-lock-closed"
-                        password-visible-icon="o-lock-open" required />
+                    <x-password label="Konfirmasi Password" wire:model="formData.password_confirmation"
+                        placeholder="Ketik ulang password" icon="o-lock-closed" right required />
                 </div>
             </x-card>
         </div>
@@ -90,16 +88,12 @@
                     <x-choices-offline label="Kecamatan Layanan" wire:model.live="coverageKecamatan"
                         :options="$coverageKecamatanOptions" icon="o-map-pin"
                         hint="{{ empty($formData['jenis_kendaraan']) ? 'Pilih jenis kendaraan dulu' : 'Pilih satu atau lebih kecamatan' }}"
-                        :disabled="empty($formData['jenis_kendaraan'])"
-                        searchable
-                        placeholder="Cari kecamatan..." />
+                        :disabled="empty($formData['jenis_kendaraan'])" searchable placeholder="Cari kecamatan..." />
 
                     <x-choices-offline label="Kelurahan/Desa Layanan" wire:model="coverageKelurahan"
                         :options="$coverageKelurahanOptions" icon="o-map"
                         hint="{{ empty($coverageKecamatan) ? 'Pilih kecamatan dulu' : 'Pilih satu atau lebih kelurahan' }}"
-                        :disabled="empty($coverageKecamatan)"
-                        searchable
-                        placeholder="Cari kelurahan..." />
+                        :disabled="empty($coverageKecamatan)" searchable placeholder="Cari kelurahan..." />
                 </div>
             </x-card>
         </div>

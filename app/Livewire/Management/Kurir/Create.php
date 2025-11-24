@@ -41,13 +41,12 @@ class Create extends Component
         'no_kendaraan' => '',
         'jenis_kendaraan' => '',
         'password' => '',
+        'password_confirmation' => '',
         'tanggal_bergabung' => '',
         'status' => 'Aktif',
     ];
 
     public $avatar;
-
-    public string $password_confirmation = '';
 
     // * Coverage Area - untuk area layanan kurir
     public array $coverageKecamatan = []; // Motor: single, Mobil: multiple
