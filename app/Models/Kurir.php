@@ -58,7 +58,7 @@ class Kurir extends Authenticatable implements MustVerifyEmail
     {
         return [
             'email_verified_at' => 'datetime',
-            'tanggal_bergabung' => 'date',
+            'tanggal_bergabung' => 'datetime',
             'metadata' => 'array',
             'total_antar' => 'integer',
             'total_jemput' => 'integer',
