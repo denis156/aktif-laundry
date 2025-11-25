@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureKurirEmailIsVerified;
+use App\Http\Middleware\EnsurePelangganEmailIsVerified;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Foundation\Application;
@@ -24,6 +25,10 @@ return Application::configure(basePath: dirname(__DIR__))
                 return route('login.kurir');
             }
 
+            if ($request->is('pelanggan') || $request->is('pelanggan/*')) {
+                return route('login.pelanggan');
+            }
+
             return route('login');
         });
 
@@ -31,6 +36,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'guest' => RedirectIfAuthenticated::class,
             'super_admin' => SuperAdminMiddleware::class,
             'verified.kurir' => EnsureKurirEmailIsVerified::class,
+            'verified.pelanggan' => EnsurePelangganEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

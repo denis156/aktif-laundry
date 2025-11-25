@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Notifications\PelangganResetPasswordNotification;
+use App\Notifications\PelangganVerifyEmailNotification;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 // ! Model Pelanggan - Customer/Member
 //
@@ -17,9 +21,10 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
 // ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, member_card, loyalty_points, preferensi_pengiriman
 
-class Pelanggan extends Model
+class Pelanggan extends Authenticatable implements MustVerifyEmail
 {
     use HasFactory;
+    use Notifiable;
     use SoftDeletes;
 
     protected $table = 'pelanggan';
@@ -30,6 +35,7 @@ class Pelanggan extends Model
         'nama',
         'no_hp',
         'email',
+        'email_verified_at',
         'alamat',
         'password',
         'device_token',
@@ -51,6 +57,7 @@ class Pelanggan extends Model
     protected function casts(): array
     {
         return [
+            'email_verified_at' => 'datetime',
             'tanggal_daftar' => 'datetime',
             'total_transaksi' => 'integer',
             'direferensikan_oleh' => 'integer',
@@ -81,5 +88,21 @@ class Pelanggan extends Model
     public function referrals(): HasMany
     {
         return $this->hasMany(Pelanggan::class, 'direferensikan_oleh');
+    }
+
+    /**
+     * Send the password reset notification.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new PelangganResetPasswordNotification($token));
+    }
+
+    /**
+     * Send the email verification notification.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new PelangganVerifyEmailNotification);
     }
 }

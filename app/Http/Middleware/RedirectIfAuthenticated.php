@@ -28,6 +28,10 @@ class RedirectIfAuthenticated
                     return redirect()->route('beranda.kurir');
                 }
 
+                if ($guard === 'pelanggan') {
+                    return redirect()->route('beranda.pelanggan');
+                }
+
                 // Default redirect untuk guard web (management)
                 return redirect()->route('dashboard');
             }

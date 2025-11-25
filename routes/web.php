@@ -41,6 +41,12 @@ use App\Livewire\Management\Staf\Index as StafIndex;
 use App\Livewire\Management\Transaksi\Create as TransaksiCreate;
 use App\Livewire\Management\Transaksi\Edit as TransaksiEdit;
 use App\Livewire\Management\Transaksi\Index as TransaksiIndex;
+use App\Livewire\Pelanggan\Auth\ForgotPassword as PelangganForgotPassword;
+use App\Livewire\Pelanggan\Auth\Login as PelangganLogin;
+use App\Livewire\Pelanggan\Auth\Register as PelangganRegister;
+use App\Livewire\Pelanggan\Auth\ResetPassword as PelangganResetPassword;
+use App\Livewire\Pelanggan\Auth\VerifyEmail as PelangganVerifyEmail;
+use App\Livewire\Pelanggan\Beranda as PelangganBeranda;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -197,3 +203,53 @@ Route::middleware(['auth', 'verified'])->prefix('management')->group(function ()
     })->name('receipt.print');
 
 }); // End of auth middleware dan prefix management group
+
+// Pelanggan Auth Routes - Guest (tanpa auth)
+Route::middleware(['guest:pelanggan'])->prefix('pelanggan')->group(function () {
+    // Login Route di /pelanggan/login
+    Route::get('/login', PelangganLogin::class)->name('login.pelanggan');
+
+    // Register Route di /pelanggan/register
+    Route::get('/register', PelangganRegister::class)->name('register.pelanggan');
+
+    // Forgot Password Route di /pelanggan/forgot-password
+    Route::get('/forgot-password', PelangganForgotPassword::class)->name('pelanggan.password.request');
+
+    // Reset Password Route di /pelanggan/reset-password/{token}
+    Route::get('/reset-password/{token}', PelangganResetPassword::class)->name('pelanggan.password.reset');
+});
+
+// Pelanggan Logout Route (authenticated)
+Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
+    Route::get('/logout', function () {
+        Auth::guard('pelanggan')->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect()->route('login.pelanggan');
+    })->name('pelanggan.logout');
+});
+
+// Pelanggan Email Verification Routes (authenticated)
+Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
+    // Email Verification Notice Page
+    Route::get('/verify-email', PelangganVerifyEmail::class)
+        ->name('pelanggan.verification.notice');
+
+    // Email Verification Handler (Laravel built-in)
+    Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+
+        return redirect()->route('beranda.pelanggan');
+    })->middleware(['signed'])->name('pelanggan.verification.verify');
+});
+
+// Protected Pelanggan Routes
+Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')->group(function () {
+    Route::get('/', PelangganBeranda::class)->name('beranda.pelanggan');
+
+    // TODO: Add more pelanggan routes here
+    // Route::get('/pesanan', Pesanan::class)->name('pesanan.pelanggan');
+    // Route::get('/riwayat', Riwayat::class)->name('riwayat.pelanggan');
+    // Route::get('/pengaturan', Pengaturan::class)->name('pengaturan.pelanggan');
+});

@@ -44,6 +44,10 @@ return [
             'driver' => 'session',
             'provider' => 'kurir',
         ],
+        'pelanggan' => [
+            'driver' => 'session',
+            'provider' => 'pelanggan',
+        ],
     ],
 
     /*
@@ -71,6 +75,10 @@ return [
         'kurir' => [
             'driver' => 'eloquent',
             'model' => App\Models\Kurir::class,
+        ],
+        'pelanggan' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Pelanggan::class,
         ],
 
         // 'users' => [
@@ -108,6 +116,12 @@ return [
         'kurir' => [
             'provider' => 'kurir',
             'table' => 'kurir_password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'pelanggan' => [
+            'provider' => 'pelanggan',
+            'table' => 'pelanggan_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],
