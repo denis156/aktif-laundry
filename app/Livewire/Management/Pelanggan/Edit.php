@@ -78,7 +78,7 @@ class Edit extends Component
                 'provinsi' => AddressMetadata::getProvinsi($pelanggan)
                     ?: RegionalLocation::getProvinceName(),
                 'alamat' => $pelanggan->alamat ?? '',
-                'tanggal_daftar' => $pelanggan->tanggal_daftar->format('Y-m-d H:i'),
+                'tanggal_daftar' => $pelanggan->tanggal_daftar?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i'),
                 'status' => $pelanggan->status,
                 'total_transaksi' => $pelanggan->total_transaksi ?? 0,
                 'kode_referral_dipakai' => $pelanggan->kode_referral_dipakai ?? '',

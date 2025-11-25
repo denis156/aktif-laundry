@@ -51,7 +51,7 @@ class Pelanggan extends Model
     protected function casts(): array
     {
         return [
-            'tanggal_daftar' => 'date',
+            'tanggal_daftar' => 'datetime',
             'total_transaksi' => 'integer',
             'direferensikan_oleh' => 'integer',
             'password' => 'hashed',
