@@ -4,8 +4,8 @@
             Kelola informasi profil dan keamanan akun Anda
         </x-slot:subtitle>
         <x-slot:actions>
-            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle" link="{{ route('logout') }}"
-                no-wire-navigate class="btn-error" responsive />
+            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle"
+                @click="$wire.modalKonfirmasiLogout = true" class="btn-error" responsive />
         </x-slot:actions>
     </x-header>
 
@@ -84,4 +84,23 @@
                 :disabled="!$hasChanges" />
         </x-slot:actions>
     </x-form>
+
+    {{-- Modal Konfirmasi Logout --}}
+    <x-modal wire:model="modalKonfirmasiLogout" title="Konfirmasi Keluar" class="backdrop-blur">
+        <div class="space-y-4">
+            <div class="flex justify-center">
+                <x-icon name="o-exclamation-triangle" class="w-16 h-16 text-warning" />
+            </div>
+            <p class="text-center text-base">Apakah Anda yakin ingin keluar dari sistem?</p>
+            <p class="text-center text-sm text-base-content/60">Anda perlu login kembali untuk mengakses aplikasi</p>
+        </div>
+
+        <x-slot:actions>
+            <div class="flex gap-3 w-full">
+                <x-button label="Batal" class="btn-ghost flex-1" @click="$wire.modalKonfirmasiLogout = false" />
+                <x-button label="Ya, Keluar" icon="o-arrow-right-start-on-rectangle" class="btn-error flex-1"
+                    wire:click="logout" spinner="logout" no-wire-navigate />
+            </div>
+        </x-slot:actions>
+    </x-modal>
 </div>

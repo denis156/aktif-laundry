@@ -67,7 +67,7 @@ Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login.kurir');
     })->name('kurir.logout');
 });
 
@@ -112,7 +112,7 @@ Route::middleware('auth')->prefix('management')->group(function () {
         request()->session()->invalidate();
         request()->session()->regenerateToken();
 
-        return redirect('/');
+        return redirect()->route('login');
     })->name('logout');
 });
 

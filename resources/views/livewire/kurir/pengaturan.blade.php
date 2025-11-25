@@ -88,7 +88,8 @@
                     {{-- Keluar --}}
                     <div class="flex justify-between items-center">
                         <span class="text-md font-medium">Keluar dari Sistem</span>
-                        <x-button label="Keluar" icon="iconpark.pushdoor-o" class="btn-error btn-sm" />
+                        <x-button label="Keluar" icon="iconpark.pushdoor-o" class="btn-error btn-sm"
+                            @click="$wire.modalKonfirmasiLogout = true" />
                     </div>
                 </div>
                 <div class="divider"></div>
@@ -99,6 +100,7 @@
     </div>
 
 
+    {{-- Modal Ubah Nama --}}
     <x-modal wire:model="modalUbahNama" title="Ubah Nama" subtitle="Isi form dibawah untuk mengubah nama kamu"
         class="modal-bottom w-full backdrop-blur">
         <x-form no-separator>
@@ -109,6 +111,25 @@
                 <x-button label="Simpan" class="btn-primary btn-block" />
             </x-slot:actions>
         </x-form>
+    </x-modal>
+
+    {{-- Modal Konfirmasi Logout --}}
+    <x-modal wire:model="modalKonfirmasiLogout" title="Konfirmasi Keluar" class="modal-bottom w-full backdrop-blur">
+        <div class="space-y-4">
+            <div class="flex justify-center">
+                <x-icon name="iconpark.info-o" class="w-16 h-16 text-warning" />
+            </div>
+            <p class="text-center text-base">Apakah Anda yakin ingin keluar dari sistem?</p>
+            <p class="text-center text-sm text-base-content/60">Anda perlu login kembali untuk mengakses aplikasi</p>
+        </div>
+
+        <x-slot:actions>
+            <div class="flex gap-3 w-full">
+                <x-button label="Batal" class="btn-ghost flex-1" @click="$wire.modalKonfirmasiLogout = false" />
+                <x-button label="Ya, Keluar" icon="iconpark.pushdoor-o" class="btn-error flex-1" wire:click="logout"
+                    spinner="logout" no-wire-navigate />
+            </div>
+        </x-slot:actions>
     </x-modal>
 </div>
 

@@ -15,6 +15,34 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
 
+        // Custom redirect for unauthenticated users based on request path
+        $middleware->redirectGuestsTo(function () {
+            $request = request();
+
+            if ($request->is('kurir') || $request->is('kurir/*')) {
+                return route('login.kurir');
+            }
+
+            return route('login');
+        });
+
+        // Custom redirect for authenticated users based on guard
+        $middleware->redirectUsersTo(function () {
+            $request = request();
+
+            // If kurir is authenticated and tries to access kurir guest routes
+            if (auth()->guard('kurir')->check()) {
+                return route('beranda.kurir');
+            }
+
+            // If management user is authenticated and tries to access management guest routes
+            if (auth()->check()) {
+                return route('dashboard');
+            }
+
+            return route('dashboard');
+        });
+
         $middleware->alias([
             'super_admin' => SuperAdminMiddleware::class,
             'verified.kurir' => EnsureKurirEmailIsVerified::class,

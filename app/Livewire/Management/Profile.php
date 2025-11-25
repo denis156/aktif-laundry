@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Management;
 
 use App\Helper\AddressMetadata;
@@ -82,6 +84,9 @@ class Profile extends Component
     public string $originalKabupatenKota = '';
 
     public string $originalProvinsi = '';
+
+    // Modal konfirmasi logout
+    public bool $modalKonfirmasiLogout = false;
 
     public function mount()
     {
@@ -355,6 +360,33 @@ class Profile extends Component
 
             // Generic user-friendly message (production-ready)
             $this->error('Gagal memperbarui profil. Silakan coba lagi atau hubungi administrator.', position: 'toast-bottom');
+        }
+    }
+
+    /**
+     * Logout user dari sistem
+     */
+    public function logout(): void
+    {
+        try {
+            Log::info('Management user logout from profile', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->name,
+            ]);
+
+            Auth::logout();
+            request()->session()->invalidate();
+            request()->session()->regenerateToken();
+
+            $this->success('Berhasil keluar dari sistem', position: 'toast-bottom');
+            $this->redirect(route('login'), navigate: true);
+        } catch (Exception $e) {
+            Log::error('Error during management user logout from profile', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $this->error('Terjadi kesalahan saat keluar. Silakan coba lagi.', position: 'toast-bottom');
         }
     }
 
