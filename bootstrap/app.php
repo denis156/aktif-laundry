@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Middleware\EnsureKurirEmailIsVerified;
+use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -26,24 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
             return route('login');
         });
 
-        // Custom redirect for authenticated users based on guard
-        $middleware->redirectUsersTo(function () {
-            $request = request();
-
-            // If kurir is authenticated and tries to access kurir guest routes
-            if (auth()->guard('kurir')->check()) {
-                return route('beranda.kurir');
-            }
-
-            // If management user is authenticated and tries to access management guest routes
-            if (auth()->check()) {
-                return route('dashboard');
-            }
-
-            return route('dashboard');
-        });
-
         $middleware->alias([
+            'guest' => RedirectIfAuthenticated::class,
             'super_admin' => SuperAdminMiddleware::class,
             'verified.kurir' => EnsureKurirEmailIsVerified::class,
         ]);

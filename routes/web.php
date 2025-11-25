@@ -49,7 +49,7 @@ use Illuminate\Support\Facades\Route;
 Route::view('/', 'pages.landingpage')->name('landing-page');
 
 // Kurir Auth Routes - Guest (tanpa auth)
-Route::middleware('guest:kurir')->prefix('kurir')->group(function () {
+Route::middleware(['guest:kurir'])->prefix('kurir')->group(function () {
     // Login Route di /kurir/login
     Route::get('/login', KurirLogin::class)->name('login.kurir');
 
@@ -94,7 +94,7 @@ Route::middleware(['auth:kurir', 'verified.kurir'])->prefix('kurir')->group(func
 });
 
 // Management Auth Routes - Guest (tanpa auth)
-Route::middleware('guest')->prefix('management')->group(function () {
+Route::middleware(['guest:web'])->prefix('management')->group(function () {
     // Login Route di /management/login
     Route::get('/login', Login::class)->name('login');
 
