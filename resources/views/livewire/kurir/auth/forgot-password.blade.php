@@ -11,7 +11,7 @@
                 <x-button label="Kirim Link Reset" type="submit" spinner="sendResetLink"
                     class="btn-primary btn-lg btn-block" icon="o-paper-airplane" />
 
-                <x-button label="Kembali ke Login" link="{{ route('login.kurir') }}" class="btn-ghost btn-block"
+                <x-button label="Kembali ke Login" link="{{ route('login.kurir') }}" class="btn-neutral btn-soft btn-lg btn-block"
                     icon="o-arrow-left" wire:navigate />
             </div>
         </x-slot:actions>

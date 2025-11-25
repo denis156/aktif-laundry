@@ -20,7 +20,7 @@
         <x-button label="Kirim Ulang Email Verifikasi" wire:click="resendVerification" spinner="resendVerification"
             class="btn-primary btn-lg btn-block" icon="o-paper-airplane" />
 
-        <x-button label="Logout" wire:click="logout" class="btn-ghost btn-block" icon="o-arrow-right-on-rectangle" />
+        <x-button label="Logout" wire:click="logout" class="btn-neutral btn-soft btn-lg btn-block" icon="o-arrow-right-on-rectangle" />
     </div>
 
     <!-- Help Text -->
