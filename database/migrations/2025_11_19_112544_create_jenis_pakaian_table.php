@@ -19,8 +19,9 @@ return new class () extends Migration {
             $table->text('keterangan')->nullable();
             $table->enum('status', ['Aktif', 'Tidak Aktif'])->default('Aktif');
 
-            // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: estimasi_berat, kategori, tips_perawatan, icon, dll');
+            // Detail fields (moved from metadata)
+            $table->text('penanganan_khusus')->nullable()->comment('Instruksi penanganan khusus untuk jenis pakaian ini');
+            $table->string('icon', 100)->nullable()->comment('Icon untuk UI (iconpark format)');
 
             $table->timestamps();
             $table->softDeletes();

@@ -27,8 +27,15 @@ return new class () extends Migration {
             $table->text('deskripsi')->nullable();
             $table->enum('status', ['Aktif', 'Tidak Aktif'])->default('Aktif');
 
-            // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: include, exclude, min_order, max_order, icon, dll');
+            // Detail fields (moved from metadata)
+            $table->integer('min_order')->nullable()->comment('Minimum order (kg atau satuan)');
+            $table->integer('max_order')->nullable()->comment('Maximum order (kg atau satuan)');
+            $table->boolean('is_popular')->default(false)->comment('Apakah layanan populer');
+            $table->string('icon', 100)->nullable()->comment('Icon untuk UI');
+
+            // JSON fields untuk include/exclude list
+            $table->jsonb('include')->nullable()->comment('Array of items included in service, e.g., ["Cuci", "Setrika", "Lipat"]');
+            $table->jsonb('exclude')->nullable()->comment('Array of items excluded from service, e.g., ["Bed Cover", "Karpet"]');
 
             $table->timestamps();
             $table->softDeletes();
@@ -37,6 +44,7 @@ return new class () extends Migration {
             $table->index('kode_layanan');
             $table->index('tipe_layanan');
             $table->index('status');
+            $table->index('is_popular', 'idx_layanan_popular');
         });
     }
 

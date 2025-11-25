@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -22,10 +21,32 @@ return new class extends Migration
             $table->string('password');
             $table->string('avatar_url')->nullable()->after('email');
             $table->boolean('super_admin')->default(false)->after('avatar_url');
-            $table->text('alamat')->nullable()->comment('Alamat lengkap (auto-generated dari metadata)');
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, shift, gaji, target_bulanan, dll');
+
+            // Data Kepegawaian
+            $table->integer('gaji')->nullable()->comment('Gaji pokok pegawai');
+            $table->time('jam_masuk')->nullable()->comment('Jam masuk kerja');
+            $table->time('jam_keluar')->nullable()->comment('Jam keluar kerja');
+
+            // Data Bank (untuk penggajian)
+            $table->string('bank_name', 100)->nullable()->comment('Nama bank untuk penggajian');
+            $table->string('bank_account_number', 50)->nullable()->comment('Nomor rekening');
+            $table->string('bank_account_name', 255)->nullable()->comment('Nama pemilik rekening');
+
+            // Alamat lengkap
+            $table->text('alamat')->nullable()->comment('Alamat lengkap (display)');
+            $table->text('detail_alamat')->nullable()->comment('Detail alamat atau patokan (jalan, nomor, RT/RW)');
+            $table->string('kelurahan', 100)->nullable()->index();
+            $table->string('kecamatan', 100)->nullable()->index();
+            $table->string('kabupaten_kota', 100)->default('Kota Kendari');
+            $table->string('provinsi', 100)->default('Sulawesi Tenggara');
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
+
             $table->rememberToken();
             $table->timestamps();
+
+            // Composite index untuk location
+            $table->index(['latitude', 'longitude'], 'idx_users_location');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

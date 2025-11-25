@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -20,8 +19,8 @@ return new class extends Migration
             $table->text('deskripsi')->nullable();
 
             // Tipe diskon
-            $table->string('tipe_diskon', 50)->comment('persen, nominal, gratis_kg, gratis_hari, cashback');
-            $table->integer('nilai_diskon')->nullable()->comment('20 untuk 20% atau 50000 untuk Rp 50.000');
+            $table->string('tipe_diskon', 50)->comment('persen, nominal, gratis_kg, gratis_hari, cashback, gratis_ongkir');
+            $table->integer('nilai_diskon')->nullable()->comment('20 untuk 20% atau 50000 untuk Rp 50.000 (null jika gratis_ongkir)');
             $table->integer('diskon_maksimal')->nullable()->comment('Max diskon jika pakai persen');
 
             // Minimum transaksi
@@ -41,8 +40,16 @@ return new class extends Migration
 
             $table->enum('status', ['Aktif', 'Tidak Aktif', 'Habis'])->default('Aktif');
 
-            // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: layanan_id, exclude_pelanggan_id, banner_image, terms, dll');
+            // Detail fields (moved from metadata)
+            $table->string('banner_image', 255)->nullable()->comment('Path gambar banner promo');
+            $table->text('terms_conditions')->nullable()->comment('Syarat dan ketentuan promo');
+            $table->boolean('auto_apply')->default(false)->comment('Apakah promo otomatis terapply');
+            $table->decimal('min_berat', 8, 2)->nullable()->comment('Minimum berat untuk promo (kg)');
+            $table->decimal('max_berat', 8, 2)->nullable()->comment('Maximum berat untuk promo (kg)');
+
+            // JSON fields untuk layanan & pelanggan filter
+            $table->jsonb('layanan_ids')->nullable()->comment('Array of layanan IDs that eligible for this promo, e.g., [1, 3, 5]');
+            $table->jsonb('exclude_pelanggan_ids')->nullable()->comment('Array of pelanggan IDs to exclude from this promo, e.g., [10, 25]');
 
             $table->timestamps();
             $table->softDeletes();
@@ -54,6 +61,8 @@ return new class extends Migration
             $table->index('tanggal_berakhir');
             $table->index('berlaku_untuk');
             $table->index(['tanggal_mulai', 'tanggal_berakhir'], 'idx_promo_periode');
+            $table->index('auto_apply', 'idx_promo_auto_apply');
+            $table->index(['min_berat', 'max_berat'], 'idx_promo_berat_range');
         });
     }
 

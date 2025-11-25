@@ -16,7 +16,7 @@ return new class () extends Migration {
             $table->id();
             $table->string('key')->unique()->comment('Setting key identifier');
             $table->text('value')->comment('Setting value');
-            $table->string('type')->default('string')->comment('string, number, boolean, json');
+            $table->enum('type', ['string', 'number', 'boolean', 'json'])->default('string')->comment('Data type of the value');
             $table->string('group')->default('general')->comment('Group for organization: general, payment, notification, etc');
             $table->text('deskripsi')->nullable();
             $table->timestamps();

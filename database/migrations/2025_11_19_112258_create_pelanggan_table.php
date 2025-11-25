@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -22,18 +21,27 @@ return new class extends Migration
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable()->comment('Password untuk login aplikasi customer (optional)');
             $table->string('device_token')->nullable()->comment('token untuk push notification');
-            $table->text('alamat')->comment('Alamat lengkap (auto-generated dari metadata)');
+
+            // Alamat lengkap
+            $table->text('alamat')->comment('Alamat lengkap (display)');
+            $table->text('detail_alamat')->nullable()->comment('Detail alamat atau patokan (jalan, nomor, RT/RW)');
+            $table->string('kelurahan', 100)->nullable()->index();
+            $table->string('kecamatan', 100)->nullable()->index();
+            $table->string('kabupaten_kota', 100)->default('Kota Kendari');
+            $table->string('provinsi', 100)->default('Sulawesi Tenggara');
+            $table->decimal('latitude', 10, 8)->nullable();
+            $table->decimal('longitude', 11, 8)->nullable();
 
             $table->dateTime('tanggal_daftar');
-            $table->integer('total_transaksi')->default(0);
             $table->enum('status', ['Aktif', 'Tidak Aktif'])->default('Aktif');
 
-            // Referral
-            $table->string('kode_referral_dipakai')->nullable()->comment('Kode referral yang dipakai saat daftar');
-            $table->foreignId('direferensikan_oleh')->nullable()->constrained('pelanggan')->onDelete('set null')->comment('ID pelanggan yang nge-refer');
+            // Data Membership & Loyalty
+            $table->integer('loyalty_points')->default(0)->comment('Poin loyalty pelanggan');
+            $table->string('member_card', 50)->nullable()->comment('Nomor kartu member');
+            $table->string('avatar_url', 255)->nullable()->comment('URL avatar pelanggan');
 
-            // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, instagram, preferensi, dll');
+            // Referral (pelanggan yang pakai kode referral orang saat daftar)
+            $table->foreignId('direferensikan_oleh')->nullable()->constrained('pelanggan')->onDelete('set null')->comment('ID pelanggan yang nge-refer');
 
             $table->timestamps();
             $table->softDeletes();
@@ -43,7 +51,10 @@ return new class extends Migration
             $table->index('no_hp');
             $table->index('email');
             $table->index('status');
+            $table->index('loyalty_points');
+            $table->index('direferensikan_oleh');
             $table->index(['status', 'tanggal_daftar'], 'idx_pelanggan_status_tanggal');
+            $table->index(['latitude', 'longitude'], 'idx_pelanggan_location');
         });
     }
 

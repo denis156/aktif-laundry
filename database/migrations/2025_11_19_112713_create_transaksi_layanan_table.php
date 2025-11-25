@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -32,9 +31,7 @@ return new class extends Migration
 
             // Common fields
             $table->integer('subtotal')->comment('Subtotal untuk layanan ini');
-
-            // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: catatan khusus per layanan, dll');
+            $table->text('catatan_khusus')->nullable()->comment('Catatan khusus untuk layanan ini');
 
             $table->timestamps();
             $table->softDeletes();

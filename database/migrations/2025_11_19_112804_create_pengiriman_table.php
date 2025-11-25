@@ -6,8 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class () extends Migration {
     /**
      * Run the migrations.
      */
@@ -38,10 +37,6 @@ return new class extends Migration
             $table->dateTime('waktu_mulai')->nullable()->comment('Waktu courier mulai berangkat');
             $table->dateTime('waktu_selesai')->nullable()->comment('Waktu selesai delivery');
 
-            // Cost & Distance
-            $table->integer('biaya_antar')->default(0);
-            $table->decimal('jarak_km', 8, 2)->nullable();
-
             // Status
             $table->enum('status', ['Menunggu', 'Dijadwalkan', 'Dalam Perjalanan', 'Selesai', 'Batal'])->default('Menunggu');
 
@@ -49,8 +44,17 @@ return new class extends Migration
             $table->text('catatan')->nullable();
             $table->string('foto_bukti')->nullable()->comment('Foto bukti delivery');
 
-            // Flexible data storage
-            $table->jsonb('metadata')->nullable()->comment('Flexible data: lokasi GPS, tracking history, rating, signature, dll');
+            // Lokasi pickup
+            $table->decimal('lokasi_pickup_latitude', 10, 8)->nullable()->comment('Latitude lokasi pickup');
+            $table->decimal('lokasi_pickup_longitude', 11, 8)->nullable()->comment('Longitude lokasi pickup');
+            $table->text('lokasi_pickup_address')->nullable()->comment('Alamat pickup lengkap');
+
+            // Review customer
+            $table->tinyInteger('review_rating')->nullable()->comment('Rating 1-5 dari customer');
+            $table->text('review_text')->nullable()->comment('Komentar review dari customer');
+
+            // Tracking
+            $table->jsonb('tracking')->nullable()->comment('Array of tracking points, e.g., [{"time":"2024-01-01 10:00","lat":-3.9,"lng":122.5,"status":"On the way"}]');
 
             $table->timestamps();
             $table->softDeletes();
@@ -65,6 +69,8 @@ return new class extends Migration
             $table->index(['transaksi_id', 'tipe'], 'idx_pengiriman_transaksi_tipe');
             $table->index(['kurir_id', 'status'], 'idx_pengiriman_kurir_status');
             $table->index(['tipe', 'jadwal_waktu'], 'idx_pengiriman_tipe_tanggal');
+            $table->index(['lokasi_pickup_latitude', 'lokasi_pickup_longitude'], 'idx_pengiriman_pickup_location');
+            $table->index('review_rating', 'idx_pengiriman_rating');
         });
     }
 
