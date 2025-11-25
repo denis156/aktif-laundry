@@ -32,7 +32,7 @@ class KurirVerifyEmailNotification extends Notification
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Verifikasi Email - '.config('app.name'))
             ->greeting('Halo '.$notifiable->nama.'!')
             ->line('Terima kasih telah bergabung sebagai Kurir di '.config('app.name').'.')

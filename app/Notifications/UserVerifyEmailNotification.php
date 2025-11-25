@@ -32,7 +32,7 @@ class UserVerifyEmailNotification extends Notification
     {
         $verificationUrl = $this->verificationUrl($notifiable);
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Verifikasi Email - '.config('app.name'))
             ->greeting('Halo '.$notifiable->name.'!')
             ->line('Terima kasih telah bergabung sebagai Staf di '.config('app.name').'.')

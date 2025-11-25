@@ -90,7 +90,7 @@ class Kurir extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new KurirVerifyEmailNotification);
+        $this->notify(new KurirVerifyEmailNotification());
     }
 
     /**

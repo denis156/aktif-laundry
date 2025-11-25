@@ -45,7 +45,7 @@ class KurirResetPasswordNotification extends Notification
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));
 
-        return (new MailMessage)
+        return (new MailMessage())
             ->subject('Reset Password - '.config('app.name'))
             ->greeting('Halo '.$notifiable->nama.'!')
             ->line('Anda menerima email ini karena kami menerima permintaan reset password untuk akun Kurir Anda.')

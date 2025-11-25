@@ -103,6 +103,6 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new PelangganVerifyEmailNotification);
+        $this->notify(new PelangganVerifyEmailNotification());
     }
 }
