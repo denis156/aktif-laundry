@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -18,6 +19,9 @@ return new class () extends Migration {
             $table->string('nama');
             $table->string('no_hp', 15);
             $table->string('email')->nullable()->unique();
+            $table->timestamp('email_verified_at')->nullable();
+            $table->string('password')->nullable()->comment('Password untuk login aplikasi customer (optional)');
+            $table->string('device_token')->nullable()->comment('token untuk push notification');
             $table->text('alamat')->comment('Alamat lengkap (auto-generated dari metadata)');
 
             $table->dateTime('tanggal_daftar');
@@ -39,6 +43,7 @@ return new class () extends Migration {
             $table->index('no_hp');
             $table->index('email');
             $table->index('status');
+            $table->index(['status', 'tanggal_daftar'], 'idx_pelanggan_status_tanggal');
         });
     }
 

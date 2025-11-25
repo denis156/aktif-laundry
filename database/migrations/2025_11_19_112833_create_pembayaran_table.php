@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -44,6 +45,8 @@ return new class () extends Migration {
             $table->index('status');
             $table->index('metode');
             $table->index('tanggal_bayar');
+            $table->index(['transaksi_id', 'status'], 'idx_pembayaran_transaksi_status');
+            $table->index(['status', 'tanggal_bayar'], 'idx_pembayaran_status_tanggal');
         });
     }
 

@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -19,12 +20,12 @@ return new class () extends Migration {
             $table->text('deskripsi')->nullable();
 
             // Tipe diskon
-            $table->enum('tipe_diskon', ['persen', 'nominal'])->comment('Persen atau Rupiah');
-            $table->integer('nilai_diskon')->comment('20 untuk 20% atau 50000 untuk Rp 50.000');
+            $table->string('tipe_diskon', 50)->comment('persen, nominal, gratis_kg, gratis_hari, cashback');
+            $table->integer('nilai_diskon')->nullable()->comment('20 untuk 20% atau 50000 untuk Rp 50.000');
             $table->integer('diskon_maksimal')->nullable()->comment('Max diskon jika pakai persen');
 
             // Minimum transaksi
-            $table->integer('min_transaksi')->default(0)->comment('Min belanja Rp');
+            $table->integer('min_transaksi')->nullable()->comment('Min belanja Rp');
 
             // Periode promo
             $table->dateTime('tanggal_mulai');
@@ -52,6 +53,7 @@ return new class () extends Migration {
             $table->index('tanggal_mulai');
             $table->index('tanggal_berakhir');
             $table->index('berlaku_untuk');
+            $table->index(['tanggal_mulai', 'tanggal_berakhir'], 'idx_promo_periode');
         });
     }
 

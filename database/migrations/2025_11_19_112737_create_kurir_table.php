@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -25,7 +26,7 @@ return new class () extends Migration {
             $table->enum('jenis_kendaraan', ['Motor', 'Mobil'])->nullable();
 
             // Profile
-            $table->date('tanggal_bergabung');
+            $table->dateTime('tanggal_bergabung');
             $table->enum('status', ['Aktif', 'Tidak Aktif', 'Cuti'])->default('Aktif');
 
             // Statistics
@@ -33,9 +34,9 @@ return new class () extends Migration {
             $table->integer('total_jemput')->default(0);
 
             // Auth untuk aplikasi courier
-            $table->string('password')->nullable()->comment('Untuk login di app courier');
+            $table->string('password')->comment('Untuk login di app courier');
             $table->timestamp('email_verified_at')->nullable();
-            $table->string('device_token')->nullable()->comment('FCM token untuk push notification');
+            $table->string('device_token')->nullable()->comment('token untuk push notification');
 
             // Flexible data storage
             $table->jsonb('metadata')->nullable()->comment('Flexible data: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, area_coverage, bank_info, emergency_contact, dll');
@@ -48,6 +49,7 @@ return new class () extends Migration {
             $table->index('no_hp');
             $table->index('email');
             $table->index('status');
+            $table->index(['status', 'tanggal_bergabung'], 'idx_kurir_status_tanggal');
         });
     }
 

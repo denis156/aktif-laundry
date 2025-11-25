@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -20,6 +21,9 @@ return new class () extends Migration {
             // Relations
             $table->foreignId('kasir_id')->constrained('users')->onDelete('restrict');
             $table->foreignId('pelanggan_id')->constrained('pelanggan')->onDelete('restrict');
+            $table->foreignId('promo_id')->nullable()->constrained('promo')->nullOnDelete();
+            $table->foreignId('referral_id')->nullable()->constrained('referral')->nullOnDelete();
+            $table->string('kode_promo')->nullable()->comment('Snapshot kode promo saat transaksi');
             $table->string('nama_pelanggan')->comment('Snapshot nama pelanggan saat transaksi');
 
             // Summary fields (calculated from transaksi_layanan)
@@ -48,10 +52,15 @@ return new class () extends Migration {
             $table->index('kode_transaksi');
             $table->index('kasir_id');
             $table->index('pelanggan_id');
+            $table->index('promo_id');
+            $table->index('referral_id');
             $table->index('tanggal_masuk');
             $table->index('tanggal_selesai');
             $table->index('status');
             $table->index('metode_pembayaran');
+            $table->index(['pelanggan_id', 'tanggal_masuk'], 'idx_transaksi_pelanggan_tanggal');
+            $table->index(['status', 'tanggal_masuk'], 'idx_transaksi_status_tanggal');
+            $table->index(['kasir_id', 'tanggal_masuk'], 'idx_transaksi_kasir_tanggal');
         });
     }
 
