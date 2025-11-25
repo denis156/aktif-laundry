@@ -39,13 +39,12 @@ class Create extends Component
         'kabupaten_kota' => '',
         'provinsi' => '',
         'password' => '',
+        'password_confirmation' => '',
         'tanggal_daftar' => '',
         'status' => 'Aktif',
     ];
 
     public $avatar;
-
-    public string $password_confirmation = '';
 
     public function mount(): void
     {

@@ -35,7 +35,7 @@
                         hint="Minimal 8 karakter, kosongkan jika tidak ingin mengubah password"
                         password-icon="o-lock-closed" password-visible-icon="o-lock-open" clearable />
 
-                    <x-password label="Konfirmasi Password Baru" wire:model="password_confirmation"
+                    <x-password label="Konfirmasi Password Baru" wire:model="formData.password_confirmation"
                         placeholder="Ketik ulang password baru" password-icon="o-lock-closed"
                         password-visible-icon="o-lock-open" clearable />
                 </div>

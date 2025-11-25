@@ -18,10 +18,10 @@
                     <img src="{{ asset('images/Logo.png') }}" class="h-40 rounded-lg" />
                 </x-file>
 
-                <x-input label="Kode Pelanggan" wire:model="formData.kode_pelanggan" placeholder="Auto Generate"
-                    readonly hint="Kode dibuat otomatis" icon="o-hashtag" />
-
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Kode Pelanggan" wire:model="formData.kode_pelanggan" placeholder="Auto Generate"
+                        readonly hint="Kode dibuat otomatis" icon="o-hashtag" />
+
                     <x-input label="Nama Pelanggan" wire:model="formData.nama" placeholder="Contoh: Ahmad Rizki"
                         icon="o-user" required />
 
@@ -35,7 +35,7 @@
                         hint="Opsional - untuk login aplikasi customer" password-icon="o-lock-closed"
                         password-visible-icon="o-lock-open" clearable />
 
-                    <x-password label="Konfirmasi Password" wire:model="password_confirmation"
+                    <x-password label="Konfirmasi Password" wire:model="formData.password_confirmation"
                         placeholder="Ketik ulang password" password-icon="o-lock-closed"
                         password-visible-icon="o-lock-open" clearable />
                 </div>

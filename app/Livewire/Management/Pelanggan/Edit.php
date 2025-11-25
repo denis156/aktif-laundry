@@ -41,6 +41,7 @@ class Edit extends Component
         'provinsi' => '',
         'alamat' => '',
         'password' => '',
+        'password_confirmation' => '',
         'tanggal_daftar' => '',
         'status' => 'Aktif',
         'total_transaksi' => 0,
@@ -51,8 +52,6 @@ class Edit extends Component
     public $avatar;
 
     public ?string $currentAvatarUrl = null;
-
-    public string $password_confirmation = '';
 
     public function mount($id): void
     {
