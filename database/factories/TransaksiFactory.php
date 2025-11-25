@@ -21,8 +21,6 @@ class TransaksiFactory extends Factory
      */
     public function definition(): array
     {
-        static $counter = 1;
-
         // Ambil pelanggan dan kasir random
         $pelanggan = Pelanggan::inRandomOrder()->first();
         $kasir = User::inRandomOrder()->first();
@@ -45,7 +43,7 @@ class TransaksiFactory extends Factory
         $tanggalSelesai = (clone $tanggalMasuk)->modify("+{$durasiJam} hours");
 
         return [
-            'kode_transaksi' => 'TRX'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_transaksi' => 'TRX'.str_pad((string) fake()->unique()->numberBetween(1, 9999), 4, '0', STR_PAD_LEFT),
             'tanggal_masuk' => $tanggalMasuk,
             'kasir_id' => $kasir ? $kasir->id : User::factory(),
             'pelanggan_id' => $pelanggan ? $pelanggan->id : Pelanggan::factory(),

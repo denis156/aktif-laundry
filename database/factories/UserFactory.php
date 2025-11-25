@@ -27,13 +27,18 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        // Wilayah Kota Kendari
+        // Wilayah Kota Kendari (lebih lengkap)
         $wilayah = [
             ['kelurahan' => 'Mandonga', 'kecamatan' => 'Mandonga'],
             ['kelurahan' => 'Wua-Wua', 'kecamatan' => 'Wua-Wua'],
             ['kelurahan' => 'Poasia', 'kecamatan' => 'Poasia'],
             ['kelurahan' => 'Baruga', 'kecamatan' => 'Baruga'],
             ['kelurahan' => 'Kendari', 'kecamatan' => 'Kendari'],
+            ['kelurahan' => 'Kendari Barat', 'kecamatan' => 'Kendari Barat'],
+            ['kelurahan' => 'Abeli', 'kecamatan' => 'Abeli'],
+            ['kelurahan' => 'Kambu', 'kecamatan' => 'Kambu'],
+            ['kelurahan' => 'Kadia', 'kecamatan' => 'Kadia'],
+            ['kelurahan' => 'Puuwatu', 'kecamatan' => 'Puuwatu'],
         ];
 
         $selectedWilayah = fake()->randomElement($wilayah);
@@ -74,9 +79,7 @@ class UserFactory extends Factory
             'alamat' => $alamatLengkap,
             'remember_token' => Str::random(10),
             'metadata' => array_merge($addressMetadata, [
-                'shift' => fake()->randomElement(['Pagi', 'Siang', 'Malam']),
                 'gaji' => fake()->numberBetween(3000000, 6000000),
-                'target_bulanan' => fake()->numberBetween(10000000, 50000000),
             ]),
         ];
     }

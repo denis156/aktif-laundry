@@ -16,10 +16,10 @@ class LayananFactory extends Factory
      *
      * @return array<string, mixed>
      */
+    private static int $index = 0;
+
     public function definition(): array
     {
-        static $counter = 1;
-
         $layanan = [
             [
                 'nama' => 'Cuci Kering',
@@ -29,7 +29,7 @@ class LayananFactory extends Factory
                 'satuan' => 'kg',
                 'durasi' => 24,
                 'deskripsi' => 'Cuci dan kering saja',
-                'metadata' => ['popular' => true, 'icon' => 'washing-machine'],
+                'metadata' => ['popular' => true, 'icon' => ''],
             ],
             [
                 'nama' => 'Cuci Setrika',
@@ -39,7 +39,7 @@ class LayananFactory extends Factory
                 'satuan' => 'kg',
                 'durasi' => 48,
                 'deskripsi' => 'Cuci, kering, dan setrika rapi',
-                'metadata' => ['popular' => true, 'icon' => 'iron'],
+                'metadata' => ['popular' => true, 'icon' => ''],
             ],
             [
                 'nama' => 'Setrika Saja',
@@ -49,7 +49,7 @@ class LayananFactory extends Factory
                 'satuan' => 'kg',
                 'durasi' => 12,
                 'deskripsi' => 'Setrika saja tanpa cuci',
-                'metadata' => ['popular' => false, 'icon' => 'iron'],
+                'metadata' => ['popular' => false, 'icon' => ''],
             ],
             [
                 'nama' => 'Express 6 Jam',
@@ -59,7 +59,7 @@ class LayananFactory extends Factory
                 'satuan' => 'kg',
                 'durasi' => 6,
                 'deskripsi' => 'Layanan kilat 6 jam jadi',
-                'metadata' => ['popular' => true, 'icon' => 'fast-forward'],
+                'metadata' => ['popular' => true, 'icon' => ''],
             ],
             [
                 'nama' => 'Express 12 Jam',
@@ -69,7 +69,7 @@ class LayananFactory extends Factory
                 'satuan' => 'kg',
                 'durasi' => 12,
                 'deskripsi' => 'Layanan kilat 12 jam jadi',
-                'metadata' => ['popular' => false, 'icon' => 'clock'],
+                'metadata' => ['popular' => false, 'icon' => ''],
             ],
             [
                 'nama' => 'Cuci Karpet',
@@ -79,7 +79,7 @@ class LayananFactory extends Factory
                 'satuan' => 'pcs',
                 'durasi' => 72,
                 'deskripsi' => 'Cuci karpet dan permadani per keping',
-                'metadata' => ['popular' => false, 'icon' => 'carpet', 'min_order' => 1],
+                'metadata' => ['popular' => false, 'icon' => '', 'min_order' => 1],
             ],
             [
                 'nama' => 'Cuci Sepatu',
@@ -89,7 +89,7 @@ class LayananFactory extends Factory
                 'satuan' => 'pasang',
                 'durasi' => 48,
                 'deskripsi' => 'Cuci sepatu sneakers per pasang',
-                'metadata' => ['popular' => true, 'icon' => 'shoe', 'min_order' => 1],
+                'metadata' => ['popular' => true, 'icon' => '', 'min_order' => 1],
             ],
             [
                 'nama' => 'Cuci Boneka',
@@ -99,15 +99,15 @@ class LayananFactory extends Factory
                 'satuan' => 'pcs',
                 'durasi' => 24,
                 'deskripsi' => 'Cuci boneka dan mainan per item',
-                'metadata' => ['popular' => false, 'icon' => 'toy', 'max_order' => 10],
+                'metadata' => ['popular' => false, 'icon' => '', 'max_order' => 10],
             ],
         ];
 
-        $index = ($counter - 1) % count($layanan);
-        $item = $layanan[$index];
+        $item = $layanan[self::$index % count($layanan)];
+        self::$index++;
 
         return [
-            'kode_layanan' => 'LYN'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_layanan' => 'LYN'.str_pad((string) self::$index, 3, '0', STR_PAD_LEFT),
             'nama_layanan' => $item['nama'],
             'tipe_layanan' => $item['tipe'],
             'harga_per_kg' => $item['harga_kg'],

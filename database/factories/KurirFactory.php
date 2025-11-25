@@ -27,8 +27,6 @@ class KurirFactory extends Factory
      */
     public function definition(): array
     {
-        static $counter = 1;
-
         // Wilayah Kota Kendari untuk kurir
         $wilayah = [
             ['kelurahan' => 'Mandonga', 'kecamatan' => 'Mandonga'],
@@ -72,32 +70,25 @@ class KurirFactory extends Factory
             RegionalLocation::getProvinceName()
         );
 
-        // Area coverage sesuai kecamatan di Kota Kendari
-        $areaCoverage = fake()->randomElement([
-            'Mandonga',
-            'Wua-Wua',
-            'Poasia',
-            'Baruga',
-            'Kendari',
-            'Kendari Barat',
-            'Abeli',
-            'Kambu',
-            'Kadia',
-            'Puuwatu',
-        ]);
+        // Area coverage - Motor cover 1-2 kecamatan, Mobil cover 2-4 kecamatan
+        $allKecamatan = [
+            'Mandonga', 'Wua-Wua', 'Poasia', 'Baruga', 'Kendari',
+            'Kendari Barat', 'Abeli', 'Kambu', 'Kadia', 'Puuwatu',
+        ];
 
-        $jenisKendaraan = ['Motor', 'Mobil'];
-        $selected = fake()->randomElement($jenisKendaraan);
+        $isMotor = fake()->boolean(60); // 60% motor, 40% mobil
+        $jenisKendaraan = $isMotor ? 'Motor' : 'Mobil';
+        $coverageCount = $isMotor ? fake()->numberBetween(1, 2) : fake()->numberBetween(2, 4);
+        $areaCoverageKecamatan = fake()->randomElements($allKecamatan, $coverageCount);
 
         return [
-            'kode_kurir' => 'KUR'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_kurir' => 'KUR'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'nama' => fake()->name(),
             'no_hp' => '8'.fake()->numerify('##########'),
             'email' => fake()->unique()->safeEmail(),
             'alamat' => $alamatLengkap, // Alamat lengkap (auto-generated dari metadata)
             'no_kendaraan' => fake()->regexify('[A-Z]{1,2} [0-9]{1,4} [A-Z]{1,3}'),
-            'jenis_kendaraan' => $selected,
-            'foto_profil' => null,
+            'jenis_kendaraan' => $jenisKendaraan,
             'tanggal_bergabung' => fake()->dateTimeBetween('-2 years', 'now'),
             'status' => fake()->randomElement(['Aktif', 'Aktif', 'Tidak Aktif']),
             'total_antar' => fake()->numberBetween(0, 200),
@@ -105,7 +96,10 @@ class KurirFactory extends Factory
             'password' => static::$password ??= Hash::make('password'), // Required field, default: 'password'
             'device_token' => null,
             'metadata' => array_merge($addressMetadata, [
-                'area_coverage' => $areaCoverage,
+                'area_coverage' => [
+                    'kecamatan' => $areaCoverageKecamatan,
+                    'kelurahan' => [], // Will be populated in seeder if needed
+                ],
                 'bank_info' => [
                     'bank' => fake()->randomElement(['BCA', 'Mandiri', 'BRI', 'BNI']),
                     'no_rekening' => fake()->numerify('##########'),

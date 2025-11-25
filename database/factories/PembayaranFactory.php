@@ -20,8 +20,6 @@ class PembayaranFactory extends Factory
      */
     public function definition(): array
     {
-        static $counter = 1;
-
         $metode = fake()->randomElement(['Tunai', 'Transfer', 'QRIS', 'Debit']);
         $transaksi = Transaksi::inRandomOrder()->first();
         $totalTransaksi = $transaksi ? $transaksi->total : fake()->numberBetween(50000, 500000);
@@ -53,7 +51,7 @@ class PembayaranFactory extends Factory
         }
 
         return [
-            'kode_pembayaran' => 'PAY'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_pembayaran' => 'PBY'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'transaksi_id' => $transaksi ? $transaksi->id : Transaksi::factory(),
             'jumlah_bayar' => $jumlahBayar,
             'kembalian' => $kembalian,

@@ -40,12 +40,14 @@ class PengaturanFactory extends Factory
             ['key' => 'enable_promo', 'value' => 'true', 'type' => 'boolean', 'group' => 'features', 'deskripsi' => 'Aktifkan sistem promo'],
         ];
 
-        static $counter = 0;
+        static $index = 0;
 
-        if ($counter >= count($settings)) {
+        if ($index >= count($settings)) {
             // Random setting jika sudah melewati list
+            $index++;
+
             return [
-                'key' => 'custom_'.fake()->word(),
+                'key' => 'custom_'.fake()->word().'_'.$index,
                 'value' => fake()->word(),
                 'type' => 'string',
                 'group' => 'custom',
@@ -53,8 +55,8 @@ class PengaturanFactory extends Factory
             ];
         }
 
-        $setting = $settings[$counter];
-        $counter++;
+        $setting = $settings[$index];
+        $index++;
 
         return $setting;
     }

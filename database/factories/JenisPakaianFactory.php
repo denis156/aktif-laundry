@@ -16,10 +16,10 @@ class JenisPakaianFactory extends Factory
      *
      * @return array<string, mixed>
      */
+    private static int $index = 0;
+
     public function definition(): array
     {
-        static $counter = 1;
-
         $jenisPakaian = [
             ['nama' => 'Kemeja', 'keterangan' => 'Kemeja lengan panjang dan pendek', 'metadata' => ['penanganan_khusus' => false]],
             ['nama' => 'Celana Panjang', 'keterangan' => 'Celana panjang reguler', 'metadata' => ['penanganan_khusus' => false]],
@@ -38,11 +38,11 @@ class JenisPakaianFactory extends Factory
             ['nama' => 'Mukena', 'keterangan' => 'Mukena dan perlengkapan sholat', 'metadata' => ['penanganan_khusus' => true]],
         ];
 
-        $index = ($counter - 1) % count($jenisPakaian);
-        $item = $jenisPakaian[$index];
+        $item = $jenisPakaian[self::$index % count($jenisPakaian)];
+        self::$index++;
 
         return [
-            'kode_jenis' => 'JNS'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_jenis' => 'JNS'.str_pad((string) self::$index, 3, '0', STR_PAD_LEFT),
             'nama_jenis' => $item['nama'],
             'keterangan' => $item['keterangan'],
             'status' => 'Aktif',

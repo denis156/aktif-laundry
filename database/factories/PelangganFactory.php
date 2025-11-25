@@ -27,8 +27,6 @@ class PelangganFactory extends Factory
      */
     public function definition(): array
     {
-        static $counter = 1;
-
         // Sample data untuk wilayah Kota Kendari, Sulawesi Tenggara
         // Data ini sesuai dengan scope RegionalLocation helper
         $wilayah = [
@@ -82,7 +80,7 @@ class PelangganFactory extends Factory
         $email = $hasEmail ? fake()->unique()->safeEmail() : null;
 
         return [
-            'kode_pelanggan' => 'PLG'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_pelanggan' => 'PLG'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'nama' => fake()->name(),
             'no_hp' => '8'.fake()->numerify('##########'),
             'email' => $email,

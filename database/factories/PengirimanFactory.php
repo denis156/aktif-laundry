@@ -20,8 +20,6 @@ class PengirimanFactory extends Factory
      */
     public function definition(): array
     {
-        static $counter = 1;
-
         $tipe = fake()->randomElement(['Jemput', 'Antar']);
         $transaksi = Transaksi::inRandomOrder()->first();
 
@@ -34,7 +32,7 @@ class PengirimanFactory extends Factory
         $fotoBukti = $status === 'Selesai' ? 'bukti_'.fake()->uuid().'.jpg' : null;
 
         return [
-            'kode_pengiriman' => 'PGR'.str_pad((string) $counter++, 3, '0', STR_PAD_LEFT),
+            'kode_pengiriman' => 'PNG'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
             'transaksi_id' => $transaksi ? $transaksi->id : Transaksi::factory(),
             'kurir_id' => Kurir::inRandomOrder()->first()?->id ?? Kurir::factory(),
             'tipe' => $tipe,
