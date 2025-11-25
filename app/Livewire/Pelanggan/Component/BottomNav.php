@@ -19,24 +19,24 @@ class BottomNav extends Component
             'icon' => 'iconpark.dashboardtwo-o',
             'icon_size' => 'size-2',
         ],
-        // [
-        //     'name' => 'Pesanan',
-        //     'route' => 'pesanan.pelanggan',
-        //     'icon' => 'iconpark.listview-o',
-        //     'icon_size' => 'size-4',
-        // ],
-        // [
-        //     'name' => 'Riwayat',
-        //     'route' => 'riwayat.pelanggan',
-        //     'icon' => 'iconpark.history-o',
-        //     'icon_size' => 'size-4',
-        // ],
-        // [
-        //     'name' => 'Pengaturan',
-        //     'route' => 'pengaturan.pelanggan',
-        //     'icon' => 'iconpark.setting-o',
-        //     'icon_size' => 'size-4',
-        // ],
+        [
+            'name' => 'Pesan',
+            'route' => 'pesanan.pelanggan',
+            'icon' => 'iconpark.listview-o',
+            'icon_size' => 'size-4',
+        ],
+        [
+            'name' => 'Riwayat',
+            'route' => 'riwayat.pelanggan',
+            'icon' => 'iconpark.history-o',
+            'icon_size' => 'size-4',
+        ],
+        [
+            'name' => 'Pengaturan',
+            'route' => 'pengaturan.pelanggan',
+            'icon' => 'iconpark.setting-o',
+            'icon_size' => 'size-4',
+        ],
     ];
 
     /**
