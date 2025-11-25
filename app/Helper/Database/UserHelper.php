@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Log;
 // * - jam_masuk: Jam masuk kerja (HH:MM)
 // * - jam_keluar: Jam keluar kerja (HH:MM)
 // * - gaji: Gaji pokok
-// * - target_bulanan: Target penjualan/kinerja bulanan
 
 class UserHelper
 {
@@ -36,6 +35,10 @@ class UserHelper
 
     // * Metadata constants
     public const META_GAJI = 'gaji';
+
+    public const META_JAM_MASUK = 'jam_masuk';
+
+    public const META_JAM_KELUAR = 'jam_keluar';
 
     // * Ambil nilai dari metadata
     public static function getMetadata(User $user, string $key, mixed $default = null): mixed
@@ -258,8 +261,9 @@ class UserHelper
     public static function metadataRules(): array
     {
         return [
-            self::META_SHIFT => 'nullable|string|max:50',
             self::META_GAJI => 'nullable|integer|min:0',
+            self::META_JAM_MASUK => 'nullable|date_format:H:i',
+            self::META_JAM_KELUAR => 'nullable|date_format:H:i',
         ];
     }
 }

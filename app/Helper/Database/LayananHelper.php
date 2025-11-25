@@ -185,7 +185,6 @@ class LayananHelper
                 ->toArray();
         } catch (\Exception $e) {
             Log::error('Failed to get layanan options', [
-                'status' => $status,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
