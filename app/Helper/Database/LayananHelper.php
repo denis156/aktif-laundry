@@ -192,4 +192,22 @@ class LayananHelper
             return [];
         }
     }
+
+    /**
+     * Format durasi jam menjadi estimasi waktu yang mudah dibaca
+     * Contoh: 24 jam = "Estimasi 1 hari", 30 jam = "Estimasi 1 hari 6 jam"
+     */
+    public static function formatEstimasiWaktu(int $durasiJam): string
+    {
+        $estimasiHari = floor($durasiJam / 24);
+        $estimasiJam = $durasiJam % 24;
+
+        if ($estimasiHari > 0 && $estimasiJam > 0) {
+            return "Estimasi {$estimasiHari} hari {$estimasiJam} jam";
+        } elseif ($estimasiHari > 0) {
+            return "Estimasi {$estimasiHari} hari";
+        } else {
+            return "Estimasi {$estimasiJam} jam";
+        }
+    }
 }
