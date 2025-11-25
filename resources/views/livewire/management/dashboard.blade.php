@@ -157,14 +157,16 @@
             <x-slot:menu>
                 <div class="flex items-center gap-3">
                     @php
-                        $chartTypeOptions = [
-                            ['id' => 'line', 'name' => 'Line Chart'],
-                            ['id' => 'bar', 'name' => 'Bar Chart'],
-                        ];
+                    $chartTypeOptions = [
+                    ['id' => 'line', 'name' => 'Line Chart'],
+                    ['id' => 'area', 'name' => 'Area Chart'],
+                    ['id' => 'bar', 'name' => 'Bar Chart'],
+                    ];
                     @endphp
-                    <x-select label="Tipe" :options="$chartTypeOptions" wire:model.live="chartType" class="select-sm w-40" />
                     <x-select-group label="Periode" :options="$this->getPeriodOptions()" wire:model.live="chartPeriod"
                         class="select-sm w-64" />
+                    <x-select label="Tipe" :options="$chartTypeOptions" wire:model.live="chartType"
+                        class="select-sm w-40" />
                 </div>
             </x-slot:menu>
             <x-chart wire:model="transaksiChart" />

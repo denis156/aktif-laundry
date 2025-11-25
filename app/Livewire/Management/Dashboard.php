@@ -21,7 +21,7 @@ class Dashboard extends Component
 
     public string $currentDateTime = '';
 
-    public string $chartType = 'line'; // line, bar
+    public string $chartType = 'line'; // line, bar, area
 
     public string $chartPeriod = 'monthly'; // Format: weekly-YYYY-MM-DD, monthly-YYYY-MM, yearly-YYYY
 
@@ -178,8 +178,20 @@ class Dashboard extends Component
             $data = ChartDataHelper::getMonthData(now());
         }
 
-        // Set chart type
-        $this->transaksiChart['type'] = $this->chartType;
+        // Set chart type (area chart is line chart with fill)
+        if ($this->chartType === 'area') {
+            $this->transaksiChart['type'] = 'line';
+            // Enable fill for area chart
+            $this->transaksiChart['data']['datasets'][0]['fill'] = 'origin';
+            $this->transaksiChart['data']['datasets'][1]['fill'] = 'origin';
+            $this->transaksiChart['data']['datasets'][2]['fill'] = 'origin';
+        } else {
+            $this->transaksiChart['type'] = $this->chartType;
+            // Disable fill for line and bar charts
+            $this->transaksiChart['data']['datasets'][0]['fill'] = false;
+            $this->transaksiChart['data']['datasets'][1]['fill'] = false;
+            $this->transaksiChart['data']['datasets'][2]['fill'] = false;
+        }
 
         $this->transaksiChart['data']['labels'] = $data->pluck('label')->toArray();
         $this->transaksiChart['data']['datasets'][0]['data'] = $data->pluck('count')->toArray();
@@ -202,8 +214,8 @@ class Dashboard extends Component
 
     public function updatedChartType(): void
     {
-        // Update chart type when selection changes
-        $this->transaksiChart['type'] = $this->chartType;
+        // Reload chart to apply type changes (including fill for area chart)
+        $this->loadChartData();
     }
 
     public function updatedChartPeriod(): void
