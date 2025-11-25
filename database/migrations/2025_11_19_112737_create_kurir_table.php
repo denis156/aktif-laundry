@@ -34,6 +34,7 @@ return new class () extends Migration {
 
             // Auth untuk aplikasi courier
             $table->string('password')->nullable()->comment('Untuk login di app courier');
+            $table->timestamp('email_verified_at')->nullable();
             $table->string('device_token')->nullable()->comment('FCM token untuk push notification');
 
             // Flexible data storage

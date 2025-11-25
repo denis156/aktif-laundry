@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'kurir' => [
+            'driver' => 'session',
+            'provider' => 'kurir',
+        ],
     ],
 
     /*
@@ -63,6 +67,10 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'kurir' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Kurir::class,
         ],
 
         // 'users' => [
@@ -94,6 +102,12 @@ return [
         'users' => [
             'provider' => 'users',
             'table' => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'kurir' => [
+            'provider' => 'kurir',
+            'table' => 'kurir_password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,
         ],

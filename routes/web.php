@@ -1,5 +1,9 @@
 <?php
 
+use App\Livewire\Kurir\Auth\ForgotPassword as KurirForgotPassword;
+use App\Livewire\Kurir\Auth\Login as KurirLogin;
+use App\Livewire\Kurir\Auth\ResetPassword as KurirResetPassword;
+use App\Livewire\Kurir\Auth\VerifyEmail as KurirVerifyEmail;
 use App\Livewire\Kurir\Beranda;
 use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
 use App\Livewire\Kurir\Pengiriman;
@@ -44,10 +48,50 @@ use Illuminate\Support\Facades\Route;
 // Landing Page Route - Public
 Route::view('/', 'pages.landingpage')->name('landing-page');
 
-Route::get('/kurir', Beranda::class)->name('beranda.kurir');
-Route::get('/kurir/pengiriman', Pengiriman::class)->name('pengiriman.kurir');
-Route::get('/kurir/rute', Rute::class)->name('rute.kurir');
-Route::get('/kurir/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
+// Kurir Auth Routes - Guest (tanpa auth)
+Route::middleware('guest:kurir')->prefix('kurir')->group(function () {
+    // Login Route di /kurir/login
+    Route::get('/login', KurirLogin::class)->name('login.kurir');
+
+    // Forgot Password Route di /kurir/forgot-password
+    Route::get('/forgot-password', KurirForgotPassword::class)->name('kurir.password.request');
+
+    // Reset Password Route di /kurir/reset-password/{token}
+    Route::get('/reset-password/{token}', KurirResetPassword::class)->name('kurir.password.reset');
+});
+
+// Kurir Logout Route (authenticated)
+Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
+    Route::get('/logout', function () {
+        Auth::guard('kurir')->logout();
+        request()->session()->invalidate();
+        request()->session()->regenerateToken();
+
+        return redirect('/');
+    })->name('kurir.logout');
+});
+
+// Kurir Email Verification Routes (authenticated)
+Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
+    // Email Verification Notice Page
+    Route::get('/verify-email', KurirVerifyEmail::class)
+        ->name('kurir.verification.notice');
+
+    // Email Verification Handler (Laravel built-in)
+    Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
+        $request->fulfill();
+
+        return redirect()->route('beranda.kurir');
+    })->middleware(['signed'])->name('kurir.verification.verify');
+});
+
+// Protected Kurir Routes
+Route::middleware(['auth:kurir', 'verified'])->prefix('kurir')->group(function () {
+    Route::get('/', Beranda::class)->name('beranda.kurir');
+    Route::get('/pengiriman', Pengiriman::class)->name('pengiriman.kurir');
+    Route::get('/rute', Rute::class)->name('rute.kurir');
+    Route::get('/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
+});
 
 // Management Auth Routes - Guest (tanpa auth)
 Route::middleware('guest')->prefix('management')->group(function () {
