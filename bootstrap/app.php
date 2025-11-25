@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureKurirEmailIsVerified;
 use App\Http\Middleware\SuperAdminMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -16,6 +17,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'super_admin' => SuperAdminMiddleware::class,
+            'verified.kurir' => EnsureKurirEmailIsVerified::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

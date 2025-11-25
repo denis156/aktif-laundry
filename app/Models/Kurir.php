@@ -4,9 +4,10 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Notifications\KurirResetPasswordNotification;
+use App\Notifications\KurirVerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -81,5 +82,23 @@ class Kurir extends Authenticatable implements MustVerifyEmail
     public function pengirimanAntar(): HasMany
     {
         return $this->pengiriman()->where('tipe', 'Antar');
+    }
+
+    /**
+     * Send the email verification notification.
+     * Override untuk menggunakan notification custom untuk kurir.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new KurirVerifyEmailNotification);
+    }
+
+    /**
+     * Send the password reset notification.
+     * Override untuk menggunakan notification custom untuk kurir.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new KurirResetPasswordNotification($token));
     }
 }

@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use Illuminate\Notifications\Notifiable;
+use App\Notifications\UserResetPasswordNotification;
+use App\Notifications\UserVerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 
 // ! Model User - Pegawai/Admin/Kasir
 //
@@ -19,6 +21,7 @@ class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory;
+
     use Notifiable;
 
     // * Fillable attributes
@@ -48,5 +51,23 @@ class User extends Authenticatable implements MustVerifyEmail
             'super_admin' => 'boolean',
             'metadata' => 'array',
         ];
+    }
+
+    /**
+     * Send the email verification notification.
+     * Override untuk menggunakan notification custom untuk user/staf.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->notify(new UserVerifyEmailNotification);
+    }
+
+    /**
+     * Send the password reset notification.
+     * Override untuk menggunakan notification custom untuk user/staf.
+     */
+    public function sendPasswordResetNotification($token): void
+    {
+        $this->notify(new UserResetPasswordNotification($token));
     }
 }

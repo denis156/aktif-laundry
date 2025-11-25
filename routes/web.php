@@ -86,7 +86,7 @@ Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
 });
 
 // Protected Kurir Routes
-Route::middleware(['auth:kurir', 'verified'])->prefix('kurir')->group(function () {
+Route::middleware(['auth:kurir', 'verified.kurir'])->prefix('kurir')->group(function () {
     Route::get('/', Beranda::class)->name('beranda.kurir');
     Route::get('/pengiriman', Pengiriman::class)->name('pengiriman.kurir');
     Route::get('/rute', Rute::class)->name('rute.kurir');
