@@ -29,6 +29,25 @@ class ChartDataHelper
     }
 
     /**
+     * Get data transaksi untuk minggu tertentu (7 hari dari tanggal yang dipilih)
+     */
+    public static function getWeekData(Carbon $startDate): Collection
+    {
+        $start = $startDate->copy()->startOfWeek();
+
+        return collect()->times(7, function ($i) use ($start) {
+            $date = $start->copy()->addDays($i - 1);
+
+            return [
+                'label' => $date->locale('id')->isoFormat('ddd, D MMM'),
+                'count' => Transaksi::whereDate('tanggal_masuk', $date)->count(),
+                'berat' => self::getTotalBeratForDate($date),
+                'item' => self::getTotalItemForDate($date),
+            ];
+        });
+    }
+
+    /**
      * Get total berat untuk tanggal tertentu
      */
     private static function getTotalBeratForDate(Carbon $date): float
@@ -73,6 +92,26 @@ class ChartDataHelper
     }
 
     /**
+     * Get data transaksi untuk bulan tertentu (per hari)
+     */
+    public static function getMonthData(Carbon $date): Collection
+    {
+        $startOfMonth = $date->copy()->startOfMonth();
+        $daysInMonth = $date->daysInMonth;
+
+        return collect()->times($daysInMonth, function ($i) use ($startOfMonth) {
+            $currentDate = $startOfMonth->copy()->addDays($i - 1);
+
+            return [
+                'label' => $currentDate->locale('id')->isoFormat('D MMM'),
+                'count' => Transaksi::whereDate('tanggal_masuk', $currentDate)->count(),
+                'berat' => self::getTotalBeratForDate($currentDate),
+                'item' => self::getTotalItemForDate($currentDate),
+            ];
+        });
+    }
+
+    /**
      * Get data transaksi untuk 12 bulan terakhir
      */
     public static function getLast12MonthsData(): Collection
@@ -84,6 +123,28 @@ class ChartDataHelper
                 'label' => $date->locale('id')->isoFormat('MMM YYYY'),
                 'count' => Transaksi::whereMonth('tanggal_masuk', $date->month)
                     ->whereYear('tanggal_masuk', $date->year)
+                    ->count(),
+                'berat' => self::getTotalBeratForMonth($date),
+                'item' => self::getTotalItemForMonth($date),
+            ];
+        });
+    }
+
+    /**
+     * Get data transaksi untuk tahun tertentu (12 bulan)
+     */
+    public static function getYearData(Carbon $date): Collection
+    {
+        $year = $date->year;
+
+        return collect()->times(12, function ($i) use ($year) {
+            $month = $i;
+            $date = Carbon::create($year, $month, 1);
+
+            return [
+                'label' => $date->locale('id')->isoFormat('MMM'),
+                'count' => Transaksi::whereMonth('tanggal_masuk', $month)
+                    ->whereYear('tanggal_masuk', $year)
                     ->count(),
                 'berat' => self::getTotalBeratForMonth($date),
                 'item' => self::getTotalItemForMonth($date),

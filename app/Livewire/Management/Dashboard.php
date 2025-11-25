@@ -21,11 +21,9 @@ class Dashboard extends Component
 
     public string $currentDateTime = '';
 
-    public bool $isLineChart = true;
+    public string $chartType = 'line'; // line, bar
 
-    public bool $isLineChartCurrentMonth = false;
-
-    public bool $isLineChartMonthly = false;
+    public string $chartPeriod = 'monthly'; // Format: weekly-YYYY-MM-DD, monthly-YYYY-MM, yearly-YYYY
 
     // Chart data - Line/Bar Chart
     public array $transaksiChart = [
@@ -142,153 +140,13 @@ class Dashboard extends Component
         ],
     ];
 
-    // Chart data - Current Month Chart
-    public array $currentMonthChart = [
-        'type' => 'bar',
-        'data' => [
-            'labels' => [],
-            'datasets' => [
-                [
-                    'label' => 'Transaksi',
-                    'data' => [],
-                    'backgroundColor' => 'rgba(59, 130, 246, 0.5)',
-                    'borderColor' => 'rgb(59, 130, 246)',
-                    'borderWidth' => 2,
-                    'yAxisID' => 'y',
-                ],
-                [
-                    'label' => 'Berat (Kg)',
-                    'data' => [],
-                    'backgroundColor' => 'rgba(234, 179, 8, 0.5)',
-                    'borderColor' => 'rgb(234, 179, 8)',
-                    'borderWidth' => 2,
-                    'yAxisID' => 'y1',
-                ],
-                [
-                    'label' => 'Item Satuan',
-                    'data' => [],
-                    'backgroundColor' => 'rgba(168, 85, 247, 0.5)',
-                    'borderColor' => 'rgb(168, 85, 247)',
-                    'borderWidth' => 2,
-                    'yAxisID' => 'y1',
-                ],
-            ],
-        ],
-        'options' => [
-            'responsive' => true,
-            'maintainAspectRatio' => true,
-            'aspectRatio' => 2,
-            'plugins' => [
-                'legend' => [
-                    'display' => true,
-                    'position' => 'top',
-                ],
-            ],
-            'scales' => [
-                'y' => [
-                    'type' => 'linear',
-                    'display' => true,
-                    'position' => 'left',
-                    'beginAtZero' => true,
-                    'title' => [
-                        'display' => true,
-                        'text' => 'Jumlah Transaksi',
-                    ],
-                ],
-                'y1' => [
-                    'type' => 'linear',
-                    'display' => true,
-                    'position' => 'right',
-                    'beginAtZero' => true,
-                    'title' => [
-                        'display' => true,
-                        'text' => 'Berat (Kg) / Item',
-                    ],
-                    'grid' => [
-                        'drawOnChartArea' => false,
-                    ],
-                ],
-            ],
-        ],
-    ];
-
-    // Chart data - Monthly Chart (12 months)
-    public array $monthlyChart = [
-        'type' => 'bar',
-        'data' => [
-            'labels' => [],
-            'datasets' => [
-                [
-                    'label' => 'Transaksi',
-                    'data' => [],
-                    'backgroundColor' => 'rgba(34, 197, 94, 0.5)',
-                    'borderColor' => 'rgb(34, 197, 94)',
-                    'borderWidth' => 2,
-                    'yAxisID' => 'y',
-                ],
-                [
-                    'label' => 'Berat (Kg)',
-                    'data' => [],
-                    'backgroundColor' => 'rgba(234, 179, 8, 0.5)',
-                    'borderColor' => 'rgb(234, 179, 8)',
-                    'borderWidth' => 2,
-                    'yAxisID' => 'y1',
-                ],
-                [
-                    'label' => 'Item Satuan',
-                    'data' => [],
-                    'backgroundColor' => 'rgba(168, 85, 247, 0.5)',
-                    'borderColor' => 'rgb(168, 85, 247)',
-                    'borderWidth' => 2,
-                    'yAxisID' => 'y1',
-                ],
-            ],
-        ],
-        'options' => [
-            'responsive' => true,
-            'maintainAspectRatio' => true,
-            'aspectRatio' => 2,
-            'plugins' => [
-                'legend' => [
-                    'display' => true,
-                    'position' => 'top',
-                ],
-            ],
-            'scales' => [
-                'y' => [
-                    'type' => 'linear',
-                    'display' => true,
-                    'position' => 'left',
-                    'beginAtZero' => true,
-                    'title' => [
-                        'display' => true,
-                        'text' => 'Jumlah Transaksi',
-                    ],
-                ],
-                'y1' => [
-                    'type' => 'linear',
-                    'display' => true,
-                    'position' => 'right',
-                    'beginAtZero' => true,
-                    'title' => [
-                        'display' => true,
-                        'text' => 'Berat (Kg) / Item',
-                    ],
-                    'grid' => [
-                        'drawOnChartArea' => false,
-                    ],
-                ],
-            ],
-        ],
-    ];
-
     public function mount(): void
     {
+        // Set default to current month
+        $this->chartPeriod = 'monthly-'.now()->format('Y-m');
         $this->updateDateTime();
         $this->loadChartData();
         $this->loadStatusChart();
-        $this->loadCurrentMonthChart();
-        $this->loadMonthlyChart();
     }
 
     public function updateDateTime(): void
@@ -298,8 +156,30 @@ class Dashboard extends Component
 
     public function loadChartData(): void
     {
-        // Use ChartDataHelper untuk get data 7 hari terakhir
-        $data = ChartDataHelper::getLast7DaysData();
+        // Parse period: {type}-{date}
+        $parts = explode('-', $this->chartPeriod);
+        $periodType = $parts[0]; // weekly, monthly, yearly
+
+        // Load data based on selected period
+        if ($periodType === 'weekly' && count($parts) === 4) {
+            // Format: weekly-YYYY-MM-DD
+            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-{$parts[3]}");
+            $data = ChartDataHelper::getWeekData($date);
+        } elseif ($periodType === 'monthly' && count($parts) === 3) {
+            // Format: monthly-YYYY-MM
+            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-01");
+            $data = ChartDataHelper::getMonthData($date);
+        } elseif ($periodType === 'yearly' && count($parts) === 2) {
+            // Format: yearly-YYYY
+            $date = Carbon::parse("{$parts[1]}-01-01");
+            $data = ChartDataHelper::getYearData($date);
+        } else {
+            // Default to current month
+            $data = ChartDataHelper::getMonthData(now());
+        }
+
+        // Set chart type
+        $this->transaksiChart['type'] = $this->chartType;
 
         $this->transaksiChart['data']['labels'] = $data->pluck('label')->toArray();
         $this->transaksiChart['data']['datasets'][0]['data'] = $data->pluck('count')->toArray();
@@ -320,44 +200,16 @@ class Dashboard extends Component
         $this->statusChart['data']['datasets'][0]['data'] = $statusCounts;
     }
 
-    public function updatedIsLineChart(): void
+    public function updatedChartType(): void
     {
-        // Update chart type when toggle changes
-        $this->transaksiChart['type'] = $this->isLineChart ? 'line' : 'bar';
+        // Update chart type when selection changes
+        $this->transaksiChart['type'] = $this->chartType;
     }
 
-    public function updatedIsLineChartCurrentMonth(): void
+    public function updatedChartPeriod(): void
     {
-        // Update current month chart type when toggle changes
-        $this->currentMonthChart['type'] = $this->isLineChartCurrentMonth ? 'line' : 'bar';
-    }
-
-    public function updatedIsLineChartMonthly(): void
-    {
-        // Update monthly chart type when toggle changes
-        $this->monthlyChart['type'] = $this->isLineChartMonthly ? 'line' : 'bar';
-    }
-
-    public function loadCurrentMonthChart(): void
-    {
-        // Use ChartDataHelper untuk get data bulan ini
-        $data = ChartDataHelper::getCurrentMonthData();
-
-        $this->currentMonthChart['data']['labels'] = $data->pluck('label')->toArray();
-        $this->currentMonthChart['data']['datasets'][0]['data'] = $data->pluck('count')->toArray();
-        $this->currentMonthChart['data']['datasets'][1]['data'] = $data->pluck('berat')->toArray();
-        $this->currentMonthChart['data']['datasets'][2]['data'] = $data->pluck('item')->toArray();
-    }
-
-    public function loadMonthlyChart(): void
-    {
-        // Use ChartDataHelper untuk get data 12 bulan terakhir
-        $data = ChartDataHelper::getLast12MonthsData();
-
-        $this->monthlyChart['data']['labels'] = $data->pluck('label')->toArray();
-        $this->monthlyChart['data']['datasets'][0]['data'] = $data->pluck('count')->toArray();
-        $this->monthlyChart['data']['datasets'][1]['data'] = $data->pluck('berat')->toArray();
-        $this->monthlyChart['data']['datasets'][2]['data'] = $data->pluck('item')->toArray();
+        // Reload chart data when period changes
+        $this->loadChartData();
     }
 
     public function refreshDashboard(): void
@@ -365,10 +217,91 @@ class Dashboard extends Component
         $this->updateDateTime();
         $this->loadChartData();
         $this->loadStatusChart();
-        $this->loadCurrentMonthChart();
-        $this->loadMonthlyChart();
 
         $this->success('Data berhasil diperbarui!', position: 'toast-bottom');
+    }
+
+    public function getChartTitle(): string
+    {
+        // Parse period type
+        $parts = explode('-', $this->chartPeriod);
+        $periodType = $parts[0];
+
+        if ($periodType === 'weekly' && count($parts) === 4) {
+            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-{$parts[3]}");
+            $endDate = $date->copy()->addDays(6);
+
+            return 'Transaksi Mingguan';
+        } elseif ($periodType === 'monthly' && count($parts) === 3) {
+            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-01");
+
+            return 'Transaksi Bulanan';
+        } elseif ($periodType === 'yearly' && count($parts) === 2) {
+            return 'Transaksi Tahunan';
+        }
+
+        return 'Grafik Transaksi';
+    }
+
+    public function getChartSubtitle(): string
+    {
+        // Parse period type
+        $parts = explode('-', $this->chartPeriod);
+        $periodType = $parts[0];
+
+        if ($periodType === 'weekly' && count($parts) === 4) {
+            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-{$parts[3]}");
+            $endDate = $date->copy()->addDays(6);
+
+            return $date->locale('id')->isoFormat('D MMM').' - '.$endDate->locale('id')->isoFormat('D MMM YYYY');
+        } elseif ($periodType === 'monthly' && count($parts) === 3) {
+            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-01");
+
+            return 'Periode '.$date->locale('id')->isoFormat('MMMM YYYY');
+        } elseif ($periodType === 'yearly' && count($parts) === 2) {
+            return 'Periode Tahun '.$parts[1];
+        }
+
+        return 'Data transaksi laundry';
+    }
+
+    public function getPeriodOptions(): array
+    {
+        $options = [
+            'Minggu' => [],
+            'Bulan' => [],
+            'Tahun' => [],
+        ];
+
+        // Generate last 8 weeks (including current week)
+        for ($i = 0; $i < 8; $i++) {
+            $date = now()->subWeeks($i)->startOfWeek();
+            $endDate = $date->copy()->endOfWeek();
+            $options['Minggu'][] = [
+                'id' => 'weekly-'.$date->format('Y-m-d'),
+                'name' => $date->locale('id')->isoFormat('D MMM').' - '.$endDate->locale('id')->isoFormat('D MMM YYYY'),
+            ];
+        }
+
+        // Generate last 12 months (including current month)
+        for ($i = 0; $i < 12; $i++) {
+            $date = now()->subMonths($i);
+            $options['Bulan'][] = [
+                'id' => 'monthly-'.$date->format('Y-m'),
+                'name' => $date->locale('id')->isoFormat('MMMM YYYY'),
+            ];
+        }
+
+        // Generate last 5 years (including current year)
+        for ($i = 0; $i < 5; $i++) {
+            $year = now()->year - $i;
+            $options['Tahun'][] = [
+                'id' => 'yearly-'.$year,
+                'name' => 'Tahun '.$year,
+            ];
+        }
+
+        return $options;
     }
 
     public function calendarEvents(): array

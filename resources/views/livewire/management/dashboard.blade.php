@@ -152,29 +152,22 @@
             </x-card>
         </div>
 
-        {{-- CHART 7 HARI - FULL WIDTH --}}
-        <x-card title="7 Hari Terakhir" subtitle="Perbandingan transaksi terakhir minggu ini" class="shadow-sm">
+        {{-- CHART TRANSAKSI - FULL WIDTH --}}
+        <x-card title="{{ $this->getChartTitle() }}" subtitle="{{ $this->getChartSubtitle() }}" class="shadow-sm">
             <x-slot:menu>
-                <x-toggle wire:model.live="isLineChart" left />
+                <div class="flex items-center gap-3">
+                    @php
+                        $chartTypeOptions = [
+                            ['id' => 'line', 'name' => 'Line Chart'],
+                            ['id' => 'bar', 'name' => 'Bar Chart'],
+                        ];
+                    @endphp
+                    <x-select label="Tipe" :options="$chartTypeOptions" wire:model.live="chartType" class="select-sm w-40" />
+                    <x-select-group label="Periode" :options="$this->getPeriodOptions()" wire:model.live="chartPeriod"
+                        class="select-sm w-64" />
+                </div>
             </x-slot:menu>
             <x-chart wire:model="transaksiChart" />
-        </x-card>
-
-        {{-- CHART BULAN INI - FULL WIDTH --}}
-        <x-card title="Bulan Ini" subtitle="Transaksi harian bulan {{ now()->locale('id')->isoFormat('MMMM YYYY') }}"
-            class="shadow-sm">
-            <x-slot:menu>
-                <x-toggle wire:model.live="isLineChartCurrentMonth" left />
-            </x-slot:menu>
-            <x-chart wire:model="currentMonthChart" />
-        </x-card>
-
-        {{-- CHART 12 BULAN - FULL WIDTH --}}
-        <x-card title="12 Bulan Terakhir" subtitle="Pertumbuhan transaksi selama tahun ini" class="shadow-sm">
-            <x-slot:menu>
-                <x-toggle wire:model.live="isLineChartMonthly" right />
-            </x-slot:menu>
-            <x-chart wire:model="monthlyChart" />
         </x-card>
     </section>
 </div>
