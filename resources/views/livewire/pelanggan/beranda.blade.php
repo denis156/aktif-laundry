@@ -14,7 +14,7 @@
             </x-slot:figure>
             <div class="grid grid-cols-4 gap-8 w-full">
                 <div class="flex flex-col items-center space-y-1">
-                    <x-button class="btn-square btn-lg btn-primary" icon="iconpark.washing-machine-one-o" />
+                    <x-button class="btn-square btn-lg btn-primary" icon="iconpark.washingmachineone-o" />
                     <span class="text-xs text-base-content/60 font-light">Cuci</span>
                 </div>
                 <div class="flex flex-col items-center space-y-1">
@@ -62,7 +62,7 @@
                 <x-button label="Lihat Semua" class="btn-ghost btn-xs btn-primary"/>
             </div>
             <div class="text-center py-8">
-                <x-icon name="iconpark.empty-picture-o" class="w-16 h-16 mx-auto text-base-content/40" />
+                <x-icon name="iconpark.handlex-o" class="w-16 h-16 mx-auto text-base-content/40" />
                 <p class="text-sm text-base-content/60 mt-2">Belum ada pesanan</p>
             </div>
         </div>
