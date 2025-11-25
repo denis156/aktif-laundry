@@ -13,43 +13,20 @@
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input
-                        label="Kode Jenis"
-                        wire:model="formData.kode_jenis"
-                        readonly
-                        hint="Kode tidak dapat diubah"
-                        icon="o-hashtag"
-                    />
+                    <x-input label="Kode Jenis" wire:model="formData.kode_jenis" readonly hint="Kode tidak dapat diubah"
+                        icon="o-hashtag" />
 
-                    <x-input
-                        label="Nama Jenis Pakaian"
-                        wire:model="formData.nama_jenis"
-                        placeholder="Contoh: Kemeja, Celana Panjang"
-                        icon="o-square-3-stack-3d"
-                        required
-                    />
+                    <x-input label="Nama Jenis Pakaian" wire:model="formData.nama_jenis"
+                        placeholder="Contoh: Kemeja, Celana Panjang" icon="o-square-3-stack-3d" required />
                 </div>
 
-                <x-textarea
-                    label="Keterangan"
-                    wire:model="formData.keterangan"
-                    placeholder="Jelaskan detail jenis pakaian ini..."
-                    rows="3"
-                    hint="Opsional"
-                />
+                <x-textarea label="Keterangan" wire:model="formData.keterangan"
+                    placeholder="Jelaskan detail jenis pakaian ini..." rows="3" hint="Opsional" />
 
-                <x-select
-                    label="Status"
-                    wire:model="formData.status"
-                    icon="o-check-circle"
-                    :options="[
+                <x-select label="Status" wire:model="formData.status" icon="o-check-circle" :options="[
                         ['id' => 'Aktif', 'name' => 'Aktif'],
                         ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']
-                    ]"
-                    option-value="id"
-                    option-label="name"
-                    required
-                />
+                    ]" option-value="id" option-label="name" required />
             </x-card>
         </div>
 
@@ -59,21 +36,13 @@
                 <x-header title="Informasi Tambahan" subtitle="Metadata jenis pakaian (Opsional)" size="text-lg" />
             </div>
             <x-card class="col-span-3">
-                <livewire:management.component.icon-picker
-                    :initialValue="$icon"
-                    eventName="iconSelected"
-                    label="Icon"
-                    placeholder="Cari icon..."
-                    hint="Ketik minimal 2 huruf untuk mencari icon" />
+                <livewire:management.component.icon-picker :initialValue="$icon" eventName="iconSelected" label="Icon"
+                    placeholder="Cari icon..." hint="Ketik minimal 2 huruf untuk mencari icon" />
 
-                <x-textarea
-                    label="Penanganan Khusus"
-                    wire:model="penangananKhusus"
-                    placeholder="Contoh: Harus dicuci terpisah, gunakan pewangi khusus..."
-                    rows="3"
+                <x-textarea label="Penanganan Khusus" wire:model="penangananKhusus"
+                    placeholder="Contoh: Harus dicuci terpisah, gunakan pewangi khusus..." rows="3"
                     hint="Opsional - Instruksi khusus untuk pakaian putih atau baju spesial"
-                    icon="o-information-circle"
-                />
+                    icon="o-information-circle" />
             </x-card>
         </div>
 

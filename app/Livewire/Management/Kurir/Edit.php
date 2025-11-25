@@ -200,6 +200,40 @@ class Edit extends Component
             $this->success('Kurir berhasil diupdate!', position: 'toast-bottom');
             $this->redirect('/management/kurir', navigate: true);
         } catch (QueryException $e) {
+            // Handle unique constraint violation
+            $errorCode = $e->errorInfo[0] ?? $e->getCode();
+
+            // PostgreSQL unique violation code
+            if ($errorCode == 23505 || $e->errorInfo[1] == 1062) {
+                $errorMessage = $e->getMessage();
+
+                // Detect which field is duplicate
+                if (str_contains($errorMessage, 'kurir_no_hp_unique') || str_contains($errorMessage, 'no_hp')) {
+                    Log::warning('Duplicate phone number detected when updating kurir', [
+                        'kurir_id' => $this->kurirId,
+                        'no_hp' => $this->formData['no_hp'],
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->error('Nomor HP sudah terdaftar. Gunakan nomor HP lain.', position: 'toast-bottom');
+
+                    return;
+                } elseif (str_contains($errorMessage, 'kurir_email_unique') || str_contains($errorMessage, 'email')) {
+                    Log::warning('Duplicate email detected when updating kurir', [
+                        'kurir_id' => $this->kurirId,
+                        'email' => $this->formData['email'],
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->error('Email sudah terdaftar. Gunakan email lain.', position: 'toast-bottom');
+
+                    return;
+                }
+
+                // Generic duplicate message
+                $this->error('Data sudah terdaftar. Periksa nomor HP atau email.', position: 'toast-bottom');
+
+                return;
+            }
+
             Log::error('Database error when updating kurir', [
                 'kurir_id' => $this->kurirId,
                 'error' => $e->getMessage(),

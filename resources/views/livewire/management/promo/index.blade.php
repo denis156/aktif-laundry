@@ -3,7 +3,8 @@
     <x-header title="Promo" icon="o-tag" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Kelola Kode Promo & Diskon" separator progress-indicator>
         <x-slot:middle class="justify-end">
-            <x-input placeholder="Cari promo..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
+            <x-input placeholder="Cari promo..." wire:model.live.debounce="search" clearable
+                icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
             <x-button label="Tambah Promo" link="{{ route('promo.create') }}" wire:navigate.hover responsive
@@ -22,79 +23,78 @@
             </x-slot:empty>
 
             @scope('cell_kode_promo', $item)
-                <span class="font-mono font-semibold text-primary">{{ $item->kode_promo }}</span>
+            <span class="font-mono font-semibold text-primary">{{ $item->kode_promo }}</span>
             @endscope
 
             @scope('cell_nama_promo', $item)
-                <div class="flex flex-col">
-                    <span class="font-medium">{{ $item->nama_promo }}</span>
-                    @if($item->deskripsi)
-                        <span class="text-xs text-base-content/60 truncate max-w-xs">{{ $item->deskripsi }}</span>
-                    @endif
-                </div>
+            <div class="flex flex-col">
+                <span class="font-medium">{{ $item->nama_promo }}</span>
+                @if($item->deskripsi)
+                <span class="text-xs text-base-content/60 truncate max-w-xs">{{ $item->deskripsi }}</span>
+                @endif
+            </div>
             @endscope
 
             @scope('cell_tipe_diskon', $item)
-                @if ($item->tipe_diskon === 'persen')
-                    <span class="badge badge-warning badge-sm">Persen</span>
-                @else
-                    <span class="badge badge-info badge-sm">Nominal</span>
-                @endif
+            @if ($item->tipe_diskon === 'persen')
+            <span class="badge badge-warning badge-sm">Persen</span>
+            @else
+            <span class="badge badge-info badge-sm">Nominal</span>
+            @endif
             @endscope
 
             @scope('cell_nilai_diskon', $item)
-                @if ($item->tipe_diskon === 'persen')
-                    <span class="font-semibold text-warning">{{ $item->nilai_diskon }}%</span>
-                @else
-                    <span class="font-semibold text-info">Rp {{ number_format($item->nilai_diskon, 0, ',', '.') }}</span>
-                @endif
-                @if($item->diskon_maksimal)
-                    <div class="text-xs text-base-content/60">
-                        Max: Rp {{ number_format($item->diskon_maksimal, 0, ',', '.') }}
-                    </div>
-                @endif
+            @if ($item->tipe_diskon === 'persen')
+            <span class="font-semibold text-warning">{{ $item->nilai_diskon }}%</span>
+            @else
+            <span class="font-semibold text-info">Rp {{ number_format($item->nilai_diskon, 0, ',', '.') }}</span>
+            @endif
+            @if($item->diskon_maksimal)
+            <div class="text-xs text-base-content/60">
+                Max: Rp {{ number_format($item->diskon_maksimal, 0, ',', '.') }}
+            </div>
+            @endif
             @endscope
 
             @scope('cell_periode', $item)
-                <div class="flex flex-col text-xs">
-                    <span>{{ $item->tanggal_mulai->format('d M Y') }}</span>
-                    <span class="text-base-content/60">s/d</span>
-                    <span>{{ $item->tanggal_berakhir->format('d M Y') }}</span>
-                </div>
+            <div class="flex flex-col text-xs">
+                <span>{{ $item->tanggal_mulai->format('d M Y') }}</span>
+                <span class="text-base-content/60">s/d</span>
+                <span>{{ $item->tanggal_berakhir->format('d M Y') }}</span>
+            </div>
             @endscope
 
             @scope('cell_kuota', $item)
-                @if($item->kuota_total)
-                    <div class="flex flex-col items-center">
-                        <span class="text-sm font-medium">{{ $item->kuota_terpakai }}/{{ $item->kuota_total }}</span>
-                        <progress class="progress progress-primary w-16 h-2"
-                            value="{{ $item->kuota_terpakai }}"
-                            max="{{ $item->kuota_total }}">
-                        </progress>
-                    </div>
-                @else
-                    <span class="badge badge-outline badge-sm">Unlimited</span>
-                @endif
+            @if($item->kuota_total)
+            <div class="flex flex-col items-center">
+                <span class="text-sm font-medium">{{ $item->kuota_terpakai }}/{{ $item->kuota_total }}</span>
+                <progress class="progress progress-primary w-16 h-2" value="{{ $item->kuota_terpakai }}"
+                    max="{{ $item->kuota_total }}">
+                </progress>
+            </div>
+            @else
+            <span class="badge badge-outline badge-sm">Unlimited</span>
+            @endif
             @endscope
 
             @scope('cell_status', $item)
-                @if ($item->status == 'Aktif')
-                    <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-                @elseif ($item->status == 'Habis')
-                    <x-badge value="{{ $item->status }}" class="badge-warning badge-sm" />
-                @else
-                    <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
-                @endif
+            @if ($item->status == 'Aktif')
+            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+            @elseif ($item->status == 'Habis')
+            <x-badge value="{{ $item->status }}" class="badge-warning badge-sm" />
+            @else
+            <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
+            @endif
             @endscope
 
             @scope('actions', $item)
-                <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('promo.edit', $item->id) }}"
-                        wire:navigate.hover class="btn-sm btn-outline btn-info" />
-                    <x-button label="Hapus" icon="o-trash"
-                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_promo }}')"
-                        class="btn-sm btn-outline btn-error" />
-                </div>
+            <div class="flex items-center justify-end gap-2">
+                <x-button label="Edit" icon="o-pencil" link="{{ route('promo.edit', $item->id) }}" wire:navigate.hover
+                    class="btn-sm btn-outline btn-info" />
+                <x-button label="Hapus" icon="o-trash"
+                    wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_promo }}')"
+                    class="btn-sm btn-outline btn-error" />
+            </div>
             @endscope
         </x-table>
     </x-card>
@@ -108,15 +108,13 @@
                 ['id' => 'Aktif', 'name' => 'Aktif'],
                 ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
                 ['id' => 'Habis', 'name' => 'Habis'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
 
             <x-select label="Tipe Diskon" wire:model.live="tipeDiskonFilter" icon="o-tag" :options="[
                 ['id' => '', 'name' => 'Semua Tipe'],
                 ['id' => 'persen', 'name' => 'Persen'],
                 ['id' => 'nominal', 'name' => 'Nominal'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>

@@ -24,32 +24,32 @@
             </x-slot:empty>
 
             @scope('cell_icon', $item)
-                @php
-                    $icon = \App\Helper\Database\JenisPakaianHelper::getIcon($item);
-                @endphp
-                @if($icon)
-                    <x-icon name="{{ $icon }}" class="w-6 h-6" />
-                @else
-                    <x-icon name="o-square-3-stack-3d" class="w-6 h-6 opacity-30" />
-                @endif
+            @php
+            $icon = \App\Helper\Database\JenisPakaianHelper::getIcon($item);
+            @endphp
+            @if($icon)
+            <x-icon name="{{ $icon }}" class="w-6 h-6" />
+            @else
+            <x-icon name="o-square-3-stack-3d" class="w-6 h-6 opacity-30" />
+            @endif
             @endscope
 
             @scope('cell_status', $item)
-                @if ($item->status == 'Aktif')
-                    <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-                @else
-                    <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
-                @endif
+            @if ($item->status == 'Aktif')
+            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+            @else
+            <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
+            @endif
             @endscope
 
             @scope('actions', $item)
-                <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('jenis-pakaian.edit', $item->id) }}"
-                        wire:navigate.hover class="btn-sm btn-outline btn-info" />
-                    <x-button label="Hapus" icon="o-trash"
-                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_jenis }}')"
-                        class="btn-sm btn-outline btn-error" />
-                </div>
+            <div class="flex items-center justify-end gap-2">
+                <x-button label="Edit" icon="o-pencil" link="{{ route('jenis-pakaian.edit', $item->id) }}"
+                    wire:navigate.hover class="btn-sm btn-outline btn-info" />
+                <x-button label="Hapus" icon="o-trash"
+                    wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_jenis }}')"
+                    class="btn-sm btn-outline btn-error" />
+            </div>
             @endscope
         </x-table>
     </x-card>
@@ -62,8 +62,7 @@
                 ['id' => '', 'name' => 'Semua Status'],
                 ['id' => 'Aktif', 'name' => 'Aktif'],
                 ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>

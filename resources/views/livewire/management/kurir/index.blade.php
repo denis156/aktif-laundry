@@ -3,7 +3,8 @@
     <x-header title="Data Kurir" icon="o-truck" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Kelola data kurir dan informasi pengiriman" separator progress-indicator>
         <x-slot:middle class="justify-end">
-            <x-input placeholder="Cari kurir..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
+            <x-input placeholder="Cari kurir..." wire:model.live.debounce="search" clearable
+                icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
             <x-button label="Tambah Kurir" link="{{ route('kurir.create') }}" wire:navigate.hover responsive
@@ -22,47 +23,46 @@
             </x-slot:empty>
 
             @scope('cell_avatar', $item)
-                @php
-                    $avatarUrl = \App\Helper\Database\KurirHelper::getAvatarUrl($item);
-                @endphp
-                <div class="flex items-center justify-center">
-                    <img src="{{ $avatarUrl ? asset('storage/' . $avatarUrl) : asset('images/Logo.png') }}" alt="Avatar"
-                        class="w-10 h-10 rounded-full object-cover">
-                </div>
+            @php
+            $avatarUrl = \App\Helper\Database\KurirHelper::getAvatarUrl($item);
+            @endphp
+            <div class="flex items-center justify-center">
+                <img src="{{ $avatarUrl ? asset('storage/' . $avatarUrl) : asset('images/Logo.png') }}" alt="Avatar"
+                    class="w-10 h-10 rounded-full object-cover">
+            </div>
             @endscope
 
             @scope('cell_no_hp', $item)
-                <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($item->no_hp) ?? '-' }}</span>
+            <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($item->no_hp) ?? '-' }}</span>
             @endscope
 
             @scope('cell_jenis_kendaraan', $item)
-                <span class="badge badge-outline badge-sm">{{ $item->jenis_kendaraan ?? '-' }}</span>
+            <span class="badge badge-outline badge-sm">{{ $item->jenis_kendaraan ?? '-' }}</span>
             @endscope
 
             @scope('cell_total_jemput', $item)
-                <span class="badge badge-info badge-sm">{{ $item->total_jemput }}x</span>
+            <span class="badge badge-info badge-sm">{{ $item->total_jemput }}x</span>
             @endscope
 
             @scope('cell_total_antar', $item)
-                <span class="badge badge-success badge-sm">{{ $item->total_antar }}x</span>
+            <span class="badge badge-success badge-sm">{{ $item->total_antar }}x</span>
             @endscope
 
             @scope('cell_status', $item)
-                @if ($item->status == 'aktif')
-                    <x-badge value="Aktif" class="badge-success badge-sm" />
-                @else
-                    <x-badge value="Nonaktif" class="badge-error badge-sm" />
-                @endif
+            @if ($item->status == 'aktif')
+            <x-badge value="Aktif" class="badge-success badge-sm" />
+            @else
+            <x-badge value="Nonaktif" class="badge-error badge-sm" />
+            @endif
             @endscope
 
             @scope('actions', $item)
-                <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('kurir.edit', $item->id) }}" wire:navigate.hover
-                        class="btn-sm btn-outline btn-info" />
-                    <x-button label="Hapus" icon="o-trash"
-                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama }}')"
-                        class="btn-sm btn-outline btn-error" />
-                </div>
+            <div class="flex items-center justify-end gap-2">
+                <x-button label="Edit" icon="o-pencil" link="{{ route('kurir.edit', $item->id) }}" wire:navigate.hover
+                    class="btn-sm btn-outline btn-info" />
+                <x-button label="Hapus" icon="o-trash" wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama }}')"
+                    class="btn-sm btn-outline btn-error" />
+            </div>
             @endscope
         </x-table>
     </x-card>
@@ -75,15 +75,13 @@
                 ['id' => '', 'name' => 'Semua Status'],
                 ['id' => 'aktif', 'name' => 'Aktif'],
                 ['id' => 'nonaktif', 'name' => 'Nonaktif'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
 
             <x-select label="Jenis Kendaraan" wire:model.live="jenisKendaraanFilter" icon="o-truck" :options="[
                 ['id' => '', 'name' => 'Semua Kendaraan'],
                 ['id' => 'Motor', 'name' => 'Motor'],
                 ['id' => 'Mobil', 'name' => 'Mobil'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>

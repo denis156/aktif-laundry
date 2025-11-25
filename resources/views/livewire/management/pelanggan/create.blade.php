@@ -31,9 +31,9 @@
                     <x-input label="Email" type="email" wire:model="formData.email"
                         placeholder="Contoh: pelanggan@email.com" icon="o-envelope" hint="Opsional" />
 
-                    <x-password label="Password" wire:model="formData.password"
-                        placeholder="Minimal 8 karakter" hint="Opsional - untuk login aplikasi customer"
-                        password-icon="o-lock-closed" password-visible-icon="o-lock-open" clearable />
+                    <x-password label="Password" wire:model="formData.password" placeholder="Minimal 8 karakter"
+                        hint="Opsional - untuk login aplikasi customer" password-icon="o-lock-closed"
+                        password-visible-icon="o-lock-open" clearable />
 
                     <x-password label="Konfirmasi Password" wire:model="password_confirmation"
                         placeholder="Ketik ulang password" password-icon="o-lock-closed"
@@ -74,8 +74,7 @@
         {{-- Status section --}}
         <div class="lg:grid grid-cols-5 mt-8">
             <div class="col-span-2">
-                <x-header title="Status" subtitle="Status dan tanggal pendaftaran"
-                    size="text-lg" />
+                <x-header title="Status" subtitle="Status dan tanggal pendaftaran" size="text-lg" />
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

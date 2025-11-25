@@ -8,8 +8,8 @@
             </div>
         </x-slot:subtitle>
         <x-slot:actions>
-            <x-button icon="o-arrow-path" label="Refresh" class="btn-secondary btn-outline" wire:click="refreshDashboard"
-                spinner="refreshDashboard" responsive />
+            <x-button icon="o-arrow-path" label="Refresh" class="btn-secondary btn-outline"
+                wire:click="refreshDashboard" spinner="refreshDashboard" responsive />
             <x-button icon="o-calculator" label="Kasir" class="btn-primary" link="{{ route('kasir') }}"
                 wire:navigate.hover responsive />
         </x-slot:actions>
@@ -66,36 +66,35 @@
                         </thead>
                         <tbody>
                             @forelse($topLayanan as $index => $layanan)
-                                <tr>
-                                    <td class="text-center">
-                                        @if ($index === 0)
-                                            <x-icon name="s-trophy" class="w-5 h-5 text-warning" />
-                                        @elseif($index === 1)
-                                            <x-icon name="s-trophy" class="w-5 h-5 text-base-content/40" />
-                                        @elseif($index === 2)
-                                            <x-icon name="s-trophy" class="w-5 h-5 text-warning" />
-                                        @else
-                                            <span class="font-bold text-base-content/50">{{ $index + 1 }}</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="font-bold">{{ $layanan->nama_layanan }}</div>
-                                    </td>
-                                    <td class="text-right">
-                                        <span class="font-semibold text-success">Rp
-                                            {{ number_format($layanan->harga, 0, ',', '.') }}</span>
-                                    </td>
-                                    <td class="text-center">
-                                        <x-badge value="{{ $layanan->total_transaksi }}x"
-                                            class="badge-primary badge-sm" />
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td class="text-center">
+                                    @if ($index === 0)
+                                    <x-icon name="s-trophy" class="w-5 h-5 text-warning" />
+                                    @elseif($index === 1)
+                                    <x-icon name="s-trophy" class="w-5 h-5 text-base-content/40" />
+                                    @elseif($index === 2)
+                                    <x-icon name="s-trophy" class="w-5 h-5 text-warning" />
+                                    @else
+                                    <span class="font-bold text-base-content/50">{{ $index + 1 }}</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="font-bold">{{ $layanan->nama_layanan }}</div>
+                                </td>
+                                <td class="text-right">
+                                    <span class="font-semibold text-success">Rp
+                                        {{ number_format($layanan->harga, 0, ',', '.') }}</span>
+                                </td>
+                                <td class="text-center">
+                                    <x-badge value="{{ $layanan->total_transaksi }}x" class="badge-primary badge-sm" />
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="4" class="text-center text-base-content/50">
-                                        Belum ada data layanan
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td colspan="4" class="text-center text-base-content/50">
+                                    Belum ada data layanan
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -126,26 +125,26 @@
                         </thead>
                         <tbody>
                             @forelse($recentTransaksi as $transaksi)
-                                <tr>
-                                    <td>
-                                        <div class="font-bold text-primary">{{ $transaksi->kode_transaksi }}</div>
-                                        <div class="text-xs text-base-content/60">
-                                            {{ $transaksi->tanggal_masuk->format('d/m/Y H:i') }}</div>
-                                    </td>
-                                    <td>
-                                        <div class="font-semibold">{{ $transaksi->nama_pelanggan }}</div>
-                                    </td>
-                                    <td class="text-right">
-                                        <span class="font-bold text-success">Rp
-                                            {{ number_format($transaksi->total, 0, ',', '.') }}</span>
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td>
+                                    <div class="font-bold text-primary">{{ $transaksi->kode_transaksi }}</div>
+                                    <div class="text-xs text-base-content/60">
+                                        {{ $transaksi->tanggal_masuk->format('d/m/Y H:i') }}</div>
+                                </td>
+                                <td>
+                                    <div class="font-semibold">{{ $transaksi->nama_pelanggan }}</div>
+                                </td>
+                                <td class="text-right">
+                                    <span class="font-bold text-success">Rp
+                                        {{ number_format($transaksi->total, 0, ',', '.') }}</span>
+                                </td>
+                            </tr>
                             @empty
-                                <tr>
-                                    <td colspan="3" class="text-center text-base-content/50">
-                                        Belum ada transaksi
-                                    </td>
-                                </tr>
+                            <tr>
+                                <td colspan="3" class="text-center text-base-content/50">
+                                    Belum ada transaksi
+                                </td>
+                            </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -162,7 +161,8 @@
         </x-card>
 
         {{-- CHART BULAN INI - FULL WIDTH --}}
-        <x-card title="Bulan Ini" subtitle="Transaksi harian bulan {{ now()->locale('id')->isoFormat('MMMM YYYY') }}" class="shadow-sm">
+        <x-card title="Bulan Ini" subtitle="Transaksi harian bulan {{ now()->locale('id')->isoFormat('MMMM YYYY') }}"
+            class="shadow-sm">
             <x-slot:menu>
                 <x-toggle wire:model.live="isLineChartCurrentMonth" left />
             </x-slot:menu>

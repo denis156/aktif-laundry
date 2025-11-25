@@ -28,8 +28,8 @@
                     <x-input label="Email" type="email" wire:model="email" placeholder="email@example.com"
                         icon="o-envelope" required />
 
-                    <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions" class="checked:btn-primary!"
-                        hint="Pilih role untuk pengguna ini" />
+                    <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions"
+                        class="checked:btn-primary!" hint="Pilih role untuk pengguna ini" />
 
                     <x-password label="Password Baru" wire:model="password"
                         placeholder="Kosongkan jika tidak ingin mengubah"
@@ -53,8 +53,9 @@
                     hint="Detail Alamat seperti jalan, nomor, RT/RW" rows="2" required />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions" placeholder="Pilih kecamatan"
-                        :disabled="empty($kabupaten_kota)" hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}"
+                    <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
+                        placeholder="Pilih kecamatan" :disabled="empty($kabupaten_kota)"
+                        hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}"
                         icon="o-map-pin" required />
 
                     <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
@@ -77,14 +78,13 @@
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-2 gap-4">
-                    <x-datetime label="Jam Masuk" wire:model="jam_masuk" type="time"/>
+                    <x-datetime label="Jam Masuk" wire:model="jam_masuk" type="time" />
 
-                    <x-datetime label="Jam Keluar" wire:model="jam_keluar" type="time"/>
+                    <x-datetime label="Jam Keluar" wire:model="jam_keluar" type="time" />
                 </div>
 
-                <x-input label="Gaji Pokok" type="number" wire:model="gaji"
-                    placeholder="Masukkan gaji pokok (opsional)" icon="o-banknotes" hint="Gaji dalam rupiah"
-                    min="0" />
+                <x-input label="Gaji Pokok" type="number" wire:model="gaji" placeholder="Masukkan gaji pokok (opsional)"
+                    icon="o-banknotes" hint="Gaji dalam rupiah" min="0" />
             </x-card>
         </div>
 

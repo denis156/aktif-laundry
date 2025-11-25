@@ -162,13 +162,42 @@ class Create extends Component
             $this->redirect('/management/kurir', navigate: true);
         } catch (QueryException $e) {
             // Handle unique constraint violation
-            if ($e->errorInfo[1] == 1062) { // Duplicate entry
-                Log::warning('Duplicate entry detected when creating kurir', [
-                    'kode_kurir' => $this->formData['kode_kurir'],
-                    'error' => $e->getMessage(),
-                ]);
-                $this->refreshKodeKurir();
-                $this->warning('Kode kurir di-regenerate, silakan coba lagi', position: 'toast-bottom');
+            $errorCode = $e->errorInfo[0] ?? $e->getCode();
+
+            // PostgreSQL unique violation code
+            if ($errorCode == 23505 || $e->errorInfo[1] == 1062) {
+                $errorMessage = $e->getMessage();
+
+                // Detect which field is duplicate
+                if (str_contains($errorMessage, 'kurir_no_hp_unique') || str_contains($errorMessage, 'no_hp')) {
+                    Log::warning('Duplicate phone number detected when creating kurir', [
+                        'no_hp' => $this->formData['no_hp'],
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->error('Nomor HP sudah terdaftar. Gunakan nomor HP lain.', position: 'toast-bottom');
+
+                    return;
+                } elseif (str_contains($errorMessage, 'kurir_email_unique') || str_contains($errorMessage, 'email')) {
+                    Log::warning('Duplicate email detected when creating kurir', [
+                        'email' => $this->formData['email'],
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->error('Email sudah terdaftar. Gunakan email lain.', position: 'toast-bottom');
+
+                    return;
+                } elseif (str_contains($errorMessage, 'kurir_kode_kurir_unique') || str_contains($errorMessage, 'kode_kurir')) {
+                    Log::warning('Duplicate kode kurir detected when creating kurir', [
+                        'kode_kurir' => $this->formData['kode_kurir'],
+                        'error' => $e->getMessage(),
+                    ]);
+                    $this->refreshKodeKurir();
+                    $this->warning('Kode kurir sudah ada, silakan coba lagi dengan kode baru.', position: 'toast-bottom');
+
+                    return;
+                }
+
+                // Generic duplicate message
+                $this->error('Data sudah terdaftar. Periksa nomor HP, email, atau kode kurir.', position: 'toast-bottom');
 
                 return;
             }

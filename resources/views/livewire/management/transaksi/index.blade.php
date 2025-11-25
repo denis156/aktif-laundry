@@ -15,140 +15,135 @@
     </x-header>
 
     <!-- TABLE  -->
-    <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-2" title="Transaksi Laundry" subtitle="Pantau semua pesanan pelanggan">
+    <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-2" title="Transaksi Laundry"
+        subtitle="Pantau semua pesanan pelanggan">
         <x-slot:menu>
             <div x-data="{ get selectedCount() { return $wire.selected.length } }" class="indicator">
                 <template x-if="selectedCount > 0">
                     <span class="indicator-item badge badge-success badge-soft badge-sm" x-text="selectedCount"></span>
                 </template>
-                <x-button
-                    label="Export Excel"
-                    icon="o-document-arrow-down"
-                    class="btn-success btn-md"
-                    wire:click="exportExcel"
-                    spinner
-                    responsive
-                    ::disabled="selectedCount === 0"
-                />
+                <x-button label="Export Excel" icon="o-document-arrow-down" class="btn-success btn-md"
+                    wire:click="exportExcel" spinner responsive ::disabled="selectedCount === 0" />
             </div>
         </x-slot:menu>
         <x-table :headers="$headers" :rows="$transaksi" :sort-by="$sortBy" wire:model="selected" selectable striped
-            with-pagination per-page="perPage" :per-page-values="[5, 10, 25, 50]" link="{{ route('transaksi.edit', '[id]') }}">
+            with-pagination per-page="perPage" :per-page-values="[5, 10, 25, 50]"
+            link="{{ route('transaksi.edit', '[id]') }}">
             <x-slot:empty>
                 <x-icon name="o-cube" label="Tidak ada data transaksi." />
             </x-slot:empty>
 
             @scope('cell_kasir', $item)
-                <span class="truncate">{{ $item->kasir->name ?? '-' }}</span>
+            <span class="truncate">{{ $item->kasir->name ?? '-' }}</span>
             @endscope
 
             @scope('cell_tanggal_masuk', $item)
-                <span class="text-sm truncate">{{ $item->tanggal_masuk->format('d M Y H:i') }}</span>
+            <span class="text-sm truncate">{{ $item->tanggal_masuk->format('d M Y H:i') }}</span>
             @endscope
 
             @scope('cell_nama_pelanggan', $item)
-                <span class="truncate">{{ $item->nama_pelanggan }}</span>
+            <span class="truncate">{{ $item->nama_pelanggan }}</span>
             @endscope
 
             @scope('cell_layanan_info', $item)
-                @if ($item->transaksiLayanan && $item->transaksiLayanan->count() > 0)
-                    @php
-                        $layananList = [];
+            @if ($item->transaksiLayanan && $item->transaksiLayanan->count() > 0)
+            @php
+            $layananList = [];
 
-                        foreach ($item->transaksiLayanan as $tl) {
-                            $layananList[] = $tl->nama_layanan;
-                        }
+            foreach ($item->transaksiLayanan as $tl) {
+            $layananList[] = $tl->nama_layanan;
+            }
 
-                        $layananText = implode(', ', $layananList);
-                        if (strlen($layananText) > 50) {
-                            $layananText = substr($layananText, 0, 47) . '...';
-                        }
-                    @endphp
-                    <span class="truncate" title="{{ $layananText }}">{{ $layananText }}</span>
-                @elseif($item->layanan_id)
-                    {{-- Fallback for old single-layanan transactions --}}
-                    <span class="truncate">{{ $item->nama_layanan ?? '-' }}</span>
-                @else
-                    <span class="text-base-content/50">-</span>
-                @endif
+            $layananText = implode(', ', $layananList);
+            if (strlen($layananText) > 50) {
+            $layananText = substr($layananText, 0, 47) . '...';
+            }
+            @endphp
+            <span class="truncate" title="{{ $layananText }}">{{ $layananText }}</span>
+            @elseif($item->layanan_id)
+            {{-- Fallback for old single-layanan transactions --}}
+            <span class="truncate">{{ $item->nama_layanan ?? '-' }}</span>
+            @else
+            <span class="text-base-content/50">-</span>
+            @endif
             @endscope
 
             @scope('cell_metadata_info', $item)
-                <div class="flex flex-col gap-1">
-                    @php
-                        $promoInfo = \App\Helper\Database\TransaksiHelper::getPromoInfo($item);
-                        $referralInfo = \App\Helper\Database\TransaksiHelper::getReferralInfo($item);
-                        $kurirJemput = \App\Helper\Database\TransaksiHelper::getKurirJemput($item);
-                        $kurirAntar = \App\Helper\Database\TransaksiHelper::getKurirAntar($item);
-                    @endphp
+            <div class="flex flex-col gap-1">
+                @php
+                $promoInfo = \App\Helper\Database\TransaksiHelper::getPromoInfo($item);
+                $referralInfo = \App\Helper\Database\TransaksiHelper::getReferralInfo($item);
+                $kurirJemput = \App\Helper\Database\TransaksiHelper::getKurirJemput($item);
+                $kurirAntar = \App\Helper\Database\TransaksiHelper::getKurirAntar($item);
+                @endphp
 
-                    @if($promoInfo)
-                        <x-badge value="{{ $promoInfo['kode_promo'] ?? 'Promo' }}" class="badge-primary badge-xs" />
-                    @endif
+                @if($promoInfo)
+                <x-badge value="{{ $promoInfo['kode_promo'] ?? 'Promo' }}" class="badge-primary badge-xs" />
+                @endif
 
-                    @if($referralInfo)
-                        <x-badge value="{{ $referralInfo['kode_referral'] ?? 'Referral' }}" class="badge-secondary badge-xs" />
-                    @endif
+                @if($referralInfo)
+                <x-badge value="{{ $referralInfo['kode_referral'] ?? 'Referral' }}" class="badge-secondary badge-xs" />
+                @endif
 
-                    @if($kurirJemput)
-                        <span class="text-xs text-info flex items-center gap-1">
-                            <x-icon name="o-arrow-up-tray" class="w-3 h-3" />
-                            {{ Str::limit($kurirJemput, 10) }}
-                        </span>
-                    @endif
+                @if($kurirJemput)
+                <span class="text-xs text-info flex items-center gap-1">
+                    <x-icon name="o-arrow-up-tray" class="w-3 h-3" />
+                    {{ Str::limit($kurirJemput, 10) }}
+                </span>
+                @endif
 
-                    @if($kurirAntar)
-                        <span class="text-xs text-success flex items-center gap-1">
-                            <x-icon name="o-arrow-down-tray" class="w-3 h-3" />
-                            {{ Str::limit($kurirAntar, 10) }}
-                        </span>
-                    @endif
+                @if($kurirAntar)
+                <span class="text-xs text-success flex items-center gap-1">
+                    <x-icon name="o-arrow-down-tray" class="w-3 h-3" />
+                    {{ Str::limit($kurirAntar, 10) }}
+                </span>
+                @endif
 
-                    @if(!$promoInfo && !$referralInfo && !$kurirJemput && !$kurirAntar)
-                        <span class="text-xs text-base-content/40">-</span>
-                    @endif
-                </div>
+                @if(!$promoInfo && !$referralInfo && !$kurirJemput && !$kurirAntar)
+                <span class="text-xs text-base-content/40">-</span>
+                @endif
+            </div>
             @endscope
 
             @scope('cell_total', $item)
-                <span class="font-semibold text-success truncate">Rp
-                    {{ number_format((float) $item->total, 0, ',', '.') }}</span>
+            <span class="font-semibold text-success truncate">Rp
+                {{ number_format((float) $item->total, 0, ',', '.') }}</span>
             @endscope
 
             @scope('cell_metode_pembayaran', $item)
-                @if ($item->metode_pembayaran == 'Tunai')
-                    <x-badge value="{{ $item->metode_pembayaran }}" class="badge-info badge-sm" />
-                @elseif($item->metode_pembayaran == 'Transfer')
-                    <x-badge value="{{ $item->metode_pembayaran }}" class="badge-primary badge-sm" />
-                @elseif($item->metode_pembayaran == 'QRIS')
-                    <x-badge value="{{ $item->metode_pembayaran }}" class="badge-secondary badge-sm" />
-                @else
-                    <x-badge value="{{ $item->metode_pembayaran }}" class="badge-accent badge-sm" />
-                @endif
+            @if ($item->metode_pembayaran == 'Tunai')
+            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-info badge-sm" />
+            @elseif($item->metode_pembayaran == 'Transfer')
+            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-primary badge-sm" />
+            @elseif($item->metode_pembayaran == 'QRIS')
+            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-secondary badge-sm" />
+            @else
+            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-accent badge-sm" />
+            @endif
             @endscope
 
             @scope('cell_status', $item)
-                @if ($item->status == 'Menunggu')
-                    <x-badge value="{{ $item->status }}" class="badge-warning badge-sm" />
-                @elseif($item->status == 'Proses')
-                    <x-badge value="{{ $item->status }}" class="badge-info badge-sm" />
-                @elseif($item->status == 'Selesai')
-                    <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-                @elseif($item->status == 'Diambil')
-                    <x-badge value="{{ $item->status }}" class="badge-secondary badge-sm" />
-                @else
-                    <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
-                @endif
+            @if ($item->status == 'Menunggu')
+            <x-badge value="{{ $item->status }}" class="badge-warning badge-sm" />
+            @elseif($item->status == 'Proses')
+            <x-badge value="{{ $item->status }}" class="badge-info badge-sm" />
+            @elseif($item->status == 'Selesai')
+            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+            @elseif($item->status == 'Diambil')
+            <x-badge value="{{ $item->status }}" class="badge-secondary badge-sm" />
+            @else
+            <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
+            @endif
             @endscope
 
             @scope('actions', $item)
-                <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('transaksi.edit', $item->id) }}"
-                        wire:navigate.hover class="btn-sm btn-outline btn-info" />
-                    <x-button label="Hapus" icon="o-trash"
-                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->kode_transaksi }}')"
-                        class="btn-sm btn-outline btn-error" />
-                </div>
+            <div class="flex items-center justify-end gap-2">
+                <x-button label="Edit" icon="o-pencil" link="{{ route('transaksi.edit', $item->id) }}"
+                    wire:navigate.hover class="btn-sm btn-outline btn-info" />
+                <x-button label="Hapus" icon="o-trash"
+                    wire:click="confirmDelete({{ $item->id }}, '{{ $item->kode_transaksi }}')"
+                    class="btn-sm btn-outline btn-error" />
+            </div>
             @endscope
         </x-table>
     </x-card>
@@ -164,11 +159,9 @@
                 ['id' => 'Selesai', 'name' => 'Selesai'],
                 ['id' => 'Diambil', 'name' => 'Diambil'],
                 ['id' => 'Batal', 'name' => 'Batal'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
 
-            <x-select label="Metode Pembayaran" wire:model.live="metodePembayaranFilter" icon="o-credit-card"
-                :options="[
+            <x-select label="Metode Pembayaran" wire:model.live="metodePembayaranFilter" icon="o-credit-card" :options="[
                     ['id' => '', 'name' => 'Semua Metode'],
                     ['id' => 'Tunai', 'name' => 'Tunai'],
                     ['id' => 'Transfer', 'name' => 'Transfer'],
@@ -197,8 +190,7 @@
     <x-modal wire:model="deleteModal" box-class="max-w-md" class="modal-bottom sm:modal-middle backdrop-blur-md">
         <div class="text-center space-y-2">
             <div class="flex justify-center">
-                <x-icon name="o-exclamation-triangle"
-                    class="w-18 h-18 p-4 bg-error rounded-full text-error-content" />
+                <x-icon name="o-exclamation-triangle" class="w-18 h-18 p-4 bg-error rounded-full text-error-content" />
             </div>
 
             <div>

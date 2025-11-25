@@ -15,9 +15,9 @@
                 <x-file label="Banner Promo (Opsional)" wire:model="bannerImage"
                     accept="image/png, image/jpeg, image/jpg" hint="Ukuran maksimal 2MB. Format: JPG, PNG">
                     @if ($currentBannerUrl)
-                        <img src="{{ $currentBannerUrl }}" class="h-32 rounded-lg" />
+                    <img src="{{ $currentBannerUrl }}" class="h-32 rounded-lg" />
                     @else
-                        <img src="{{ asset('images/Logo.png') }}" class="h-32 rounded-lg" />
+                    <img src="{{ asset('images/Logo.png') }}" class="h-32 rounded-lg" />
                     @endif
                 </x-file>
 
@@ -100,21 +100,23 @@
 
                 {{-- Kuota Terpakai Info --}}
                 @if($formData['kuota_total'])
-                    <div class="alert alert-info">
-                        <x-icon name="o-information-circle" class="w-6 h-6" />
-                        <div>
-                            <div class="font-semibold">Kuota Terpakai: {{ $formData['kuota_terpakai'] }}/{{ $formData['kuota_total'] }}</div>
-                            <div class="text-sm">Sisa: {{ $formData['kuota_total'] - $formData['kuota_terpakai'] }} penggunaan</div>
-                        </div>
+                <div class="alert alert-info">
+                    <x-icon name="o-information-circle" class="w-6 h-6" />
+                    <div>
+                        <div class="font-semibold">Kuota Terpakai: {{ $formData['kuota_terpakai'] }}/{{
+                            $formData['kuota_total'] }}</div>
+                        <div class="text-sm">Sisa: {{ $formData['kuota_total'] - $formData['kuota_terpakai'] }}
+                            penggunaan</div>
                     </div>
+                </div>
                 @else
-                    <div class="alert">
-                        <x-icon name="o-information-circle" class="w-6 h-6" />
-                        <div>
-                            <div class="font-semibold">Kuota Unlimited</div>
-                            <div class="text-sm">Total penggunaan: {{ $formData['kuota_terpakai'] }}x</div>
-                        </div>
+                <div class="alert">
+                    <x-icon name="o-information-circle" class="w-6 h-6" />
+                    <div>
+                        <div class="font-semibold">Kuota Unlimited</div>
+                        <div class="text-sm">Total penggunaan: {{ $formData['kuota_terpakai'] }}x</div>
                     </div>
+                </div>
                 @endif
             </x-card>
         </div>

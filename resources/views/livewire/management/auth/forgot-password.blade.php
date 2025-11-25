@@ -22,8 +22,7 @@
 
             <x-slot:actions>
                 <div class="grid grid-cols-2 gap-4 w-full">
-                    <x-button label="Batal" link="{{ route('login') }}" class="btn-error btn-block"
-                        icon="o-x-circle" />
+                    <x-button label="Batal" link="{{ route('login') }}" class="btn-error btn-block" icon="o-x-circle" />
                     <x-button label="Kirim Link Reset" type="submit" spinner="sendResetLink"
                         class="btn-success btn-block" icon="o-paper-airplane" />
                 </div>

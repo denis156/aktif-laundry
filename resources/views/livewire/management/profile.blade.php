@@ -4,8 +4,8 @@
             Kelola informasi profil dan keamanan akun Anda
         </x-slot:subtitle>
         <x-slot:actions>
-            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle" link="{{ route('logout') }}" no-wire-navigate
-                class="btn-error" responsive />
+            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle" link="{{ route('logout') }}"
+                no-wire-navigate class="btn-error" responsive />
         </x-slot:actions>
     </x-header>
 
@@ -16,7 +16,8 @@
                 <x-header title="Informasi Profil" subtitle="Perbarui data profil Anda" size="text-lg" />
             </div>
             <x-card class="col-span-3">
-                <x-file wire:model="avatar" label="Avatar" hint="Upload foto avatar baru (max {{ $avatarMaxSizeMB }} MB)"
+                <x-file wire:model="avatar" label="Avatar"
+                    hint="Upload foto avatar baru (max {{ $avatarMaxSizeMB }} MB)"
                     accept="image/png, image/jpeg, image/jpg">
                     <img src="{{ $currentAvatarUrl ? asset('storage/' . $currentAvatarUrl) : asset('images/Logo.png') }}"
                         class="h-38 rounded-lg" />
@@ -47,9 +48,9 @@
                 <x-select label="Kabupaten/Kota" wire:model.live="kabupaten_kota" :options="$kabupatenKotaOptions"
                     placeholder="Pilih kabupaten/kota" required />
 
-                <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions" placeholder="Pilih kecamatan"
-                    :disabled="empty($kabupaten_kota)" hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}"
-                    required />
+                <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
+                    placeholder="Pilih kecamatan" :disabled="empty($kabupaten_kota)"
+                    hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}" required />
 
                 <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
                     placeholder="Pilih kelurahan/desa" :disabled="empty($kecamatan)"
@@ -69,7 +70,8 @@
                 <x-password label="Password Saat Ini" wire:model.live="current_password"
                     placeholder="Masukkan password saat ini" icon="o-lock-closed" right />
 
-                <x-password label="Password Baru" wire:model.live="password" placeholder="Minimal {{ $passwordMinLength }} karakter"
+                <x-password label="Password Baru" wire:model.live="password"
+                    placeholder="Minimal {{ $passwordMinLength }} karakter"
                     hint="Password baru minimal {{ $passwordMinLength }} karakter" icon="o-lock-closed" right />
 
                 <x-password label="Konfirmasi Password Baru" wire:model.live="password_confirmation"

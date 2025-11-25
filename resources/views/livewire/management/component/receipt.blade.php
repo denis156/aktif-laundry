@@ -151,7 +151,8 @@
 <body>
     <!-- HEADER TOKO -->
     <div class="header">
-        <img src="{{ asset('images/Logo.png') }}" alt="Logo" style="max-width: 108px; max-height: 108px; margin: 0 auto 3px; filter: grayscale(100%) contrast(3) brightness(0.3);">
+        <img src="{{ asset('images/Logo.png') }}" alt="Logo"
+            style="max-width: 108px; max-height: 108px; margin: 0 auto 3px; filter: grayscale(100%) contrast(3) brightness(0.3);">
         @if(!empty($setting['whatsapp']))
         <p>WA: {{ $setting['whatsapp'] }}</p>
         @endif
@@ -202,93 +203,93 @@
     <!-- DETAIL LAYANAN -->
     <div class="section">
         @php
-            // Load transaksi layanan data
-            $transaksiLayananItems = [];
-            try {
-                $transaksiLayananItems = \DB::table('transaksi_layanan')
-                    ->where('transaksi_id', $transaksiData['id'] ?? 0)
-                    ->get()
-                    ->toArray();
-            } catch(\Exception $e) {
-                // Fallback untuk data lama (single layanan)
-                $transaksiLayananItems = [[
-                    'nama_layanan' => $transaksiData['nama_layanan'] ?? '-',
-                    'berat_kg' => $transaksiData['berat_kg'] ?? 0,
-                    'jumlah_satuan' => null,
-                    'harga_per_kg' => $transaksiData['harga_per_kg'] ?? 0,
-                    'harga_per_satuan' => null,
-                    'jenis_pakaian' => $transaksiData['jenis_pakaian'] ?? null,
-                    'subtotal' => $transaksiData['subtotal'] ?? 0
-                ]];
-            }
+        // Load transaksi layanan data
+        $transaksiLayananItems = [];
+        try {
+        $transaksiLayananItems = \DB::table('transaksi_layanan')
+        ->where('transaksi_id', $transaksiData['id'] ?? 0)
+        ->get()
+        ->toArray();
+        } catch(\Exception $e) {
+        // Fallback untuk data lama (single layanan)
+        $transaksiLayananItems = [[
+        'nama_layanan' => $transaksiData['nama_layanan'] ?? '-',
+        'berat_kg' => $transaksiData['berat_kg'] ?? 0,
+        'jumlah_satuan' => null,
+        'harga_per_kg' => $transaksiData['harga_per_kg'] ?? 0,
+        'harga_per_satuan' => null,
+        'jenis_pakaian' => $transaksiData['jenis_pakaian'] ?? null,
+        'subtotal' => $transaksiData['subtotal'] ?? 0
+        ]];
+        }
         @endphp
 
         @foreach($transaksiLayananItems as $index => $item)
-            @php
-                // Convert stdClass to array if needed
-                if (is_object($item)) {
-                    $item = (array) $item;
-                }
+        @php
+        // Convert stdClass to array if needed
+        if (is_object($item)) {
+        $item = (array) $item;
+        }
 
-                // Get satuan from layanan
-                $satuan = 'pcs'; // default
-                if (!empty($item['layanan_id'])) {
-                    $layanan = \App\Models\Layanan::find($item['layanan_id']);
-                    if ($layanan && !empty($layanan->satuan)) {
-                        $satuan = ucfirst($layanan->satuan);
-                    }
-                }
-            @endphp
+        // Get satuan from layanan
+        $satuan = 'pcs'; // default
+        if (!empty($item['layanan_id'])) {
+        $layanan = \App\Models\Layanan::find($item['layanan_id']);
+        if ($layanan && !empty($layanan->satuan)) {
+        $satuan = ucfirst($layanan->satuan);
+        }
+        }
+        @endphp
 
-            @if($index > 0)
-                <div class="divider-solid" style="margin: 3px 0;"></div>
+        @if($index > 0)
+        <div class="divider-solid" style="margin: 3px 0;"></div>
+        @endif
+
+        <!-- Nama Layanan & Harga per unit -->
+        <div class="row" style="margin-bottom: 2px;">
+            <span class="label bold">{{ $item['nama_layanan'] }}</span>
+            @if (!empty($item['berat_kg']))
+            <span class="value">Rp {{ number_format((int)$item['harga_per_kg'], 0, ',', '.') }}</span>
+            @elseif (!empty($item['jumlah_satuan']))
+            <span class="value">Rp {{ number_format((int)$item['harga_per_satuan'], 0, ',', '.') }}</span>
             @endif
+        </div>
 
-            <!-- Nama Layanan & Harga per unit -->
-            <div class="row" style="margin-bottom: 2px;">
-                <span class="label bold">{{ $item['nama_layanan'] }}</span>
-                @if (!empty($item['berat_kg']))
-                    <span class="value">Rp {{ number_format((int)$item['harga_per_kg'], 0, ',', '.') }}</span>
-                @elseif (!empty($item['jumlah_satuan']))
-                    <span class="value">Rp {{ number_format((int)$item['harga_per_satuan'], 0, ',', '.') }}</span>
-                @endif
-            </div>
+        <!-- Jenis Pakaian detail untuk layanan per kg -->
+        @if(!empty($item['jenis_pakaian']) && !empty($item['berat_kg']))
+        @php
+        $jenisPakaianItems = [];
+        if (is_array($item['jenis_pakaian'])) {
+        $jenisPakaianItems = $item['jenis_pakaian'];
+        } elseif (is_string($item['jenis_pakaian'])) {
+        $decoded = json_decode($item['jenis_pakaian'], true);
+        $jenisPakaianItems = $decoded ?: [];
+        }
+        @endphp
+        @foreach($jenisPakaianItems as $jp)
+        @php
+        // Convert stdClass to array if needed
+        if (is_object($jp)) {
+        $jp = (array) $jp;
+        }
+        @endphp
+        <div class="row" style="margin-bottom: 1px;">
+            <span class="label" style="font-size: 9px;">{{ $jp['nama'] ?? '-' }}</span>
+            <span class="value" style="font-size: 9px;">{{ $jp['jumlah'] ?? '-' }}</span>
+        </div>
+        @endforeach
+        @endif
 
-            <!-- Jenis Pakaian detail untuk layanan per kg -->
-            @if(!empty($item['jenis_pakaian']) && !empty($item['berat_kg']))
-                @php
-                    $jenisPakaianItems = [];
-                    if (is_array($item['jenis_pakaian'])) {
-                        $jenisPakaianItems = $item['jenis_pakaian'];
-                    } elseif (is_string($item['jenis_pakaian'])) {
-                        $decoded = json_decode($item['jenis_pakaian'], true);
-                        $jenisPakaianItems = $decoded ?: [];
-                    }
-                @endphp
-                @foreach($jenisPakaianItems as $jp)
-                    @php
-                        // Convert stdClass to array if needed
-                        if (is_object($jp)) {
-                            $jp = (array) $jp;
-                        }
-                    @endphp
-                    <div class="row" style="margin-bottom: 1px;">
-                        <span class="label" style="font-size: 9px;">{{ $jp['nama'] ?? '-' }}</span>
-                        <span class="value" style="font-size: 9px;">{{ $jp['jumlah'] ?? '-' }}</span>
-                    </div>
-                @endforeach
+        <!-- Qty/Berat -->
+        <div class="row" style="margin-bottom: 2px;">
+            @if (!empty($item['berat_kg']))
+            <span class="label">Berat</span>
+            <span class="value">{{ number_format((float)$item['berat_kg'], 1, '.', '') }} Kg</span>
+            @elseif (!empty($item['jumlah_satuan']))
+            <span class="label">{{ $item['jumlah_satuan'] }} {{ $satuan }}</span>
+            <span class="value bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
             @endif
-
-            <!-- Qty/Berat -->
-            <div class="row" style="margin-bottom: 2px;">
-                @if (!empty($item['berat_kg']))
-                    <span class="label">Berat</span>
-                    <span class="value">{{ number_format((float)$item['berat_kg'], 1, '.', '') }} Kg</span>
-                @elseif (!empty($item['jumlah_satuan']))
-                    <span class="label">{{ $item['jumlah_satuan'] }} {{ $satuan }}</span>
-                    <span class="value bold">Rp {{ number_format((int)$item['subtotal'], 0, ',', '.') }}</span>
-                @endif
-            </div>
+        </div>
         @endforeach
     </div>
 
@@ -324,11 +325,13 @@
         </div>
         <div class="row">
             <span class="label">Tgl Selesai:</span>
-            <span class="value">{{ !empty($transaksiData['tanggal_selesai']) ? \Carbon\Carbon::parse($transaksiData['tanggal_selesai'])->format('d/m/Y') : '-' }}</span>
+            <span class="value">{{ !empty($transaksiData['tanggal_selesai']) ?
+                \Carbon\Carbon::parse($transaksiData['tanggal_selesai'])->format('d/m/Y') : '-' }}</span>
         </div>
         <div class="row">
             <span class="label">Jam Selesai:</span>
-            <span class="value">{{ !empty($transaksiData['tanggal_selesai']) ? \Carbon\Carbon::parse($transaksiData['tanggal_selesai'])->format('H:i') : '-' }}</span>
+            <span class="value">{{ !empty($transaksiData['tanggal_selesai']) ?
+                \Carbon\Carbon::parse($transaksiData['tanggal_selesai'])->format('H:i') : '-' }}</span>
         </div>
     </div>
 
@@ -348,23 +351,25 @@
     <!-- Qris -->
     <div style="margin-top: 8px; text-align: center; width: 100%; padding: 0 4px;">
         @if(!empty($qrCodeSvg))
-            <!-- Dynamic QR Code dengan nominal transaksi -->
-            <div style="width: 140px; height: 140px; margin: 0 auto; padding: 4px; display: flex; align-items: center; justify-content: center;">
-                {!! $qrCodeSvg !!}
-            </div>
+        <!-- Dynamic QR Code dengan nominal transaksi -->
+        <div
+            style="width: 140px; height: 140px; margin: 0 auto; padding: 4px; display: flex; align-items: center; justify-content: center;">
+            {!! $qrCodeSvg !!}
+        </div>
         @else
-            <!-- Fallback ke QR static jika generate gagal -->
-            <div style="width: 108px; height: 108px; margin: 0 auto; padding: 4px; display: flex; align-items: center; justify-content: center;">
-                <img src="{{ asset('images/Qris.png') }}"
-                     alt="QRIS"
-                     style="max-width: 108px; max-height: 108px; filter: grayscale(100%) contrast(3) brightness(0.3);">
-            </div>
+        <!-- Fallback ke QR static jika generate gagal -->
+        <div
+            style="width: 108px; height: 108px; margin: 0 auto; padding: 4px; display: flex; align-items: center; justify-content: center;">
+            <img src="{{ asset('images/Qris.png') }}" alt="QRIS"
+                style="max-width: 108px; max-height: 108px; filter: grayscale(100%) contrast(3) brightness(0.3);">
+        </div>
         @endif
 
         <!-- Text di bawah QRIS -->
         <div style="margin-top: 8px; text-align: center; width: 100%; padding: 0 4px;">
             <p class="bold" style="font-size: 9px; margin-bottom: 2px;">SCAN UNTUK PEMBAYARAN</p>
-            <p style="font-size: 8px; font-weight: 600; margin: 1px 0;">QRIS - Rp {{ number_format((int)$transaksiData['total'], 0, ',', '.') }}</p>
+            <p style="font-size: 8px; font-weight: 600; margin: 1px 0;">QRIS - Rp {{
+                number_format((int)$transaksiData['total'], 0, ',', '.') }}</p>
             <p class="small" style="margin-top: 2px;">Terima kasih atas kepercayaan Anda</p>
         </div>
     </div>

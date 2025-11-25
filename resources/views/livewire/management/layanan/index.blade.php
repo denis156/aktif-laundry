@@ -3,7 +3,8 @@
     <x-header title="Layanan" icon="o-sparkles" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Jenis Cuci & Tarif Harga" separator progress-indicator>
         <x-slot:middle class="justify-end">
-            <x-input placeholder="Cari layanan..." wire:model.live.debounce="search" clearable icon="o-magnifying-glass" />
+            <x-input placeholder="Cari layanan..." wire:model.live.debounce="search" clearable
+                icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
             <x-button label="Tambah Layanan" link="{{ route('layanan.create') }}" wire:navigate.hover responsive
@@ -22,66 +23,66 @@
             </x-slot:empty>
 
             @scope('cell_icon', $item)
-                @php
-                    $icon = \App\Helper\Database\LayananHelper::getIcon($item);
-                @endphp
-                @if($icon)
-                    <x-icon name="{{ $icon }}" class="w-6 h-6" />
-                @else
-                    <x-icon name="o-sparkles" class="w-6 h-6 opacity-30" />
-                @endif
+            @php
+            $icon = \App\Helper\Database\LayananHelper::getIcon($item);
+            @endphp
+            @if($icon)
+            <x-icon name="{{ $icon }}" class="w-6 h-6" />
+            @else
+            <x-icon name="o-sparkles" class="w-6 h-6 opacity-30" />
+            @endif
             @endscope
 
             @scope('cell_nama_layanan', $item)
-                @php
-                    $isPopular = \App\Helper\Database\LayananHelper::isPopular($item);
-                @endphp
-                <div class="flex flex-col">
-                    <span class="font-medium">{{ $item->nama_layanan }}</span>
-                    @if($isPopular)
-                        <span class="badge badge-warning badge-xs mt-1 w-fit">Popular</span>
-                    @endif
-                </div>
+            @php
+            $isPopular = \App\Helper\Database\LayananHelper::isPopular($item);
+            @endphp
+            <div class="flex flex-col">
+                <span class="font-medium">{{ $item->nama_layanan }}</span>
+                @if($isPopular)
+                <span class="badge badge-warning badge-xs mt-1 w-fit">Popular</span>
+                @endif
+            </div>
             @endscope
 
             @scope('cell_tipe_layanan', $item)
-                @if ($item->tipe_layanan === 'per_kg')
-                    <span class="badge badge-primary badge-sm truncate">Per Kg</span>
-                @else
-                    <span class="badge badge-warning badge-sm truncate">Per {{ ucfirst($item->satuan ?? 'pcs') }}</span>
-                @endif
+            @if ($item->tipe_layanan === 'per_kg')
+            <span class="badge badge-primary badge-sm truncate">Per Kg</span>
+            @else
+            <span class="badge badge-warning badge-sm truncate">Per {{ ucfirst($item->satuan ?? 'pcs') }}</span>
+            @endif
             @endscope
 
             @scope('cell_harga', $item)
-                @if ($item->tipe_layanan === 'per_kg')
-                    <span class="font-semibold text-success truncate">Rp
-                        {{ number_format((float) $item->harga_per_kg, 0, ',', '.') }}/kg</span>
-                @else
-                    <span class="font-semibold text-warning truncate">Rp
-                        {{ number_format((float) $item->harga_per_satuan, 0, ',', '.') }}/{{ $item->satuan ?? 'pcs' }}</span>
-                @endif
+            @if ($item->tipe_layanan === 'per_kg')
+            <span class="font-semibold text-success truncate">Rp
+                {{ number_format((float) $item->harga_per_kg, 0, ',', '.') }}/kg</span>
+            @else
+            <span class="font-semibold text-warning truncate">Rp
+                {{ number_format((float) $item->harga_per_satuan, 0, ',', '.') }}/{{ $item->satuan ?? 'pcs' }}</span>
+            @endif
             @endscope
 
             @scope('cell_durasi_jam', $item)
-                <span class="badge badge-outline badge-sm">{{ $item->durasi_jam }} jam</span>
+            <span class="badge badge-outline badge-sm">{{ $item->durasi_jam }} jam</span>
             @endscope
 
             @scope('cell_status', $item)
-                @if ($item->status == 'Aktif')
-                    <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-                @else
-                    <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
-                @endif
+            @if ($item->status == 'Aktif')
+            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+            @else
+            <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
+            @endif
             @endscope
 
             @scope('actions', $item)
-                <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('layanan.edit', $item->id) }}"
-                        wire:navigate.hover class="btn-sm btn-outline btn-info" />
-                    <x-button label="Hapus" icon="o-trash"
-                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_layanan }}')"
-                        class="btn-sm btn-outline btn-error" />
-                </div>
+            <div class="flex items-center justify-end gap-2">
+                <x-button label="Edit" icon="o-pencil" link="{{ route('layanan.edit', $item->id) }}" wire:navigate.hover
+                    class="btn-sm btn-outline btn-info" />
+                <x-button label="Hapus" icon="o-trash"
+                    wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama_layanan }}')"
+                    class="btn-sm btn-outline btn-error" />
+            </div>
             @endscope
         </x-table>
     </x-card>
@@ -94,8 +95,7 @@
                 ['id' => '', 'name' => 'Semua Status'],
                 ['id' => 'Aktif', 'name' => 'Aktif'],
                 ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
 
             <div class="space-y-3">
                 <label class="block text-sm font-semibold">Range Harga per Kg</label>

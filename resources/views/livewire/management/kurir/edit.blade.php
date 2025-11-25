@@ -111,7 +111,7 @@
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-datetime label="Tanggal Bergabung" wire:model="formData.tanggal_bergabung" icon="o-calendar"
-                        type="datetime-local" required />
+                        required />
 
                     <x-select label="Status" wire:model="formData.status" icon="o-check-circle"
                         :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"

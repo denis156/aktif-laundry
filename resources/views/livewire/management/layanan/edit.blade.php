@@ -13,30 +13,15 @@
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input
-                        label="Kode Layanan"
-                        wire:model="formData.kode_layanan"
-                        readonly
-                        hint="Kode tidak dapat diubah"
-                        icon="o-hashtag"
-                    />
+                    <x-input label="Kode Layanan" wire:model="formData.kode_layanan" readonly
+                        hint="Kode tidak dapat diubah" icon="o-hashtag" />
 
-                    <x-input
-                        label="Nama Layanan"
-                        wire:model="formData.nama_layanan"
-                        placeholder="Contoh: Cuci Express"
-                        icon="o-sparkles"
-                        required
-                    />
+                    <x-input label="Nama Layanan" wire:model="formData.nama_layanan" placeholder="Contoh: Cuci Express"
+                        icon="o-sparkles" required />
                 </div>
 
-                <x-textarea
-                    label="Deskripsi"
-                    wire:model="formData.deskripsi"
-                    placeholder="Jelaskan detail layanan ini..."
-                    rows="3"
-                    hint="Opsional, maksimal 200 karakter"
-                />
+                <x-textarea label="Deskripsi" wire:model="formData.deskripsi"
+                    placeholder="Jelaskan detail layanan ini..." rows="3" hint="Opsional, maksimal 200 karakter" />
             </x-card>
         </div>
 
@@ -52,18 +37,19 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     @if ($formData['tipe_layanan'] === 'per_kg')
-                        <x-input label="Harga per Kg" type="number" wire:model="formData.harga_per_kg"
-                            placeholder="Contoh: 8000" prefix="Rp" required />
+                    <x-input label="Harga per Kg" type="number" wire:model="formData.harga_per_kg"
+                        placeholder="Contoh: 8000" prefix="Rp" required />
                     @else
-                        <x-input label="Harga per Satuan" type="number" wire:model="formData.harga_per_satuan"
-                            placeholder="Contoh: 25000" prefix="Rp" required />
-                        <x-input label="Satuan" wire:model="formData.satuan" placeholder="Contoh: pcs"
-                            hint="Contoh: pcs, lembar, item" />
+                    <x-input label="Harga per Satuan" type="number" wire:model="formData.harga_per_satuan"
+                        placeholder="Contoh: 25000" prefix="Rp" required />
+                    <x-input label="Satuan" wire:model="formData.satuan" placeholder="Contoh: pcs"
+                        hint="Contoh: pcs, lembar, item" />
                     @endif
 
                     <x-input label="Durasi (Jam)" type="number" wire:model="formData.durasi_jam"
                         placeholder="Contoh: 24" suffix="jam" required />
-                    <x-select label="Status" wire:model="formData.status" icon="o-check-circle" :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"
+                    <x-select label="Status" wire:model="formData.status" icon="o-check-circle"
+                        :options="[['id' => 'Aktif', 'name' => 'Aktif'], ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif']]"
                         option-value="id" option-label="name" required />
                 </div>
             </x-card>
@@ -89,8 +75,8 @@
                         <label class="label">
                             <span class="label-text font-medium mb-2">Yang Termasuk dalam Layanan</span>
                         </label>
-                        <livewire:management.component.string-list-input :initialValue="$include" eventName="includeUpdated"
-                            placeholder="Contoh: Cuci bersih dengan detergen premium" />
+                        <livewire:management.component.string-list-input :initialValue="$include"
+                            eventName="includeUpdated" placeholder="Contoh: Cuci bersih dengan detergen premium" />
                         <p class="text-xs opacity-70 mt-1">Daftar fasilitas atau hal yang termasuk dalam layanan ini
                         </p>
                     </div>
@@ -99,20 +85,16 @@
                         <label class="label">
                             <span class="label-text font-medium mb-2">Yang Tidak Termasuk dalam Layanan</span>
                         </label>
-                        <livewire:management.component.string-list-input :initialValue="$exclude" eventName="excludeUpdated"
-                            placeholder="Contoh: Tidak termasuk pengharum pakaian" />
+                        <livewire:management.component.string-list-input :initialValue="$exclude"
+                            eventName="excludeUpdated" placeholder="Contoh: Tidak termasuk pengharum pakaian" />
                         <p class="text-xs opacity-70 mt-1">Daftar hal yang tidak termasuk atau ada batasan dalam
                             layanan</p>
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <livewire:management.component.icon-picker
-                        :initialValue="$icon"
-                        eventName="iconSelected"
-                        label="Icon"
-                        placeholder="Cari icon..."
-                        hint="Ketik minimal 2 huruf untuk mencari icon" />
+                    <livewire:management.component.icon-picker :initialValue="$icon" eventName="iconSelected"
+                        label="Icon" placeholder="Cari icon..." hint="Ketik minimal 2 huruf untuk mencari icon" />
 
                     <x-group label="Layanan Populer" wire:model="popular" :options="$popularOptions"
                         hint="Layanan populer akan ditampilkan lebih menonjol" class="checked:btn-primary!" inline />

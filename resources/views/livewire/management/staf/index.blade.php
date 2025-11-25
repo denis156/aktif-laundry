@@ -22,67 +22,68 @@
             </x-slot:empty>
 
             @scope('cell_avatar_url', $user)
-                <div class="flex items-center justify-center">
-                    <img src="{{ $user->avatar_url ? asset('storage/' . $user->avatar_url) : asset('images/Logo.png') }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
-                </div>
+            <div class="flex items-center justify-center">
+                <img src="{{ $user->avatar_url ? asset('storage/' . $user->avatar_url) : asset('images/Logo.png') }}"
+                    alt="Avatar" class="w-10 h-10 rounded-full object-cover">
+            </div>
             @endscope
 
             @scope('cell_name', $user)
-                <div class="flex flex-col">
-                    <span class="font-semibold" title="{{ $user->name }}">
-                        {{ Str::words($user->name, 3, '...') }}
-                    </span>
-                    <span class="text-xs text-gray-500">{{ $user->email }}</span>
-                </div>
+            <div class="flex flex-col">
+                <span class="font-semibold" title="{{ $user->name }}">
+                    {{ Str::words($user->name, 3, '...') }}
+                </span>
+                <span class="text-xs text-gray-500">{{ $user->email }}</span>
+            </div>
             @endscope
 
             @scope('cell_no_hp', $user)
-                <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($user->no_hp) ?? '-' }}</span>
+            <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($user->no_hp) ?? '-' }}</span>
             @endscope
 
             @scope('cell_alamat', $user)
-                <span class="text-sm" title="{{ $user->alamat ?? '-' }}">
-                    {{ Str::words($user->alamat ?? '-', 5, '...') }}
-                </span>
+            <span class="text-sm" title="{{ $user->alamat ?? '-' }}">
+                {{ Str::words($user->alamat ?? '-', 5, '...') }}
+            </span>
             @endscope
 
             @scope('cell_jam_kerja', $user)
-                @php
-                    $jamMasuk = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_masuk');
-                    $jamKeluar = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_keluar');
-                @endphp
-                @if($jamMasuk && $jamKeluar)
-                    <span class="text-sm">{{ $jamMasuk }} - {{ $jamKeluar }}</span>
-                @else
-                    <span class="text-sm">-</span>
-                @endif
+            @php
+            $jamMasuk = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_masuk');
+            $jamKeluar = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_keluar');
+            @endphp
+            @if($jamMasuk && $jamKeluar)
+            <span class="text-sm">{{ $jamMasuk }} - {{ $jamKeluar }}</span>
+            @else
+            <span class="text-sm">-</span>
+            @endif
             @endscope
 
             @scope('cell_gaji', $user)
-                @php
-                    $gaji = \App\Helper\Database\UserHelper::getGaji($user);
-                @endphp
-                <span class="text-xs font-extrabold text-success">{{ $gaji ? 'Rp ' . number_format($gaji, 0, ',', '.') : '-' }}</span>
+            @php
+            $gaji = \App\Helper\Database\UserHelper::getGaji($user);
+            @endphp
+            <span class="text-xs font-extrabold text-success">{{ $gaji ? 'Rp ' . number_format($gaji, 0, ',', '.') : '-'
+                }}</span>
             @endscope
 
             @scope('cell_super_admin', $user)
-                <div class="flex items-center justify-center">
-                    @if($user->super_admin)
-                        <x-icon name="o-check-circle" class="w-6 h-6 text-success" />
-                    @else
-                        <x-icon name="o-x-circle" class="w-6 h-6 text-error" />
-                    @endif
-                </div>
+            <div class="flex items-center justify-center">
+                @if($user->super_admin)
+                <x-icon name="o-check-circle" class="w-6 h-6 text-success" />
+                @else
+                <x-icon name="o-x-circle" class="w-6 h-6 text-error" />
+                @endif
+            </div>
             @endscope
 
             @scope('actions', $user)
-                <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('staf.edit', $user->id) }}" wire:navigate.hover
-                        class="btn-sm btn-outline btn-info" />
-                    <x-button label="Hapus" icon="o-trash"
-                        wire:click="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
-                        class="btn-sm btn-outline btn-error" />
-                </div>
+            <div class="flex items-center justify-end gap-2">
+                <x-button label="Edit" icon="o-pencil" link="{{ route('staf.edit', $user->id) }}" wire:navigate.hover
+                    class="btn-sm btn-outline btn-info" />
+                <x-button label="Hapus" icon="o-trash" wire:click="confirmDelete({{ $user->id }}, '{{ $user->name }}')"
+                    class="btn-sm btn-outline btn-error" />
+            </div>
             @endscope
         </x-table>
     </x-card>
@@ -115,8 +116,7 @@
                 ['id' => '', 'name' => 'Semua Role'],
                 ['id' => '1', 'name' => 'Super Admin'],
                 ['id' => '0', 'name' => 'Staf'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>

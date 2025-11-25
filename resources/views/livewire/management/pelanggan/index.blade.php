@@ -23,43 +23,44 @@
             </x-slot:empty>
 
             @scope('cell_avatar', $item)
-                @php
-                    $avatarUrl = \App\Helper\Database\PelangganHelper::getAvatarUrl($item);
-                @endphp
-                <div class="flex items-center justify-center">
-                    <img src="{{ $avatarUrl ? asset('storage/' . $avatarUrl) : asset('images/Logo.png') }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
-                </div>
+            @php
+            $avatarUrl = \App\Helper\Database\PelangganHelper::getAvatarUrl($item);
+            @endphp
+            <div class="flex items-center justify-center">
+                <img src="{{ $avatarUrl ? asset('storage/' . $avatarUrl) : asset('images/Logo.png') }}" alt="Avatar"
+                    class="w-10 h-10 rounded-full object-cover">
+            </div>
             @endscope
 
             @scope('cell_no_hp', $item)
-                <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($item->no_hp) ?? '-' }}</span>
+            <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($item->no_hp) ?? '-' }}</span>
             @endscope
 
             @scope('cell_tanggal_daftar', $item)
-                <span class="text-sm truncate"
-                    title="{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d F Y H:i:s') }}">{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y H:i') }}</span>
+            <span class="text-sm truncate"
+                title="{{ \Carbon\Carbon::parse($item->tanggal_daftar)->format('d F Y H:i:s') }}">{{
+                \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y H:i') }}</span>
             @endscope
 
             @scope('cell_total_transaksi', $item)
-                <span class="badge badge-outline badge-sm">{{ $item->total_transaksi }}x</span>
+            <span class="badge badge-outline badge-sm">{{ $item->total_transaksi }}x</span>
             @endscope
 
             @scope('cell_status', $item)
-                @if ($item->status == 'Aktif')
-                    <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-                @else
-                    <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
-                @endif
+            @if ($item->status == 'Aktif')
+            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+            @else
+            <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate max-w-24" />
+            @endif
             @endscope
 
             @scope('actions', $item)
-                <div class="flex items-center justify-end gap-2">
-                    <x-button label="Edit" icon="o-pencil" link="{{ route('pelanggan.edit', $item->id) }}"
-                        wire:navigate.hover class="btn-sm btn-outline btn-info" />
-                    <x-button label="Hapus" icon="o-trash"
-                        wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama }}')"
-                        class="btn-sm btn-outline btn-error" />
-                </div>
+            <div class="flex items-center justify-end gap-2">
+                <x-button label="Edit" icon="o-pencil" link="{{ route('pelanggan.edit', $item->id) }}"
+                    wire:navigate.hover class="btn-sm btn-outline btn-info" />
+                <x-button label="Hapus" icon="o-trash" wire:click="confirmDelete({{ $item->id }}, '{{ $item->nama }}')"
+                    class="btn-sm btn-outline btn-error" />
+            </div>
             @endscope
         </x-table>
     </x-card>
@@ -72,8 +73,7 @@
                 ['id' => '', 'name' => 'Semua Status'],
                 ['id' => 'Aktif', 'name' => 'Aktif'],
                 ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
-            ]"
-                option-value="id" option-label="name" />
+            ]" option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>
