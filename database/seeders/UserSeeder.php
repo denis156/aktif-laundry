@@ -23,6 +23,7 @@ class UserSeeder extends Seeder
             'super_admin' => true,
             'no_hp' => '81234567890',
             'alamat' => 'Jl. Admin No. 1',
+            'email_verified_at' => now()
         ]);
     }
 }
