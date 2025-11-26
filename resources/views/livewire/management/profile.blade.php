@@ -19,8 +19,7 @@
                 <x-file wire:model="avatar" label="Avatar"
                     hint="Upload foto avatar baru (max {{ $avatarMaxSizeMB }} MB)"
                     accept="image/png, image/jpeg, image/jpg">
-                    <img src="{{ $currentAvatarUrl ? asset('storage/' . $currentAvatarUrl) : asset('images/Logo.png') }}"
-                        class="h-38 rounded-lg" />
+                    <img src="{{ $avatarUrl }}" alt="Avatar" class="w-40 h-40 rounded-lg object-cover" />
                 </x-file>
 
                 <x-input label="Nama Lengkap" wire:model.live="name" placeholder="Masukkan nama lengkap" icon="o-user"

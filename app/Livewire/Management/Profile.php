@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management;
 
+use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\UserHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
@@ -389,10 +390,16 @@ class Profile extends Component
 
     public function render()
     {
+        $avatarUrl = AvatarPlaceholder::getAvatarOrPlaceholder(
+            $this->currentAvatarUrl,
+            $this->name
+        );
+
         return view('livewire.management.profile', [
             'hasChanges' => $this->hasChanges(),
             'avatarMaxSizeMB' => UserHelper::AVATAR_MAX_SIZE_KB / 1024,
             'passwordMinLength' => UserHelper::PASSWORD_MIN_LENGTH,
+            'avatarUrl' => $avatarUrl,
         ]);
     }
 }
