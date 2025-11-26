@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pelanggan;
 
+use App\Helper\PhoneNumber;
 use App\Models\Pelanggan;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -88,7 +89,7 @@ class Index extends Component
             ['key' => 'no_hp', 'label' => 'No. HP', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'email', 'label' => 'Email', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'tanggal_daftar', 'label' => 'Tanggal Daftar', 'class' => 'w-32'],
-            ['key' => 'total_transaksi', 'label' => 'Total Transaksi', 'class' => 'w-32', 'sortable' => false],
+            ['key' => 'transaksi_count', 'label' => 'Total Transaksi', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
@@ -96,6 +97,7 @@ class Index extends Component
     public function pelanggan(): LengthAwarePaginator
     {
         return Pelanggan::query()
+            ->withCount('transaksi')
             ->when($this->search, function (Builder $query): void {
                 $query->where(function (Builder $q): void {
                     $q->where('nama', 'like', "%{$this->search}%")
@@ -112,11 +114,30 @@ class Index extends Component
             ->paginate($this->perPage);
     }
 
+    public function statusOptions(): array
+    {
+        return [
+            ['id' => '', 'name' => 'Semua Status'],
+            ['id' => 'Aktif', 'name' => 'Aktif'],
+            ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
+        ];
+    }
+
     public function render(): mixed
     {
+        $pelanggan = $this->pelanggan();
+
+        // Format nomor HP untuk display
+        $pelanggan->getCollection()->transform(function ($item) {
+            $item->no_hp_display = PhoneNumber::formatLocal($item->no_hp) ?? $item->no_hp;
+
+            return $item;
+        });
+
         return view('livewire.management.pelanggan.index', [
-            'pelanggan' => $this->pelanggan(),
+            'pelanggan' => $pelanggan,
             'headers' => $this->headers(),
+            'statusOptions' => $this->statusOptions(),
         ]);
     }
 }

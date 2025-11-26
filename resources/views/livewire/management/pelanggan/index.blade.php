@@ -24,16 +24,15 @@
 
             @scope('cell_avatar', $item)
             @php
-            $avatarUrl = \App\Helper\Database\PelangganHelper::getAvatarUrl($item);
+            $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($item->avatar_url, $item->nama, 256);
             @endphp
             <div class="flex items-center justify-center">
-                <img src="{{ $avatarUrl ? asset('storage/' . $avatarUrl) : asset('images/Logo.png') }}" alt="Avatar"
-                    class="w-10 h-10 rounded-full object-cover">
+                <img src="{{ $avatarUrl }}" alt="Avatar" class="w-10 h-10 rounded-full object-cover">
             </div>
             @endscope
 
             @scope('cell_no_hp', $item)
-            <span class="text-sm">{{ \App\Helper\PhoneNumber::formatLocal($item->no_hp) ?? '-' }}</span>
+            <span class="text-sm">{{ $item->no_hp_display ?? '-' }}</span>
             @endscope
 
             @scope('cell_tanggal_daftar', $item)
@@ -42,8 +41,8 @@
                 \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y H:i') }}</span>
             @endscope
 
-            @scope('cell_total_transaksi', $item)
-            <span class="badge badge-outline badge-sm">{{ $item->total_transaksi }}x</span>
+            @scope('cell_transaksi_count', $item)
+            <span class="badge badge-outline badge-sm">{{ $item->transaksi_count }}x</span>
             @endscope
 
             @scope('cell_status', $item)
@@ -69,11 +68,8 @@
     <x-drawer wire:model="drawer" title="Filter Pelanggan" subtitle="Saring data sesuai kebutuhan" right separator
         with-close-button class="lg:w-1/3">
         <div class="space-y-5">
-            <x-select label="Status Pelanggan" wire:model.live="statusFilter" icon="o-funnel" :options="[
-                ['id' => '', 'name' => 'Semua Status'],
-                ['id' => 'Aktif', 'name' => 'Aktif'],
-                ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
-            ]" option-value="id" option-label="name" />
+            <x-select label="Status Pelanggan" wire:model.live="statusFilter" icon="o-funnel"
+                :options="$statusOptions" option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>

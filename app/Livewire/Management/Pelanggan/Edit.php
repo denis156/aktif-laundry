@@ -4,12 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pelanggan;
 
+use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
 use App\Models\Pelanggan;
 use Exception;
-use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
@@ -27,210 +28,348 @@ class Edit extends Component
 
     public int $pelangganId;
 
-    public array $formData = [
-        'kode_pelanggan' => '',
-        'nama' => '',
-        'no_hp' => '',
-        'email' => '',
-        'detail_alamat' => '',
-        'kelurahan' => '',
-        'kecamatan' => '',
-        'kabupaten_kota' => '',
-        'provinsi' => '',
-        'alamat' => '',
-        'password' => '',
-        'password_confirmation' => '',
-        'tanggal_daftar' => '',
-        'status' => 'Aktif',
-        'total_transaksi' => 0,
-        'kode_referral_dipakai' => '',
-        'direferensikan_oleh' => null,
-    ];
+    public string $kode_pelanggan = '';
 
-    public $avatar;
+    public string $nama = '';
 
-    public ?string $currentAvatarUrl = null;
+    public string $no_hp = '';
+
+    public string $email = '';
+
+    public string $password = '';
+
+    public string $password_confirmation = '';
+
+    public string $currentAvatarUrl = '';
+
+    public $avatar = null;
+
+    // Address Information
+    public string $detail_alamat = '';
+
+    public string $kelurahan = '';
+
+    public string $kecamatan = '';
+
+    public string $kabupaten_kota = '';
+
+    public string $provinsi = '';
+
+    // Options untuk select
+    public array $kelurahanOptions = [];
+
+    public array $kecamatanOptions = [];
+
+    public array $kabupatenKotaOptions = [];
+
+    public array $provinsiOptions = [];
+
+    public string $tanggal_daftar = '';
+
+    public string $status = 'Aktif';
+
+    // Alamat lengkap (read-only, auto-generated)
+    public string $alamat = '';
 
     public function mount($id): void
     {
         $this->pelangganId = (int) $id;
-        $this->loadPelanggan();
+        $pelanggan = Pelanggan::findOrFail($this->pelangganId);
+
+        $this->loadPelangganData($pelanggan);
+        $this->loadRegionalOptions();
     }
 
-    protected function loadPelanggan(): void
+    private function loadPelangganData(Pelanggan $pelanggan): void
     {
-        try {
-            $pelanggan = Pelanggan::findOrFail($this->pelangganId);
+        $this->kode_pelanggan = $pelanggan->kode_pelanggan;
+        $this->nama = $pelanggan->nama;
+        $this->no_hp = PhoneNumber::formatLocal($pelanggan->no_hp) ?? '';
+        $this->email = $pelanggan->email ?? '';
+        $this->currentAvatarUrl = $pelanggan->avatar_url ?? '';
 
-            $this->formData = [
-                'kode_pelanggan' => $pelanggan->kode_pelanggan,
-                'nama' => $pelanggan->nama,
-                'no_hp' => PhoneNumber::formatLocal($pelanggan->no_hp) ?? $pelanggan->no_hp,
-                'email' => $pelanggan->email ?? '',
-                'detail_alamat' => $pelanggan->detail_alamat ?? '',
-                'kelurahan' => $pelanggan->kelurahan ?? '',
-                'kecamatan' => $pelanggan->kecamatan ?? '',
-                'kabupaten_kota' => $pelanggan->kabupaten_kota ?? RegionalLocation::getRegencyName(),
-                'provinsi' => $pelanggan->provinsi ?? RegionalLocation::getProvinceName(),
-                'alamat' => $pelanggan->alamat ?? '',
-                'tanggal_daftar' => $pelanggan->tanggal_daftar?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i'),
-                'status' => $pelanggan->status,
-                'total_transaksi' => $pelanggan->total_transaksi ?? 0,
-                'kode_referral_dipakai' => $pelanggan->kode_referral_dipakai ?? '',
-                'direferensikan_oleh' => $pelanggan->direferensikan_oleh,
-            ];
+        $this->detail_alamat = $pelanggan->detail_alamat ?? '';
+        $this->kelurahan = $pelanggan->kelurahan ?? '';
+        $this->kecamatan = $pelanggan->kecamatan ?? '';
+        $this->kabupaten_kota = $pelanggan->kabupaten_kota ?? RegionalLocation::getRegencyName();
+        $this->provinsi = $pelanggan->provinsi ?? RegionalLocation::getProvinceName();
 
-            // Load current avatar URL
-            $this->currentAvatarUrl = $pelanggan->avatar_url;
-        } catch (Exception $e) {
-            Log::error('Failed to load pelanggan for edit', [
-                'pelanggan_id' => $this->pelangganId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            $this->error('Pelanggan tidak ditemukan', position: 'toast-bottom');
-            $this->redirect('/management/pelanggan', navigate: true);
+        $this->tanggal_daftar = $pelanggan->tanggal_daftar?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i');
+        $this->status = $pelanggan->status;
+
+        $this->alamat = $pelanggan->alamat ?? '';
+    }
+
+    private function loadRegionalOptions(): void
+    {
+        // Load provinsi options (fixed ke Sulawesi Tenggara)
+        $this->provinsiOptions = RegionalLocation::getProvinceOptions();
+
+        // Load kabupaten/kota options (semua kabupaten di Sulawesi Tenggara)
+        $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions();
+
+        // Load kecamatan options jika kabupaten/kota sudah dipilih
+        if (! empty($this->kabupaten_kota)) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
         }
+
+        // Load kelurahan options jika kecamatan sudah dipilih
+        if (! empty($this->kecamatan)) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
+        }
+    }
+
+    public function updatedKabupatenKota(): void
+    {
+        // Reset dependent fields
+        $this->kecamatan = '';
+        $this->kelurahan = '';
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kecamatan options
+        if (! empty($this->kabupaten_kota)) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
+        }
+    }
+
+    public function updatedKecamatan(): void
+    {
+        // Reset dependent field
+        $this->kelurahan = '';
+        $this->kelurahanOptions = [];
+
+        // Load kelurahan options
+        if (! empty($this->kecamatan)) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
+        }
+
+        // Update alamat preview
+        $this->updateAlamatPreview();
+    }
+
+    public function updatedDetailAlamat(): void
+    {
+        $this->updateAlamatPreview();
+    }
+
+    public function updatedKelurahan(): void
+    {
+        $this->updateAlamatPreview();
+    }
+
+    private function updateAlamatPreview(): void
+    {
+        // Generate alamat preview dari komponen yang sudah diisi
+        if (! empty($this->detail_alamat) || ! empty($this->kelurahan) || ! empty($this->kecamatan)) {
+            $this->alamat = RegionalLocation::formatFullAddress(
+                $this->detail_alamat,
+                $this->kelurahan,
+                $this->kecamatan,
+                $this->kabupaten_kota,
+                $this->provinsi
+            );
+        } else {
+            $this->alamat = '';
+        }
+    }
+
+    public function statusOptions(): array
+    {
+        return [
+            ['id' => 'Aktif', 'name' => 'Aktif'],
+            ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
+        ];
     }
 
     public function save(): void
     {
-        $rules = [
-            'formData.nama' => 'required|string|max:255',
-            'formData.no_hp' => 'required|string|max:15',
-            'formData.detail_alamat' => 'required|string',
-            'formData.email' => 'nullable|email|max:255',
-            'formData.tanggal_daftar' => 'required|date',
-            'formData.status' => 'required|in:Aktif,Tidak Aktif',
-            'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
-        ];
-
-        // Jika password diisi, tambahkan validasi password confirmation
-        if (! empty($this->formData['password'])) {
-            $rules['formData.password'] = 'min:'.PelangganHelper::PASSWORD_MIN_LENGTH.'|confirmed';
-        }
-
-        $this->validate($rules);
+        $isChangingPassword = ! empty($this->password);
+        $this->validate($this->validationRules($isChangingPassword), $this->validationMessages($isChangingPassword));
 
         try {
-            $pelanggan = Pelanggan::findOrFail($this->pelangganId);
+            DB::transaction(function () use ($isChangingPassword) {
+                $pelanggan = Pelanggan::findOrFail($this->pelangganId);
 
-            // Normalize phone number menggunakan PhoneNumber helper
-            $normalizedPhone = PhoneNumber::normalize($this->formData['no_hp']);
-            if (! $normalizedPhone) {
-                $this->error('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8', position: 'toast-bottom');
+                $normalizedPhone = $this->validateAndNormalizePhone();
+                $avatarPath = $this->uploadAvatar();
 
-                return;
-            }
+                $this->updatePelangganProfile($pelanggan, $avatarPath);
+                $this->updatePelangganAddress($pelanggan, $normalizedPhone);
+                $this->updatePelangganPassword($pelanggan, $isChangingPassword);
 
-            // Prepare data untuk update pelanggan
-            $data = [
-                'nama' => $this->formData['nama'],
-                'no_hp' => $normalizedPhone,
-                'email' => $this->formData['email'],
-                'tanggal_daftar' => $this->formData['tanggal_daftar'],
-                'status' => $this->formData['status'],
-            ];
+                $pelanggan->update(['status' => $this->status]);
+                $this->alamat = $pelanggan->fresh()->alamat ?? '';
+            });
 
-            // Update password jika diisi
-            if (! empty($this->formData['password'])) {
-                $data['password'] = Hash::make($this->formData['password']);
-            }
-
-            $pelanggan->update($data);
-
-            // Set alamat regional menggunakan PelangganHelper
-            PelangganHelper::setAlamatRegional(
-                $pelanggan,
-                $this->formData['detail_alamat'],
-                $this->formData['kelurahan'],
-                $this->formData['kecamatan'],
-                $this->formData['kabupaten_kota'],
-                $this->formData['provinsi']
-            );
-
-            // Upload avatar baru jika ada
-            if ($this->avatar) {
-                $avatarPath = $this->avatar->store('avatars/pelanggan', 'public');
-                $pelanggan->avatar_url = $avatarPath;
-            }
-
-            // Save changes
-            $pelanggan->save();
-
-            $this->success('Pelanggan berhasil diupdate!', position: 'toast-bottom');
-            $this->redirect('/management/pelanggan', navigate: true);
-        } catch (QueryException $e) {
-            Log::error('Database error when updating pelanggan', [
-                'pelanggan_id' => $this->pelangganId,
-                'error' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'trace' => $e->getTraceAsString(),
-                'form_data' => $this->formData,
-            ]);
-            $this->error('Gagal menyimpan pelanggan. Silakan coba lagi.', position: 'toast-bottom');
+            $this->success('Pelanggan berhasil diperbarui!', redirectTo: route('pelanggan.index'), position: 'toast-bottom');
         } catch (Exception $e) {
-            Log::error('Failed to update pelanggan', [
+            $this->handleSaveError($e);
+        }
+    }
+
+    private function validationRules(bool $isChangingPassword): array
+    {
+        $rules = [
+            'kode_pelanggan' => 'required|unique:pelanggan,kode_pelanggan,'.$this->pelangganId,
+            'nama' => 'required|string|max:255',
+            'no_hp' => 'required|string|max:20',
+            'email' => 'nullable|email|max:255|unique:pelanggan,email,'.$this->pelangganId,
+            'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
+            'detail_alamat' => 'required|string|max:500',
+            'kelurahan' => 'required|string',
+            'kecamatan' => 'required|string',
+            'kabupaten_kota' => 'nullable|string',
+            'provinsi' => 'nullable|string',
+            'tanggal_daftar' => 'required|date',
+            'status' => 'required|in:Aktif,Tidak Aktif',
+        ];
+
+        if ($isChangingPassword) {
+            $rules['password'] = 'min:'.PelangganHelper::PASSWORD_MIN_LENGTH.'|confirmed';
+        }
+
+        return $rules;
+    }
+
+    private function validationMessages(bool $isChangingPassword): array
+    {
+        $avatarMaxSizeMB = PelangganHelper::AVATAR_MAX_SIZE_KB / 1024;
+
+        $messages = [
+            'kode_pelanggan.required' => 'Kode pelanggan wajib diisi',
+            'kode_pelanggan.unique' => 'Kode pelanggan sudah digunakan',
+            'nama.required' => 'Nama wajib diisi',
+            'nama.string' => 'Nama harus berupa teks',
+            'nama.max' => 'Nama maksimal 255 karakter',
+            'no_hp.required' => 'Nomor HP wajib diisi',
+            'no_hp.max' => 'Nomor HP maksimal 20 karakter',
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah digunakan',
+            'avatar.image' => 'File harus berupa gambar',
+            'avatar.max' => "Ukuran file maksimal {$avatarMaxSizeMB} MB",
+            'detail_alamat.required' => 'Detail alamat wajib diisi',
+            'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
+            'kelurahan.required' => 'Kelurahan wajib dipilih',
+            'kecamatan.required' => 'Kecamatan wajib dipilih',
+            'tanggal_daftar.required' => 'Tanggal daftar wajib diisi',
+            'tanggal_daftar.date' => 'Format tanggal tidak valid',
+            'status.required' => 'Status wajib dipilih',
+            'status.in' => 'Status tidak valid',
+        ];
+
+        if ($isChangingPassword) {
+            $messages['password.min'] = 'Password minimal '.PelangganHelper::PASSWORD_MIN_LENGTH.' karakter';
+            $messages['password.confirmed'] = 'Konfirmasi password tidak cocok';
+        }
+
+        return $messages;
+    }
+
+    private function validateAndNormalizePhone(): string
+    {
+        $normalizedPhone = PhoneNumber::normalize($this->no_hp);
+
+        if (! $normalizedPhone) {
+            Log::warning('Pelanggan Edit: Invalid phone number format', [
+                'pelanggan_id' => $this->pelangganId,
+                'no_hp' => $this->no_hp,
+            ]);
+            throw new Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+        }
+
+        return $normalizedPhone;
+    }
+
+    private function uploadAvatar(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        try {
+            return $this->avatar->store('avatars/pelanggan', 'public');
+        } catch (Exception $e) {
+            Log::error('Pelanggan Edit: Failed to upload avatar', [
                 'pelanggan_id' => $this->pelangganId,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'form_data' => $this->formData,
             ]);
-            $this->error('Gagal menyimpan pelanggan. Silakan coba lagi.', position: 'toast-bottom');
+            throw new Exception('Gagal upload avatar');
         }
     }
 
-    public function getKecamatanOptions(): array
+    private function updatePelangganProfile(Pelanggan $pelanggan, ?string $avatarPath): void
     {
-        // Get kecamatan di Kota Kendari dari API menggunakan RegionalLocation helper
-        $districts = RegionalLocation::getKendariDistricts();
+        $pelanggan->update([
+            'kode_pelanggan' => $this->kode_pelanggan,
+            'nama' => $this->nama,
+            'email' => $this->email ?: null,
+            'tanggal_daftar' => $this->tanggal_daftar,
+        ]);
 
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($districts)->map(fn (array $district) => [
-            'id' => $district['name'] ?? '',
-            'name' => $district['name'] ?? '',
-        ])->toArray();
+        // Update avatar jika ada
+        if ($avatarPath) {
+            $pelanggan->avatar_url = $avatarPath;
+            $pelanggan->save();
+        }
     }
 
-    public function getKelurahanOptions(): array
+    private function updatePelangganAddress(Pelanggan $pelanggan, string $normalizedPhone): void
     {
-        // Kelurahan berdasarkan kecamatan yang dipilih menggunakan RegionalLocation Helper
-        $kecamatanName = $this->formData['kecamatan'] ?? '';
+        PelangganHelper::setAlamatRegional(
+            $pelanggan,
+            $this->detail_alamat,
+            $this->kelurahan,
+            $this->kecamatan,
+            $this->kabupaten_kota,
+            $this->provinsi
+        );
 
-        if (empty($kecamatanName)) {
-            return [];
+        $pelanggan->no_hp = $normalizedPhone;
+        $pelanggan->save();
+    }
+
+    private function updatePelangganPassword(Pelanggan $pelanggan, bool $isChangingPassword): void
+    {
+        if (! $isChangingPassword) {
+            return;
         }
 
-        // Cari district code berdasarkan nama kecamatan
-        $districts = RegionalLocation::getKendariDistricts();
-        $districtCode = null;
+        $pelanggan->update(['password' => Hash::make($this->password)]);
+    }
 
-        foreach ($districts as $district) {
-            if (($district['name'] ?? '') === $kecamatanName) {
-                $districtCode = $district['code'] ?? null;
-                break;
-            }
+    private function handleSaveError(Exception $e): void
+    {
+        $errorMessage = $e->getMessage();
+
+        if (str_contains($errorMessage, 'Format nomor HP tidak valid') || str_contains($errorMessage, 'Gagal upload avatar')) {
+            $this->error($errorMessage, position: 'toast-bottom');
+
+            return;
         }
 
-        if (! $districtCode) {
-            return [];
-        }
+        Log::error('Pelanggan Edit: Unexpected error during save', [
+            'pelanggan_id' => $this->pelangganId,
+            'error' => $errorMessage,
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
 
-        // Get kelurahan/desa berdasarkan district code dari API
-        $villages = RegionalLocation::getVillagesByDistrict($districtCode);
-
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($villages)->map(fn (array $village) => [
-            'id' => $village['name'] ?? '',
-            'name' => $village['name'] ?? '',
-        ])->toArray();
+        $this->error('Gagal memperbarui pelanggan. Silakan coba lagi atau hubungi administrator.', position: 'toast-bottom');
     }
 
     public function render(): mixed
     {
+        $avatarUrl = $this->avatar
+            ? $this->avatar->temporaryUrl()
+            : AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->nama, 256);
+
         return view('livewire.management.pelanggan.edit', [
-            'kecamatanOptions' => $this->getKecamatanOptions(),
-            'kelurahanOptions' => $this->getKelurahanOptions(),
+            'statusOptions' => $this->statusOptions(),
+            'avatarMaxSizeMB' => PelangganHelper::AVATAR_MAX_SIZE_KB / 1024,
+            'passwordMinLength' => PelangganHelper::PASSWORD_MIN_LENGTH,
+            'avatarUrl' => $avatarUrl,
         ]);
     }
 }

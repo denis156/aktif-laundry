@@ -4,12 +4,11 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pelanggan;
 
+use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
-use App\Models\Pelanggan;
 use Exception;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
@@ -25,38 +24,64 @@ class Create extends Component
     use Toast;
     use WithFileUploads;
 
-    public array $formData = [
-        'kode_pelanggan' => '',
-        'nama' => '',
-        'no_hp' => '',
-        'email' => '',
-        'detail_alamat' => '',
-        'kelurahan' => '',
-        'kecamatan' => '',
-        'kabupaten_kota' => '',
-        'provinsi' => '',
-        'password' => '',
-        'password_confirmation' => '',
-        'tanggal_daftar' => '',
-        'status' => 'Aktif',
-    ];
+    public string $kode_pelanggan = '';
 
-    public $avatar;
+    public string $nama = '';
+
+    public string $no_hp = '';
+
+    public string $email = '';
+
+    public string $password = '';
+
+    public string $password_confirmation = '';
+
+    public $avatar = null;
+
+    // Address Information
+    public string $detail_alamat = '';
+
+    public string $kelurahan = '';
+
+    public string $kecamatan = '';
+
+    public string $kabupaten_kota = '';
+
+    public string $provinsi = '';
+
+    // Options untuk select
+    public array $kelurahanOptions = [];
+
+    public array $kecamatanOptions = [];
+
+    public array $kabupatenKotaOptions = [];
+
+    public array $provinsiOptions = [];
+
+    public string $tanggal_daftar = '';
+
+    public string $status = 'Aktif';
+
+    // Alamat lengkap (read-only, auto-generated)
+    public string $alamat = '';
 
     public function mount(): void
     {
         $this->refreshKodePelanggan();
-        $this->formData['tanggal_daftar'] = now()->format('Y-m-d\TH:i');
+        $this->tanggal_daftar = now()->format('Y-m-d\TH:i');
 
-        // Set default kabupaten/kota dan provinsi menggunakan RegionalLocation Helper
-        $this->formData['kabupaten_kota'] = RegionalLocation::getRegencyName();
-        $this->formData['provinsi'] = RegionalLocation::getProvinceName();
+        // Set default provinsi dan kabupaten/kota
+        $this->provinsi = RegionalLocation::getProvinceName();
+        $this->kabupaten_kota = RegionalLocation::getRegencyName();
+
+        // Load regional options
+        $this->loadRegionalOptions();
     }
 
     public function refreshKodePelanggan(): void
     {
         try {
-            $this->formData['kode_pelanggan'] = PelangganHelper::generateKodePelanggan();
+            $this->kode_pelanggan = PelangganHelper::generateKodePelanggan();
         } catch (Exception $e) {
             Log::error('Failed to generate kode pelanggan', [
                 'error' => $e->getMessage(),
@@ -66,155 +91,232 @@ class Create extends Component
         }
     }
 
+    private function loadRegionalOptions(): void
+    {
+        // Load provinsi options (fixed ke Sulawesi Tenggara)
+        $this->provinsiOptions = RegionalLocation::getProvinceOptions();
+
+        // Load kabupaten/kota options (semua kabupaten di Sulawesi Tenggara)
+        $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions();
+
+        // Load kecamatan options jika kabupaten/kota sudah dipilih
+        if (! empty($this->kabupaten_kota)) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
+        }
+
+        // Load kelurahan options jika kecamatan sudah dipilih
+        if (! empty($this->kecamatan)) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
+        }
+    }
+
+    public function updatedKabupatenKota(): void
+    {
+        // Reset dependent fields
+        $this->kecamatan = '';
+        $this->kelurahan = '';
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kecamatan options
+        if (! empty($this->kabupaten_kota)) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->kabupaten_kota);
+        }
+    }
+
+    public function updatedKecamatan(): void
+    {
+        // Reset dependent field
+        $this->kelurahan = '';
+        $this->kelurahanOptions = [];
+
+        // Load kelurahan options
+        if (! empty($this->kecamatan)) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
+        }
+
+        // Update alamat preview
+        $this->updateAlamatPreview();
+    }
+
+    public function updatedDetailAlamat(): void
+    {
+        $this->updateAlamatPreview();
+    }
+
+    public function updatedKelurahan(): void
+    {
+        $this->updateAlamatPreview();
+    }
+
+    private function updateAlamatPreview(): void
+    {
+        // Generate alamat preview dari komponen yang sudah diisi
+        if (! empty($this->detail_alamat) || ! empty($this->kelurahan) || ! empty($this->kecamatan)) {
+            $this->alamat = RegionalLocation::formatFullAddress(
+                $this->detail_alamat,
+                $this->kelurahan,
+                $this->kecamatan,
+                $this->kabupaten_kota,
+                $this->provinsi
+            );
+        } else {
+            $this->alamat = '';
+        }
+    }
+
+    public function statusOptions(): array
+    {
+        return [
+            ['id' => 'Aktif', 'name' => 'Aktif'],
+            ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
+        ];
+    }
+
     public function save(): void
     {
-        $rules = [
-            'formData.kode_pelanggan' => 'required|unique:pelanggan,kode_pelanggan',
-            'formData.nama' => 'required|string|max:255',
-            'formData.no_hp' => 'required|string|max:15',
-            'formData.detail_alamat' => 'required|string',
-            'formData.email' => 'nullable|email|max:255',
-            'formData.tanggal_daftar' => 'required|date',
-            'formData.status' => 'required|in:Aktif,Tidak Aktif',
-            'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
-        ];
-
-        // Jika password diisi, tambahkan validasi password confirmation
-        if (! empty($this->formData['password'])) {
-            $rules['formData.password'] = 'min:'.PelangganHelper::PASSWORD_MIN_LENGTH.'|confirmed';
-        }
-
-        $this->validate($rules);
+        $this->validate($this->validationRules(), $this->validationMessages());
 
         try {
-            // Normalize phone number menggunakan PhoneNumber helper
-            $normalizedPhone = PhoneNumber::normalize($this->formData['no_hp']);
-            if (! $normalizedPhone) {
-                $this->error('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8', position: 'toast-bottom');
+            DB::transaction(function () {
+                $normalizedPhone = $this->validateAndNormalizePhone();
+                $avatarPath = $this->uploadAvatar();
 
-                return;
-            }
-
-            // Gunakan database transaction untuk mencegah race condition
-            DB::transaction(function () use ($normalizedPhone) {
-                // Cek ulang apakah kode pelanggan sudah ada, jika ya generate ulang
-                if (Pelanggan::where('kode_pelanggan', $this->formData['kode_pelanggan'])->exists()) {
-                    $this->refreshKodePelanggan();
-                }
-
-                // Prepare data untuk create pelanggan menggunakan PelangganHelper
-                $data = [
-                    'nama' => $this->formData['nama'],
+                PelangganHelper::createPelanggan([
+                    'nama' => $this->nama,
                     'no_hp' => $normalizedPhone,
-                    'email' => $this->formData['email'],
-                    'detail_alamat' => $this->formData['detail_alamat'],
-                    'kelurahan' => $this->formData['kelurahan'],
-                    'kecamatan' => $this->formData['kecamatan'],
-                    'kabupaten_kota' => $this->formData['kabupaten_kota'],
-                    'provinsi' => $this->formData['provinsi'],
-                ];
-
-                // Tambahkan password jika diisi
-                if (! empty($this->formData['password'])) {
-                    $data['password'] = $this->formData['password'];
-                }
-
-                // Tambahkan avatar jika ada
-                if ($this->avatar) {
-                    $avatarPath = $this->avatar->store('avatars/pelanggan', 'public');
-                    $data['avatar_url'] = $avatarPath;
-                }
-
-                // Create pelanggan menggunakan PelangganHelper (sudah handle alamat regional otomatis)
-                $pelanggan = PelangganHelper::createPelanggan(
-                    $data,
-                    $this->formData['tanggal_daftar']
-                );
+                    'email' => $this->email ?: null,
+                    'password' => $this->password ?: null,
+                    'detail_alamat' => $this->detail_alamat,
+                    'kelurahan' => $this->kelurahan,
+                    'kecamatan' => $this->kecamatan,
+                    'kabupaten_kota' => $this->kabupaten_kota,
+                    'provinsi' => $this->provinsi,
+                    'avatar_url' => $avatarPath,
+                ], $this->tanggal_daftar);
             });
 
-            $this->success('Pelanggan berhasil ditambahkan!', position: 'toast-bottom');
-            $this->redirect('/management/pelanggan', navigate: true);
-        } catch (QueryException $e) {
-            // Handle unique constraint violation
-            if ($e->errorInfo[1] == 1062) { // Duplicate entry
-                Log::warning('Duplicate entry detected when creating pelanggan', [
-                    'kode_pelanggan' => $this->formData['kode_pelanggan'],
-                    'error' => $e->getMessage(),
-                ]);
-                $this->refreshKodePelanggan();
-                $this->warning('Kode pelanggan di-regenerate, silakan coba lagi', position: 'toast-bottom');
-
-                return;
-            }
-
-            Log::error('Database error when creating pelanggan', [
-                'error' => $e->getMessage(),
-                'code' => $e->getCode(),
-                'trace' => $e->getTraceAsString(),
-                'form_data' => $this->formData,
-            ]);
-            $this->error('Gagal menyimpan pelanggan. Silakan coba lagi.', position: 'toast-bottom');
+            $this->success('Pelanggan berhasil ditambahkan!', redirectTo: route('pelanggan.index'), position: 'toast-bottom');
         } catch (Exception $e) {
-            Log::error('Failed to create pelanggan', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'form_data' => $this->formData,
+            $this->handleSaveError($e);
+        }
+    }
+
+    private function validationRules(): array
+    {
+        $rules = [
+            'kode_pelanggan' => 'required|unique:pelanggan,kode_pelanggan',
+            'nama' => 'required|string|max:255',
+            'no_hp' => 'required|string|max:20',
+            'email' => 'nullable|email|max:255|unique:pelanggan,email',
+            'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
+            'detail_alamat' => 'required|string|max:500',
+            'kelurahan' => 'required|string',
+            'kecamatan' => 'required|string',
+            'kabupaten_kota' => 'nullable|string',
+            'provinsi' => 'nullable|string',
+            'tanggal_daftar' => 'required|date',
+            'status' => 'required|in:Aktif,Tidak Aktif',
+        ];
+
+        // Jika password diisi, tambahkan validasi
+        if (! empty($this->password)) {
+            $rules['password'] = 'min:'.PelangganHelper::PASSWORD_MIN_LENGTH.'|confirmed';
+        }
+
+        return $rules;
+    }
+
+    private function validationMessages(): array
+    {
+        $avatarMaxSizeMB = PelangganHelper::AVATAR_MAX_SIZE_KB / 1024;
+
+        return [
+            'kode_pelanggan.required' => 'Kode pelanggan wajib diisi',
+            'kode_pelanggan.unique' => 'Kode pelanggan sudah digunakan',
+            'nama.required' => 'Nama wajib diisi',
+            'nama.string' => 'Nama harus berupa teks',
+            'nama.max' => 'Nama maksimal 255 karakter',
+            'no_hp.required' => 'Nomor HP wajib diisi',
+            'no_hp.max' => 'Nomor HP maksimal 20 karakter',
+            'email.email' => 'Format email tidak valid',
+            'email.unique' => 'Email sudah digunakan',
+            'avatar.image' => 'File harus berupa gambar',
+            'avatar.max' => "Ukuran file maksimal {$avatarMaxSizeMB} MB",
+            'detail_alamat.required' => 'Detail alamat wajib diisi',
+            'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
+            'kelurahan.required' => 'Kelurahan wajib dipilih',
+            'kecamatan.required' => 'Kecamatan wajib dipilih',
+            'tanggal_daftar.required' => 'Tanggal daftar wajib diisi',
+            'tanggal_daftar.date' => 'Format tanggal tidak valid',
+            'status.required' => 'Status wajib dipilih',
+            'status.in' => 'Status tidak valid',
+            'password.min' => 'Password minimal '.PelangganHelper::PASSWORD_MIN_LENGTH.' karakter',
+            'password.confirmed' => 'Konfirmasi password tidak cocok',
+        ];
+    }
+
+    private function validateAndNormalizePhone(): string
+    {
+        $normalizedPhone = PhoneNumber::normalize($this->no_hp);
+
+        if (! $normalizedPhone) {
+            Log::warning('Pelanggan Create: Invalid phone number format', [
+                'no_hp' => $this->no_hp,
             ]);
-            $this->error('Gagal menyimpan pelanggan. Silakan coba lagi.', position: 'toast-bottom');
+            throw new Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+        }
+
+        return $normalizedPhone;
+    }
+
+    private function uploadAvatar(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
+
+        try {
+            return $this->avatar->store('avatars/pelanggan', 'public');
+        } catch (Exception $e) {
+            Log::error('Pelanggan Create: Failed to upload avatar', [
+                'error' => $e->getMessage(),
+            ]);
+            throw new Exception('Gagal upload avatar');
         }
     }
 
-    public function getKecamatanOptions(): array
+    private function handleSaveError(Exception $e): void
     {
-        // Get kecamatan di Kota Kendari dari API menggunakan RegionalLocation helper
-        $districts = RegionalLocation::getKendariDistricts();
+        $errorMessage = $e->getMessage();
 
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($districts)->map(fn (array $district) => [
-            'id' => $district['name'] ?? '',
-            'name' => $district['name'] ?? '',
-        ])->toArray();
-    }
+        if (str_contains($errorMessage, 'Format nomor HP tidak valid') || str_contains($errorMessage, 'Gagal upload avatar')) {
+            $this->error($errorMessage, position: 'toast-bottom');
 
-    public function getKelurahanOptions(): array
-    {
-        // Kelurahan berdasarkan kecamatan yang dipilih menggunakan RegionalLocation Helper
-        $kecamatanName = $this->formData['kecamatan'] ?? '';
-
-        if (empty($kecamatanName)) {
-            return [];
+            return;
         }
 
-        // Cari district code berdasarkan nama kecamatan
-        $districts = RegionalLocation::getKendariDistricts();
-        $districtCode = null;
+        Log::error('Pelanggan Create: Unexpected error during save', [
+            'error' => $errorMessage,
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
 
-        foreach ($districts as $district) {
-            if (($district['name'] ?? '') === $kecamatanName) {
-                $districtCode = $district['code'] ?? null;
-                break;
-            }
-        }
-
-        if (! $districtCode) {
-            return [];
-        }
-
-        // Get kelurahan/desa berdasarkan district code dari API
-        $villages = RegionalLocation::getVillagesByDistrict($districtCode);
-
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($villages)->map(fn (array $village) => [
-            'id' => $village['name'] ?? '',
-            'name' => $village['name'] ?? '',
-        ])->toArray();
+        $this->error('Gagal menambahkan pelanggan. Silakan coba lagi atau hubungi administrator.', position: 'toast-bottom');
     }
 
     public function render(): mixed
     {
+        $avatarUrl = $this->avatar
+            ? $this->avatar->temporaryUrl()
+            : AvatarPlaceholder::generate($this->nama, 256);
+
         return view('livewire.management.pelanggan.create', [
-            'kecamatanOptions' => $this->getKecamatanOptions(),
-            'kelurahanOptions' => $this->getKelurahanOptions(),
+            'statusOptions' => $this->statusOptions(),
+            'avatarMaxSizeMB' => PelangganHelper::AVATAR_MAX_SIZE_KB / 1024,
+            'passwordMinLength' => PelangganHelper::PASSWORD_MIN_LENGTH,
+            'avatarUrl' => $avatarUrl,
         ]);
     }
 }
