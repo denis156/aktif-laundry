@@ -22,9 +22,12 @@
             </x-slot:empty>
 
             @scope('cell_avatar_url', $user)
+            @php
+                $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($user->avatar_url, $user->name, 128);
+            @endphp
             <div class="flex items-center justify-center">
-                <img src="{{ $user->avatar_url ? asset('storage/' . $user->avatar_url) : asset('images/Logo.png') }}"
-                    alt="Avatar" class="w-10 h-10 rounded-full object-cover">
+                <img src="{{ $avatarUrl }}" alt="Avatar {{ $user->name }}"
+                    class="w-10 h-10 rounded-full object-cover">
             </div>
             @endscope
 
@@ -49,8 +52,8 @@
 
             @scope('cell_jam_kerja', $user)
             @php
-            $jamMasuk = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_masuk');
-            $jamKeluar = \App\Helper\Database\UserHelper::getMetadata($user, 'jam_keluar');
+            $jamMasuk = \App\Helper\Database\UserHelper::getJamMasuk($user);
+            $jamKeluar = \App\Helper\Database\UserHelper::getJamKeluar($user);
             @endphp
             @if($jamMasuk && $jamKeluar)
             <span class="text-sm">{{ $jamMasuk }} - {{ $jamKeluar }}</span>

@@ -1,11 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Livewire\Management\Staf;
 
+use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\UserHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
-use App\Models\User;
 use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -159,12 +161,42 @@ class Create extends Component
         ];
     }
 
-    public function save()
+    public function save(): void
     {
-        // Validasi menggunakan constants dari UserHelper
-        $avatarMaxSizeMB = UserHelper::AVATAR_MAX_SIZE_KB / 1024;
+        $this->validate($this->validationRules(), $this->validationMessages());
 
-        $validated = $this->validate([
+        try {
+            DB::transaction(function () {
+                $normalizedPhone = $this->validateAndNormalizePhone();
+                $avatarPath = $this->uploadAvatar();
+
+                UserHelper::createUser([
+                    'name' => $this->name,
+                    'email' => $this->email,
+                    'no_hp' => $normalizedPhone,
+                    'password' => $this->password,
+                    'avatar_url' => $avatarPath,
+                    'super_admin' => $this->super_admin,
+                    'detail_alamat' => $this->detail_alamat,
+                    'kelurahan' => $this->kelurahan,
+                    'kecamatan' => $this->kecamatan,
+                    'kabupaten_kota' => $this->kabupaten_kota,
+                    'provinsi' => $this->provinsi,
+                    'jam_masuk' => $this->jam_masuk ?: null,
+                    'jam_keluar' => $this->jam_keluar ?: null,
+                    'gaji' => $this->gaji ? (int) $this->gaji : null,
+                ]);
+            });
+
+            $this->success('Staf berhasil ditambahkan!', redirectTo: route('staf.index'), position: 'toast-bottom');
+        } catch (Exception $e) {
+            $this->handleSaveError($e);
+        }
+    }
+
+    private function validationRules(): array
+    {
+        return [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email',
             'no_hp' => 'required|string|max:20',
@@ -179,7 +211,14 @@ class Create extends Component
             'jam_masuk' => 'nullable|date_format:H:i',
             'jam_keluar' => 'nullable|date_format:H:i',
             'gaji' => 'nullable|integer|min:0',
-        ], [
+        ];
+    }
+
+    private function validationMessages(): array
+    {
+        $avatarMaxSizeMB = UserHelper::AVATAR_MAX_SIZE_KB / 1024;
+
+        return [
             'name.required' => 'Nama wajib diisi',
             'name.string' => 'Nama harus berupa teks',
             'name.max' => 'Nama maksimal 255 karakter',
@@ -202,102 +241,70 @@ class Create extends Component
             'jam_keluar.date_format' => 'Format jam keluar tidak valid (HH:MM)',
             'gaji.integer' => 'Gaji harus berupa angka',
             'gaji.min' => 'Gaji tidak boleh negatif',
-        ]);
+        ];
+    }
+
+    private function validateAndNormalizePhone(): string
+    {
+        $normalizedPhone = PhoneNumber::normalize($this->no_hp);
+
+        if (! $normalizedPhone) {
+            Log::warning('Staf Create: Invalid phone number format', [
+                'no_hp' => $this->no_hp,
+            ]);
+            throw new Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+        }
+
+        return $normalizedPhone;
+    }
+
+    private function uploadAvatar(): ?string
+    {
+        if (! $this->avatar) {
+            return null;
+        }
 
         try {
-            DB::transaction(function () {
-                // Validasi dan normalize nomor HP
-                $normalizedPhone = PhoneNumber::normalize($this->no_hp);
-                if (! $normalizedPhone) {
-                    Log::warning('Staf Create: Invalid phone number format', [
-                        'no_hp' => $this->no_hp,
-                    ]);
-                    throw new Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
-                }
-
-                // Upload avatar jika ada
-                $avatarPath = null;
-                if ($this->avatar) {
-                    try {
-                        $avatarPath = $this->avatar->store('avatars', 'public');
-                    } catch (Exception $e) {
-                        Log::error('Staf Create: Failed to upload avatar', [
-                            'error' => $e->getMessage(),
-                        ]);
-                        throw new Exception('Gagal upload avatar');
-                    }
-                }
-
-                // Prepare metadata jam kerja & gaji
-                $metadata = [];
-                if (! empty($this->jam_masuk)) {
-                    $metadata['jam_masuk'] = $this->jam_masuk;
-                }
-                if (! empty($this->jam_keluar)) {
-                    $metadata['jam_keluar'] = $this->jam_keluar;
-                }
-                if (! empty($this->gaji)) {
-                    $metadata['gaji'] = (int) $this->gaji;
-                }
-
-                // Buat user baru menggunakan UserHelper dengan alamat lengkap
-                $user = UserHelper::createUser([
-                    'name' => $this->name,
-                    'email' => $this->email,
-                    'no_hp' => $normalizedPhone,
-                    'password' => $this->password,
-                    'avatar_url' => $avatarPath,
-                    'super_admin' => $this->super_admin,
-                    // Alamat regional
-                    'detail_alamat' => $this->detail_alamat,
-                    'kelurahan' => $this->kelurahan,
-                    'kecamatan' => $this->kecamatan,
-                    'kabupaten_kota' => $this->kabupaten_kota,
-                    'provinsi' => $this->provinsi,
-                ]);
-
-                // Update metadata jam kerja & gaji
-                if (! empty($metadata)) {
-                    UserHelper::mergeMetadata($user, $metadata);
-                    $user->save();
-                }
-            });
-
-            $this->success('Staf berhasil ditambahkan!', redirectTo: route('staf.index'), position: 'toast-bottom');
+            return $this->avatar->store('avatars', 'public');
         } catch (Exception $e) {
-            // Handle phone number format error
-            if (str_contains($e->getMessage(), 'Format nomor HP tidak valid')) {
-                $this->error($e->getMessage(), position: 'toast-bottom');
-
-                return;
-            }
-
-            // Handle avatar upload error
-            if (str_contains($e->getMessage(), 'Gagal upload avatar')) {
-                $this->error($e->getMessage(), position: 'toast-bottom');
-
-                return;
-            }
-
-            // Log unexpected errors
-            Log::error('Staf Create: Unexpected error during save', [
+            Log::error('Staf Create: Failed to upload avatar', [
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine(),
-                'trace' => $e->getTraceAsString(),
             ]);
-
-            // Generic user-friendly message (production-ready)
-            $this->error('Gagal menambahkan staf. Silakan coba lagi atau hubungi administrator.', position: 'toast-bottom');
+            throw new Exception('Gagal upload avatar');
         }
     }
 
-    public function render()
+    private function handleSaveError(Exception $e): void
     {
+        $errorMessage = $e->getMessage();
+
+        if (str_contains($errorMessage, 'Format nomor HP tidak valid') || str_contains($errorMessage, 'Gagal upload avatar')) {
+            $this->error($errorMessage, position: 'toast-bottom');
+
+            return;
+        }
+
+        Log::error('Staf Create: Unexpected error during save', [
+            'error' => $errorMessage,
+            'file' => $e->getFile(),
+            'line' => $e->getLine(),
+            'trace' => $e->getTraceAsString(),
+        ]);
+
+        $this->error('Gagal menambahkan staf. Silakan coba lagi atau hubungi administrator.', position: 'toast-bottom');
+    }
+
+    public function render(): mixed
+    {
+        $avatarUrl = $this->avatar
+            ? $this->avatar->temporaryUrl()
+            : AvatarPlaceholder::generate($this->name ?: 'Staf', 256);
+
         return view('livewire.management.staf.create', [
             'roleOptions' => $this->roleOptions(),
             'avatarMaxSizeMB' => UserHelper::AVATAR_MAX_SIZE_KB / 1024,
             'passwordMinLength' => UserHelper::PASSWORD_MIN_LENGTH,
+            'avatarUrl' => $avatarUrl,
         ]);
     }
 }

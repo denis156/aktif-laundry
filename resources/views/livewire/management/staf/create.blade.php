@@ -15,7 +15,7 @@
                 <x-file wire:model="avatar" label="Avatar (Opsional)"
                     hint="Ukuran maksimal {{ $avatarMaxSizeMB }} MB. Format: JPG, PNG"
                     accept="image/png, image/jpeg, image/jpg">
-                    <img src="{{ asset('images/Logo.png') }}" class="h-40 rounded-lg" />
+                    <img src="{{ $avatarUrl }}" alt="Avatar" class="h-40 rounded-lg object-cover" />
                 </x-file>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -30,14 +30,11 @@
                     <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions"
                         class="checked:btn-primary!" hint="Pilih role untuk pengguna ini" />
 
-                    <x-password label="Password" wire:model="password"
-                        placeholder="Minimal {{ $passwordMinLength }} karakter"
-                        hint="Password minimal {{ $passwordMinLength }} karakter" password-icon="o-lock-closed"
-                        password-visible-icon="o-lock-open" required />
+                    <x-password label="Password" wire:model="password" placeholder="Minimal {{ $passwordMinLength }} karakter"
+                        hint="Password untuk login sistem" icon="o-lock-closed" right required />
 
                     <x-password label="Konfirmasi Password" wire:model="password_confirmation"
-                        placeholder="Ketik ulang password" password-icon="o-lock-closed"
-                        password-visible-icon="o-lock-open" required />
+                        placeholder="Ketik ulang password" icon="o-lock-closed" right required />
                 </div>
             </x-card>
         </div>
@@ -48,18 +45,19 @@
                 <x-header title="Alamat" subtitle="Informasi alamat lengkap" size="text-lg" />
             </div>
             <x-card class="col-span-3">
-                <x-textarea label="Detail Alamat" wire:model.live="detail_alamat" placeholder="Jalan, nomor, RT/RW, dll"
-                    hint="Detail Alamat seperti jalan, nomor, RT/RW" rows="2" required />
+                <x-textarea label="Detail Alamat" wire:model.live="detail_alamat"
+                    placeholder="Contoh: Jl. Abunawas No. 123, RT 01/RW 02, Dekat Masjid Al-Ikhlas"
+                    hint="Isi dengan: nama jalan, nomor rumah, RT/RW, dan patokan (dekat tempat terkenal/masjid/sekolah)"
+                    rows="2" required />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
-                        placeholder="Pilih kecamatan" :disabled="empty($kabupaten_kota)"
-                        hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}"
-                        icon="o-map-pin" required />
+                        placeholder="Pilih kecamatan" icon="o-map-pin" required />
 
                     <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
-                        placeholder="Pilih kelurahan/desa" :disabled="empty($kecamatan)"
-                        hint="{{ empty($kecamatan) ? 'Pilih kecamatan terlebih dahulu' : '' }}" icon="o-map" required />
+                        placeholder="Pilih kelurahan"
+                        hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}" icon="o-map"
+                        :disabled="empty($kecamatan)" required />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

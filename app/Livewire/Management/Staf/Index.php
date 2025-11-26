@@ -58,38 +58,57 @@ class Index extends Component
 
     public function delete(): void
     {
-        if ($this->deleteId) {
-            try {
-                $user = User::findOrFail($this->deleteId);
+        if (! $this->deleteId) {
+            $this->closeDeleteModal();
 
-                // Prevent deleting yourself
-                if ($user->id === Auth::id()) {
-                    Log::warning('Staf Index: Attempted to delete own account', [
-                        'user_id' => Auth::id(),
-                    ]);
-                    $this->error('Tidak dapat menghapus akun Anda sendiri!', position: 'toast-bottom');
-
-                    return;
-                }
-
-                $user->delete();
-
-                Log::info('Staf deleted successfully', [
-                    'deleted_user_id' => $this->deleteId,
-                    'deleted_by' => Auth::id(),
-                ]);
-
-                $this->success('Staf berhasil dihapus!', position: 'toast-bottom');
-            } catch (Exception $e) {
-                Log::error('Staf Index: Failed to delete user', [
-                    'user_id' => $this->deleteId,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString(),
-                ]);
-                $this->error('Gagal menghapus staf. Silakan coba lagi.', position: 'toast-bottom');
-            }
+            return;
         }
 
+        try {
+            $user = User::findOrFail($this->deleteId);
+
+            if ($this->isSelfDelete($user)) {
+                $this->error('Tidak dapat menghapus akun Anda sendiri!', position: 'toast-bottom');
+                $this->closeDeleteModal();
+
+                return;
+            }
+
+            $user->delete();
+
+            Log::info('Staf deleted successfully', [
+                'deleted_user_id' => $this->deleteId,
+                'deleted_by' => Auth::id(),
+            ]);
+
+            $this->success('Staf berhasil dihapus!', position: 'toast-bottom');
+        } catch (Exception $e) {
+            Log::error('Staf Index: Failed to delete user', [
+                'user_id' => $this->deleteId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->error('Gagal menghapus staf. Silakan coba lagi.', position: 'toast-bottom');
+        }
+
+        $this->closeDeleteModal();
+    }
+
+    private function isSelfDelete(User $user): bool
+    {
+        $isSelfDelete = $user->id === Auth::id();
+
+        if ($isSelfDelete) {
+            Log::warning('Staf Index: Attempted to delete own account', [
+                'user_id' => Auth::id(),
+            ]);
+        }
+
+        return $isSelfDelete;
+    }
+
+    private function closeDeleteModal(): void
+    {
         $this->deleteModal = false;
         $this->deleteId = null;
         $this->deleteName = '';
