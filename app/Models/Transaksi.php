@@ -117,4 +117,10 @@ class Transaksi extends Model
     {
         return $this->hasMany(Pengiriman::class, 'transaksi_id');
     }
+
+    // * Relasi: Promo yang diterapkan (snapshot untuk audit trail)
+    public function transaksiPromo(): HasMany
+    {
+        return $this->hasMany(TransaksiPromo::class, 'transaksi_id');
+    }
 }
