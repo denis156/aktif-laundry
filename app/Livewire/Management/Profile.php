@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management;
 
-use App\Helper\AddressMetadata;
 use App\Helper\Database\UserHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
@@ -96,12 +95,12 @@ class Profile extends Component
         $this->no_hp = PhoneNumber::formatLocal($user->no_hp) ?? '';
         $this->currentAvatarUrl = $user->avatar_url ?? '';
 
-        // Load address metadata
-        $this->detail_alamat = AddressMetadata::getDetailAlamat($user) ?? '';
-        $this->kelurahan = AddressMetadata::getKelurahan($user) ?? '';
-        $this->kecamatan = AddressMetadata::getKecamatan($user) ?? '';
-        $this->kabupaten_kota = AddressMetadata::getKabupatenKota($user) ?? RegionalLocation::getRegencyName();
-        $this->provinsi = AddressMetadata::getProvinsi($user) ?? RegionalLocation::getProvinceName();
+        // Load address data from columns
+        $this->detail_alamat = $user->detail_alamat ?? '';
+        $this->kelurahan = $user->kelurahan ?? '';
+        $this->kecamatan = $user->kecamatan ?? '';
+        $this->kabupaten_kota = $user->kabupaten_kota ?? RegionalLocation::getRegencyName();
+        $this->provinsi = $user->provinsi ?? RegionalLocation::getProvinceName();
 
         // Load alamat lengkap dari kolom alamat (text)
         $this->alamat = $user->alamat ?? '';
@@ -284,20 +283,18 @@ class Profile extends Component
                 }
                 $user->no_hp = $normalizedPhone;
 
-                // Update alamat regional menggunakan UserHelper (update metadata di memory)
-                UserHelper::updateAlamatRegional($user, [
-                    'detail_alamat' => $this->detail_alamat,
-                    'kelurahan' => $this->kelurahan,
-                    'kecamatan' => $this->kecamatan,
-                    'kabupaten_kota' => $this->kabupaten_kota,
-                    'provinsi' => $this->provinsi,
-                ]);
+                // Update alamat regional menggunakan UserHelper
+                UserHelper::setAlamatRegional(
+                    $user,
+                    $this->detail_alamat,
+                    $this->kelurahan,
+                    $this->kecamatan,
+                    $this->kabupaten_kota,
+                    $this->provinsi
+                );
 
-                // Save user SEKALI SAJA - UserObserver akan auto-sync kolom alamat dari metadata
+                // Save user
                 $user->save();
-
-                // Reload user dari database untuk get alamat yang sudah di-sync
-                $user->refresh();
 
                 // Update alamat lengkap untuk display
                 $this->alamat = $user->alamat ?? '';

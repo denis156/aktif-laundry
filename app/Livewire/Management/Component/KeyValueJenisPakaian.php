@@ -38,7 +38,7 @@ class KeyValueJenisPakaian extends Component
             // Load dari database dengan query builder approach yang lebih efisien
             $this->jenisPakaianOptions = JenisPakaian::where('status', 'Aktif')
                 ->orderBy('nama_jenis')
-                ->get(['id', 'kode_jenis', 'nama_jenis', 'metadata'])
+                ->get(['id', 'kode_jenis', 'nama_jenis', 'icon'])
                 ->map(fn ($item) => [
                     'id' => $item->id,
                     'kode' => $item->kode_jenis,

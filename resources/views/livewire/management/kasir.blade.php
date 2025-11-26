@@ -56,7 +56,8 @@
                     </div>
 
                     <x-textarea label="Detail Alamat" wire:model="pelangganBaru.detail_alamat"
-                        placeholder="Jalan, nomor rumah, RT/RW" rows="2" hint="Contoh: Jl. Merdeka No. 123, RT 01/RW 02"
+                        placeholder="Contoh: Jl. Abunawas No. 123, RT 01/RW 02, Dekat Masjid Al-Ikhlas" rows="2"
+                        hint="Isi dengan: nama jalan, nomor rumah, RT/RW, dan patokan (dekat tempat terkenal/masjid/sekolah)"
                         required :disabled="!$isPelangganBaru" />
 
                     <div class="grid grid-cols-2 gap-4">
@@ -95,7 +96,7 @@
                     <!-- Multi Layanan Form -->
                     <livewire:management.component.multi-layanan-form :key="'multi-layanan-'.$this->getId()" />
 
-                    <!-- Promo & Referral -->
+                    <!-- Promo -->
                     <div class="space-y-4">
                         <x-select label="Pilih Promo" wire:model.live="formData.promo_id" :options="$promoOptions"
                             placeholder="Pilih promo (opsional)" icon="o-tag"
@@ -108,10 +109,6 @@
                                 ',', '.') }}</span>
                         </div>
                         @endif
-
-                        <x-input label="Kode Referral" wire:model.blur="formData.kode_referral"
-                            placeholder="Masukkan kode referral (opsional)" icon="o-users"
-                            hint="Dapatkan promo tambahan dengan kode referral" />
                     </div>
 
                     <!-- Catatan -->
@@ -120,22 +117,51 @@
                 </div>
             </x-card>
 
-            <!-- CARD 3: METODE PEMBAYARAN -->
+            <!-- CARD 3: METODE PEMBAYARAN & STATUS -->
             <x-card class="shadow-md">
                 <div class="flex items-center gap-3 mb-4">
                     <x-icon name="o-credit-card" class="w-6 h-6" />
-                    <h2 class="text-lg font-bold">Metode Pembayaran</h2>
+                    <h2 class="text-lg font-bold">Pembayaran & Status</h2>
                 </div>
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                    @foreach($metodePembayaranOptions as $metode)
-                    <label
-                        class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['metode_pembayaran'] == $metode['id'] ? 'bg-primary/10 border-primary' : '' }}">
-                        <input type="radio" value="{{ $metode['id'] }}" wire:model.live="formData.metode_pembayaran"
-                            class="radio radio-primary" />
-                        <span class="label-text font-medium">{{ $metode['name'] }}</span>
-                    </label>
-                    @endforeach
+                <div class="space-y-6">
+                    <!-- Metode Pembayaran (KAPAN bayar) -->
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-medium">Kapan Bayar?</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            @foreach($metodePembayaranOptions as $metode)
+                            <label
+                                class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['metode_pembayaran'] == $metode['id'] ? 'bg-primary/10 border-primary' : '' }}">
+                                <input type="radio" value="{{ $metode['id'] }}"
+                                    wire:model.live="formData.metode_pembayaran" class="radio radio-primary" />
+                                <span class="label-text font-medium">{{ $metode['name'] }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                    </div>
+
+                    <!-- Tipe Bayar (BAGAIMANA bayar: Tunai/Non-Tunai) -->
+                    <div>
+                        <label class="label">
+                            <span class="label-text font-medium">Cara Bayar?</span>
+                            <span class="label-text-alt text-base-content/60">Opsional - bisa diisi nanti</span>
+                        </label>
+                        <div class="grid grid-cols-2 gap-4">
+                            @foreach($tipeBayarOptions as $tipe)
+                            <label
+                                class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['tipe_bayar'] == $tipe['id'] ? 'bg-success/10 border-success' : '' }}">
+                                <input type="radio" value="{{ $tipe['id'] }}" wire:model.live="formData.tipe_bayar"
+                                    class="radio radio-success" />
+                                <span class="label-text font-medium">{{ $tipe['name'] }}</span>
+                            </label>
+                            @endforeach
+                        </div>
+                        <label class="label">
+                            <span class="label-text-alt">Tunai = Cash, Non-Tunai = Transfer/QRIS/E-Wallet</span>
+                        </label>
+                    </div>
                 </div>
             </x-card>
 
@@ -226,9 +252,16 @@
                         </div>
 
                         <div class="flex justify-between items-center py-2">
-                            <span class="text-sm opacity-90">Metode Pembayaran:</span>
+                            <span class="text-sm opacity-90">Kapan Bayar:</span>
                             <span class="font-bold">{{ $formData['metode_pembayaran'] }}</span>
                         </div>
+
+                        @if($formData['tipe_bayar'])
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-sm opacity-90">Cara Bayar:</span>
+                            <span class="font-bold text-success">{{ $formData['tipe_bayar'] }}</span>
+                        </div>
+                        @endif
                     </div>
 
                     <!-- Action Buttons -->

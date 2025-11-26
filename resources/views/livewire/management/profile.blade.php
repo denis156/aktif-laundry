@@ -40,8 +40,10 @@
                 <x-header title="Alamat" subtitle="Informasi alamat lengkap" size="text-lg" />
             </div>
             <x-card class="col-span-3">
-                <x-textarea label="Detail Alamat" wire:model.live="detail_alamat" placeholder="Jalan, nomor, RT/RW, dll"
-                    hint="Detail Alamat seperti jalan, nomor, RT/RW" rows="3" required />
+                <x-textarea label="Detail Alamat" wire:model.live="detail_alamat"
+                    placeholder="Contoh: Jl. Abunawas No. 123, RT 01/RW 02, Dekat Masjid Al-Ikhlas"
+                    hint="Isi dengan: nama jalan, nomor rumah, RT/RW, dan patokan (dekat tempat terkenal/masjid/sekolah)"
+                    rows="3" required />
 
                 <x-select label="Provinsi" wire:model="provinsi" :options="$provinsiOptions" disabled />
 

@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pelanggan;
 
-use App\Helper\AddressMetadata;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
 use App\Models\Pelanggan;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -105,47 +102,34 @@ class Create extends Component
                     $this->refreshKodePelanggan();
                 }
 
-                // Build alamat lengkap dari komponen regional
-                $alamatLengkap = AddressMetadata::buildAlamatFromArray($this->formData);
-
-                // Prepare data untuk create pelanggan
+                // Prepare data untuk create pelanggan menggunakan PelangganHelper
                 $data = [
-                    'kode_pelanggan' => $this->formData['kode_pelanggan'],
                     'nama' => $this->formData['nama'],
                     'no_hp' => $normalizedPhone,
-                    'alamat' => $alamatLengkap,
                     'email' => $this->formData['email'],
-                    'tanggal_daftar' => Carbon::parse($this->formData['tanggal_daftar'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s'),
-                    'status' => $this->formData['status'],
-                    'total_transaksi' => 0,
+                    'detail_alamat' => $this->formData['detail_alamat'],
+                    'kelurahan' => $this->formData['kelurahan'],
+                    'kecamatan' => $this->formData['kecamatan'],
+                    'kabupaten_kota' => $this->formData['kabupaten_kota'],
+                    'provinsi' => $this->formData['provinsi'],
                 ];
 
                 // Tambahkan password jika diisi
                 if (! empty($this->formData['password'])) {
-                    $data['password'] = Hash::make($this->formData['password']);
+                    $data['password'] = $this->formData['password'];
                 }
 
-                // Create pelanggan
-                $pelanggan = Pelanggan::create($data);
-
-                // Set metadata alamat menggunakan AddressMetadata helper
-                AddressMetadata::set(
-                    $pelanggan,
-                    $this->formData['detail_alamat'],
-                    $this->formData['kelurahan'],
-                    $this->formData['kecamatan'],
-                    $this->formData['kabupaten_kota'],
-                    $this->formData['provinsi']
-                );
-
-                // Upload avatar jika ada
+                // Tambahkan avatar jika ada
                 if ($this->avatar) {
                     $avatarPath = $this->avatar->store('avatars/pelanggan', 'public');
-                    PelangganHelper::setAvatarUrl($pelanggan, $avatarPath);
+                    $data['avatar_url'] = $avatarPath;
                 }
 
-                // Save metadata
-                $pelanggan->save();
+                // Create pelanggan menggunakan PelangganHelper (sudah handle alamat regional otomatis)
+                $pelanggan = PelangganHelper::createPelanggan(
+                    $data,
+                    $this->formData['tanggal_daftar']
+                );
             });
 
             $this->success('Pelanggan berhasil ditambahkan!', position: 'toast-bottom');

@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Kurir;
 
-use App\Helper\AddressMetadata;
 use App\Helper\Database\KurirHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
 use App\Models\Kurir;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -110,52 +107,38 @@ class Create extends Component
                     $this->refreshKodeKurir();
                 }
 
-                // Build alamat lengkap dari komponen regional
-                $alamatLengkap = AddressMetadata::buildAlamatFromArray($this->formData);
-
                 // Prepare data untuk create kurir
                 $data = [
                     'kode_kurir' => $this->formData['kode_kurir'],
                     'nama' => $this->formData['nama'],
                     'no_hp' => $normalizedPhone,
-                    'alamat' => $alamatLengkap,
                     'email' => $this->formData['email'],
+                    'detail_alamat' => $this->formData['detail_alamat'],
+                    'kelurahan' => $this->formData['kelurahan'],
+                    'kecamatan' => $this->formData['kecamatan'],
+                    'kabupaten_kota' => $this->formData['kabupaten_kota'],
+                    'provinsi' => $this->formData['provinsi'],
                     'no_kendaraan' => $this->formData['no_kendaraan'],
                     'jenis_kendaraan' => $this->formData['jenis_kendaraan'],
-                    'password' => Hash::make($this->formData['password']),
-                    'tanggal_bergabung' => Carbon::parse($this->formData['tanggal_bergabung'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s'),
-                    'status' => $this->formData['status'],
-                    'total_jemput' => 0,
-                    'total_antar' => 0,
+                    'password' => $this->formData['password'],
+                    'tanggal_bergabung' => $this->formData['tanggal_bergabung'],
                 ];
 
-                // Create kurir
-                $kurir = Kurir::create($data);
-
-                // Set metadata alamat menggunakan AddressMetadata helper
-                AddressMetadata::set(
-                    $kurir,
-                    $this->formData['detail_alamat'],
-                    $this->formData['kelurahan'],
-                    $this->formData['kecamatan'],
-                    $this->formData['kabupaten_kota'],
-                    $this->formData['provinsi']
-                );
-
-                // Upload foto profil jika ada
+                // Tambahkan avatar jika ada
                 if ($this->avatar) {
                     $avatarPath = $this->avatar->store('avatars/kurir', 'public');
-                    KurirHelper::setAvatarUrl($kurir, $avatarPath);
+                    $data['avatar_url'] = $avatarPath;
                 }
+
+                // Create kurir menggunakan KurirHelper (sudah handle alamat regional otomatis)
+                $kurir = KurirHelper::createKurir($data);
 
                 // Set coverage area ke metadata
                 $coverageArea = $this->buildCoverageArea();
                 if (! empty($coverageArea)) {
                     KurirHelper::setAreaCoverage($kurir, $coverageArea);
+                    $kurir->save();
                 }
-
-                // Save metadata
-                $kurir->save();
             });
 
             $this->success('Kurir berhasil ditambahkan!', position: 'toast-bottom');

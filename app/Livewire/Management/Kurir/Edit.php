@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Kurir;
 
-use App\Helper\AddressMetadata;
 use App\Helper\Database\KurirHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
 use App\Models\Kurir;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
@@ -75,13 +73,11 @@ class Edit extends Component
                 'nama' => $kurir->nama,
                 'no_hp' => PhoneNumber::formatLocal($kurir->no_hp) ?? $kurir->no_hp,
                 'email' => $kurir->email ?? '',
-                'detail_alamat' => AddressMetadata::getDetailAlamat($kurir),
-                'kelurahan' => AddressMetadata::getKelurahan($kurir),
-                'kecamatan' => AddressMetadata::getKecamatan($kurir),
-                'kabupaten_kota' => AddressMetadata::getKabupatenKota($kurir)
-                    ?: RegionalLocation::getRegencyName(),
-                'provinsi' => AddressMetadata::getProvinsi($kurir)
-                    ?: RegionalLocation::getProvinceName(),
+                'detail_alamat' => $kurir->detail_alamat ?? '',
+                'kelurahan' => $kurir->kelurahan ?? '',
+                'kecamatan' => $kurir->kecamatan ?? '',
+                'kabupaten_kota' => $kurir->kabupaten_kota ?? RegionalLocation::getRegencyName(),
+                'provinsi' => $kurir->provinsi ?? RegionalLocation::getProvinceName(),
                 'alamat' => $kurir->alamat ?? '',
                 'no_kendaraan' => $kurir->no_kendaraan ?? '',
                 'jenis_kendaraan' => $kurir->jenis_kendaraan ?? '',
@@ -93,7 +89,7 @@ class Edit extends Component
             ];
 
             // Load current foto profil URL
-            $this->currentAvatarUrl = KurirHelper::getAvatarUrl($kurir);
+            $this->currentAvatarUrl = $kurir->avatar_url;
 
             // Load coverage area from metadata
             $coverageArea = KurirHelper::getAreaCoverage($kurir);
@@ -150,18 +146,14 @@ class Edit extends Component
                 return;
             }
 
-            // Build alamat lengkap dari komponen regional
-            $alamatLengkap = AddressMetadata::buildAlamatFromArray($this->formData);
-
             // Prepare data untuk update kurir
             $data = [
                 'nama' => $this->formData['nama'],
                 'no_hp' => $normalizedPhone,
-                'alamat' => $alamatLengkap,
                 'email' => $this->formData['email'],
                 'no_kendaraan' => $this->formData['no_kendaraan'],
                 'jenis_kendaraan' => $this->formData['jenis_kendaraan'],
-                'tanggal_bergabung' => Carbon::parse($this->formData['tanggal_bergabung'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s'),
+                'tanggal_bergabung' => $this->formData['tanggal_bergabung'],
                 'status' => $this->formData['status'],
             ];
 
@@ -172,8 +164,8 @@ class Edit extends Component
 
             $kurir->update($data);
 
-            // Set metadata alamat menggunakan AddressMetadata helper
-            AddressMetadata::set(
+            // Set alamat regional menggunakan KurirHelper
+            KurirHelper::setAlamatRegional(
                 $kurir,
                 $this->formData['detail_alamat'],
                 $this->formData['kelurahan'],
@@ -185,7 +177,7 @@ class Edit extends Component
             // Upload foto profil baru jika ada
             if ($this->avatar) {
                 $avatarPath = $this->avatar->store('avatars/kurir', 'public');
-                KurirHelper::setAvatarUrl($kurir, $avatarPath);
+                $kurir->avatar_url = $avatarPath;
             }
 
             // Set coverage area ke metadata
@@ -194,7 +186,7 @@ class Edit extends Component
                 KurirHelper::setAreaCoverage($kurir, $coverageArea);
             }
 
-            // Save metadata
+            // Save changes
             $kurir->save();
 
             $this->success('Kurir berhasil diupdate!', position: 'toast-bottom');

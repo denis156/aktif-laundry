@@ -56,7 +56,7 @@ class MultiLayananForm extends Component
         try {
             $this->layananOptions = Layanan::where('status', 'Aktif')
                 ->orderBy('nama_layanan')
-                ->get(['id', 'nama_layanan', 'tipe_layanan', 'harga_per_kg', 'harga_per_satuan', 'satuan', 'metadata'])
+                ->get(['id', 'nama_layanan', 'tipe_layanan', 'harga_per_kg', 'harga_per_satuan', 'satuan', 'icon'])
                 ->map(function (Layanan $layanan) {
                     $price = $layanan->tipe_layanan === 'per_kg'
                         ? $layanan->harga_per_kg
@@ -82,7 +82,7 @@ class MultiLayananForm extends Component
 
             $this->jenisPakaianOptions = JenisPakaian::where('status', 'Aktif')
                 ->orderBy('nama_jenis')
-                ->get(['id', 'nama_jenis', 'metadata'])
+                ->get(['id', 'nama_jenis', 'icon'])
                 ->map(fn (JenisPakaian $jp) => [
                     'id' => $jp->id,
                     'name' => $jp->nama_jenis,

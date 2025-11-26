@@ -55,11 +55,14 @@
                 @if($user = Auth::user())
                 <x-menu-separator />
 
+                @php
+                    $avatarData = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($user->avatar_url, $user->name);
+                @endphp
                 <x-list-item :item="$user" value="name" sub-value="email" no-separator no-hover
                     class="-mx-2 -my-2! rounded">
                     <x-slot:avatar>
-                        <x-avatar :image="$user->avatar_url ? asset('storage/' . $user->avatar_url) : null"
-                            :placeholder="strtoupper(substr($user->name, 0, 2))" class="w-11! avatar-online" />
+                        <x-avatar :image="$avatarData['image']" :placeholder="$avatarData['placeholder']"
+                            class="w-11! avatar-online" />
                     </x-slot:avatar>
                     <x-slot:actions>
                         <livewire:component.dark-mode-swap swap-class="swap-rotate" icon-size="h-6 w-6" />

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management;
 
-use App\Helper\AddressMetadata;
 use App\Helper\Database\LayananHelper;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\Database\PengaturanHelper;
@@ -43,10 +42,13 @@ class Kasir extends Component
         'referral_id' => null,
         'kode_promo' => '',
         'kode_referral' => '',
-        'diskon' => 0,
         'subtotal' => 0,
         'total' => 0,
-        'metode_pembayaran' => TransaksiHelper::METODE_TUNAI,
+        'metode_pembayaran' => TransaksiHelper::METODE_BAYAR_SAAT_JEMPUT,
+        'tipe_bayar' => null,
+        'status_bayar' => TransaksiHelper::STATUS_BELUM_BAYAR,
+        'tanggal_bayar' => null,
+        'jumlah_bayar' => null,
         'tanggal_selesai' => '',
         'status' => TransaksiHelper::STATUS_MENUNGGU,
         'catatan' => '',
@@ -135,10 +137,13 @@ class Kasir extends Component
             'referral_id' => null,
             'kode_promo' => '',
             'kode_referral' => '',
-            'diskon' => 0,
             'subtotal' => 0,
             'total' => 0,
-            'metode_pembayaran' => TransaksiHelper::METODE_TUNAI,
+            'metode_pembayaran' => TransaksiHelper::METODE_BAYAR_SAAT_JEMPUT,
+            'tipe_bayar' => null,
+            'status_bayar' => TransaksiHelper::STATUS_BELUM_BAYAR,
+            'tanggal_bayar' => null,
+            'jumlah_bayar' => null,
             'tanggal_selesai' => '',
             'status' => TransaksiHelper::STATUS_MENUNGGU,
             'catatan' => '',
@@ -199,17 +204,17 @@ class Kasir extends Component
             if ($pelanggan instanceof Pelanggan) {
                 $this->formData['nama_pelanggan'] = $pelanggan->nama;
 
-                // Auto-fill form pelanggan dengan data yang dipilih menggunakan Helpers
+                // Auto-fill form pelanggan dengan data yang dipilih
                 $this->pelangganBaru['nama'] = $pelanggan->nama;
                 $this->pelangganBaru['no_hp'] = PhoneNumber::formatLocal($pelanggan->no_hp)
                     ?? $pelanggan->no_hp;
                 $this->pelangganBaru['email'] = $pelanggan->email ?? '';
-                $this->pelangganBaru['detail_alamat'] = AddressMetadata::getDetailAlamat($pelanggan);
-                $this->pelangganBaru['kelurahan'] = AddressMetadata::getKelurahan($pelanggan);
-                $this->pelangganBaru['kecamatan'] = AddressMetadata::getKecamatan($pelanggan);
-                $this->pelangganBaru['kabupaten_kota'] = AddressMetadata::getKabupatenKota($pelanggan)
+                $this->pelangganBaru['detail_alamat'] = $pelanggan->detail_alamat ?? '';
+                $this->pelangganBaru['kelurahan'] = $pelanggan->kelurahan ?? '';
+                $this->pelangganBaru['kecamatan'] = $pelanggan->kecamatan ?? '';
+                $this->pelangganBaru['kabupaten_kota'] = $pelanggan->kabupaten_kota
                     ?: RegionalLocation::getRegencyName();
-                $this->pelangganBaru['provinsi'] = AddressMetadata::getProvinsi($pelanggan)
+                $this->pelangganBaru['provinsi'] = $pelanggan->provinsi
                     ?: RegionalLocation::getProvinceName();
             }
         }
@@ -307,7 +312,6 @@ class Kasir extends Component
                 'pesan' => '',
                 'tipe' => '',
             ];
-            $this->formData['diskon'] = 0;
             $this->formData['kode_promo'] = '';
             $this->cachedPromo = null;
             $this->updateTotal();
@@ -330,7 +334,6 @@ class Kasir extends Component
                 'pesan' => 'Promo tidak ditemukan',
                 'tipe' => '',
             ];
-            $this->formData['diskon'] = 0;
             $this->formData['kode_promo'] = '';
             $this->cachedPromo = null;
             $this->updateTotal();
@@ -353,10 +356,8 @@ class Kasir extends Component
         $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
 
         if ($this->promoResult['valid']) {
-            $this->formData['diskon'] = $this->promoResult['diskon'];
             $this->formData['kode_promo'] = $promo->kode_promo;
         } else {
-            $this->formData['diskon'] = 0;
             $this->formData['kode_promo'] = '';
             $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
         }
@@ -367,7 +368,7 @@ class Kasir extends Component
     protected function updateTotal(): void
     {
         $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
-        $diskon = (int) ($this->formData['diskon'] ?? 0);
+        $diskon = (int) ($this->promoResult['diskon'] ?? 0);
 
         $this->multiLayananData['totalGrandTotal'] = $subtotal - $diskon;
         $this->formData['total'] = $this->multiLayananData['totalGrandTotal'];
@@ -377,11 +378,11 @@ class Kasir extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -894,6 +895,24 @@ class Kasir extends Component
         ])->toArray();
     }
 
+    public function getTipeBayarOptions(): array
+    {
+        // Get tipe bayar dari TransaksiHelper (BAGAIMANA cara bayar)
+        return collect(TransaksiHelper::getAllTipeBayar())->map(fn (string $tipe) => [
+            'id' => $tipe,
+            'name' => $tipe,
+        ])->toArray();
+    }
+
+    public function getStatusBayarOptions(): array
+    {
+        // Get status bayar dari TransaksiHelper
+        return collect(TransaksiHelper::getAllStatusBayar())->map(fn (string $status) => [
+            'id' => $status,
+            'name' => $status,
+        ])->toArray();
+    }
+
     public function getPromoOptions(): array
     {
         // Get promo yang aktif dari PromoHelper
@@ -908,6 +927,8 @@ class Kasir extends Component
             'kecamatanOptions' => $this->getKecamatanOptions(),
             'kelurahanOptions' => $this->getKelurahanOptions(),
             'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
+            'tipeBayarOptions' => $this->getTipeBayarOptions(),
+            'statusBayarOptions' => $this->getStatusBayarOptions(),
             'statusOptions' => $this->getStatusOptions(),
             'promoOptions' => $this->getPromoOptions(),
         ]);

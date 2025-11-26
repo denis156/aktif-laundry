@@ -4,12 +4,10 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pelanggan;
 
-use App\Helper\AddressMetadata;
 use App\Helper\Database\PelangganHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
 use App\Models\Pelanggan;
-use Carbon\Carbon;
 use Exception;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Hash;
@@ -69,13 +67,11 @@ class Edit extends Component
                 'nama' => $pelanggan->nama,
                 'no_hp' => PhoneNumber::formatLocal($pelanggan->no_hp) ?? $pelanggan->no_hp,
                 'email' => $pelanggan->email ?? '',
-                'detail_alamat' => AddressMetadata::getDetailAlamat($pelanggan),
-                'kelurahan' => AddressMetadata::getKelurahan($pelanggan),
-                'kecamatan' => AddressMetadata::getKecamatan($pelanggan),
-                'kabupaten_kota' => AddressMetadata::getKabupatenKota($pelanggan)
-                    ?: RegionalLocation::getRegencyName(),
-                'provinsi' => AddressMetadata::getProvinsi($pelanggan)
-                    ?: RegionalLocation::getProvinceName(),
+                'detail_alamat' => $pelanggan->detail_alamat ?? '',
+                'kelurahan' => $pelanggan->kelurahan ?? '',
+                'kecamatan' => $pelanggan->kecamatan ?? '',
+                'kabupaten_kota' => $pelanggan->kabupaten_kota ?? RegionalLocation::getRegencyName(),
+                'provinsi' => $pelanggan->provinsi ?? RegionalLocation::getProvinceName(),
                 'alamat' => $pelanggan->alamat ?? '',
                 'tanggal_daftar' => $pelanggan->tanggal_daftar?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i'),
                 'status' => $pelanggan->status,
@@ -85,7 +81,7 @@ class Edit extends Component
             ];
 
             // Load current avatar URL
-            $this->currentAvatarUrl = PelangganHelper::getAvatarUrl($pelanggan);
+            $this->currentAvatarUrl = $pelanggan->avatar_url;
         } catch (Exception $e) {
             Log::error('Failed to load pelanggan for edit', [
                 'pelanggan_id' => $this->pelangganId,
@@ -127,16 +123,12 @@ class Edit extends Component
                 return;
             }
 
-            // Build alamat lengkap dari komponen regional
-            $alamatLengkap = AddressMetadata::buildAlamatFromArray($this->formData);
-
             // Prepare data untuk update pelanggan
             $data = [
                 'nama' => $this->formData['nama'],
                 'no_hp' => $normalizedPhone,
-                'alamat' => $alamatLengkap,
                 'email' => $this->formData['email'],
-                'tanggal_daftar' => Carbon::parse($this->formData['tanggal_daftar'])->setTimezone('Asia/Makassar')->format('Y-m-d H:i:s'),
+                'tanggal_daftar' => $this->formData['tanggal_daftar'],
                 'status' => $this->formData['status'],
             ];
 
@@ -147,8 +139,8 @@ class Edit extends Component
 
             $pelanggan->update($data);
 
-            // Set metadata alamat menggunakan AddressMetadata helper
-            AddressMetadata::set(
+            // Set alamat regional menggunakan PelangganHelper
+            PelangganHelper::setAlamatRegional(
                 $pelanggan,
                 $this->formData['detail_alamat'],
                 $this->formData['kelurahan'],
@@ -160,10 +152,10 @@ class Edit extends Component
             // Upload avatar baru jika ada
             if ($this->avatar) {
                 $avatarPath = $this->avatar->store('avatars/pelanggan', 'public');
-                PelangganHelper::setAvatarUrl($pelanggan, $avatarPath);
+                $pelanggan->avatar_url = $avatarPath;
             }
 
-            // Save metadata
+            // Save changes
             $pelanggan->save();
 
             $this->success('Pelanggan berhasil diupdate!', position: 'toast-bottom');
