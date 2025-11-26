@@ -32,9 +32,9 @@ use App\Livewire\Management\Profile;
 use App\Livewire\Management\Promo\Create as PromoCreate;
 use App\Livewire\Management\Promo\Edit as PromoEdit;
 use App\Livewire\Management\Promo\Index as PromoIndex;
-use App\Livewire\Management\Referral\Create as ReferralCreate;
 use App\Livewire\Management\Referral\Edit as ReferralEdit;
 use App\Livewire\Management\Referral\Index as ReferralIndex;
+use App\Livewire\Management\Referral\Pengaturan as ReferralPengaturan;
 use App\Livewire\Management\Staf\Create as StafCreate;
 use App\Livewire\Management\Staf\Edit as StafEdit;
 use App\Livewire\Management\Staf\Index as StafIndex;
@@ -193,7 +193,7 @@ Route::middleware(['auth', 'verified'])->prefix('management')->group(function ()
 
     // Referral Routes di /management/referral
     Route::get('/referral', ReferralIndex::class)->name('referral.index');
-    Route::get('/referral/create', ReferralCreate::class)->name('referral.create');
+    Route::get('/referral/pengaturan', ReferralPengaturan::class)->name('referral.pengaturan');
     Route::get('/referral/edit/{id}', ReferralEdit::class)->name('referral.edit');
 
     // Profile Route di /management/profile

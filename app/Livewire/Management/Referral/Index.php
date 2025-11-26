@@ -25,8 +25,6 @@ class Index extends Component
 
     public string $search = '';
 
-    public bool $drawer = false;
-
     public bool $deleteModal = false;
 
     public int $deleteId = 0;
@@ -35,15 +33,7 @@ class Index extends Component
 
     public array $sortBy = ['column' => 'created_at', 'direction' => 'desc'];
 
-    public string $statusFilter = '';
-
     public int $perPage = 10;
-
-    public function clear(): void
-    {
-        $this->reset(['search', 'statusFilter']);
-        $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
-    }
 
     public function confirmDelete(int $id, string $kode): void
     {
@@ -103,7 +93,6 @@ class Index extends Component
             ['key' => 'pelanggan', 'label' => 'Pelanggan', 'class' => 'w-40', 'sortable' => false],
             ['key' => 'promo_reward', 'label' => 'Promo Reward', 'class' => 'w-56', 'sortable' => false],
             ['key' => 'statistik', 'label' => 'Statistik', 'class' => 'w-36', 'sortable' => false],
-            ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
 
@@ -118,9 +107,6 @@ class Index extends Component
                             $pq->where('nama', 'like', "%{$this->search}%");
                         });
                 });
-            })
-            ->when($this->statusFilter, function (Builder $query): void {
-                $query->where('status', $this->statusFilter);
             })
             ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
             ->paginate($this->perPage);

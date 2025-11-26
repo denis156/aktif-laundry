@@ -7,9 +7,8 @@
                 icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
-            <x-button label="Tambah Referral" link="{{ route('referral.create') }}" wire:navigate.hover responsive
-                icon="o-plus" class="btn-success" />
-            <x-button label="Filters" @click="$wire.drawer = true" responsive icon="o-funnel" class="btn-primary" />
+            <x-button label="Konfigurasi" link="{{ route('referral.pengaturan') }}" wire:navigate.hover responsive
+                icon="o-cog" class="btn-accent" />
         </x-slot:actions>
     </x-header>
 
@@ -43,8 +42,6 @@
                     <span class="text-base-content/60">Referrer:</span>
                     @if($item->promoReferrer)
                     <span class="font-medium text-success">{{ $item->promoReferrer->kode_promo }}</span>
-                    @elseif($item->poin_referrer > 0)
-                    <span class="font-medium">{{ $item->poin_referrer }} Poin</span>
                     @else
                     <span class="text-base-content/40">-</span>
                     @endif
@@ -56,21 +53,10 @@
                     <span class="text-base-content/60">Referee:</span>
                     @if($item->promoReferee)
                     <span class="font-medium text-info">{{ $item->promoReferee->kode_promo }}</span>
-                    @elseif($item->diskon_referee > 0)
-                    <span class="font-medium">{{ $item->diskon_referee }}%</span>
                     @else
                     <span class="text-base-content/40">-</span>
                     @endif
                 </div>
-
-                {{-- Min Transaksi --}}
-                @if($item->min_transaksi_referee)
-                <div class="flex items-center gap-1">
-                    <x-icon name="o-banknotes" class="w-3 h-3" />
-                    <span class="text-base-content/60">Min:</span>
-                    <span>Rp {{ number_format($item->min_transaksi_referee, 0, ',', '.') }}</span>
-                </div>
-                @endif
             </div>
             @endscope
 
@@ -91,14 +77,6 @@
             </div>
             @endscope
 
-            @scope('cell_status', $item)
-            @if ($item->status == 'Aktif')
-            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-            @else
-            <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
-            @endif
-            @endscope
-
             @scope('actions', $item)
             <div class="flex items-center justify-end gap-2">
                 <x-button label="Edit" icon="o-pencil" link="{{ route('referral.edit', $item->id) }}"
@@ -110,23 +88,6 @@
             @endscope
         </x-table>
     </x-card>
-
-    <!-- FILTER DRAWER -->
-    <x-drawer wire:model="drawer" title="Filter Referral" subtitle="Saring data sesuai kebutuhan" right separator
-        with-close-button class="lg:w-1/3">
-        <div class="space-y-5">
-            <x-select label="Status Referral" wire:model.live="statusFilter" icon="o-funnel" :options="[
-                ['id' => '', 'name' => 'Semua Status'],
-                ['id' => 'Aktif', 'name' => 'Aktif'],
-                ['id' => 'Tidak Aktif', 'name' => 'Tidak Aktif'],
-            ]" option-value="id" option-label="name" />
-        </div>
-
-        <x-slot:actions>
-            <x-button label="Reset Filter" icon="o-x-mark" wire:click="clear" spinner class="btn-outline btn-error" />
-            <x-button label="Terapkan" icon="o-check" class="btn-primary" @click="$wire.drawer = false" />
-        </x-slot:actions>
-    </x-drawer>
 
     <!-- DELETE CONFIRMATION MODAL -->
     <x-modal wire:model="deleteModal" box-class="max-w-md" class="modal-bottom sm:modal-middle backdrop-blur-md">

@@ -4,9 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Referral;
 
-use App\Helper\Database\PelangganHelper;
 use App\Helper\Database\PromoHelper;
-use App\Helper\Database\ReferralHelper;
 use App\Models\Referral;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -24,23 +22,20 @@ class Edit extends Component
 
     public int $referralId;
 
-    public array $formData = [
-        'pelanggan_id' => null,
-        'promo_referrer_id' => null,
-        'promo_referee_id' => null,
-        'kode_referral' => '',
-        'poin_referrer' => 10,
-        'diskon_referee' => 10,
-        'min_transaksi_referee' => null,
-        'total_referral' => 0,
-        'total_poin' => 0,
-        'total_berhasil' => 0,
-        'status' => 'Aktif',
-    ];
+    public ?int $promo_referrer_id = null;
 
-    public string $pelangganSearch = '';
+    public ?int $promo_referee_id = null;
 
-    public ?string $pelangganNama = null;
+    public ?string $campaign_source = null;
+
+    // * Read-only data untuk display
+    public string $kode_referral = '';
+
+    public string $pelanggan_nama = '';
+
+    public int $total_referral = 0;
+
+    public int $total_berhasil = 0;
 
     public function mount(int $id): void
     {
@@ -51,23 +46,18 @@ class Edit extends Component
     protected function loadReferral(): void
     {
         try {
-            $referral = Referral::with(['pelanggan', 'promoReferrer', 'promoReferee'])->findOrFail($this->referralId);
+            $referral = Referral::with('pelanggan')->findOrFail($this->referralId);
 
-            $this->formData = [
-                'pelanggan_id' => $referral->pelanggan_id,
-                'promo_referrer_id' => $referral->promo_referrer_id,
-                'promo_referee_id' => $referral->promo_referee_id,
-                'kode_referral' => $referral->kode_referral,
-                'poin_referrer' => $referral->poin_referrer,
-                'diskon_referee' => $referral->diskon_referee,
-                'min_transaksi_referee' => $referral->min_transaksi_referee,
-                'total_referral' => $referral->total_referral,
-                'total_poin' => $referral->total_poin,
-                'total_berhasil' => $referral->total_berhasil,
-                'status' => $referral->status,
-            ];
+            // Editable fields
+            $this->promo_referrer_id = $referral->promo_referrer_id;
+            $this->promo_referee_id = $referral->promo_referee_id;
+            $this->campaign_source = $referral->campaign_source;
 
-            $this->pelangganNama = $referral->pelanggan->nama ?? null;
+            // Read-only data for display
+            $this->kode_referral = $referral->kode_referral;
+            $this->pelanggan_nama = $referral->pelanggan->nama ?? 'Unknown';
+            $this->total_referral = $referral->total_referral;
+            $this->total_berhasil = $referral->total_berhasil;
         } catch (Exception $e) {
             Log::error('Referral Edit: Failed to load referral', [
                 'referral_id' => $this->referralId,
@@ -81,44 +71,24 @@ class Edit extends Component
 
     public function save(): void
     {
-        $rules = [
-            'formData.pelanggan_id' => 'required|exists:pelanggan,id',
-            'formData.promo_referrer_id' => 'nullable|exists:promo,id',
-            'formData.promo_referee_id' => 'nullable|exists:promo,id',
-            'formData.kode_referral' => 'required|string|max:50|unique:referral,kode_referral,'.$this->referralId,
-            'formData.poin_referrer' => 'nullable|integer|min:0',
-            'formData.diskon_referee' => 'nullable|integer|min:0',
-            'formData.min_transaksi_referee' => 'nullable|integer|min:1',
-            'formData.status' => 'required|in:Aktif,Tidak Aktif',
-        ];
-
-        $this->validate($rules);
+        $this->validate([
+            'promo_referrer_id' => ['nullable', 'exists:promo,id'],
+            'promo_referee_id' => ['nullable', 'exists:promo,id'],
+            'campaign_source' => ['nullable', 'string', 'max:100'],
+        ], [
+            'promo_referrer_id.exists' => 'Promo referrer tidak valid',
+            'promo_referee_id.exists' => 'Promo referee tidak valid',
+            'campaign_source.max' => 'Campaign source maksimal 100 karakter',
+        ]);
 
         try {
             $referral = Referral::findOrFail($this->referralId);
 
-            // Check if pelanggan is changing and already has another referral
-            if ($referral->pelanggan_id !== $this->formData['pelanggan_id']) {
-                if (Referral::where('pelanggan_id', $this->formData['pelanggan_id'])->exists()) {
-                    $this->error('Pelanggan ini sudah memiliki kode referral lain', position: 'toast-bottom');
-
-                    return;
-                }
-            }
-
-            $referralData = $this->formData;
-
-            // Remove counters from update
-            unset($referralData['total_referral'], $referralData['total_poin'], $referralData['total_berhasil']);
-
-            // Convert empty to null
-            $referralData['promo_referrer_id'] = $this->formData['promo_referrer_id'] ?: null;
-            $referralData['promo_referee_id'] = $this->formData['promo_referee_id'] ?: null;
-            $referralData['min_transaksi_referee'] = $this->formData['min_transaksi_referee'] ?: null;
-            $referralData['poin_referrer'] = $this->formData['poin_referrer'] ?: 0;
-            $referralData['diskon_referee'] = $this->formData['diskon_referee'] ?: 0;
-
-            $referral->update($referralData);
+            $referral->update([
+                'promo_referrer_id' => $this->promo_referrer_id,
+                'promo_referee_id' => $this->promo_referee_id,
+                'campaign_source' => $this->campaign_source,
+            ]);
 
             $this->success('Referral berhasil diupdate!', position: 'toast-bottom');
             $this->redirect('/management/referral', navigate: true);
@@ -140,7 +110,6 @@ class Edit extends Component
                 'file' => $e->getFile(),
                 'line' => $e->getLine(),
                 'trace' => $e->getTraceAsString(),
-                'formData' => $this->formData,
             ]);
 
             $this->error('Gagal menyimpan referral. Silakan coba lagi.', position: 'toast-bottom');
@@ -150,9 +119,7 @@ class Edit extends Component
     public function render(): mixed
     {
         return view('livewire.management.referral.edit', [
-            'pelangganOptions' => PelangganHelper::getPelangganOptions($this->pelangganSearch),
             'promoOptions' => PromoHelper::getPromoOptions(),
-            'statusOptions' => ReferralHelper::getStatusOptions(),
         ]);
     }
 }
