@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Kurir;
 
+use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\KurirHelper;
 use App\Helper\PhoneNumber;
 use App\Helper\RegionalLocation;
@@ -44,18 +45,17 @@ class Edit extends Component
         'password_confirmation' => '',
         'tanggal_bergabung' => '',
         'status' => 'Aktif',
-        'total_jemput' => 0,
-        'total_antar' => 0,
+        'bank_name' => '',
+        'bank_account_number' => '',
+        'bank_account_name' => '',
+        'emergency_contact_name' => '',
+        'emergency_contact_phone' => '',
+        'emergency_contact_relation' => '',
     ];
 
     public $avatar;
 
     public ?string $currentAvatarUrl = null;
-
-    // * Coverage Area - untuk area layanan kurir
-    public array $coverageKecamatan = []; // Motor: single, Mobil: multiple
-
-    public array $coverageKelurahan = []; // Kelurahan yang dilayani (multiple)
 
     public function mount($id): void
     {
@@ -84,23 +84,15 @@ class Edit extends Component
                 'password' => '',
                 'tanggal_bergabung' => $kurir->tanggal_bergabung?->format('Y-m-d\TH:i') ?? now()->format('Y-m-d\TH:i'),
                 'status' => $kurir->status,
-                'total_jemput' => $kurir->total_jemput ?? 0,
-                'total_antar' => $kurir->total_antar ?? 0,
+                'bank_name' => $kurir->bank_name ?? '',
+                'bank_account_number' => $kurir->bank_account_number ?? '',
+                'bank_account_name' => $kurir->bank_account_name ?? '',
+                'emergency_contact_name' => $kurir->emergency_contact_name ?? '',
+                'emergency_contact_phone' => $kurir->emergency_contact_phone ? PhoneNumber::formatLocal($kurir->emergency_contact_phone) : '',
+                'emergency_contact_relation' => $kurir->emergency_contact_relation ?? '',
             ];
 
-            // Load current foto profil URL
             $this->currentAvatarUrl = $kurir->avatar_url;
-
-            // Load coverage area from metadata
-            $coverageArea = KurirHelper::getAreaCoverage($kurir);
-            if (! empty($coverageArea)) {
-                $this->coverageKecamatan = $coverageArea['kecamatan'] ?? [];
-                // Flatten kelurahan array
-                $this->coverageKelurahan = [];
-                foreach (($coverageArea['kelurahan'] ?? []) as $kecamatan => $kelurahanList) {
-                    $this->coverageKelurahan = array_merge($this->coverageKelurahan, $kelurahanList);
-                }
-            }
         } catch (Exception $e) {
             Log::error('Failed to load kurir for edit', [
                 'kurir_id' => $this->kurirId,
@@ -118,17 +110,22 @@ class Edit extends Component
             'formData.nama' => 'required|string|max:255',
             'formData.no_hp' => 'required|string|max:15|unique:kurir,no_hp,'.$this->kurirId,
             'formData.detail_alamat' => 'required|string',
+            'formData.kelurahan' => 'required|string|max:100',
+            'formData.kecamatan' => 'required|string|max:100',
             'formData.email' => 'nullable|email|max:255|unique:kurir,email,'.$this->kurirId,
-            'formData.no_kendaraan' => 'nullable|string|max:20',
-            'formData.jenis_kendaraan' => 'nullable|string|max:50',
+            'formData.jenis_kendaraan' => 'required|in:Motor,Mobil',
+            'formData.no_kendaraan' => 'required|string|max:20',
             'formData.tanggal_bergabung' => 'required|date',
-            'formData.status' => 'required|in:Aktif,Tidak Aktif',
+            'formData.status' => 'required|in:Aktif,Tidak Aktif,Cuti',
             'avatar' => 'nullable|image|max:'.KurirHelper::AVATAR_MAX_SIZE_KB,
-            'coverageKecamatan' => 'nullable|array',
-            'coverageKelurahan' => 'nullable|array',
+            'formData.bank_name' => 'nullable|string|max:100',
+            'formData.bank_account_number' => 'nullable|string|max:50',
+            'formData.bank_account_name' => 'nullable|string|max:255',
+            'formData.emergency_contact_name' => 'nullable|string|max:255',
+            'formData.emergency_contact_phone' => 'nullable|string|max:15',
+            'formData.emergency_contact_relation' => 'nullable|string|max:50',
         ];
 
-        // Jika password diisi, tambahkan validasi password confirmation
         if (! empty($this->formData['password'])) {
             $rules['formData.password'] = 'min:'.KurirHelper::PASSWORD_MIN_LENGTH.'|confirmed';
         }
@@ -146,13 +143,24 @@ class Edit extends Component
                 return;
             }
 
+            // Normalize emergency contact phone if provided
+            $normalizedEmergencyPhone = null;
+            if (! empty($this->formData['emergency_contact_phone'])) {
+                $normalizedEmergencyPhone = PhoneNumber::normalize($this->formData['emergency_contact_phone']);
+                if (! $normalizedEmergencyPhone) {
+                    $this->error('Format nomor HP kontak darurat tidak valid.', position: 'toast-bottom');
+
+                    return;
+                }
+            }
+
             // Prepare data untuk update kurir
             $data = [
                 'nama' => $this->formData['nama'],
                 'no_hp' => $normalizedPhone,
-                'email' => $this->formData['email'],
-                'no_kendaraan' => $this->formData['no_kendaraan'],
-                'jenis_kendaraan' => $this->formData['jenis_kendaraan'],
+                'email' => $this->formData['email'] ?: null,
+                'no_kendaraan' => $this->formData['no_kendaraan'] ?: null,
+                'jenis_kendaraan' => $this->formData['jenis_kendaraan'] ?: null,
                 'tanggal_bergabung' => $this->formData['tanggal_bergabung'],
                 'status' => $this->formData['status'],
             ];
@@ -180,13 +188,34 @@ class Edit extends Component
                 $kurir->avatar_url = $avatarPath;
             }
 
-            // Set coverage area ke metadata
-            $coverageArea = $this->buildCoverageArea();
-            if (! empty($coverageArea)) {
-                KurirHelper::setAreaCoverage($kurir, $coverageArea);
+            // Set bank info
+            if ($this->formData['bank_name'] || $this->formData['bank_account_number']) {
+                KurirHelper::setBankInfo(
+                    $kurir,
+                    $this->formData['bank_name'] ?? '',
+                    $this->formData['bank_account_number'] ?? '',
+                    $this->formData['bank_account_name'] ?? ''
+                );
+            } else {
+                $kurir->bank_name = null;
+                $kurir->bank_account_number = null;
+                $kurir->bank_account_name = null;
             }
 
-            // Save changes
+            // Set emergency contact
+            if ($this->formData['emergency_contact_name'] && $normalizedEmergencyPhone) {
+                KurirHelper::setEmergencyContact(
+                    $kurir,
+                    $this->formData['emergency_contact_name'],
+                    $normalizedEmergencyPhone,
+                    $this->formData['emergency_contact_relation'] ?? null
+                );
+            } else {
+                $kurir->emergency_contact_name = null;
+                $kurir->emergency_contact_phone = null;
+                $kurir->emergency_contact_relation = null;
+            }
+
             $kurir->save();
 
             $this->success('Kurir berhasil diupdate!', position: 'toast-bottom');
@@ -259,164 +288,27 @@ class Edit extends Component
 
     public function getKelurahanOptions(): array
     {
-        // Kelurahan berdasarkan kecamatan yang dipilih menggunakan RegionalLocation Helper
         $kecamatanName = $this->formData['kecamatan'] ?? '';
 
         if (empty($kecamatanName)) {
             return [];
         }
 
-        // Cari district code berdasarkan nama kecamatan
-        $districts = RegionalLocation::getKendariDistricts();
-        $districtCode = null;
-
-        foreach ($districts as $district) {
-            if (($district['name'] ?? '') === $kecamatanName) {
-                $districtCode = $district['code'] ?? null;
-                break;
-            }
-        }
-
-        if (! $districtCode) {
-            return [];
-        }
-
-        // Get kelurahan/desa berdasarkan district code dari API
-        $villages = RegionalLocation::getVillagesByDistrict($districtCode);
-
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($villages)->map(fn (array $village) => [
-            'id' => $village['name'] ?? '',
-            'name' => $village['name'] ?? '',
-        ])->toArray();
-    }
-
-    // * Get coverage kelurahan options berdasarkan kecamatan yang dipilih di coverage area
-    public function getCoverageKelurahanOptions(): array
-    {
-        // Jika tidak ada kecamatan yang dipilih, return empty
-        if (empty($this->coverageKecamatan)) {
-            return [];
-        }
-
-        // Get semua kecamatan di Kendari
-        $districts = RegionalLocation::getKendariDistricts();
-        $allVillages = [];
-
-        // Loop semua kecamatan yang dipilih
-        foreach ($this->coverageKecamatan as $kecamatanName) {
-            // Cari district code
-            $districtCode = null;
-            foreach ($districts as $district) {
-                if (($district['name'] ?? '') === $kecamatanName) {
-                    $districtCode = $district['code'] ?? null;
-                    break;
-                }
-            }
-
-            // Get villages dari kecamatan ini
-            if ($districtCode) {
-                $villages = RegionalLocation::getVillagesByDistrict($districtCode);
-
-                foreach ($villages as $village) {
-                    $villageName = $village['name'] ?? '';
-                    if ($villageName) {
-                        // Format: "Kelurahan Name (Kecamatan Name)"
-                        $allVillages[] = [
-                            'id' => $villageName,
-                            'name' => $villageName.' ('.$kecamatanName.')',
-                            'kecamatan' => $kecamatanName,
-                        ];
-                    }
-                }
-            }
-        }
-
-        return $allVillages;
-    }
-
-    // * Build coverage area dari input
-    protected function buildCoverageArea(): array
-    {
-        if (empty($this->coverageKecamatan)) {
-            return [];
-        }
-
-        // Kelompokkan kelurahan berdasarkan kecamatan
-        $kelurahanByKecamatan = [];
-        $allKecamatanInCoverage = [];
-
-        // Get semua kecamatan untuk mapping
-        $districts = RegionalLocation::getKendariDistricts();
-
-        foreach ($this->coverageKecamatan as $kecamatanName) {
-            $allKecamatanInCoverage[] = $kecamatanName;
-            $kelurahanByKecamatan[$kecamatanName] = [];
-        }
-
-        // Map kelurahan ke kecamatan masing-masing
-        foreach ($this->coverageKelurahan as $kelurahanName) {
-            // Find kecamatan untuk kelurahan ini
-            foreach ($allKecamatanInCoverage as $kecamatanName) {
-                // Cari district code
-                $districtCode = null;
-                foreach ($districts as $district) {
-                    if (($district['name'] ?? '') === $kecamatanName) {
-                        $districtCode = $district['code'] ?? null;
-                        break;
-                    }
-                }
-
-                if ($districtCode) {
-                    $villages = RegionalLocation::getVillagesByDistrict($districtCode);
-                    foreach ($villages as $village) {
-                        if (($village['name'] ?? '') === $kelurahanName) {
-                            $kelurahanByKecamatan[$kecamatanName][] = $kelurahanName;
-                            break 2;
-                        }
-                    }
-                }
-            }
-        }
-
-        return [
-            'kecamatan' => $allKecamatanInCoverage,
-            'kelurahan' => $kelurahanByKecamatan,
-        ];
-    }
-
-    // * Updated when coverageKecamatan changes
-    public function updatedCoverageKecamatan(): void
-    {
-        // Reset kelurahan yang tidak termasuk dalam kecamatan terpilih
-        $this->resetCoverageKelurahan();
-    }
-
-    // * Reset coverage kelurahan
-    protected function resetCoverageKelurahan(): void
-    {
-        if (empty($this->coverageKecamatan)) {
-            $this->coverageKelurahan = [];
-
-            return;
-        }
-
-        // Get semua kelurahan yang valid dari kecamatan terpilih
-        $validKelurahan = collect($this->getCoverageKelurahanOptions())
-            ->pluck('id')
-            ->toArray();
-
-        // Filter hanya kelurahan yang valid
-        $this->coverageKelurahan = array_intersect($this->coverageKelurahan, $validKelurahan);
+        return RegionalLocation::getVillageOptions($kecamatanName);
     }
 
     public function render(): mixed
     {
+        $avatarUrl = $this->avatar
+            ? $this->avatar->temporaryUrl()
+            : AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->formData['nama'] ?? 'Kurir', 256);
+
         return view('livewire.management.kurir.edit', [
             'kecamatanOptions' => $this->getKecamatanOptions(),
             'kelurahanOptions' => $this->getKelurahanOptions(),
-            'coverageKecamatanOptions' => $this->getKecamatanOptions(),
-            'coverageKelurahanOptions' => $this->getCoverageKelurahanOptions(),
+            'statusOptions' => KurirHelper::getStatusOptions(),
+            'jenisKendaraanOptions' => KurirHelper::getJenisKendaraanOptions(),
+            'avatarUrl' => $avatarUrl,
         ]);
     }
 }

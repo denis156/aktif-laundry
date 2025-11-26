@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Kurir;
 
+use App\Helper\Database\KurirHelper;
 use App\Models\Kurir;
 use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -89,10 +90,8 @@ class Index extends Component
             ['key' => 'nama', 'label' => 'Nama Kurir', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'no_hp', 'label' => 'No. HP', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'email', 'label' => 'Email', 'class' => 'w-48', 'sortable' => false],
-            ['key' => 'jenis_kendaraan', 'label' => 'Jenis Kendaraan', 'class' => 'w-32', 'sortable' => false],
-            ['key' => 'no_kendaraan', 'label' => 'No. Kendaraan', 'class' => 'w-32', 'sortable' => false],
-            ['key' => 'total_jemput', 'label' => 'Total Jemput', 'class' => 'w-24', 'sortable' => false],
-            ['key' => 'total_antar', 'label' => 'Total Antar', 'class' => 'w-24', 'sortable' => false],
+            ['key' => 'alamat', 'label' => 'Alamat', 'class' => 'w-64', 'sortable' => false],
+            ['key' => 'jenis_kendaraan', 'label' => 'Kendaraan', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
@@ -125,6 +124,8 @@ class Index extends Component
         return view('livewire.management.kurir.index', [
             'kurir' => $this->kurir(),
             'headers' => $this->headers(),
+            'statusOptions' => KurirHelper::getStatusOptions(),
+            'jenisKendaraanOptions' => KurirHelper::getJenisKendaraanOptions(),
         ]);
     }
 }
