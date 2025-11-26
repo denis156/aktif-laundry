@@ -54,7 +54,7 @@ return new class () extends Migration {
             $table->text('review_text')->nullable()->comment('Komentar review dari customer');
 
             // Tracking
-            $table->jsonb('tracking')->nullable()->comment('Array of tracking points, e.g., [{"time":"2024-01-01 10:00","lat":-3.9,"lng":122.5,"status":"On the way"}]');
+            $table->json('tracking')->nullable()->comment('Array of tracking points, e.g., [{"time":"2024-01-01 10:00","lat":-3.9,"lng":122.5,"status":"On the way"}]');
 
             $table->timestamps();
             $table->softDeletes();

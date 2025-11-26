@@ -34,8 +34,8 @@ return new class () extends Migration {
             $table->string('icon', 100)->nullable()->comment('Icon untuk UI');
 
             // JSON fields untuk include/exclude list
-            $table->jsonb('include')->nullable()->comment('Array of items included in service, e.g., ["Cuci", "Setrika", "Lipat"]');
-            $table->jsonb('exclude')->nullable()->comment('Array of items excluded from service, e.g., ["Bed Cover", "Karpet"]');
+            $table->json('include')->nullable()->comment('Array of items included in service, e.g., ["Cuci", "Setrika", "Lipat"]');
+            $table->json('exclude')->nullable()->comment('Array of items excluded from service, e.g., ["Bed Cover", "Karpet"]');
 
             $table->timestamps();
             $table->softDeletes();

@@ -21,7 +21,7 @@ return new class () extends Migration {
             $table->string('nama_layanan')->comment('Snapshot nama layanan saat transaksi');
 
             // Untuk layanan per_kg
-            $table->jsonb('jenis_pakaian')->nullable()->comment('[{"jenis_id":"1","nama":"Baju","jumlah":5},{"jenis_id":"2","nama":"Celana","jumlah":7}]');
+            $table->json('jenis_pakaian')->nullable()->comment('[{"jenis_id":"1","nama":"Baju","jumlah":5},{"jenis_id":"2","nama":"Celana","jumlah":7}]');
             $table->decimal('berat_kg', 8, 2)->nullable();
             $table->integer('harga_per_kg')->nullable();
 

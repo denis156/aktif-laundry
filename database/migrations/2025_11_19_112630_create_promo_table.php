@@ -48,8 +48,8 @@ return new class () extends Migration {
             $table->decimal('max_berat', 8, 2)->nullable()->comment('Maximum berat untuk promo (kg)');
 
             // JSON fields untuk layanan & pelanggan filter
-            $table->jsonb('layanan_ids')->nullable()->comment('Array of layanan IDs that eligible for this promo, e.g., [1, 3, 5]');
-            $table->jsonb('exclude_pelanggan_ids')->nullable()->comment('Array of pelanggan IDs to exclude from this promo, e.g., [10, 25]');
+            $table->json('layanan_ids')->nullable()->comment('Array of layanan IDs that eligible for this promo, e.g., [1, 3, 5]');
+            $table->json('exclude_pelanggan_ids')->nullable()->comment('Array of pelanggan IDs to exclude from this promo, e.g., [10, 25]');
 
             $table->timestamps();
             $table->softDeletes();

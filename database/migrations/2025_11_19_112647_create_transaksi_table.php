@@ -56,8 +56,8 @@ return new class () extends Migration {
 
             // Bukti & Internal notes
             $table->text('catatan_internal')->nullable()->comment('Catatan internal staff');
-            $table->jsonb('foto_bukti_timbangan')->nullable()->comment('Array of image URLs for timbangan, e.g., ["url1.jpg", "url2.jpg"]');
-            $table->jsonb('foto_bukti_pembayaran')->nullable()->comment('Array foto bukti transfer/QRIS untuk Non-Tunai, e.g., ["url1.jpg", "url2.jpg"]');
+            $table->json('foto_bukti_timbangan')->nullable()->comment('Array of image URLs for timbangan, e.g., ["url1.jpg", "url2.jpg"]');
+            $table->json('foto_bukti_pembayaran')->nullable()->comment('Array foto bukti transfer/QRIS untuk Non-Tunai, e.g., ["url1.jpg", "url2.jpg"]');
 
             $table->timestamps();
             $table->softDeletes();
