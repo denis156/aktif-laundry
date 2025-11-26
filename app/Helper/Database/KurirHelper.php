@@ -26,6 +26,18 @@ class KurirHelper
     // * Avatar upload constants (in KB)
     public const AVATAR_MAX_SIZE_KB = 2048; // 2 MB
 
+    // * Status constants
+    public const STATUS_AKTIF = 'Aktif';
+
+    public const STATUS_TIDAK_AKTIF = 'Tidak Aktif';
+
+    public const STATUS_CUTI = 'Cuti';
+
+    // * Jenis Kendaraan constants
+    public const JENIS_KENDARAAN_MOTOR = 'Motor';
+
+    public const JENIS_KENDARAAN_MOBIL = 'Mobil';
+
     // * Ambil alamat lengkap formatted
     public static function getAlamatLengkap(Kurir $kurir): string
     {
@@ -282,5 +294,55 @@ class KurirHelper
 
             return [];
         }
+    }
+
+    /**
+     * Get status options untuk dropdown
+     */
+    public static function getStatusOptions(): array
+    {
+        return [
+            ['id' => self::STATUS_AKTIF, 'name' => 'Aktif'],
+            ['id' => self::STATUS_TIDAK_AKTIF, 'name' => 'Tidak Aktif'],
+            ['id' => self::STATUS_CUTI, 'name' => 'Cuti'],
+        ];
+    }
+
+    /**
+     * Get jenis kendaraan options untuk dropdown
+     */
+    public static function getJenisKendaraanOptions(): array
+    {
+        return [
+            ['id' => self::JENIS_KENDARAAN_MOTOR, 'name' => 'Motor'],
+            ['id' => self::JENIS_KENDARAAN_MOBIL, 'name' => 'Mobil'],
+        ];
+    }
+
+    /**
+     * Check apakah status valid
+     */
+    public static function isValidStatus(string $status): bool
+    {
+        return in_array($status, [
+            self::STATUS_AKTIF,
+            self::STATUS_TIDAK_AKTIF,
+            self::STATUS_CUTI,
+        ], true);
+    }
+
+    /**
+     * Check apakah jenis kendaraan valid
+     */
+    public static function isValidJenisKendaraan(?string $jenisKendaraan): bool
+    {
+        if ($jenisKendaraan === null) {
+            return true; // Nullable
+        }
+
+        return in_array($jenisKendaraan, [
+            self::JENIS_KENDARAAN_MOTOR,
+            self::JENIS_KENDARAAN_MOBIL,
+        ], true);
     }
 }

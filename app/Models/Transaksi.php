@@ -94,12 +94,6 @@ class Transaksi extends Model
         return $this->belongsTo(Pelanggan::class, 'pelanggan_id');
     }
 
-    // * Relasi: Promo yang digunakan
-    public function promo(): BelongsTo
-    {
-        return $this->belongsTo(Promo::class, 'promo_id');
-    }
-
     // * Relasi: Referral yang digunakan
     public function referral(): BelongsTo
     {

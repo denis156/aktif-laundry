@@ -72,11 +72,11 @@ class Promo extends Model
     // * Relationships
 
     /**
-     * Relasi: Transaksi yang menggunakan promo ini
+     * Relasi: Transaksi Promo (snapshot promo yang digunakan dalam transaksi)
      */
-    public function transaksi(): HasMany
+    public function transaksiPromo(): HasMany
     {
-        return $this->hasMany(Transaksi::class, 'promo_id');
+        return $this->hasMany(TransaksiPromo::class, 'promo_id');
     }
 
     /**

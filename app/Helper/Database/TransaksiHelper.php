@@ -28,20 +28,24 @@ class TransaksiHelper
 
     public const STATUS_BATAL = 'Batal';
 
-    // * Metode Pembayaran Constants
-    public const METODE_TUNAI = 'Tunai';
+    // * Metode Pembayaran Constants (KAPAN bayar)
+    public const METODE_BAYAR_SAAT_JEMPUT = 'Bayar Saat Jemput';
 
-    public const METODE_NON_TUNAI = 'Non-Tunai';
+    public const METODE_BAYAR_SAAT_ANTAR = 'Bayar Saat Antar';
 
-    public const METODE_TRANSFER = 'Transfer';
+    // * Tipe Bayar Constants (BAGAIMANA cara bayar)
+    public const TIPE_TUNAI = 'Tunai';
 
-    public const METODE_QRIS = 'QRIS';
+    public const TIPE_NON_TUNAI = 'Non-Tunai';
 
-    public const METODE_EWALLET = 'E-Wallet';
+    // * Status Bayar Constants
+    public const STATUS_BELUM_BAYAR = 'Belum Bayar';
 
-    public const METODE_DEBIT = 'Debit';
+    public const STATUS_MENUNGGU_VERIFIKASI = 'Menunggu Verifikasi';
 
-    public const METODE_KREDIT = 'Kredit';
+    public const STATUS_SUDAH_BAYAR = 'Sudah Bayar';
+
+    public const STATUS_DITOLAK = 'Ditolak';
 
     // * Ambil info kurir yang jemput cucian
     public static function getKurirJemput(Transaksi $transaksi): ?array
@@ -81,6 +85,81 @@ class TransaksiHelper
     {
         $transaksi->kurir_antar_id = $kurirId;
         $transaksi->kurir_antar_nama = $kurirNama;
+    }
+
+    // * Ambil info referral yang digunakan
+    public static function getReferral(Transaksi $transaksi): ?array
+    {
+        if ($transaksi->referral_id) {
+            return [
+                'id' => $transaksi->referral_id,
+                'kode_referral' => $transaksi->referral?->kode_referral,
+            ];
+        }
+
+        return null;
+    }
+
+    // * Set info referral yang digunakan
+    public static function setReferral(Transaksi $transaksi, ?int $referralId): void
+    {
+        $transaksi->referral_id = $referralId;
+    }
+
+    // * Ambil snapshot nama pelanggan
+    public static function getNamaPelanggan(Transaksi $transaksi): string
+    {
+        return $transaksi->nama_pelanggan;
+    }
+
+    // * Set snapshot nama pelanggan (saat transaksi dibuat)
+    public static function setNamaPelanggan(Transaksi $transaksi, string $namaPelanggan): void
+    {
+        $transaksi->nama_pelanggan = $namaPelanggan;
+    }
+
+    // * Ambil info kasir yang input transaksi
+    public static function getKasir(Transaksi $transaksi): ?array
+    {
+        if ($transaksi->kasir_id) {
+            return [
+                'id' => $transaksi->kasir_id,
+                'nama' => $transaksi->kasir?->name,
+                'email' => $transaksi->kasir?->email,
+            ];
+        }
+
+        return null;
+    }
+
+    // * Set info kasir yang input transaksi
+    public static function setKasir(Transaksi $transaksi, int $kasirId): void
+    {
+        $transaksi->kasir_id = $kasirId;
+    }
+
+    // * Ambil catatan transaksi (untuk customer)
+    public static function getCatatan(Transaksi $transaksi): ?string
+    {
+        return $transaksi->catatan;
+    }
+
+    // * Set catatan transaksi (untuk customer)
+    public static function setCatatan(Transaksi $transaksi, ?string $catatan): void
+    {
+        $transaksi->catatan = $catatan;
+    }
+
+    // * Ambil catatan internal (untuk staff)
+    public static function getCatatanInternal(Transaksi $transaksi): ?string
+    {
+        return $transaksi->catatan_internal;
+    }
+
+    // * Set catatan internal (untuk staff)
+    public static function setCatatanInternal(Transaksi $transaksi, ?string $catatan): void
+    {
+        $transaksi->catatan_internal = $catatan;
     }
 
     // * Ambil semua foto bukti timbangan
@@ -143,17 +222,32 @@ class TransaksiHelper
         ];
     }
 
-    // * Get semua metode pembayaran yang tersedia
+    // * Get semua metode pembayaran yang tersedia (KAPAN bayar)
     public static function getAllMetodePembayaran(): array
     {
         return [
-            self::METODE_TUNAI,
-            self::METODE_NON_TUNAI,
-            self::METODE_TRANSFER,
-            self::METODE_QRIS,
-            self::METODE_EWALLET,
-            self::METODE_DEBIT,
-            self::METODE_KREDIT,
+            self::METODE_BAYAR_SAAT_JEMPUT,
+            self::METODE_BAYAR_SAAT_ANTAR,
+        ];
+    }
+
+    // * Get semua tipe bayar yang tersedia (BAGAIMANA cara bayar)
+    public static function getAllTipeBayar(): array
+    {
+        return [
+            self::TIPE_TUNAI,
+            self::TIPE_NON_TUNAI,
+        ];
+    }
+
+    // * Get semua status bayar yang tersedia
+    public static function getAllStatusBayar(): array
+    {
+        return [
+            self::STATUS_BELUM_BAYAR,
+            self::STATUS_MENUNGGU_VERIFIKASI,
+            self::STATUS_SUDAH_BAYAR,
+            self::STATUS_DITOLAK,
         ];
     }
 
@@ -169,10 +263,30 @@ class TransaksiHelper
         return in_array($metode, self::getAllMetodePembayaran(), true);
     }
 
+    // * Check apakah tipe bayar valid
+    public static function isValidTipeBayar(?string $tipe): bool
+    {
+        if ($tipe === null) {
+            return true; // Nullable
+        }
+
+        return in_array($tipe, self::getAllTipeBayar(), true);
+    }
+
+    // * Check apakah status bayar valid
+    public static function isValidStatusBayar(string $status): bool
+    {
+        return in_array($status, self::getAllStatusBayar(), true);
+    }
+
     // ! Rules validasi
     public static function validationRules(): array
     {
         return [
+            'kasir_id' => 'required|integer|exists:users,id',
+            'pelanggan_id' => 'required|integer|exists:pelanggan,id',
+            'referral_id' => 'nullable|integer|exists:referral,id',
+            'nama_pelanggan' => 'required|string|max:255',
             'kurir_jemput_id' => 'nullable|integer|exists:kurir,id',
             'kurir_antar_id' => 'nullable|integer|exists:kurir,id',
             'kurir_jemput_nama' => 'nullable|string|max:100',
@@ -182,6 +296,8 @@ class TransaksiHelper
             'metode_pembayaran' => 'nullable|string|max:50',
             'tipe_bayar' => 'nullable|string|max:50',
             'status_bayar' => 'nullable|string|max:50',
+            'catatan' => 'nullable|string',
+            'catatan_internal' => 'nullable|string',
         ];
     }
 
@@ -306,18 +422,37 @@ class TransaksiHelper
     }
 
     /**
-     * Get metode pembayaran options untuk dropdown
+     * Get metode pembayaran options untuk dropdown (KAPAN bayar)
      */
     public static function getMetodePembayaranOptions(): array
     {
         return [
-            ['id' => self::METODE_TUNAI, 'name' => 'Tunai'],
-            ['id' => self::METODE_NON_TUNAI, 'name' => 'Non-Tunai'],
-            ['id' => self::METODE_TRANSFER, 'name' => 'Transfer Bank'],
-            ['id' => self::METODE_QRIS, 'name' => 'QRIS'],
-            ['id' => self::METODE_EWALLET, 'name' => 'E-Wallet'],
-            ['id' => self::METODE_DEBIT, 'name' => 'Kartu Debit'],
-            ['id' => self::METODE_KREDIT, 'name' => 'Kartu Kredit'],
+            ['id' => self::METODE_BAYAR_SAAT_JEMPUT, 'name' => 'Bayar Saat Jemput'],
+            ['id' => self::METODE_BAYAR_SAAT_ANTAR, 'name' => 'Bayar Saat Antar'],
+        ];
+    }
+
+    /**
+     * Get tipe bayar options untuk dropdown (BAGAIMANA cara bayar)
+     */
+    public static function getTipeBayarOptions(): array
+    {
+        return [
+            ['id' => self::TIPE_TUNAI, 'name' => 'Tunai'],
+            ['id' => self::TIPE_NON_TUNAI, 'name' => 'Non-Tunai (Transfer/QRIS/E-Wallet)'],
+        ];
+    }
+
+    /**
+     * Get status bayar options untuk dropdown
+     */
+    public static function getStatusBayarOptions(): array
+    {
+        return [
+            ['id' => self::STATUS_BELUM_BAYAR, 'name' => 'Belum Bayar'],
+            ['id' => self::STATUS_MENUNGGU_VERIFIKASI, 'name' => 'Menunggu Verifikasi'],
+            ['id' => self::STATUS_SUDAH_BAYAR, 'name' => 'Sudah Bayar'],
+            ['id' => self::STATUS_DITOLAK, 'name' => 'Ditolak'],
         ];
     }
 }
