@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Management\Promo;
 
 use App\Helper\Database\LayananHelper;
+use App\Helper\Database\PelangganHelper;
 use App\Helper\Database\PromoHelper;
 use App\Models\Promo;
 use Exception;
@@ -40,8 +41,10 @@ class Create extends Component
         'status' => 'Aktif',
     ];
 
-    // * Metadata fields
+    // * Additional fields
     public array $layananIds = [];
+
+    public array $excludePelangganIds = [];
 
     public string $termsConditions = '';
 
@@ -97,11 +100,13 @@ class Create extends Component
             'formData.tanggal_berakhir' => 'required|date|after_or_equal:formData.tanggal_mulai',
             'formData.kuota_total' => 'nullable|integer|min:1',
             'formData.max_per_user' => 'nullable|integer|min:1',
-            'formData.berlaku_untuk' => 'required|in:semua,layanan_tertentu,pelanggan_baru',
+            'formData.berlaku_untuk' => 'required|in:semua,pelanggan_baru,pelanggan_lama',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
             'layananIds' => 'nullable|array',
+            'excludePelangganIds' => 'nullable|array',
             'termsConditions' => 'nullable|string',
             'bannerImage' => 'nullable|image|max:2048',
+            'autoApply' => 'nullable|boolean',
             'minBerat' => 'nullable|numeric|min:0',
             'maxBerat' => 'nullable|numeric|min:0',
         ];
@@ -127,24 +132,15 @@ class Create extends Component
                 // Create promo
                 $promo = Promo::create($promoData);
 
-                // Set metadata
-                if (! empty($this->layananIds)) {
-                    PromoHelper::setLayananId($promo, $this->layananIds);
-                }
+                // Set JSON fields
+                PromoHelper::setLayananIds($promo, $this->layananIds);
+                PromoHelper::setExcludePelangganIds($promo, $this->excludePelangganIds);
 
-                if (! empty($this->termsConditions)) {
-                    PromoHelper::setTermsConditions($promo, $this->termsConditions);
-                }
-
+                // Set other fields
+                PromoHelper::setTermsConditions($promo, $this->termsConditions);
                 PromoHelper::setAutoApply($promo, $this->autoApply);
-
-                // Set min/max berat
-                if ($this->minBerat !== null) {
-                    PromoHelper::setMinBerat($promo, $this->minBerat);
-                }
-                if ($this->maxBerat !== null) {
-                    PromoHelper::setMaxBerat($promo, $this->maxBerat);
-                }
+                PromoHelper::setMinBerat($promo, $this->minBerat);
+                PromoHelper::setMaxBerat($promo, $this->maxBerat);
 
                 // Upload banner image
                 if ($this->bannerImage) {
@@ -152,7 +148,7 @@ class Create extends Component
                     PromoHelper::setBannerImage($promo, $bannerPath);
                 }
 
-                // Save metadata
+                // Save all changes
                 $promo->save();
             });
 
@@ -198,6 +194,7 @@ class Create extends Component
         return view('livewire.management.promo.create', [
             'tipeDiskonOptions' => PromoHelper::getTipeDiskonOptions(),
             'layananOptions' => LayananHelper::getLayananOptions(),
+            'pelangganOptions' => PelangganHelper::getPelangganOptions(limit: 100),
         ]);
     }
 }

@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Livewire\Management\Promo;
 
 use App\Helper\Database\LayananHelper;
+use App\Helper\Database\PelangganHelper;
 use App\Helper\Database\PromoHelper;
 use App\Models\Promo;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
@@ -43,8 +45,10 @@ class Edit extends Component
         'status' => 'Aktif',
     ];
 
-    // * Metadata fields
+    // * Additional fields
     public array $layananIds = [];
+
+    public array $excludePelangganIds = [];
 
     public string $termsConditions = '';
 
@@ -86,8 +90,9 @@ class Edit extends Component
                 'status' => $promo->status,
             ];
 
-            // Load metadata
-            $this->layananIds = PromoHelper::getLayananId($promo);
+            // Load additional fields
+            $this->layananIds = PromoHelper::getLayananIds($promo);
+            $this->excludePelangganIds = PromoHelper::getExcludePelangganIds($promo);
             $this->termsConditions = PromoHelper::getTermsConditions($promo) ?? '';
             $this->autoApply = PromoHelper::isAutoApply($promo);
             $this->minBerat = PromoHelper::getMinBerat($promo);
@@ -131,11 +136,13 @@ class Edit extends Component
             'formData.tanggal_berakhir' => 'required|date|after_or_equal:formData.tanggal_mulai',
             'formData.kuota_total' => 'nullable|integer|min:1',
             'formData.max_per_user' => 'nullable|integer|min:1',
-            'formData.berlaku_untuk' => 'required|in:semua,layanan_tertentu,pelanggan_baru',
+            'formData.berlaku_untuk' => 'required|in:semua,pelanggan_baru,pelanggan_lama',
             'formData.status' => 'required|in:Aktif,Tidak Aktif,Habis',
             'layananIds' => 'nullable|array',
+            'excludePelangganIds' => 'nullable|array',
             'termsConditions' => 'nullable|string',
             'bannerImage' => 'nullable|image|max:2048',
+            'autoApply' => 'nullable|boolean',
             'minBerat' => 'nullable|numeric|min:0',
             'maxBerat' => 'nullable|numeric|min:0',
         ];
@@ -143,36 +150,41 @@ class Edit extends Component
         $this->validate($rules);
 
         try {
-            $promo = Promo::findOrFail($this->promoId);
+            DB::transaction(function () {
+                $promo = Promo::findOrFail($this->promoId);
 
-            $promoData = $this->formData;
+                $promoData = $this->formData;
 
-            // Convert empty string to null
-            $promoData['diskon_maksimal'] = $this->formData['diskon_maksimal'] ?: null;
-            $promoData['min_transaksi'] = $this->formData['min_transaksi'] ?: null;
-            $promoData['kuota_total'] = $this->formData['kuota_total'] ?: null;
-            $promoData['max_per_user'] = $this->formData['max_per_user'] ?: null;
+                // Convert empty string to null
+                $promoData['diskon_maksimal'] = $this->formData['diskon_maksimal'] ?: null;
+                $promoData['min_transaksi'] = $this->formData['min_transaksi'] ?: null;
+                $promoData['kuota_total'] = $this->formData['kuota_total'] ?: null;
+                $promoData['max_per_user'] = $this->formData['max_per_user'] ?: null;
 
-            // Jangan ubah kuota_terpakai
-            unset($promoData['kuota_terpakai']);
+                // Jangan ubah kuota_terpakai
+                unset($promoData['kuota_terpakai']);
 
-            $promo->update($promoData);
+                $promo->update($promoData);
 
-            // Update metadata
-            PromoHelper::setLayananId($promo, $this->layananIds);
-            PromoHelper::setTermsConditions($promo, $this->termsConditions);
-            PromoHelper::setAutoApply($promo, $this->autoApply);
-            PromoHelper::setMinBerat($promo, $this->minBerat);
-            PromoHelper::setMaxBerat($promo, $this->maxBerat);
+                // Update JSON fields
+                PromoHelper::setLayananIds($promo, $this->layananIds);
+                PromoHelper::setExcludePelangganIds($promo, $this->excludePelangganIds);
 
-            // Upload banner image baru jika ada
-            if ($this->bannerImage) {
-                $bannerPath = $this->bannerImage->store('promo/banners', 'public');
-                PromoHelper::setBannerImage($promo, $bannerPath);
-            }
+                // Update other fields
+                PromoHelper::setTermsConditions($promo, $this->termsConditions);
+                PromoHelper::setAutoApply($promo, $this->autoApply);
+                PromoHelper::setMinBerat($promo, $this->minBerat);
+                PromoHelper::setMaxBerat($promo, $this->maxBerat);
 
-            // Save metadata
-            $promo->save();
+                // Upload banner image baru jika ada
+                if ($this->bannerImage) {
+                    $bannerPath = $this->bannerImage->store('promo/banners', 'public');
+                    PromoHelper::setBannerImage($promo, $bannerPath);
+                }
+
+                // Save all changes
+                $promo->save();
+            });
 
             $this->success('Promo berhasil diupdate!', position: 'toast-bottom');
             $this->redirect('/management/promo', navigate: true);
@@ -206,6 +218,7 @@ class Edit extends Component
         return view('livewire.management.promo.edit', [
             'tipeDiskonOptions' => PromoHelper::getTipeDiskonOptions(),
             'layananOptions' => LayananHelper::getLayananOptions(),
+            'pelangganOptions' => PelangganHelper::getPelangganOptions(limit: 100),
         ]);
     }
 }

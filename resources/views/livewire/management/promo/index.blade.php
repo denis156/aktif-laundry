@@ -22,6 +22,16 @@
                 <x-icon name="o-cube" label="Tidak ada data promo." />
             </x-slot:empty>
 
+            @scope('cell_banner', $item)
+            @if($item->banner_image)
+            <img src="{{ Storage::url($item->banner_image) }}" alt="Banner {{ $item->nama_promo }}"
+                class="w-full aspect-square object-contain rounded-lg bg-base-200 p-1" />
+            @else
+            <img src="{{ asset('images/Logo.png') }}" alt="Default Banner"
+                class="w-full aspect-square object-contain rounded-lg bg-base-200 p-1" />
+            @endif
+            @endscope
+
             @scope('cell_kode_promo', $item)
             <span class="font-mono font-semibold text-primary">{{ $item->kode_promo }}</span>
             @endscope
@@ -36,19 +46,24 @@
             @endscope
 
             @scope('cell_tipe_diskon', $item)
-            @if ($item->tipe_diskon === 'persen')
-            <span class="badge badge-warning badge-sm">Persen</span>
-            @else
-            <span class="badge badge-info badge-sm">Nominal</span>
-            @endif
+            @php
+            $allTipeDiskonOptions = \App\Helper\Database\PromoHelper::getTipeDiskonOptions();
+            $tipeDiskonOption = collect($allTipeDiskonOptions)->firstWhere('id', $item->tipe_diskon);
+            $tipeLabel = $tipeDiskonOption['name'] ?? ucfirst($item->tipe_diskon);
+            $badgeClass = match($item->tipe_diskon) {
+                'persen' => 'badge-warning',
+                'nominal' => 'badge-info',
+                'gratis_kg', 'gratis_hari' => 'badge-success',
+                'cashback' => 'badge-secondary',
+                default => 'badge-neutral'
+            };
+            @endphp
+            <span class="badge {{ $badgeClass }} badge-sm truncate">{{ $tipeLabel }}</span>
             @endscope
 
             @scope('cell_nilai_diskon', $item)
-            @if ($item->tipe_diskon === 'persen')
-            <span class="font-semibold text-warning">{{ $item->nilai_diskon }}%</span>
-            @else
-            <span class="font-semibold text-info">Rp {{ number_format($item->nilai_diskon, 0, ',', '.') }}</span>
-            @endif
+            <span class="font-semibold">{{ \App\Helper\Database\PromoHelper::formatNilaiDiskon($item->tipe_diskon,
+                $item->nilai_diskon) }}</span>
             @if($item->diskon_maksimal)
             <div class="text-xs text-base-content/60">
                 Max: Rp {{ number_format($item->diskon_maksimal, 0, ',', '.') }}
@@ -56,11 +71,17 @@
             @endif
             @endscope
 
-            @scope('cell_periode', $item)
-            <div class="flex flex-col text-xs">
-                <span>{{ $item->tanggal_mulai->format('d M Y') }}</span>
-                <span class="text-base-content/60">s/d</span>
-                <span>{{ $item->tanggal_berakhir->format('d M Y') }}</span>
+            @scope('cell_tanggal_mulai', $item)
+            <div class="flex flex-col">
+                <span class="font-medium text-sm">{{ $item->tanggal_mulai->format('d M Y') }}</span>
+                <span class="text-xs text-base-content/60">{{ $item->tanggal_mulai->format('H:i') }}</span>
+            </div>
+            @endscope
+
+            @scope('cell_tanggal_berakhir', $item)
+            <div class="flex flex-col">
+                <span class="font-medium text-sm">{{ $item->tanggal_berakhir->format('d M Y') }}</span>
+                <span class="text-xs text-base-content/60">{{ $item->tanggal_berakhir->format('H:i') }}</span>
             </div>
             @endscope
 
@@ -73,17 +94,17 @@
                 </progress>
             </div>
             @else
-            <span class="badge badge-outline badge-sm">Unlimited</span>
+            <span class="badge badge-outline badge-sm truncate">Unlimited</span>
             @endif
             @endscope
 
             @scope('cell_status', $item)
             @if ($item->status == 'Aktif')
-            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
+            <x-badge value="{{ $item->status }}" class="badge-success badge-sm truncate" />
             @elseif ($item->status == 'Habis')
-            <x-badge value="{{ $item->status }}" class="badge-warning badge-sm" />
+            <x-badge value="{{ $item->status }}" class="badge-warning badge-sm truncate" />
             @else
-            <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
+            <x-badge value="{{ $item->status }}" class="badge-error badge-sm truncate" />
             @endif
             @endscope
 
@@ -110,11 +131,10 @@
                 ['id' => 'Habis', 'name' => 'Habis'],
             ]" option-value="id" option-label="name" />
 
-            <x-select label="Tipe Diskon" wire:model.live="tipeDiskonFilter" icon="o-tag" :options="[
-                ['id' => '', 'name' => 'Semua Tipe'],
-                ['id' => 'persen', 'name' => 'Persen'],
-                ['id' => 'nominal', 'name' => 'Nominal'],
-            ]" option-value="id" option-label="name" />
+            <x-select label="Tipe Diskon" wire:model.live="tipeDiskonFilter" icon="o-tag" :options="array_merge(
+                [['id' => '', 'name' => 'Semua Tipe']],
+                collect(\App\Helper\Database\PromoHelper::getTipeDiskonOptions())->map(fn($opt) => ['id' => $opt['id'], 'name' => $opt['name']])->toArray()
+            )" option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>

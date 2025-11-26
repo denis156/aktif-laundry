@@ -102,11 +102,13 @@ class Index extends Component
     public function headers(): array
     {
         return [
-            ['key' => 'kode_promo', 'label' => 'Kode', 'class' => 'w-32'],
+            ['key' => 'banner', 'label' => 'Banner', 'class' => 'w-20', 'sortable' => false],
+            ['key' => 'kode_promo', 'label' => 'Kode', 'class' => 'w-28'],
             ['key' => 'nama_promo', 'label' => 'Nama Promo', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'tipe_diskon', 'label' => 'Tipe', 'class' => 'w-24', 'sortable' => false],
-            ['key' => 'nilai_diskon', 'label' => 'Diskon', 'class' => 'w-32', 'sortable' => false],
-            ['key' => 'periode', 'label' => 'Periode', 'class' => 'w-48', 'sortable' => false],
+            ['key' => 'nilai_diskon', 'label' => 'Diskon', 'class' => 'w-28', 'sortable' => false],
+            ['key' => 'tanggal_mulai', 'label' => 'Tanggal Mulai', 'class' => 'w-32'],
+            ['key' => 'tanggal_berakhir', 'label' => 'Tanggal Selesai', 'class' => 'w-32'],
             ['key' => 'kuota', 'label' => 'Kuota', 'class' => 'w-24', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];

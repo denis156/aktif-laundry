@@ -97,27 +97,6 @@
                     <x-input label="Max per User" wire:model="formData.max_per_user" type="number" icon="o-user" min="1"
                         hint="Berapa kali user bisa pakai (opsional)" placeholder="Contoh: 1" />
                 </div>
-
-                {{-- Kuota Terpakai Info --}}
-                @if($formData['kuota_total'])
-                <div class="alert alert-info">
-                    <x-icon name="o-information-circle" class="w-6 h-6" />
-                    <div>
-                        <div class="font-semibold">Kuota Terpakai: {{ $formData['kuota_terpakai'] }}/{{
-                            $formData['kuota_total'] }}</div>
-                        <div class="text-sm">Sisa: {{ $formData['kuota_total'] - $formData['kuota_terpakai'] }}
-                            penggunaan</div>
-                    </div>
-                </div>
-                @else
-                <div class="alert">
-                    <x-icon name="o-information-circle" class="w-6 h-6" />
-                    <div>
-                        <div class="font-semibold">Kuota Unlimited</div>
-                        <div class="text-sm">Total penggunaan: {{ $formData['kuota_terpakai'] }}x</div>
-                    </div>
-                </div>
-                @endif
             </x-card>
         </div>
 
@@ -134,19 +113,22 @@
                             ['id' => 'Habis', 'name' => 'Habis'],
                         ]" option-value="id" option-label="name" required />
 
-                    <x-select label="Berlaku Untuk" wire:model.live="formData.berlaku_untuk" icon="o-users" :options="[
+                    <x-select label="Berlaku Untuk" wire:model="formData.berlaku_untuk" icon="o-users" :options="[
                             ['id' => 'semua', 'name' => 'Semua Pelanggan'],
-                            ['id' => 'pelanggan_baru', 'name' => 'Pelanggan Baru Saja'],
-                            ['id' => 'layanan_tertentu', 'name' => 'Layanan Tertentu'],
+                            ['id' => 'pelanggan_baru', 'name' => 'Pelanggan Baru'],
+                            ['id' => 'pelanggan_lama', 'name' => 'Pelanggan Lama'],
                         ]" option-value="id" option-label="name" required />
                 </div>
 
-                @if ($formData['berlaku_untuk'] === 'layanan_tertentu')
-                <x-choices-offline label="Pilih Layanan" wire:model="layananIds" :options="$layananOptions"
-                    icon="o-sparkles" searchable placeholder="Cari layanan..."
-                    hint="Promo hanya berlaku untuk layanan yang dipilih" />
-                @endif
-                <x-toggle label="Auto Apply" wire:model="autoApply" label="Auto Apply"
+                <x-choices-offline label="Layanan Yang Berlaku (Opsional)" wire:model="layananIds"
+                    :options="$layananOptions" icon="o-sparkles" searchable placeholder="Cari layanan..."
+                    hint="Kosongkan untuk semua layanan, atau pilih layanan tertentu" />
+
+                <x-choices-offline label="Kecualikan Pelanggan (Opsional)" wire:model="excludePelangganIds"
+                    :options="$pelangganOptions" icon="o-user-minus" searchable placeholder="Cari pelanggan..."
+                    hint="Pilih pelanggan yang tidak boleh menggunakan promo ini" />
+
+                <x-toggle label="Auto Apply" wire:model="autoApply"
                     hint="Promo otomatis digunakan saat checkout jika memenuhi syarat" right />
             </x-card>
         </div>

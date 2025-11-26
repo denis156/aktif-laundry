@@ -26,8 +26,6 @@ class PromoHelper
 
     public const TIPE_CASHBACK = 'cashback';
 
-    public const TIPE_GRATIS_ONGKIR = 'gratis_ongkir';
-
     /**
      * Get semua tipe diskon yang tersedia untuk dropdown
      */
@@ -39,7 +37,6 @@ class PromoHelper
             ['id' => self::TIPE_GRATIS_KG, 'name' => 'Gratis Kiloan (Kg)', 'suffix' => 'Kg', 'hint' => 'Gratis cuci X kilogram'],
             ['id' => self::TIPE_GRATIS_HARI, 'name' => 'Gratis Hari', 'suffix' => 'Hari', 'hint' => 'Gratis cuci selama X hari'],
             ['id' => self::TIPE_CASHBACK, 'name' => 'Cashback', 'suffix' => 'Rp', 'hint' => 'Cashback ke saldo/poin'],
-            ['id' => self::TIPE_GRATIS_ONGKIR, 'name' => 'Gratis Ongkir', 'suffix' => '', 'hint' => 'Gratis biaya pengiriman'],
         ];
     }
 
@@ -62,16 +59,11 @@ class PromoHelper
      */
     public static function formatNilaiDiskon(string $tipeDiskon, ?int $nilaiDiskon): string
     {
-        if ($nilaiDiskon === null) {
-            return 'Gratis Ongkir';
-        }
-
         return match ($tipeDiskon) {
             self::TIPE_PERSEN => $nilaiDiskon.'%',
             self::TIPE_NOMINAL, self::TIPE_CASHBACK => 'Rp '.number_format($nilaiDiskon, 0, ',', '.'),
             self::TIPE_GRATIS_KG => $nilaiDiskon.' Kg',
             self::TIPE_GRATIS_HARI => $nilaiDiskon.' Hari',
-            self::TIPE_GRATIS_ONGKIR => 'Gratis Ongkir',
             default => (string) $nilaiDiskon,
         };
     }
@@ -424,12 +416,6 @@ class PromoHelper
                 // Cashback diberikan setelah transaksi selesai, bukan sebagai diskon langsung
                 $diskon = 0;
                 $pesan = 'Cashback Rp '.number_format($promo->nilai_diskon, 0, ',', '.').' akan diberikan';
-                break;
-
-            case self::TIPE_GRATIS_ONGKIR:
-                // Gratis ongkir tidak mengurangi subtotal
-                $diskon = 0;
-                $pesan = 'Gratis biaya pengiriman';
                 break;
 
             default:
