@@ -52,11 +52,11 @@
 
             @scope('cell_status', $item)
             @if ($item->status === 'Aktif')
-            <x-badge value="Aktif" class="badge-success badge-sm" />
+            <x-badge value="Aktif" class="badge-success badge truncate" />
             @elseif ($item->status === 'Cuti')
-            <x-badge value="Cuti" class="badge-warning badge-sm" />
+            <x-badge value="Cuti" class="badge-warning badge truncate" />
             @else
-            <x-badge value="Tidak Aktif" class="badge-error badge-sm" />
+            <x-badge value="Tidak Aktif" class="badge-error badge truncate" />
             @endif
             @endscope
 
