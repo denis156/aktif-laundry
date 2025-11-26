@@ -19,7 +19,7 @@
                 </x-file>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Nama Lengkap" wire:model="name" placeholder="Masukkan nama lengkap" icon="o-user"
+                    <x-input label="Nama Lengkap" wire:model.live="name" placeholder="Masukkan nama lengkap" icon="o-user"
                         required />
                     <x-input label="Nomor HP" wire:model="no_hp" placeholder="08xx atau +62xxx" icon="o-phone"
                         hint="Format: +62, 62, 08, atau 8" required />
@@ -51,19 +51,21 @@
                     rows="2" required />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
-                        placeholder="Pilih kecamatan" icon="o-map-pin" required />
+                    <x-select label="Provinsi" wire:model="provinsi" :options="$provinsiOptions" disabled />
 
-                    <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
-                        placeholder="Pilih kelurahan"
-                        hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}" icon="o-map"
-                        :disabled="empty($kecamatan)" required />
+                    <x-select label="Kabupaten/Kota" wire:model.live="kabupaten_kota" :options="$kabupatenKotaOptions"
+                        placeholder="Pilih kabupaten/kota" required />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Kabupaten/Kota" wire:model="kabupaten_kota" placeholder="Kota Kendari" disabled />
+                    <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
+                        placeholder="Pilih kecamatan" :disabled="empty($kabupaten_kota)"
+                        hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota dulu' : '' }}" required />
 
-                    <x-input label="Provinsi" wire:model="provinsi" placeholder="Sulawesi Tenggara" disabled />
+                    <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
+                        placeholder="Pilih kelurahan"
+                        hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}"
+                        :disabled="empty($kecamatan)" required />
                 </div>
             </x-card>
         </div>

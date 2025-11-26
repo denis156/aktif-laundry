@@ -298,7 +298,7 @@ class Create extends Component
     {
         $avatarUrl = $this->avatar
             ? $this->avatar->temporaryUrl()
-            : AvatarPlaceholder::generate($this->name ?: 'Staf', 256);
+            : AvatarPlaceholder::generate($this->name, 256);
 
         return view('livewire.management.staf.create', [
             'roleOptions' => $this->roleOptions(),
