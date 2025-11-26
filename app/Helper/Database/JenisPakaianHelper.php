@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 // ! Helper untuk mengelola JenisPakaian
 //
 // ? Semua data sudah disimpan di kolom terpisah (tidak pakai metadata JSON lagi)
-// ? Kolom: penanganan_khusus, icon
+// ? Kolom: kode_jenis, nama_jenis, keterangan, status, penanganan_khusus, icon
 
 class JenisPakaianHelper
 {
@@ -36,15 +36,6 @@ class JenisPakaianHelper
     public static function setIcon(JenisPakaian $jenisPakaian, ?string $icon): void
     {
         $jenisPakaian->icon = $icon;
-    }
-
-    // ! Rules validasi
-    public static function validationRules(): array
-    {
-        return [
-            'penanganan_khusus' => 'nullable|string',
-            'icon' => 'nullable|string|max:100',
-        ];
     }
 
     /**
@@ -103,5 +94,22 @@ class JenisPakaianHelper
 
             return [];
         }
+    }
+
+    /**
+     * Validation rules untuk form jenis pakaian
+     */
+    public static function validationRules(bool $isEdit = false): array
+    {
+        $kodeRule = $isEdit ? 'required|string|max:50' : 'required|unique:jenis_pakaian,kode_jenis|max:50';
+
+        return [
+            'kode_jenis' => $kodeRule,
+            'nama_jenis' => 'required|string|max:255',
+            'keterangan' => 'nullable|string',
+            'status' => 'required|in:Aktif,Tidak Aktif',
+            'penanganan_khusus' => 'nullable|string',
+            'icon' => 'nullable|string|max:100',
+        ];
     }
 }

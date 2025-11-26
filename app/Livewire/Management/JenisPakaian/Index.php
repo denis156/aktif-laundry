@@ -6,6 +6,7 @@ namespace App\Livewire\Management\JenisPakaian;
 
 use App\Models\JenisPakaian;
 use Exception;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
@@ -43,7 +44,7 @@ class Index extends Component
         $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
     }
 
-    public function confirmDelete($id, $nama): void
+    public function confirmDelete(int $id, string $nama): void
     {
         $this->deleteId = $id;
         $this->deleteName = $nama;
@@ -69,24 +70,18 @@ class Index extends Component
         } catch (QueryException $e) {
             Log::error('Database error deleting jenis pakaian', [
                 'id' => $this->deleteId,
-                'nama' => $this->deleteName,
                 'error' => $e->getMessage(),
-                'error_code' => $e->errorInfo[1] ?? null,
-                'trace' => $e->getTraceAsString(),
             ]);
 
-            // Check for foreign key constraint violation
             if ($e->errorInfo[1] == 1451) {
                 $this->error('Jenis Pakaian tidak dapat dihapus karena masih digunakan.', position: 'toast-bottom');
             } else {
                 $this->error('Gagal menghapus jenis pakaian. Silakan coba lagi.', position: 'toast-bottom');
             }
         } catch (Exception $e) {
-            Log::error('General error deleting jenis pakaian', [
+            Log::error('Error deleting jenis pakaian', [
                 'id' => $this->deleteId,
-                'nama' => $this->deleteName,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
             $this->error('Terjadi kesalahan. Silakan coba lagi.', position: 'toast-bottom');
@@ -100,19 +95,20 @@ class Index extends Component
             ['key' => 'kode_jenis', 'label' => 'Kode', 'class' => 'w-24'],
             ['key' => 'nama_jenis', 'label' => 'Nama Jenis', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'keterangan', 'label' => 'Keterangan', 'sortable' => false],
+            ['key' => 'penanganan_khusus', 'label' => 'Penanganan Khusus', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
 
-    public function jenisPakaian(): mixed
+    public function jenisPakaian(): LengthAwarePaginator
     {
         try {
             return JenisPakaian::query()
                 ->when($this->search, function ($query): void {
                     $query->where(function ($q): void {
-                        $q->where('nama_jenis', 'like', "%{$this->search}%")
-                            ->orWhere('keterangan', 'like', "%{$this->search}%")
-                            ->orWhere('kode_jenis', 'like', "%{$this->search}%");
+                        $q->where('nama_jenis', 'ilike', "%{$this->search}%")
+                            ->orWhere('keterangan', 'ilike', "%{$this->search}%")
+                            ->orWhere('kode_jenis', 'ilike', "%{$this->search}%");
                     });
                 })
                 ->when($this->statusFilter, function ($query): void {
@@ -125,10 +121,8 @@ class Index extends Component
                 'search' => $this->search,
                 'status_filter' => $this->statusFilter,
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
             ]);
 
-            // Return empty paginator on error
             return new \Illuminate\Pagination\LengthAwarePaginator(
                 [],
                 0,

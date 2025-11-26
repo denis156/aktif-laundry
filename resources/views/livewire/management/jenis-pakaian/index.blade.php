@@ -34,6 +34,17 @@
             @endif
             @endscope
 
+            @scope('cell_penanganan_khusus', $item)
+            @php
+            $penanganan = \App\Helper\Database\JenisPakaianHelper::getPenangananKhusus($item);
+            @endphp
+            @if($penanganan)
+            <div class="text-sm">{{ Str::limit($penanganan, 50) }}</div>
+            @else
+            <span class="text-gray-400 text-xs italic">-</span>
+            @endif
+            @endscope
+
             @scope('cell_status', $item)
             @if ($item->status == 'Aktif')
             <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
