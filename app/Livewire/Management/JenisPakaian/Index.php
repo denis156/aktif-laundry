@@ -91,7 +91,7 @@ class Index extends Component
     public function headers(): array
     {
         return [
-            ['key' => 'icon', 'label' => '', 'class' => 'w-12', 'sortable' => false],
+            ['key' => 'icon', 'label' => 'Icon', 'class' => 'w-12', 'sortable' => false],
             ['key' => 'kode_jenis', 'label' => 'Kode', 'class' => 'w-24'],
             ['key' => 'nama_jenis', 'label' => 'Nama Jenis', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'keterangan', 'label' => 'Keterangan', 'sortable' => false],
