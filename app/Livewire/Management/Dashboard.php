@@ -4,14 +4,14 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management;
 
-use App\Helper\Dashboard\ChartDataHelper;
-use App\Models\Transaksi;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
-use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
-use Livewire\Component;
 use Mary\Traits\Toast;
+use Livewire\Component;
+use App\Helper\ChartData;
+use App\Models\Transaksi;
+use Livewire\Attributes\Title;
+use Livewire\Attributes\Layout;
+use Illuminate\Support\Facades\DB;
 
 #[Title('Dashboard')]
 #[Layout('layouts.management.app')]
@@ -164,18 +164,18 @@ class Dashboard extends Component
         if ($periodType === 'weekly' && count($parts) === 4) {
             // Format: weekly-YYYY-MM-DD
             $date = Carbon::parse("{$parts[1]}-{$parts[2]}-{$parts[3]}");
-            $data = ChartDataHelper::getWeekData($date);
+            $data = ChartData::getWeekData($date);
         } elseif ($periodType === 'monthly' && count($parts) === 3) {
             // Format: monthly-YYYY-MM
             $date = Carbon::parse("{$parts[1]}-{$parts[2]}-01");
-            $data = ChartDataHelper::getMonthData($date);
+            $data = ChartData::getMonthData($date);
         } elseif ($periodType === 'yearly' && count($parts) === 2) {
             // Format: yearly-YYYY
             $date = Carbon::parse("{$parts[1]}-01-01");
-            $data = ChartDataHelper::getYearData($date);
+            $data = ChartData::getYearData($date);
         } else {
             // Default to current month
-            $data = ChartDataHelper::getMonthData(now());
+            $data = ChartData::getMonthData(now());
         }
 
         // Set chart type (area chart is line chart with fill)

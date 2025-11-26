@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace App\Helper\Dashboard;
+namespace App\Helper;
 
 use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
-class ChartDataHelper
+class ChartData
 {
     /**
      * Get data transaksi untuk 7 hari terakhir
