@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Helper\AddressMetadata;
-use App\Helper\RegionalLocation;
+use App\Helper\Database\PelangganHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Facades\Hash;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Pelanggan>
@@ -16,7 +14,6 @@ class PelangganFactory extends Factory
 {
     /**
      * The current password being used by the factory.
-     * Shared static password to improve performance when creating multiple customers.
      */
     protected static ?string $password = null;
 
@@ -27,8 +24,7 @@ class PelangganFactory extends Factory
      */
     public function definition(): array
     {
-        // Sample data untuk wilayah Kota Kendari, Sulawesi Tenggara
-        // Data ini sesuai dengan scope RegionalLocation helper
+        // Wilayah Kota Kendari
         $wilayah = [
             ['kelurahan' => 'Mandonga', 'kecamatan' => 'Mandonga'],
             ['kelurahan' => 'Wua-Wua', 'kecamatan' => 'Wua-Wua'],
@@ -43,98 +39,79 @@ class PelangganFactory extends Factory
         ];
 
         $selectedWilayah = fake()->randomElement($wilayah);
-
-        // Gunakan RegionalLocation helper untuk provinsi dan kabupaten/kota
-        $provinsi = RegionalLocation::getProvinceName(); // Sulawesi Tenggara
-        $kabupatenKota = RegionalLocation::getRegencyName(); // Kota Kendari
-
-        // Detail alamat (jalan, nomor rumah, RT/RW)
         $detailAlamat = fake()->streetAddress();
+        $kabupatenKota = 'Kota Kendari';
+        $provinsi = 'Sulawesi Tenggara';
 
-        // Koordinat GPS Kota Kendari: latitude (-3.9 sampai -4.0), longitude (122.4 sampai 122.6)
-        $latitude = fake()->latitude(-4.0, -3.9);
-        $longitude = fake()->longitude(122.4, 122.6);
-
-        // Generate metadata alamat dengan GPS menggunakan AddressMetadata helper
-        $addressMetadata = AddressMetadata::generate(
+        // Alamat lengkap display
+        $alamatLengkap = implode(', ', array_filter([
             $detailAlamat,
-            $selectedWilayah['kelurahan'],
-            $selectedWilayah['kecamatan'],
+            "Kel. {$selectedWilayah['kelurahan']}",
+            "Kec. {$selectedWilayah['kecamatan']}",
             $kabupatenKota,
             $provinsi,
-            $latitude,
-            $longitude
-        );
+        ]));
 
-        // Alamat lengkap gabungan semua komponen (auto-generated dari metadata)
-        $alamatLengkap = RegionalLocation::formatFullAddress(
-            $detailAlamat,
-            $selectedWilayah['kelurahan'],
-            $selectedWilayah['kecamatan'],
-            $kabupatenKota,
-            $provinsi
-        );
+        // Koordinat GPS Kota Kendari
+        $latitude = fake()->latitude(-4.0, -3.9);
+        $longitude = fake()->longitude(122.4, 122.6);
 
         // Generate email with 70% probability
         $hasEmail = fake()->boolean(70);
         $email = $hasEmail ? fake()->unique()->safeEmail() : null;
 
         return [
-            'kode_pelanggan' => 'PLG'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
+            'kode_pelanggan' => PelangganHelper::generateKodePelanggan(),
             'nama' => fake()->name(),
             'no_hp' => '8'.fake()->numerify('##########'),
             'email' => $email,
-            'alamat' => $alamatLengkap, // Alamat lengkap (auto-generated dari metadata)
-            'password' => null, // Nullable - customer may not have registered on mobile app yet
-            'device_token' => null, // Nullable - no push notification token by default
+            'email_verified_at' => null,
+            'password' => null,
+            'device_token' => null,
+            // Alamat lengkap
+            'alamat' => $alamatLengkap,
+            'detail_alamat' => $detailAlamat,
+            'kelurahan' => $selectedWilayah['kelurahan'],
+            'kecamatan' => $selectedWilayah['kecamatan'],
+            'kabupaten_kota' => $kabupatenKota,
+            'provinsi' => $provinsi,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            // Data membership
             'tanggal_daftar' => fake()->dateTimeBetween('-1 year', 'now'),
-            'total_transaksi' => 0,
             'status' => fake()->randomElement(['Aktif', 'Aktif', 'Aktif', 'Tidak Aktif']),
-            'kode_referral_dipakai' => null,
+            'loyalty_points' => 0,
+            'member_card' => fake()->optional(0.3)->numerify('MEMBER###########'),
+            'avatar_url' => null,
+            // Referral (PelangganObserver akan auto-create Referral jika sistem aktif)
             'direferensikan_oleh' => null,
-            'metadata' => array_merge($addressMetadata, [
-                'member_card' => fake()->optional(0.3)->numerify('MEMBER###########'),
-                'loyalty_points' => fake()->numberBetween(0, 500),
-                'preferensi_pengiriman' => fake()->randomElement(['antar_jemput', 'ambil_sendiri']),
-            ]),
         ];
     }
 
     /**
      * Indicate that the customer has registered on mobile app with a password.
-     * Creates a customer with hashed password (default: 'password').
-     *
-     * @param  string|null  $password  The password to set, or null to use default 'password'
      */
     public function withPassword(?string $password = null): static
     {
         return $this->state(function (array $attributes) use ($password) {
             if ($password === null) {
-                // Use shared static password for performance
-                static::$password ??= Hash::make('password');
+                static::$password ??= \Illuminate\Support\Facades\Hash::make('password');
 
-                return ['password' => static::$password];
+                return [
+                    'password' => static::$password,
+                    'email_verified_at' => now(),
+                ];
             }
 
-            return ['password' => Hash::make($password)];
+            return [
+                'password' => \Illuminate\Support\Facades\Hash::make($password),
+                'email_verified_at' => now(),
+            ];
         });
     }
 
     /**
-     * Indicate that the customer has NOT registered on mobile app (no password).
-     * This is the default state, but can be explicitly used for clarity.
-     */
-    public function withoutPassword(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'password' => null,
-        ]);
-    }
-
-    /**
      * Indicate that the customer has a device token for push notifications.
-     *
-     * @param  string|null  $token  The device token, or null to generate a fake one
      */
     public function withDeviceToken(?string $token = null): static
     {
@@ -145,9 +122,6 @@ class PelangganFactory extends Factory
 
     /**
      * Indicate that the customer is a registered mobile app user.
-     * Sets password and device token automatically.
-     *
-     * @param  string|null  $password  The password to set, or null to use default 'password'
      */
     public function registered(?string $password = null): static
     {
@@ -165,31 +139,24 @@ class PelangganFactory extends Factory
     }
 
     /**
-     * Indicate that the customer is a loyal customer with many transactions.
+     * Indicate that the customer is a loyal customer with many loyalty points.
      */
     public function loyal(): static
     {
         return $this->state(fn (array $attributes) => [
-            'total_transaksi' => fake()->numberBetween(20, 100),
             'tanggal_daftar' => fake()->dateTimeBetween('-3 years', '-1 year'),
-            'metadata' => array_merge($attributes['metadata'], [
-                'member_card' => 'MEMBER'.fake()->numerify('###########'),
-                'loyalty_points' => fake()->numberBetween(500, 2000),
-            ]),
+            'loyalty_points' => fake()->numberBetween(500, 2000),
+            'member_card' => 'MEMBER'.fake()->numerify('###########'),
         ]);
     }
 
     /**
      * Indicate that the customer was referred by another customer.
-     *
-     * @param  int  $referrerId  The ID of the referring customer
-     * @param  string|null  $referralCode  The referral code used
      */
-    public function referred(int $referrerId, ?string $referralCode = null): static
+    public function referred(int $referrerId): static
     {
         return $this->state(fn (array $attributes) => [
             'direferensikan_oleh' => $referrerId,
-            'kode_referral_dipakai' => $referralCode ?? fake()->regexify('[A-Z0-9]{8}'),
         ]);
     }
 }

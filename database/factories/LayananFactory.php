@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Helper\Database\LayananHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,107 +17,139 @@ class LayananFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    private static int $index = 0;
-
     public function definition(): array
     {
-        $layanan = [
+        static $layanan = [
             [
                 'nama' => 'Cuci Kering',
                 'tipe' => 'per_kg',
                 'harga_kg' => 5000,
-                'harga_satuan' => 0,
+                'harga_satuan' => null,
                 'satuan' => 'kg',
                 'durasi' => 24,
                 'deskripsi' => 'Cuci dan kering saja',
-                'metadata' => ['popular' => true, 'icon' => ''],
+                'popular' => true,
+                'icon' => 'washing-machine',
+                'include' => ['Cuci', 'Kering'],
+                'exclude' => ['Setrika'],
             ],
             [
                 'nama' => 'Cuci Setrika',
                 'tipe' => 'per_kg',
                 'harga_kg' => 7000,
-                'harga_satuan' => 0,
+                'harga_satuan' => null,
                 'satuan' => 'kg',
                 'durasi' => 48,
                 'deskripsi' => 'Cuci, kering, dan setrika rapi',
-                'metadata' => ['popular' => true, 'icon' => ''],
+                'popular' => true,
+                'icon' => 'iron',
+                'include' => ['Cuci', 'Kering', 'Setrika', 'Lipat'],
+                'exclude' => [],
             ],
             [
                 'nama' => 'Setrika Saja',
                 'tipe' => 'per_kg',
                 'harga_kg' => 4000,
-                'harga_satuan' => 0,
+                'harga_satuan' => null,
                 'satuan' => 'kg',
                 'durasi' => 12,
                 'deskripsi' => 'Setrika saja tanpa cuci',
-                'metadata' => ['popular' => false, 'icon' => ''],
+                'popular' => false,
+                'icon' => 'iron-only',
+                'include' => ['Setrika', 'Lipat'],
+                'exclude' => [],
             ],
             [
                 'nama' => 'Express 6 Jam',
                 'tipe' => 'per_kg',
                 'harga_kg' => 12000,
-                'harga_satuan' => 0,
+                'harga_satuan' => null,
                 'satuan' => 'kg',
                 'durasi' => 6,
                 'deskripsi' => 'Layanan kilat 6 jam jadi',
-                'metadata' => ['popular' => true, 'icon' => ''],
+                'popular' => true,
+                'icon' => 'express',
+                'include' => ['Cuci', 'Kering', 'Setrika', 'Lipat'],
+                'exclude' => [],
             ],
             [
                 'nama' => 'Express 12 Jam',
                 'tipe' => 'per_kg',
                 'harga_kg' => 10000,
-                'harga_satuan' => 0,
+                'harga_satuan' => null,
                 'satuan' => 'kg',
                 'durasi' => 12,
                 'deskripsi' => 'Layanan kilat 12 jam jadi',
-                'metadata' => ['popular' => false, 'icon' => ''],
+                'popular' => false,
+                'icon' => 'express',
+                'include' => ['Cuci', 'Kering', 'Setrika', 'Lipat'],
+                'exclude' => [],
             ],
             [
                 'nama' => 'Cuci Karpet',
                 'tipe' => 'per_satuan',
-                'harga_kg' => 0,
+                'harga_kg' => null,
                 'harga_satuan' => 150000,
                 'satuan' => 'pcs',
                 'durasi' => 72,
                 'deskripsi' => 'Cuci karpet dan permadani per keping',
-                'metadata' => ['popular' => false, 'icon' => '', 'min_order' => 1],
+                'popular' => false,
+                'icon' => 'carpet',
+                'min_order' => 1,
+                'include' => [],
+                'exclude' => [],
             ],
             [
                 'nama' => 'Cuci Sepatu',
                 'tipe' => 'per_satuan',
-                'harga_kg' => 0,
+                'harga_kg' => null,
                 'harga_satuan' => 25000,
                 'satuan' => 'pasang',
                 'durasi' => 48,
                 'deskripsi' => 'Cuci sepatu sneakers per pasang',
-                'metadata' => ['popular' => true, 'icon' => '', 'min_order' => 1],
+                'popular' => true,
+                'icon' => 'shoe',
+                'min_order' => 1,
+                'include' => [],
+                'exclude' => [],
             ],
             [
                 'nama' => 'Cuci Boneka',
                 'tipe' => 'per_satuan',
-                'harga_kg' => 0,
+                'harga_kg' => null,
                 'harga_satuan' => 20000,
                 'satuan' => 'pcs',
                 'durasi' => 24,
                 'deskripsi' => 'Cuci boneka dan mainan per item',
-                'metadata' => ['popular' => false, 'icon' => '', 'max_order' => 10],
+                'popular' => false,
+                'icon' => 'toy',
+                'max_order' => 10,
+                'include' => [],
+                'exclude' => [],
             ],
         ];
 
-        $item = $layanan[self::$index % count($layanan)];
-        self::$index++;
+        static $index = 0;
+
+        $item = $layanan[$index % count($layanan)];
+        $index++;
 
         return [
-            'kode_layanan' => 'LYN'.str_pad((string) self::$index, 3, '0', STR_PAD_LEFT),
+            'kode_layanan' => LayananHelper::generateKodeLayanan(),
             'nama_layanan' => $item['nama'],
             'tipe_layanan' => $item['tipe'],
-            'harga_per_kg' => $item['harga_kg'],
-            'harga_per_satuan' => $item['harga_satuan'],
             'satuan' => $item['satuan'],
+            'harga_per_kg' => $item['harga_kg'] ?? 0,
+            'harga_per_satuan' => $item['harga_satuan'],
             'durasi_jam' => $item['durasi'],
             'deskripsi' => $item['deskripsi'],
             'status' => 'Aktif',
-            'metadata' => $item['metadata'],
+            'min_order' => $item['min_order'] ?? null,
+            'max_order' => $item['max_order'] ?? null,
+            'is_popular' => $item['popular'],
+            'icon' => $item['icon'],
+            'include' => $item['include'],
+            'exclude' => $item['exclude'],
         ];
     }
 }

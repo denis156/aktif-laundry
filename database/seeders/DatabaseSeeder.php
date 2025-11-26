@@ -4,17 +4,17 @@ declare(strict_types=1);
 
 namespace Database\Seeders;
 
+use App\Helper\Database\TransaksiHelper;
 use App\Models\JenisPakaian;
 use App\Models\Kurir;
 use App\Models\Layanan;
 use App\Models\Pelanggan;
-use App\Models\Pembayaran;
 use App\Models\Pengaturan;
 use App\Models\Pengiriman;
 use App\Models\Promo;
-use App\Models\Referral;
 use App\Models\Transaksi;
 use App\Models\TransaksiLayanan;
+use App\Models\TransaksiPromo;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -26,87 +26,216 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->command->info('🌱 Starting comprehensive database seeding...');
+        $this->command->info('🌱 Starting database seeding...');
         $this->command->newLine();
 
-        // ! Urutan seed harus sesuai dependency
-        // ! 1. Pengaturan - Setting untuk format_id_*, min_berat_kg, dll
+        // ! 1. Pengaturan (MUST BE FIRST - needed by Helpers and Observers)
         $this->seedPengaturan();
 
-        // ! 2. JenisPakaian - 15 jenis pakaian
+        // ! 2. Master Data (no dependencies)
         $this->seedJenisPakaian();
-
-        // ! 3. Layanan - 8 layanan (Cuci Kering, Setrika, Express, dll)
         $this->seedLayanan();
 
-        // ! 4. User - 1 Super Admin + 2-3 Staf
+        // ! 3. Users (Staff & Kasir)
         $this->seedUsers();
 
-        // ! 5. Pelanggan - 30 pelanggan (50% dengan password, 50% tanpa)
+        // ! 4. Pelanggan (Observer will auto-create Referral if enabled)
         $this->seedPelanggan();
 
-        // ! 6. Kurir - 5 kurir aktif
+        // ! 5. Kurir
         $this->seedKurir();
 
-        // ! 7. Promo - 7 promo (mix semua tipe)
+        // ! 6. Promo (needed for Transaksi)
         $this->seedPromo();
 
-        // ! 8. Referral - 5 referral dari pelanggan
-        $this->seedReferral();
-
-        // ! 9. Transaksi + TransaksiLayanan - 50 transaksi dengan relasi lengkap
+        // ! 7. Transaksi + TransaksiLayanan + TransaksiPromo
         $this->seedTransaksi();
 
-        // ! 10. Pengiriman - Data jemput/antar untuk beberapa transaksi
+        // ! 8. Pengiriman
         $this->seedPengiriman();
 
-        // ! 11. Pembayaran - Data pembayaran untuk transaksi
-        $this->seedPembayaran();
-
         $this->command->newLine();
-        $this->command->info('✅ Database seeding completed successfully!');
+        $this->command->info('✅ Database seeding completed!');
         $this->command->newLine();
-        $this->command->info('🔑 Login Credentials:');
-        $this->command->line('   Email: admin@aktiflaundry.com');
-        $this->command->line('   Password: password');
+        $this->command->info('🔑 Default Credentials:');
+        $this->command->line('   Super Admin: admin@aktiflaundry.com / password');
+        $this->command->line('   Staff: budi@aktiflaundry.com / password');
         $this->command->newLine();
     }
 
     /**
-     * Seed Pengaturan table dengan data setting penting
+     * Seed Pengaturan (CRITICAL - must be first)
      */
     private function seedPengaturan(): void
     {
-        $this->command->info('🔧 Seeding Pengaturan...');
+        $this->command->info('⚙️  Seeding Pengaturan...');
 
-        // Create 20 pengaturan (all predefined settings dari factory)
-        Pengaturan::factory()->count(20)->create();
+        // Create all required settings
+        Pengaturan::factory()->count(25)->create();
 
-        $this->command->info('   ✓ Created 20 pengaturan');
+        $this->command->info('   ✓ Created 25 pengaturan');
     }
 
     /**
-     * Seed JenisPakaian table
+     * Seed JenisPakaian
      */
     private function seedJenisPakaian(): void
     {
         $this->command->info('👔 Seeding Jenis Pakaian...');
 
-        // Create all 15 jenis pakaian dari factory
-        JenisPakaian::factory()->count(15)->create();
+        $jenisPakaianData = [
+            ['kode_jenis' => 'JNS001', 'nama_jenis' => 'Kemeja', 'keterangan' => 'Kemeja lengan panjang dan pendek', 'penanganan_khusus' => null, 'icon' => 'shirt'],
+            ['kode_jenis' => 'JNS002', 'nama_jenis' => 'Celana Panjang', 'keterangan' => 'Celana panjang reguler', 'penanganan_khusus' => null, 'icon' => 'pants'],
+            ['kode_jenis' => 'JNS003', 'nama_jenis' => 'Celana Pendek', 'keterangan' => 'Celana pendek dan training', 'penanganan_khusus' => null, 'icon' => 'shorts'],
+            ['kode_jenis' => 'JNS004', 'nama_jenis' => 'Kaos', 'keterangan' => 'Kaos oblong dan t-shirt', 'penanganan_khusus' => null, 'icon' => 'tshirt'],
+            ['kode_jenis' => 'JNS005', 'nama_jenis' => 'Rok', 'keterangan' => 'Rok panjang dan pendek', 'penanganan_khusus' => null, 'icon' => 'skirt'],
+            ['kode_jenis' => 'JNS006', 'nama_jenis' => 'Dress', 'keterangan' => 'Gaun dan terusan', 'penanganan_khusus' => 'Hati-hati dengan aksesoris', 'icon' => 'dress'],
+            ['kode_jenis' => 'JNS007', 'nama_jenis' => 'Jaket', 'keterangan' => 'Jaket dan hoodie', 'penanganan_khusus' => null, 'icon' => 'jacket'],
+            ['kode_jenis' => 'JNS008', 'nama_jenis' => 'Jas', 'keterangan' => 'Jas formal', 'penanganan_khusus' => 'Gunakan laundry khusus jas', 'icon' => 'suit'],
+            ['kode_jenis' => 'JNS009', 'nama_jenis' => 'Kebaya', 'keterangan' => 'Kebaya dan pakaian adat', 'penanganan_khusus' => 'Hati-hati dengan bordir dan payet', 'icon' => 'kebaya'],
+            ['kode_jenis' => 'JNS010', 'nama_jenis' => 'Handuk', 'keterangan' => 'Handuk mandi', 'penanganan_khusus' => null, 'icon' => 'towel'],
+            ['kode_jenis' => 'JNS011', 'nama_jenis' => 'Sprei', 'keterangan' => 'Sprei dan bed cover', 'penanganan_khusus' => null, 'icon' => 'bedsheet'],
+            ['kode_jenis' => 'JNS012', 'nama_jenis' => 'Selimut', 'keterangan' => 'Selimut dan blanket', 'penanganan_khusus' => null, 'icon' => 'blanket'],
+            ['kode_jenis' => 'JNS013', 'nama_jenis' => 'Sarung', 'keterangan' => 'Sarung dan sarung bantal', 'penanganan_khusus' => null, 'icon' => 'sarung'],
+            ['kode_jenis' => 'JNS014', 'nama_jenis' => 'Gordyn', 'keterangan' => 'Gorden jendela', 'penanganan_khusus' => null, 'icon' => 'curtain'],
+            ['kode_jenis' => 'JNS015', 'nama_jenis' => 'Mukena', 'keterangan' => 'Mukena dan perlengkapan sholat', 'penanganan_khusus' => 'Hati-hati dengan bordir', 'icon' => 'prayer-clothes'],
+        ];
+
+        foreach ($jenisPakaianData as $data) {
+            JenisPakaian::create(array_merge($data, ['status' => 'Aktif']));
+        }
 
         $this->command->info('   ✓ Created 15 jenis pakaian');
     }
 
     /**
-     * Seed Layanan table
+     * Seed Layanan
      */
     private function seedLayanan(): void
     {
         $this->command->info('🧺 Seeding Layanan...');
 
-        // Create all 8 layanan dari factory
-        Layanan::factory()->count(8)->create();
+        $layananData = [
+            [
+                'kode_layanan' => 'LYN001',
+                'nama_layanan' => 'Cuci Kering',
+                'tipe_layanan' => 'per_kg',
+                'harga_per_kg' => 5000,
+                'harga_per_satuan' => null,
+                'satuan' => 'kg',
+                'durasi_jam' => 24,
+                'deskripsi' => 'Cuci dan kering saja',
+                'is_popular' => true,
+                'icon' => 'washing-machine',
+                'include' => ['Cuci', 'Kering'],
+                'exclude' => ['Setrika'],
+            ],
+            [
+                'kode_layanan' => 'LYN002',
+                'nama_layanan' => 'Cuci Setrika',
+                'tipe_layanan' => 'per_kg',
+                'harga_per_kg' => 7000,
+                'harga_per_satuan' => null,
+                'satuan' => 'kg',
+                'durasi_jam' => 48,
+                'deskripsi' => 'Cuci, kering, dan setrika rapi',
+                'is_popular' => true,
+                'icon' => 'iron',
+                'include' => ['Cuci', 'Kering', 'Setrika', 'Lipat'],
+                'exclude' => [],
+            ],
+            [
+                'kode_layanan' => 'LYN003',
+                'nama_layanan' => 'Setrika Saja',
+                'tipe_layanan' => 'per_kg',
+                'harga_per_kg' => 4000,
+                'harga_per_satuan' => null,
+                'satuan' => 'kg',
+                'durasi_jam' => 12,
+                'deskripsi' => 'Setrika saja tanpa cuci',
+                'is_popular' => false,
+                'icon' => 'iron-only',
+                'include' => ['Setrika', 'Lipat'],
+                'exclude' => [],
+            ],
+            [
+                'kode_layanan' => 'LYN004',
+                'nama_layanan' => 'Express 6 Jam',
+                'tipe_layanan' => 'per_kg',
+                'harga_per_kg' => 12000,
+                'harga_per_satuan' => null,
+                'satuan' => 'kg',
+                'durasi_jam' => 6,
+                'deskripsi' => 'Layanan kilat 6 jam jadi',
+                'is_popular' => true,
+                'icon' => 'express',
+                'include' => ['Cuci', 'Kering', 'Setrika', 'Lipat'],
+                'exclude' => [],
+            ],
+            [
+                'kode_layanan' => 'LYN005',
+                'nama_layanan' => 'Express 12 Jam',
+                'tipe_layanan' => 'per_kg',
+                'harga_per_kg' => 10000,
+                'harga_per_satuan' => null,
+                'satuan' => 'kg',
+                'durasi_jam' => 12,
+                'deskripsi' => 'Layanan kilat 12 jam jadi',
+                'is_popular' => false,
+                'icon' => 'express',
+                'include' => ['Cuci', 'Kering', 'Setrika', 'Lipat'],
+                'exclude' => [],
+            ],
+            [
+                'kode_layanan' => 'LYN006',
+                'nama_layanan' => 'Cuci Karpet',
+                'tipe_layanan' => 'per_satuan',
+                'harga_per_kg' => 0,
+                'harga_per_satuan' => 150000,
+                'satuan' => 'pcs',
+                'durasi_jam' => 72,
+                'deskripsi' => 'Cuci karpet dan permadani per keping',
+                'is_popular' => false,
+                'icon' => 'carpet',
+                'min_order' => 1,
+                'include' => [],
+                'exclude' => [],
+            ],
+            [
+                'kode_layanan' => 'LYN007',
+                'nama_layanan' => 'Cuci Sepatu',
+                'tipe_layanan' => 'per_satuan',
+                'harga_per_kg' => 0,
+                'harga_per_satuan' => 25000,
+                'satuan' => 'pasang',
+                'durasi_jam' => 48,
+                'deskripsi' => 'Cuci sepatu sneakers per pasang',
+                'is_popular' => true,
+                'icon' => 'shoe',
+                'min_order' => 1,
+                'include' => [],
+                'exclude' => [],
+            ],
+            [
+                'kode_layanan' => 'LYN008',
+                'nama_layanan' => 'Cuci Boneka',
+                'tipe_layanan' => 'per_satuan',
+                'harga_per_kg' => 0,
+                'harga_per_satuan' => 20000,
+                'satuan' => 'pcs',
+                'durasi_jam' => 24,
+                'deskripsi' => 'Cuci boneka dan mainan per item',
+                'is_popular' => false,
+                'icon' => 'toy',
+                'max_order' => 10,
+                'include' => [],
+                'exclude' => [],
+            ],
+        ];
+
+        foreach ($layananData as $data) {
+            Layanan::create(array_merge($data, ['status' => 'Aktif']));
+        }
 
         $this->command->info('   ✓ Created 8 layanan');
     }
@@ -118,56 +247,83 @@ class DatabaseSeeder extends Seeder
     {
         $this->command->info('👤 Seeding Users...');
 
-        // Super Admin
-        User::factory()->create([
+        // Super Admin (UserObserver will generate kode_user and avatar_url)
+        User::create([
             'name' => 'Super Admin',
             'email' => 'admin@aktiflaundry.com',
             'no_hp' => '81234567890',
             'password' => Hash::make('password'),
             'super_admin' => true,
-            'metadata' => ['gaji' => 10000000],
+            'gaji' => 10000000,
+            'jam_masuk' => '08:00',
+            'jam_keluar' => '17:00',
+            'alamat' => 'Kendari, Sulawesi Tenggara',
         ]);
 
         // Staff Kasir
-        User::factory()->create([
+        User::create([
             'name' => 'Budi Santoso',
             'email' => 'budi@aktiflaundry.com',
             'no_hp' => '81234567891',
             'password' => Hash::make('password'),
             'super_admin' => false,
-            'metadata' => ['gaji' => 5000000],
+            'gaji' => 5000000,
+            'jam_masuk' => '08:00',
+            'jam_keluar' => '20:00',
+            'alamat' => 'Kendari, Sulawesi Tenggara',
         ]);
 
         // Staff Admin
-        User::factory()->create([
+        User::create([
             'name' => 'Siti Aminah',
             'email' => 'siti@aktiflaundry.com',
             'no_hp' => '81234567892',
             'password' => Hash::make('password'),
             'super_admin' => false,
-            'metadata' => ['gaji' => 5500000],
+            'gaji' => 5500000,
+            'jam_masuk' => '09:00',
+            'jam_keluar' => '21:00',
+            'alamat' => 'Kendari, Sulawesi Tenggara',
         ]);
 
-        $this->command->info('   ✓ Created 3 users (1 Super Admin, 2 Staff)');
+        $this->command->info('   ✓ Created 3 users');
     }
 
     /**
-     * Seed Pelanggan (50% dengan password, 50% tanpa)
+     * Seed Pelanggan (Observer will auto-create Referral if enabled)
      */
     private function seedPelanggan(): void
     {
         $this->command->info('👥 Seeding Pelanggan...');
 
-        // 15 pelanggan dengan password (registered)
-        Pelanggan::factory()->count(15)->withPassword()->create();
+        $counter = 1;
 
-        // 15 pelanggan tanpa password (belum register)
-        Pelanggan::factory()->count(15)->create();
+        // 15 pelanggan registered
+        for ($i = 0; $i < 15; $i++) {
+            Pelanggan::factory()->registered()->create([
+                'kode_pelanggan' => 'PLG'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
+            ]);
+            $counter++;
+        }
 
-        // 3 pelanggan loyal (untuk testing referral)
-        Pelanggan::factory()->count(3)->loyal()->withPassword()->create();
+        // 15 pelanggan belum register
+        for ($i = 0; $i < 15; $i++) {
+            Pelanggan::factory()->create([
+                'kode_pelanggan' => 'PLG'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
+            ]);
+            $counter++;
+        }
 
-        $this->command->info('   ✓ Created 33 pelanggan (18 registered, 15 unregistered, 3 loyal)');
+        // 5 pelanggan loyal
+        for ($i = 0; $i < 5; $i++) {
+            Pelanggan::factory()->loyal()->registered()->create([
+                'kode_pelanggan' => 'PLG'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
+            ]);
+            $counter++;
+        }
+
+        $this->command->info('   ✓ Created 35 pelanggan');
+        $this->command->info('   ✓ Referral auto-created by Observer (if enabled)');
     }
 
     /**
@@ -177,32 +333,44 @@ class DatabaseSeeder extends Seeder
     {
         $this->command->info('🏍️  Seeding Kurir...');
 
+        $counter = 1;
+
         // 3 kurir motor aktif
-        Kurir::factory()->count(3)->create([
-            'jenis_kendaraan' => 'Motor',
-            'status' => 'Aktif',
-        ]);
+        for ($i = 0; $i < 3; $i++) {
+            Kurir::factory()->create([
+                'kode_kurir' => 'KUR'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
+                'jenis_kendaraan' => 'Motor',
+                'status' => 'Aktif',
+            ]);
+            $counter++;
+        }
 
         // 2 kurir mobil aktif
-        Kurir::factory()->count(2)->create([
-            'jenis_kendaraan' => 'Mobil',
-            'status' => 'Aktif',
-        ]);
+        for ($i = 0; $i < 2; $i++) {
+            Kurir::factory()->create([
+                'kode_kurir' => 'KUR'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
+                'jenis_kendaraan' => 'Mobil',
+                'status' => 'Aktif',
+            ]);
+            $counter++;
+        }
 
         // 1 kurir tidak aktif
-        Kurir::factory()->inactive()->create();
+        Kurir::factory()->inactive()->create([
+            'kode_kurir' => 'KUR'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
+        ]);
 
-        $this->command->info('   ✓ Created 6 kurir (5 aktif, 1 tidak aktif)');
+        $this->command->info('   ✓ Created 6 kurir');
     }
 
     /**
-     * Seed Promo (mix semua tipe)
+     * Seed Promo
      */
     private function seedPromo(): void
     {
         $this->command->info('🎁 Seeding Promo...');
 
-        // 1 promo persen aktif
+        // 5 promo aktif dengan berbagai tipe
         Promo::factory()->active()->create([
             'kode_promo' => 'WELCOME10',
             'nama_promo' => 'Diskon Pelanggan Baru',
@@ -211,7 +379,6 @@ class DatabaseSeeder extends Seeder
             'berlaku_untuk' => 'pelanggan_baru',
         ]);
 
-        // 1 promo nominal aktif
         Promo::factory()->active()->create([
             'kode_promo' => 'HEMAT20K',
             'nama_promo' => 'Hemat 20 Ribu',
@@ -220,7 +387,6 @@ class DatabaseSeeder extends Seeder
             'min_transaksi' => 100000,
         ]);
 
-        // 1 promo gratis_kg aktif
         Promo::factory()->active()->create([
             'kode_promo' => 'GRATIS2KG',
             'nama_promo' => 'Gratis 2 Kg',
@@ -229,15 +395,13 @@ class DatabaseSeeder extends Seeder
             'min_transaksi' => 50000,
         ]);
 
-        // 1 promo gratis_hari aktif
         Promo::factory()->active()->create([
-            'kode_promo' => 'GRATISHARI',
-            'nama_promo' => 'Gratis 1 Hari Express',
+            'kode_promo' => 'EXPRESS',
+            'nama_promo' => 'Gratis Express',
             'tipe_diskon' => 'gratis_hari',
             'nilai_diskon' => 1,
         ]);
 
-        // 1 promo cashback aktif
         Promo::factory()->active()->create([
             'kode_promo' => 'CASHBACK15K',
             'nama_promo' => 'Cashback 15 Ribu',
@@ -246,47 +410,28 @@ class DatabaseSeeder extends Seeder
             'min_transaksi' => 75000,
         ]);
 
-        // 2 promo tidak aktif atau expired
-        Promo::factory()->inactive()->create();
-        Promo::factory()->expired()->create();
+        // 2 promo tidak aktif
+        Promo::factory()->inactive()->create(['kode_promo' => 'EXPIRED50K']);
+        Promo::factory()->inactive()->create(['kode_promo' => 'OLD10']);
 
-        $this->command->info('   ✓ Created 7 promo (5 aktif, 2 tidak aktif)');
+        $this->command->info('   ✓ Created 7 promo');
     }
 
     /**
-     * Seed Referral
-     */
-    private function seedReferral(): void
-    {
-        $this->command->info('🔗 Seeding Referral...');
-
-        // Ambil 5 pelanggan loyal untuk dijadikan referrer
-        $pelangganLoyals = Pelanggan::where('total_transaksi', '>', 0)->take(5)->get();
-
-        foreach ($pelangganLoyals as $pelanggan) {
-            Referral::factory()->create([
-                'pelanggan_id' => $pelanggan->id,
-                'status' => 'Aktif',
-            ]);
-        }
-
-        $this->command->info('   ✓ Created 5 referral codes');
-    }
-
-    /**
-     * Seed Transaksi + TransaksiLayanan
+     * Seed Transaksi + TransaksiLayanan + TransaksiPromo
      */
     private function seedTransaksi(): void
     {
-        $this->command->info('📦 Seeding Transaksi + Transaksi Layanan...');
+        $this->command->info('📦 Seeding Transaksi...');
 
         $pelanggan = Pelanggan::all();
-        $kasir = User::all(); // All users can be kasir
+        $kasir = User::all();
         $layanan = Layanan::all();
         $promoAktif = Promo::where('status', 'Aktif')->get();
 
         $transaksiCount = 0;
         $transaksiLayananCount = 0;
+        $transaksiPromoCount = 0;
 
         // Create 50 transaksi
         for ($i = 0; $i < 50; $i++) {
@@ -310,14 +455,19 @@ class DatabaseSeeder extends Seeder
                     $totalBerat += $berat;
 
                     // Generate jenis pakaian
-                    $jenisPakaianList = ['Kemeja', 'Celana Panjang', 'Kaos', 'Rok', 'Handuk'];
+                    $jenisPakaianAll = JenisPakaian::all();
                     $jumlahJenis = fake()->numberBetween(2, 4);
                     $jenisPakaian = [];
-                    for ($j = 0; $j < $jumlahJenis; $j++) {
-                        $jenisPakaian[] = [
-                            'nama' => fake()->randomElement($jenisPakaianList),
-                            'jumlah' => fake()->numberBetween(1, 5),
-                        ];
+
+                    if ($jenisPakaianAll->isNotEmpty()) {
+                        $selected = $jenisPakaianAll->random(min($jumlahJenis, $jenisPakaianAll->count()));
+                        foreach ($selected as $jp) {
+                            $jenisPakaian[] = [
+                                'jenis_pakaian_id' => $jp->id,
+                                'nama_jenis' => $jp->nama_jenis,
+                                'jumlah' => fake()->numberBetween(1, 5),
+                            ];
+                        }
                     }
 
                     $transaksLayananData[] = [
@@ -367,25 +517,25 @@ class DatabaseSeeder extends Seeder
 
             $total = $subtotal - $diskon;
 
-            // Create transaksi
             $tanggalMasuk = fake()->dateTimeBetween('-1 month', 'now');
             $durasiJam = $selectedLayanan->max('durasi_jam') ?? 24;
             $tanggalSelesai = (clone $tanggalMasuk)->modify("+{$durasiJam} hours");
 
+            // Create transaksi
             $transaksi = Transaksi::create([
-                'kode_transaksi' => 'TRX'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT),
+                'kode_transaksi' => TransaksiHelper::generateKodeTransaksi(),
                 'tanggal_masuk' => $tanggalMasuk,
                 'kasir_id' => $selectedKasir->id,
                 'pelanggan_id' => $selectedPelanggan->id,
                 'nama_pelanggan' => $selectedPelanggan->nama,
-                'promo_id' => $promo?->id,
                 'total_berat' => $totalBerat,
                 'total_item' => $totalItem,
                 'jumlah_layanan' => $jumlahLayanan,
                 'subtotal' => $subtotal,
-                'diskon' => $diskon,
                 'total' => $total,
-                'metode_pembayaran' => fake()->randomElement(['Tunai', 'Transfer', 'QRIS', 'Debit', 'E-Wallet']),
+                'metode_pembayaran' => fake()->randomElement(['Bayar Saat Jemput', 'Bayar Saat Antar']),
+                'tipe_bayar' => fake()->randomElement(['Tunai', 'Non-Tunai']),
+                'status_bayar' => fake()->randomElement(['Belum Bayar', 'Sudah Bayar', 'Sudah Bayar']),
                 'tanggal_selesai' => $tanggalSelesai,
                 'status' => fake()->randomElement(['Menunggu', 'Proses', 'Selesai', 'Diambil']),
                 'catatan' => fake()->optional(0.3)->sentence(),
@@ -409,16 +559,44 @@ class DatabaseSeeder extends Seeder
                 $transaksiLayananCount++;
             }
 
-            // Update total_transaksi pelanggan
-            $selectedPelanggan->increment('total_transaksi');
+            // Create transaksi promo if promo used
+            if ($promo) {
+                $transaksiPromoData = [
+                    'transaksi_id' => $transaksi->id,
+                    'promo_id' => $promo->id,
+                    'kode_promo' => $promo->kode_promo,
+                    'nama_promo' => $promo->nama_promo,
+                    'tipe_diskon' => $promo->tipe_diskon,
+                    'diterapkan_ke' => 'subtotal',
+                    'urutan_apply' => 1,
+                ];
+
+                // Set nilai diskon sesuai tipe
+                if ($promo->tipe_diskon === 'persen') {
+                    $transaksiPromoData['nilai_diskon_persen'] = $promo->nilai_diskon;
+                    if ($promo->diskon_maksimal) {
+                        $transaksiPromoData['diskon_maksimal'] = $promo->diskon_maksimal;
+                    }
+                } elseif ($promo->tipe_diskon === 'nominal') {
+                    $transaksiPromoData['nilai_diskon_nominal'] = $promo->nilai_diskon;
+                } elseif ($promo->tipe_diskon === 'gratis_kg') {
+                    $transaksiPromoData['gratis_kg'] = $promo->nilai_diskon;
+                } elseif ($promo->tipe_diskon === 'gratis_hari') {
+                    $transaksiPromoData['gratis_hari'] = $promo->nilai_diskon;
+                }
+
+                TransaksiPromo::create($transaksiPromoData);
+                $transaksiPromoCount++;
+            }
         }
 
         $this->command->info("   ✓ Created {$transaksiCount} transaksi");
         $this->command->info("   ✓ Created {$transaksiLayananCount} transaksi layanan");
+        $this->command->info("   ✓ Created {$transaksiPromoCount} transaksi promo");
     }
 
     /**
-     * Seed Pengiriman (jemput/antar untuk beberapa transaksi)
+     * Seed Pengiriman
      */
     private function seedPengiriman(): void
     {
@@ -460,33 +638,5 @@ class DatabaseSeeder extends Seeder
         }
 
         $this->command->info("   ✓ Created {$count} pengiriman");
-    }
-
-    /**
-     * Seed Pembayaran
-     */
-    private function seedPembayaran(): void
-    {
-        $this->command->info('💰 Seeding Pembayaran...');
-
-        $transaksi = Transaksi::all();
-
-        $count = 0;
-
-        // 90% transaksi punya data pembayaran
-        foreach ($transaksi->random((int) ($transaksi->count() * 0.9)) as $trx) {
-            Pembayaran::factory()->create([
-                'transaksi_id' => $trx->id,
-                'jumlah_bayar' => $trx->total + fake()->randomElement([0, 0, 5000, 10000]),
-                'kembalian' => fake()->numberBetween(0, 10000),
-                'metode' => $trx->metode_pembayaran,
-                'status' => 'Verified',
-                'tanggal_bayar' => $trx->tanggal_masuk,
-            ]);
-
-            $count++;
-        }
-
-        $this->command->info("   ✓ Created {$count} pembayaran");
     }
 }

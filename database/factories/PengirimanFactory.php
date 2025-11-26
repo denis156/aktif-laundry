@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Helper\Database\PengirimanHelper;
 use App\Models\Kurir;
 use App\Models\Transaksi;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,43 +28,86 @@ class PengirimanFactory extends Factory
         $status = fake()->randomElement(['Dijadwalkan', 'Dalam Perjalanan', 'Selesai', 'Batal']);
 
         $waktuMulai = $status !== 'Dijadwalkan' ? $jadwalWaktu : null;
-        $waktuSelesai = $status === 'Selesai' ? (clone $waktuMulai)->modify('+'.fake()->numberBetween(10, 60).' minutes') : null;
+        $waktuSelesai = $status === 'Selesai'
+            ? (clone $waktuMulai)->modify('+'.fake()->numberBetween(10, 60).' minutes')
+            : null;
 
         $fotoBukti = $status === 'Selesai' ? 'bukti_'.fake()->uuid().'.jpg' : null;
 
+        // Koordinat GPS Kota Kendari
+        $latitude = fake()->latitude(-4.0, -3.9);
+        $longitude = fake()->longitude(122.4, 122.6);
+
         return [
-            'kode_pengiriman' => 'PNG'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
-            'transaksi_id' => $transaksi ? $transaksi->id : Transaksi::factory(),
-            'kurir_id' => Kurir::inRandomOrder()->first()?->id ?? Kurir::factory(),
+            'kode_pengiriman' => PengirimanHelper::generateKodePengiriman(),
+            'transaksi_id' => $transaksi?->id ?? Transaksi::factory(),
+            'kurir_id' => Kurir::where('status', 'Aktif')->inRandomOrder()->first()?->id ?? Kurir::factory(),
             'tipe' => $tipe,
+            // Alamat dan penerima
             'alamat_tujuan' => fake()->address(),
             'nama_penerima' => fake()->name(),
             'no_hp_penerima' => '8'.fake()->numerify('##########'),
-            'latitude' => fake()->latitude(-7.3, -7.0),
-            'longitude' => fake()->longitude(107.5, 107.8),
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            // Lokasi pickup (untuk jemput)
+            'lokasi_pickup_latitude' => $tipe === 'Jemput' ? fake()->latitude(-4.0, -3.9) : null,
+            'lokasi_pickup_longitude' => $tipe === 'Jemput' ? fake()->longitude(122.4, 122.6) : null,
+            'lokasi_pickup_address' => $tipe === 'Jemput' ? fake()->address() : null,
+            // Timeline
             'jadwal_waktu' => $jadwalWaktu,
             'waktu_mulai' => $waktuMulai,
             'waktu_selesai' => $waktuSelesai,
-            'biaya_antar' => fake()->randomElement([0, 5000, 10000, 15000, 20000]),
-            'jarak_km' => fake()->randomFloat(2, 1, 15),
+            // Status
             'status' => $status,
             'catatan' => fake()->optional(0.3)->sentence(),
             'foto_bukti' => $fotoBukti,
-            'metadata' => [
-                'lokasi_pengambilan' => [
-                    'lat' => fake()->latitude(-7.3, -7.0),
-                    'lng' => fake()->longitude(107.5, 107.8),
-                    'waktu' => $waktuMulai,
-                ],
-                'tracking' => $status === 'Selesai' ? [
-                    ['lat' => fake()->latitude(-7.3, -7.0), 'lng' => fake()->longitude(107.5, 107.8), 'waktu' => $waktuMulai],
-                    ['lat' => fake()->latitude(-7.3, -7.0), 'lng' => fake()->longitude(107.5, 107.8), 'waktu' => $waktuSelesai],
-                ] : [],
-                'review_customer' => $status === 'Selesai' ? [
-                    'rating' => fake()->numberBetween(3, 5),
-                    'komentar' => fake()->optional(0.5)->sentence(),
-                ] : null,
-            ],
+            // Tracking
+            'tracking' => $status === 'Selesai' ? [
+                ['status' => 'Dijemput', 'waktu' => $waktuMulai, 'lat' => fake()->latitude(-4.0, -3.9), 'lng' => fake()->longitude(122.4, 122.6)],
+                ['status' => 'Dalam Perjalanan', 'waktu' => (clone $waktuMulai)->modify('+10 minutes'), 'lat' => fake()->latitude(-4.0, -3.9), 'lng' => fake()->longitude(122.4, 122.6)],
+                ['status' => 'Selesai', 'waktu' => $waktuSelesai, 'lat' => $latitude, 'lng' => $longitude],
+            ] : [],
+            // Review (hanya jika selesai)
+            'review_rating' => $status === 'Selesai' ? fake()->numberBetween(3, 5) : null,
+            'review_text' => $status === 'Selesai' ? fake()->optional(0.5)->sentence() : null,
         ];
+    }
+
+    /**
+     * Indicate that delivery is completed.
+     */
+    public function completed(): static
+    {
+        return $this->state(function (array $attributes) {
+            $waktuMulai = fake()->dateTimeBetween('-1 week', 'now');
+            $waktuSelesai = (clone $waktuMulai)->modify('+'.fake()->numberBetween(10, 60).' minutes');
+
+            return [
+                'status' => 'Selesai',
+                'waktu_mulai' => $waktuMulai,
+                'waktu_selesai' => $waktuSelesai,
+                'foto_bukti' => 'bukti_'.fake()->uuid().'.jpg',
+                'tracking' => [
+                    ['status' => 'Dijemput', 'waktu' => $waktuMulai],
+                    ['status' => 'Selesai', 'waktu' => $waktuSelesai],
+                ],
+                'review_rating' => fake()->numberBetween(4, 5),
+                'review_text' => fake()->sentence(),
+            ];
+        });
+    }
+
+    /**
+     * Indicate that delivery is scheduled.
+     */
+    public function scheduled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'Dijadwalkan',
+            'waktu_mulai' => null,
+            'waktu_selesai' => null,
+            'foto_bukti' => null,
+            'tracking' => [],
+        ]);
     }
 }

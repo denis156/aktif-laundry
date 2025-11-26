@@ -4,8 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Helper\AddressMetadata;
-use App\Helper\RegionalLocation;
+use App\Helper\Database\KurirHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 
@@ -16,7 +15,6 @@ class KurirFactory extends Factory
 {
     /**
      * The current password being used by the factory.
-     * Shared static password to improve performance when creating multiple couriers.
      */
     protected static ?string $password = null;
 
@@ -27,7 +25,7 @@ class KurirFactory extends Factory
      */
     public function definition(): array
     {
-        // Wilayah Kota Kendari untuk kurir
+        // Wilayah Kota Kendari
         $wilayah = [
             ['kelurahan' => 'Mandonga', 'kecamatan' => 'Mandonga'],
             ['kelurahan' => 'Wua-Wua', 'kecamatan' => 'Wua-Wua'],
@@ -42,82 +40,61 @@ class KurirFactory extends Factory
         ];
 
         $selectedWilayah = fake()->randomElement($wilayah);
-
-        // Detail alamat kurir
         $detailAlamat = fake()->streetAddress();
+        $kabupatenKota = 'Kota Kendari';
+        $provinsi = 'Sulawesi Tenggara';
+
+        // Alamat lengkap display
+        $alamatLengkap = implode(', ', array_filter([
+            $detailAlamat,
+            "Kel. {$selectedWilayah['kelurahan']}",
+            "Kec. {$selectedWilayah['kecamatan']}",
+            $kabupatenKota,
+            $provinsi,
+        ]));
 
         // Koordinat GPS Kota Kendari
         $latitude = fake()->latitude(-4.0, -3.9);
         $longitude = fake()->longitude(122.4, 122.6);
 
-        // Generate metadata alamat dengan GPS menggunakan AddressMetadata helper
-        $addressMetadata = AddressMetadata::generate(
-            $detailAlamat,
-            $selectedWilayah['kelurahan'],
-            $selectedWilayah['kecamatan'],
-            RegionalLocation::getRegencyName(),
-            RegionalLocation::getProvinceName(),
-            $latitude,
-            $longitude
-        );
-
-        // Alamat lengkap gabungan (auto-generated dari metadata)
-        $alamatLengkap = RegionalLocation::formatFullAddress(
-            $detailAlamat,
-            $selectedWilayah['kelurahan'],
-            $selectedWilayah['kecamatan'],
-            RegionalLocation::getRegencyName(),
-            RegionalLocation::getProvinceName()
-        );
-
-        // Area coverage - Motor cover 1-2 kecamatan, Mobil cover 2-4 kecamatan
-        $allKecamatan = [
-            'Mandonga', 'Wua-Wua', 'Poasia', 'Baruga', 'Kendari',
-            'Kendari Barat', 'Abeli', 'Kambu', 'Kadia', 'Puuwatu',
-        ];
-
-        $isMotor = fake()->boolean(60); // 60% motor, 40% mobil
-        $jenisKendaraan = $isMotor ? 'Motor' : 'Mobil';
-        $coverageCount = $isMotor ? fake()->numberBetween(1, 2) : fake()->numberBetween(2, 4);
-        $areaCoverageKecamatan = fake()->randomElements($allKecamatan, $coverageCount);
-
         return [
-            'kode_kurir' => 'KUR'.str_pad((string) fake()->unique()->numberBetween(1, 999), 3, '0', STR_PAD_LEFT),
+            'kode_kurir' => KurirHelper::generateKodeKurir(),
             'nama' => fake()->name(),
             'no_hp' => '8'.fake()->numerify('##########'),
             'email' => fake()->unique()->safeEmail(),
-            'alamat' => $alamatLengkap, // Alamat lengkap (auto-generated dari metadata)
+            'email_verified_at' => null,
+            'password' => static::$password ??= Hash::make('password'),
+            'device_token' => null,
+            // Alamat lengkap
+            'alamat' => $alamatLengkap,
+            'detail_alamat' => $detailAlamat,
+            'kelurahan' => $selectedWilayah['kelurahan'],
+            'kecamatan' => $selectedWilayah['kecamatan'],
+            'kabupaten_kota' => $kabupatenKota,
+            'provinsi' => $provinsi,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
+            // Vehicle info
             'no_kendaraan' => fake()->regexify('[A-Z]{1,2} [0-9]{1,4} [A-Z]{1,3}'),
-            'jenis_kendaraan' => $jenisKendaraan,
+            'jenis_kendaraan' => fake()->randomElement(['Motor', 'Mobil']),
+            // Profile
             'tanggal_bergabung' => fake()->dateTimeBetween('-2 years', 'now'),
             'status' => fake()->randomElement(['Aktif', 'Aktif', 'Tidak Aktif']),
-            'total_antar' => fake()->numberBetween(0, 200),
-            'total_jemput' => fake()->numberBetween(0, 200),
-            'password' => static::$password ??= Hash::make('password'), // Required field, default: 'password'
-            'device_token' => null,
-            'metadata' => array_merge($addressMetadata, [
-                'area_coverage' => [
-                    'kecamatan' => $areaCoverageKecamatan,
-                    'kelurahan' => [], // Will be populated in seeder if needed
-                ],
-                'bank_info' => [
-                    'bank' => fake()->randomElement(['BCA', 'Mandiri', 'BRI', 'BNI']),
-                    'no_rekening' => fake()->numerify('##########'),
-                    'nama_pemilik' => fake()->name(),
-                ],
-                'emergency_contact' => [
-                    'nama' => fake()->name(),
-                    'no_hp' => '8'.fake()->numerify('##########'),
-                    'hubungan' => fake()->randomElement(['Orang Tua', 'Saudara', 'Teman']),
-                ],
-            ]),
+            // Data Bank
+            'bank_name' => fake()->randomElement(['BCA', 'Mandiri', 'BRI', 'BNI']),
+            'bank_account_number' => fake()->numerify('##########'),
+            'bank_account_name' => fake()->name(),
+            // Emergency Contact
+            'emergency_contact_name' => fake()->name(),
+            'emergency_contact_phone' => '8'.fake()->numerify('##########'),
+            'emergency_contact_relation' => fake()->randomElement(['Orang Tua', 'Saudara', 'Teman']),
+            // Avatar
+            'avatar_url' => null,
         ];
     }
 
     /**
      * Indicate that the courier should have a custom password.
-     *
-     * @param  string  $password  The password to set (will be hashed)
      */
     public function withPassword(string $password): static
     {
@@ -128,8 +105,6 @@ class KurirFactory extends Factory
 
     /**
      * Indicate that the courier should have a device token for push notifications.
-     *
-     * @param  string|null  $token  The device token, or null to generate a fake one
      */
     public function withDeviceToken(?string $token = null): static
     {
@@ -149,14 +124,12 @@ class KurirFactory extends Factory
     }
 
     /**
-     * Indicate that the courier has extensive delivery experience.
+     * Indicate that the courier is on leave/cuti.
      */
-    public function experienced(): static
+    public function onLeave(): static
     {
         return $this->state(fn (array $attributes) => [
-            'total_antar' => fake()->numberBetween(300, 1000),
-            'total_jemput' => fake()->numberBetween(300, 1000),
-            'tanggal_bergabung' => fake()->dateTimeBetween('-5 years', '-2 years'),
+            'status' => 'Cuti',
         ]);
     }
 }

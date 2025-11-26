@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
-use App\Helper\AddressMetadata;
-use App\Helper\RegionalLocation;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -27,7 +25,7 @@ class UserFactory extends Factory
      */
     public function definition(): array
     {
-        // Wilayah Kota Kendari (lebih lengkap)
+        // Wilayah Kota Kendari
         $wilayah = [
             ['kelurahan' => 'Mandonga', 'kecamatan' => 'Mandonga'],
             ['kelurahan' => 'Wua-Wua', 'kecamatan' => 'Wua-Wua'],
@@ -43,30 +41,21 @@ class UserFactory extends Factory
 
         $selectedWilayah = fake()->randomElement($wilayah);
         $detailAlamat = fake()->streetAddress();
+        $kabupatenKota = 'Kota Kendari';
+        $provinsi = 'Sulawesi Tenggara';
+
+        // Alamat lengkap display
+        $alamatLengkap = implode(', ', array_filter([
+            $detailAlamat,
+            "Kel. {$selectedWilayah['kelurahan']}",
+            "Kec. {$selectedWilayah['kecamatan']}",
+            $kabupatenKota,
+            $provinsi,
+        ]));
 
         // Koordinat GPS Kota Kendari
         $latitude = fake()->latitude(-4.0, -3.9);
         $longitude = fake()->longitude(122.4, 122.6);
-
-        // Generate metadata alamat dengan GPS
-        $addressMetadata = AddressMetadata::generate(
-            $detailAlamat,
-            $selectedWilayah['kelurahan'],
-            $selectedWilayah['kecamatan'],
-            RegionalLocation::getRegencyName(),
-            RegionalLocation::getProvinceName(),
-            $latitude,
-            $longitude
-        );
-
-        // Alamat lengkap (auto-generated dari metadata)
-        $alamatLengkap = RegionalLocation::formatFullAddress(
-            $detailAlamat,
-            $selectedWilayah['kelurahan'],
-            $selectedWilayah['kecamatan'],
-            RegionalLocation::getRegencyName(),
-            RegionalLocation::getProvinceName()
-        );
 
         return [
             'name' => fake()->name(),
@@ -76,11 +65,24 @@ class UserFactory extends Factory
             'password' => static::$password ??= Hash::make('password'),
             'avatar_url' => null,
             'super_admin' => false,
+            // Data Kepegawaian
+            'gaji' => fake()->numberBetween(3000000, 6000000),
+            'jam_masuk' => fake()->time('H:i', '10:00'),
+            'jam_keluar' => fake()->time('H:i', '20:00'),
+            // Data Bank
+            'bank_name' => fake()->randomElement(['BCA', 'Mandiri', 'BRI', 'BNI']),
+            'bank_account_number' => fake()->numerify('##########'),
+            'bank_account_name' => fake()->name(),
+            // Alamat lengkap
             'alamat' => $alamatLengkap,
+            'detail_alamat' => $detailAlamat,
+            'kelurahan' => $selectedWilayah['kelurahan'],
+            'kecamatan' => $selectedWilayah['kecamatan'],
+            'kabupaten_kota' => $kabupatenKota,
+            'provinsi' => $provinsi,
+            'latitude' => $latitude,
+            'longitude' => $longitude,
             'remember_token' => Str::random(10),
-            'metadata' => array_merge($addressMetadata, [
-                'gaji' => fake()->numberBetween(3000000, 6000000),
-            ]),
         ];
     }
 

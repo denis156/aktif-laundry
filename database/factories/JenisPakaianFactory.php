@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Helper\Database\JenisPakaianHelper;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -16,37 +17,38 @@ class JenisPakaianFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    private static int $index = 0;
-
     public function definition(): array
     {
-        $jenisPakaian = [
-            ['nama' => 'Kemeja', 'keterangan' => 'Kemeja lengan panjang dan pendek', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Celana Panjang', 'keterangan' => 'Celana panjang reguler', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Celana Pendek', 'keterangan' => 'Celana pendek dan training', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Kaos', 'keterangan' => 'Kaos oblong dan t-shirt', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Rok', 'keterangan' => 'Rok panjang dan pendek', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Dress', 'keterangan' => 'Gaun dan terusan', 'metadata' => ['penanganan_khusus' => true]],
-            ['nama' => 'Jaket', 'keterangan' => 'Jaket dan hoodie', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Jas', 'keterangan' => 'Jas formal', 'metadata' => ['penanganan_khusus' => true]],
-            ['nama' => 'Kebaya', 'keterangan' => 'Kebaya dan pakaian adat', 'metadata' => ['penanganan_khusus' => true]],
-            ['nama' => 'Handuk', 'keterangan' => 'Handuk mandi', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Sprei', 'keterangan' => 'Sprei dan bed cover', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Selimut', 'keterangan' => 'Selimut dan blanket', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Sarung', 'keterangan' => 'Sarung dan sarung bantal', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Gordyn', 'keterangan' => 'Gorden jendela', 'metadata' => ['penanganan_khusus' => false]],
-            ['nama' => 'Mukena', 'keterangan' => 'Mukena dan perlengkapan sholat', 'metadata' => ['penanganan_khusus' => true]],
+        static $jenisPakaian = [
+            ['nama' => 'Kemeja', 'keterangan' => 'Kemeja lengan panjang dan pendek', 'penanganan_khusus' => null, 'icon' => 'shirt'],
+            ['nama' => 'Celana Panjang', 'keterangan' => 'Celana panjang reguler', 'penanganan_khusus' => null, 'icon' => 'pants'],
+            ['nama' => 'Celana Pendek', 'keterangan' => 'Celana pendek dan training', 'penanganan_khusus' => null, 'icon' => 'shorts'],
+            ['nama' => 'Kaos', 'keterangan' => 'Kaos oblong dan t-shirt', 'penanganan_khusus' => null, 'icon' => 'tshirt'],
+            ['nama' => 'Rok', 'keterangan' => 'Rok panjang dan pendek', 'penanganan_khusus' => null, 'icon' => 'skirt'],
+            ['nama' => 'Dress', 'keterangan' => 'Gaun dan terusan', 'penanganan_khusus' => 'Hati-hati dengan aksesoris', 'icon' => 'dress'],
+            ['nama' => 'Jaket', 'keterangan' => 'Jaket dan hoodie', 'penanganan_khusus' => null, 'icon' => 'jacket'],
+            ['nama' => 'Jas', 'keterangan' => 'Jas formal', 'penanganan_khusus' => 'Gunakan laundry khusus jas', 'icon' => 'suit'],
+            ['nama' => 'Kebaya', 'keterangan' => 'Kebaya dan pakaian adat', 'penanganan_khusus' => 'Hati-hati dengan bordir dan payet', 'icon' => 'kebaya'],
+            ['nama' => 'Handuk', 'keterangan' => 'Handuk mandi', 'penanganan_khusus' => null, 'icon' => 'towel'],
+            ['nama' => 'Sprei', 'keterangan' => 'Sprei dan bed cover', 'penanganan_khusus' => null, 'icon' => 'bedsheet'],
+            ['nama' => 'Selimut', 'keterangan' => 'Selimut dan blanket', 'penanganan_khusus' => null, 'icon' => 'blanket'],
+            ['nama' => 'Sarung', 'keterangan' => 'Sarung dan sarung bantal', 'penanganan_khusus' => null, 'icon' => 'sarung'],
+            ['nama' => 'Gordyn', 'keterangan' => 'Gorden jendela', 'penanganan_khusus' => null, 'icon' => 'curtain'],
+            ['nama' => 'Mukena', 'keterangan' => 'Mukena dan perlengkapan sholat', 'penanganan_khusus' => 'Hati-hati dengan bordir', 'icon' => 'prayer-clothes'],
         ];
 
-        $item = $jenisPakaian[self::$index % count($jenisPakaian)];
-        self::$index++;
+        static $index = 0;
+
+        $item = $jenisPakaian[$index % count($jenisPakaian)];
+        $index++;
 
         return [
-            'kode_jenis' => 'JNS'.str_pad((string) self::$index, 3, '0', STR_PAD_LEFT),
+            'kode_jenis' => JenisPakaianHelper::generateKodeJenis(),
             'nama_jenis' => $item['nama'],
             'keterangan' => $item['keterangan'],
             'status' => 'Aktif',
-            'metadata' => $item['metadata'],
+            'penanganan_khusus' => $item['penanganan_khusus'],
+            'icon' => $item['icon'],
         ];
     }
 }

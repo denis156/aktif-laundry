@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\JenisPakaian;
 use App\Models\Layanan;
 use App\Models\Transaksi;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,17 +28,20 @@ class TransaksiLayananFactory extends Factory
 
         if ($isPerKg) {
             // Generate jenis pakaian untuk layanan per kg
-            $jenisPakaianList = ['Kemeja', 'Celana Panjang', 'Celana Pendek', 'Kaos', 'Rok', 'Dress', 'Jaket', 'Handuk', 'Sprei'];
+            $jenisPakaianAll = JenisPakaian::all();
             $jumlahJenis = fake()->numberBetween(1, 4);
             $jenisPakaian = [];
 
-            for ($i = 0; $i < $jumlahJenis; $i++) {
-                $jenisPakaian[] = [
-                    'nama' => fake()->unique()->randomElement($jenisPakaianList),
-                    'jumlah' => fake()->numberBetween(1, 5),
-                ];
+            if ($jenisPakaianAll->isNotEmpty()) {
+                $selected = $jenisPakaianAll->random(min($jumlahJenis, $jenisPakaianAll->count()));
+                foreach ($selected as $jp) {
+                    $jenisPakaian[] = [
+                        'jenis_pakaian_id' => $jp->id,
+                        'nama_jenis' => $jp->nama_jenis,
+                        'jumlah' => fake()->numberBetween(1, 5),
+                    ];
+                }
             }
-            fake()->unique(true); // Reset unique generator
 
             $beratKg = fake()->randomFloat(2, 1, 10);
             $hargaPerKg = $layanan->harga_per_kg;
@@ -53,10 +57,7 @@ class TransaksiLayananFactory extends Factory
                 'jumlah_satuan' => null,
                 'harga_per_satuan' => null,
                 'subtotal' => (int) $subtotal,
-                'metadata' => [
-                    'catatan' => fake()->optional(0.2)->sentence(),
-                    'petugas' => fake()->name(),
-                ],
+                'catatan_khusus' => fake()->optional(0.2)->sentence(),
             ];
         } else {
             // Layanan per satuan
@@ -74,10 +75,7 @@ class TransaksiLayananFactory extends Factory
                 'jumlah_satuan' => $jumlahSatuan,
                 'harga_per_satuan' => $hargaPerSatuan,
                 'subtotal' => (int) $subtotal,
-                'metadata' => [
-                    'catatan' => fake()->optional(0.2)->sentence(),
-                    'petugas' => fake()->name(),
-                ],
+                'catatan_khusus' => fake()->optional(0.2)->sentence(),
             ];
         }
     }
