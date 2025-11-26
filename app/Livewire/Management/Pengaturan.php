@@ -51,11 +51,7 @@ class Pengaturan extends Component
     public string $format_id_referral = '';
 
     // * Pricing Settings
-    public float $biaya_antar_per_km = 0;
-
     public float $min_berat_kg = 0;
-
-    public float $pajak_persen = 0;
 
     // * Features Settings
     public bool $enable_referral = false;
@@ -105,9 +101,7 @@ class Pengaturan extends Component
         $this->format_id_referral = (string) PengaturanHelper::getValue('format_id_referral', 'REF');
 
         // Pricing
-        $this->biaya_antar_per_km = (float) PengaturanHelper::getValue('biaya_antar_per_km', 2000);
         $this->min_berat_kg = (float) PengaturanHelper::getValue('min_berat_kg', 2);
-        $this->pajak_persen = (float) PengaturanHelper::getValue('pajak_persen', 10);
 
         // Features
         $this->enable_referral = (bool) PengaturanHelper::getValue('enable_referral', true);
@@ -134,9 +128,7 @@ class Pengaturan extends Component
             'format_id_pembayaran' => $this->format_id_pembayaran,
             'format_id_promo' => $this->format_id_promo,
             'format_id_referral' => $this->format_id_referral,
-            'biaya_antar_per_km' => $this->biaya_antar_per_km,
             'min_berat_kg' => $this->min_berat_kg,
-            'pajak_persen' => $this->pajak_persen,
             'enable_referral' => $this->enable_referral,
             'enable_promo' => $this->enable_promo,
         ];
@@ -166,9 +158,7 @@ class Pengaturan extends Component
             || $this->format_id_pembayaran !== ($this->originalValues['format_id_pembayaran'] ?? '')
             || $this->format_id_promo !== ($this->originalValues['format_id_promo'] ?? '')
             || $this->format_id_referral !== ($this->originalValues['format_id_referral'] ?? '')
-            || $this->biaya_antar_per_km !== ($this->originalValues['biaya_antar_per_km'] ?? 0)
             || $this->min_berat_kg !== ($this->originalValues['min_berat_kg'] ?? 0)
-            || $this->pajak_persen !== ($this->originalValues['pajak_persen'] ?? 0)
             || $this->enable_referral !== ($this->originalValues['enable_referral'] ?? false)
             || $this->enable_promo !== ($this->originalValues['enable_promo'] ?? false);
     }
@@ -202,9 +192,7 @@ class Pengaturan extends Component
             'format_id_referral' => ['required', 'string', 'max:10'],
 
             // Pricing
-            'biaya_antar_per_km' => ['required', 'numeric', 'min:0'],
             'min_berat_kg' => ['required', 'numeric', 'min:0', 'max:100'],
-            'pajak_persen' => ['required', 'numeric', 'min:0', 'max:100'],
 
             // Features
             'enable_referral' => ['boolean'],
@@ -248,17 +236,10 @@ class Pengaturan extends Component
             'format_id_referral.max' => 'Format ID Referral maksimal 10 karakter',
 
             // Pricing
-            'biaya_antar_per_km.required' => 'Biaya antar per km wajib diisi',
-            'biaya_antar_per_km.numeric' => 'Biaya antar per km harus berupa angka',
-            'biaya_antar_per_km.min' => 'Biaya antar per km minimal 0',
             'min_berat_kg.required' => 'Minimum berat wajib diisi',
             'min_berat_kg.numeric' => 'Minimum berat harus berupa angka',
             'min_berat_kg.min' => 'Minimum berat minimal 0',
             'min_berat_kg.max' => 'Minimum berat maksimal 100 kg',
-            'pajak_persen.required' => 'Persentase pajak wajib diisi',
-            'pajak_persen.numeric' => 'Persentase pajak harus berupa angka',
-            'pajak_persen.min' => 'Persentase pajak minimal 0',
-            'pajak_persen.max' => 'Persentase pajak maksimal 100',
         ]);
     }
 
@@ -382,25 +363,11 @@ class Pengaturan extends Component
 
             // Save Pricing Settings
             PengaturanHelper::setValue(
-                'biaya_antar_per_km',
-                $this->biaya_antar_per_km,
-                'number',
-                'pricing',
-                'Biaya antar per kilometer'
-            );
-            PengaturanHelper::setValue(
                 'min_berat_kg',
                 $this->min_berat_kg,
                 'number',
                 'pricing',
                 'Minimum berat kiloan'
-            );
-            PengaturanHelper::setValue(
-                'pajak_persen',
-                $this->pajak_persen,
-                'number',
-                'pricing',
-                'Persentase pajak'
             );
 
             // Save Features Settings
@@ -462,9 +429,7 @@ class Pengaturan extends Component
         $this->format_id_pembayaran = $this->originalValues['format_id_pembayaran'] ?? '';
         $this->format_id_promo = $this->originalValues['format_id_promo'] ?? '';
         $this->format_id_referral = $this->originalValues['format_id_referral'] ?? '';
-        $this->biaya_antar_per_km = $this->originalValues['biaya_antar_per_km'] ?? 0;
         $this->min_berat_kg = $this->originalValues['min_berat_kg'] ?? 0;
-        $this->pajak_persen = $this->originalValues['pajak_persen'] ?? 0;
         $this->enable_referral = $this->originalValues['enable_referral'] ?? false;
         $this->enable_promo = $this->originalValues['enable_promo'] ?? false;
 

@@ -99,36 +99,19 @@
                         </div>
                     </x-card>
 
-                    <!-- Card 5: Harga & Biaya -->
-                    <x-card class="shadow-md">
-                        <div class="flex items-center gap-3 mb-4 pb-3 border-b border-base-300">
-                            <div class="bg-success/10 p-2 rounded-lg">
-                                <x-icon name="o-banknotes" class="w-6 h-6 text-success" />
-                            </div>
-                            <h3 class="text-lg font-bold">Pengaturan Harga</h3>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <x-input label="Biaya Antar Per KM" type="number" step="0.01"
-                                wire:model="biaya_antar_per_km" prefix="Rp" placeholder="2000" icon="o-truck" required
-                                hint="Biaya pengantaran per kilometer" />
-
-                            <x-input label="Minimum Berat (Kg)" type="number" step="0.1" wire:model="min_berat_kg"
-                                placeholder="2" suffix="Kg" icon="o-scale" required
-                                hint="Berat minimum untuk layanan kiloan" />
-
-                            <x-input label="Pajak" type="number" step="0.01" wire:model="pajak_persen" placeholder="10"
-                                suffix="%" icon="o-receipt-percent" required hint="Persentase pajak yang dikenakan" />
-                        </div>
-                    </x-card>
-
-                    <!-- Card 6: Fitur Tambahan -->
+                    <!-- Card 5: Fitur Tambahan -->
                     <x-card class="shadow-md">
                         <div class="flex items-center gap-3 mb-4 pb-3 border-b border-base-300">
                             <div class="bg-secondary/10 p-2 rounded-lg">
                                 <x-icon name="o-puzzle-piece" class="w-6 h-6 text-secondary" />
                             </div>
                             <h3 class="text-lg font-bold">Fitur Tambahan</h3>
+                        </div>
+
+                        <div class="mb-4">
+                            <x-input label="Minimum Berat (Kg)" type="number" step="0.1" wire:model="min_berat_kg"
+                                placeholder="2" suffix="Kg" icon="o-scale" required
+                                hint="Berat minimum untuk layanan kiloan" />
                         </div>
 
                         <div class="space-y-4">
@@ -243,17 +226,8 @@
                                     </div>
                                     <div class="divider divider-neutral opacity-20 my-2"></div>
                                     <div class="flex justify-between text-sm">
-                                        <span class="opacity-80">Biaya Antar/KM:</span>
-                                        <span class="font-bold">Rp {{ number_format($biaya_antar_per_km, 0, ',', '.')
-                                            }}</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm">
                                         <span class="opacity-80">Min. Berat:</span>
                                         <span class="font-bold">{{ $min_berat_kg }} Kg</span>
-                                    </div>
-                                    <div class="flex justify-between text-sm">
-                                        <span class="opacity-80">Pajak:</span>
-                                        <span class="font-bold">{{ $pajak_persen }}%</span>
                                     </div>
                                     <div class="divider divider-neutral opacity-20 my-2"></div>
                                     <div class="flex justify-between text-sm">
