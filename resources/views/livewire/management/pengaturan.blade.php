@@ -88,9 +88,6 @@
                             <x-input label="Format ID Pengiriman" wire:model="format_id_pengiriman" placeholder="PNG"
                                 icon="o-paper-airplane" required hint="Contoh: PNG, PN-, KIRIM-" />
 
-                            <x-input label="Format ID Pembayaran" wire:model="format_id_pembayaran" placeholder="PBY"
-                                icon="o-credit-card" required hint="Contoh: PBY, PY-, BAYAR-" />
-
                             <x-input label="Format ID Promo" wire:model="format_id_promo" placeholder="PROMO"
                                 icon="o-gift" required hint="Contoh: PROMO, DISC-, PRO-" />
 
