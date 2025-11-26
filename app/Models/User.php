@@ -14,8 +14,7 @@ use Illuminate\Notifications\Notifiable;
 // ! Model User - Pegawai/Admin/Kasir
 //
 // ? Menyimpan data pengguna sistem (bukan pelanggan)
-// ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
-// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, jam_masuk, jam_keluar, gaji
+// ? Semua data sudah disimpan di kolom terpisah
 
 class User extends Authenticatable implements MustVerifyEmail
 {
@@ -33,8 +32,23 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar_url',
         'super_admin',
         'email_verified_at',
+        // Data Kepegawaian
+        'gaji',
+        'jam_masuk',
+        'jam_keluar',
+        // Data Bank
+        'bank_name',
+        'bank_account_number',
+        'bank_account_name',
+        // Alamat lengkap
         'alamat',
-        'metadata',
+        'detail_alamat',
+        'kelurahan',
+        'kecamatan',
+        'kabupaten_kota',
+        'provinsi',
+        'latitude',
+        'longitude',
     ];
 
     protected $hidden = [
@@ -49,7 +63,9 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'super_admin' => 'boolean',
-            'metadata' => 'array',
+            'gaji' => 'integer',
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
         ];
     }
 

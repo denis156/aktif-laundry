@@ -18,8 +18,7 @@ use Illuminate\Notifications\Notifiable;
 // ! Model Pelanggan - Customer/Member
 //
 // ? Menyimpan data pelanggan laundry
-// ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
-// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, member_card, loyalty_points, preferensi_pengiriman
+// ? Semua data sudah disimpan di kolom terpisah
 
 class Pelanggan extends Authenticatable implements MustVerifyEmail
 {
@@ -36,15 +35,25 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
         'no_hp',
         'email',
         'email_verified_at',
-        'alamat',
         'password',
         'device_token',
+        // Alamat lengkap
+        'alamat',
+        'detail_alamat',
+        'kelurahan',
+        'kecamatan',
+        'kabupaten_kota',
+        'provinsi',
+        'latitude',
+        'longitude',
+        // Data membership & loyalty
         'tanggal_daftar',
-        'total_transaksi',
         'status',
-        'kode_referral_dipakai',
+        'loyalty_points',
+        'member_card',
+        'avatar_url',
+        // Referral
         'direferensikan_oleh',
-        'metadata',
     ];
 
     // * Hidden attributes (sensitive data)
@@ -59,10 +68,11 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'tanggal_daftar' => 'datetime',
-            'total_transaksi' => 'integer',
+            'loyalty_points' => 'integer',
             'direferensikan_oleh' => 'integer',
             'password' => 'hashed',
-            'metadata' => 'array',
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
         ];
     }
 

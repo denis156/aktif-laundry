@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 //
 // ? Menyimpan master data layanan (cuci kering, setrika, dll)
 // ? Mendukung pricing per_kg atau per_satuan
-// ? Metadata: include, exclude, min_order, max_order, popular, icon, deskripsi_detail
+// ? Semua data sudah disimpan di kolom terpisah
 
 class Layanan extends Model
 {
@@ -27,13 +27,20 @@ class Layanan extends Model
         'kode_layanan',
         'nama_layanan',
         'tipe_layanan',
+        'satuan',
         'harga_per_kg',
         'harga_per_satuan',
-        'satuan',
         'durasi_jam',
         'deskripsi',
         'status',
-        'metadata',
+        // Detail fields
+        'min_order',
+        'max_order',
+        'is_popular',
+        'icon',
+        // JSON fields
+        'include',
+        'exclude',
     ];
 
     // * Casts
@@ -43,7 +50,11 @@ class Layanan extends Model
             'harga_per_kg' => 'integer',
             'harga_per_satuan' => 'integer',
             'durasi_jam' => 'integer',
-            'metadata' => 'array',
+            'min_order' => 'integer',
+            'max_order' => 'integer',
+            'is_popular' => 'boolean',
+            'include' => 'array',
+            'exclude' => 'array',
         ];
     }
 

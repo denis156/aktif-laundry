@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 //
 // ? Menyimpan header transaksi laundry
 // ? Mendukung multi-service (satu transaksi bisa punya banyak layanan)
-// ? Metadata: pembayaran, promo, referral, foto_bukti_timbangan, foto_bukti_pembayaran, kurir_jemput, kurir_antar
+// ? Semua data sudah disimpan di kolom terpisah (tidak ada metadata)
 
 class Transaksi extends Model
 {
@@ -29,21 +29,34 @@ class Transaksi extends Model
         'tanggal_masuk',
         'kasir_id',
         'pelanggan_id',
-        'promo_id',
         'referral_id',
-        'kode_promo',
         'nama_pelanggan',
+        // Summary fields
         'total_berat',
         'total_item',
         'jumlah_layanan',
+        // Financial
         'subtotal',
-        'diskon',
         'total',
+        // Payment
         'metode_pembayaran',
+        'tipe_bayar',
+        'status_bayar',
+        'tanggal_bayar',
+        'jumlah_bayar',
+        // Kurir
+        'kurir_jemput_id',
+        'kurir_antar_id',
+        'kurir_jemput_nama',
+        'kurir_antar_nama',
+        // Status & Timeline
         'tanggal_selesai',
         'status',
         'catatan',
-        'metadata',
+        'catatan_internal',
+        // Bukti (JSON)
+        'foto_bukti_timbangan',
+        'foto_bukti_pembayaran',
     ];
 
     // * Casts
@@ -52,17 +65,20 @@ class Transaksi extends Model
         return [
             'tanggal_masuk' => 'datetime',
             'tanggal_selesai' => 'datetime',
+            'tanggal_bayar' => 'datetime',
             'total_berat' => 'decimal:2',
             'total_item' => 'integer',
             'jumlah_layanan' => 'integer',
             'subtotal' => 'integer',
-            'diskon' => 'integer',
             'total' => 'integer',
+            'jumlah_bayar' => 'integer',
             'kasir_id' => 'integer',
             'pelanggan_id' => 'integer',
-            'promo_id' => 'integer',
             'referral_id' => 'integer',
-            'metadata' => 'array',
+            'kurir_jemput_id' => 'integer',
+            'kurir_antar_id' => 'integer',
+            'foto_bukti_timbangan' => 'array',
+            'foto_bukti_pembayaran' => 'array',
         ];
     }
 
@@ -100,11 +116,5 @@ class Transaksi extends Model
     public function pengiriman(): HasMany
     {
         return $this->hasMany(Pengiriman::class, 'transaksi_id');
-    }
-
-    // * Relasi: Data pembayaran
-    public function pembayaran(): HasMany
-    {
-        return $this->hasMany(Pembayaran::class, 'transaksi_id');
     }
 }

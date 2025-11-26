@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ? Menyimpan detail layanan dalam transaksi
 // ? Satu transaksi bisa punya banyak layanan (multi-service)
 // ? Mendukung per_kg (jenis_pakaian array) atau per_satuan
-// ? Metadata: catatan, petugas
+// ? Semua data sudah disimpan di kolom terpisah (tidak ada metadata)
 
 class TransaksiLayanan extends Model
 {
@@ -28,13 +28,16 @@ class TransaksiLayanan extends Model
         'transaksi_id',
         'layanan_id',
         'nama_layanan',
+        // Untuk layanan per_kg
         'jenis_pakaian',
         'berat_kg',
         'harga_per_kg',
+        // Untuk layanan per_satuan
         'jumlah_satuan',
         'harga_per_satuan',
+        // Common fields
         'subtotal',
-        'metadata',
+        'catatan_khusus',
     ];
 
     // * Casts
@@ -49,7 +52,6 @@ class TransaksiLayanan extends Model
             'subtotal' => 'integer',
             'transaksi_id' => 'integer',
             'layanan_id' => 'integer',
-            'metadata' => 'array',
         ];
     }
 

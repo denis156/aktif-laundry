@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ! Model JenisPakaian - Jenis/Kategori Pakaian
 //
 // ? Menyimpan master data jenis pakaian (kemeja, celana, dll)
-// ? Metadata: penanganan_khusus (untuk pakaian putih atau baju spesial)
+// ? Semua data sudah disimpan di kolom terpisah
 
 class JenisPakaian extends Model
 {
@@ -26,14 +26,13 @@ class JenisPakaian extends Model
         'nama_jenis',
         'keterangan',
         'status',
-        'metadata',
+        'penanganan_khusus',
+        'icon',
     ];
 
     // * Casts
     protected function casts(): array
     {
-        return [
-            'metadata' => 'array',
-        ];
+        return [];
     }
 }

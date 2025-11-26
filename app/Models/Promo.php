@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 //
 // ? Menyimpan data promo dengan sistem kuota dan validasi periode
 // ? Mendukung diskon persen atau nominal
-// ? Metadata: layanan_id, exclude_pelanggan_id, banner_image, terms_conditions, auto_apply
+// ? Semua data sudah disimpan di kolom terpisah
 
 class Promo extends Model
 {
@@ -38,7 +38,15 @@ class Promo extends Model
         'max_per_user',
         'berlaku_untuk',
         'status',
-        'metadata',
+        // Detail fields
+        'banner_image',
+        'terms_conditions',
+        'auto_apply',
+        'min_berat',
+        'max_berat',
+        // JSON fields
+        'layanan_ids',
+        'exclude_pelanggan_ids',
     ];
 
     // * Casts
@@ -53,7 +61,11 @@ class Promo extends Model
             'kuota_total' => 'integer',
             'kuota_terpakai' => 'integer',
             'max_per_user' => 'integer',
-            'metadata' => 'array',
+            'auto_apply' => 'boolean',
+            'min_berat' => 'decimal:2',
+            'max_berat' => 'decimal:2',
+            'layanan_ids' => 'array',
+            'exclude_pelanggan_ids' => 'array',
         ];
     }
 

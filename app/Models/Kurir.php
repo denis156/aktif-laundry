@@ -18,8 +18,7 @@ use Illuminate\Notifications\Notifiable;
 // ? Menyimpan data kurir untuk antar jemput
 // ? Extends Authenticatable untuk login di aplikasi courier
 // ? Implements MustVerifyEmail untuk email verification
-// ? Alamat lengkap disimpan di kolom alamat (auto-generated dari metadata)
-// ? Metadata: detail_alamat, kelurahan, kecamatan, kabupaten_kota, provinsi, latitude, longitude, area_coverage, bank_info, emergency_contact
+// ? Semua data sudah disimpan di kolom terpisah
 
 class Kurir extends Authenticatable implements MustVerifyEmail
 {
@@ -36,16 +35,33 @@ class Kurir extends Authenticatable implements MustVerifyEmail
         'no_hp',
         'email',
         'email_verified_at',
-        'alamat',
-        'no_kendaraan',
-        'jenis_kendaraan',
-        'tanggal_bergabung',
-        'status',
-        'total_antar',
-        'total_jemput',
         'password',
         'device_token',
-        'metadata',
+        // Alamat lengkap
+        'alamat',
+        'detail_alamat',
+        'kelurahan',
+        'kecamatan',
+        'kabupaten_kota',
+        'provinsi',
+        'latitude',
+        'longitude',
+        // Vehicle info
+        'no_kendaraan',
+        'jenis_kendaraan',
+        // Profile
+        'tanggal_bergabung',
+        'status',
+        // Data Bank
+        'bank_name',
+        'bank_account_number',
+        'bank_account_name',
+        // Emergency Contact
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'emergency_contact_relation',
+        // Avatar
+        'avatar_url',
     ];
 
     protected $hidden = [
@@ -59,10 +75,9 @@ class Kurir extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'tanggal_bergabung' => 'datetime',
-            'metadata' => 'array',
-            'total_antar' => 'integer',
-            'total_jemput' => 'integer',
             'password' => 'hashed',
+            'latitude' => 'decimal:8',
+            'longitude' => 'decimal:8',
         ];
     }
 

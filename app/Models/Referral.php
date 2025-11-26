@@ -12,8 +12,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 //
 // ? Menyimpan kode referral milik pelanggan
 // ? Terhubung dengan Promo untuk reward referrer dan referee
-// ? Tracking reward dan statistik penggunaan
-// ? Metadata: reward_history, special_reward
+// ? Tracking statistik penggunaan
+// ? Semua data sudah disimpan di kolom terpisah
 
 class Referral extends Model
 {
@@ -27,27 +27,17 @@ class Referral extends Model
         'promo_referrer_id',
         'promo_referee_id',
         'kode_referral',
-        'poin_referrer',
-        'diskon_referee',
-        'min_transaksi_referee',
         'total_referral',
-        'total_poin',
         'total_berhasil',
-        'status',
-        'metadata',
+        'campaign_source',
     ];
 
     // * Casts
     protected function casts(): array
     {
         return [
-            'poin_referrer' => 'integer',
-            'diskon_referee' => 'integer',
-            'min_transaksi_referee' => 'integer',
             'total_referral' => 'integer',
-            'total_poin' => 'integer',
             'total_berhasil' => 'integer',
-            'metadata' => 'array',
         ];
     }
 

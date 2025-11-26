@@ -13,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 //
 // ? Menyimpan data pengiriman (jemput atau antar cucian)
 // ? Dilengkapi GPS tracking dan bukti delivery
-// ? Metadata: lokasi_pengambilan, tracking, review_customer
+// ? Semua data sudah disimpan di kolom terpisah
 
 class Pengiriman extends Model
 {
@@ -28,20 +28,29 @@ class Pengiriman extends Model
         'transaksi_id',
         'kurir_id',
         'tipe',
+        // Destination info
         'alamat_tujuan',
         'nama_penerima',
         'no_hp_penerima',
         'latitude',
         'longitude',
+        // Timeline
         'jadwal_waktu',
         'waktu_mulai',
         'waktu_selesai',
-        'biaya_antar',
-        'jarak_km',
+        // Status
         'status',
         'catatan',
         'foto_bukti',
-        'metadata',
+        // Lokasi pickup
+        'lokasi_pickup_latitude',
+        'lokasi_pickup_longitude',
+        'lokasi_pickup_address',
+        // Review
+        'review_rating',
+        'review_text',
+        // Tracking (JSON)
+        'tracking',
     ];
 
     // * Casts
@@ -51,11 +60,12 @@ class Pengiriman extends Model
             'jadwal_waktu' => 'datetime',
             'waktu_mulai' => 'datetime',
             'waktu_selesai' => 'datetime',
-            'biaya_antar' => 'integer',
-            'jarak_km' => 'decimal:2',
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',
-            'metadata' => 'array',
+            'lokasi_pickup_latitude' => 'decimal:8',
+            'lokasi_pickup_longitude' => 'decimal:8',
+            'review_rating' => 'integer',
+            'tracking' => 'array',
         ];
     }
 
