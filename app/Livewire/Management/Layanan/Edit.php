@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Layanan;
 
-use App\Helper\Database\LayananHelper;
 use App\Models\Layanan;
 use Exception;
 use Illuminate\Database\QueryException;
@@ -34,22 +33,13 @@ class Edit extends Component
         'durasi_jam' => '',
         'deskripsi' => '',
         'status' => 'Aktif',
+        'include' => [],
+        'exclude' => [],
+        'min_order' => null,
+        'max_order' => null,
+        'is_popular' => false,
+        'icon' => '',
     ];
-
-    // Metadata fields
-    public array $include = [];
-
-    public array $exclude = [];
-
-    public ?int $minOrder = null;
-
-    public ?int $maxOrder = null;
-
-    public int $popular = 0;
-
-    public string $icon = '';
-
-    public string $deskripsiDetail = '';
 
     // Options for group components
     public array $popularOptions = [
@@ -71,19 +61,19 @@ class Edit extends Component
     #[On('includeUpdated')]
     public function includeUpdated(array $data): void
     {
-        $this->include = $data;
+        $this->formData['include'] = $data;
     }
 
     #[On('excludeUpdated')]
     public function excludeUpdated(array $data): void
     {
-        $this->exclude = $data;
+        $this->formData['exclude'] = $data;
     }
 
     #[On('iconSelected')]
     public function iconSelected(?string $icon): void
     {
-        $this->icon = $icon ?? '';
+        $this->formData['icon'] = $icon ?? '';
     }
 
     protected function loadLayanan(): void
@@ -101,10 +91,13 @@ class Edit extends Component
                 'durasi_jam' => $layanan->durasi_jam,
                 'deskripsi' => $layanan->deskripsi,
                 'status' => $layanan->status,
+                'include' => $layanan->include ?? [],
+                'exclude' => $layanan->exclude ?? [],
+                'min_order' => $layanan->min_order,
+                'max_order' => $layanan->max_order,
+                'is_popular' => $layanan->is_popular ?? false,
+                'icon' => $layanan->icon ?? '',
             ];
-
-            // Load metadata
-            $this->loadMetadata($layanan);
         } catch (Exception $e) {
             Log::error('Failed to load layanan', [
                 'layanan_id' => $this->layananId,
@@ -113,28 +106,6 @@ class Edit extends Component
             ]);
             $this->error('Layanan tidak ditemukan', position: 'toast-bottom');
             $this->redirect('/management/layanan', navigate: true);
-        }
-    }
-
-    /**
-     * Load metadata dari layanan menggunakan LayananHelper
-     */
-    protected function loadMetadata(Layanan $layanan): void
-    {
-        try {
-            $this->include = LayananHelper::getInclude($layanan);
-            $this->exclude = LayananHelper::getExclude($layanan);
-            $this->minOrder = LayananHelper::getMinOrder($layanan);
-            $this->maxOrder = LayananHelper::getMaxOrder($layanan);
-            $this->popular = LayananHelper::isPopular($layanan) ? 1 : 0;
-            $this->icon = LayananHelper::getIcon($layanan) ?? '';
-            $this->deskripsiDetail = LayananHelper::getMetadata($layanan, LayananHelper::META_DESKRIPSI_DETAIL, '') ?? '';
-        } catch (Exception $e) {
-            Log::warning('Failed to load layanan metadata, using defaults', [
-                'layanan_id' => $layanan->id,
-                'error' => $e->getMessage(),
-            ]);
-            // Continue with empty metadata if fails
         }
     }
 
@@ -147,14 +118,12 @@ class Edit extends Component
             'formData.durasi_jam' => 'required|integer|min:1',
             'formData.deskripsi' => 'nullable|string',
             'formData.status' => 'required|in:Aktif,Tidak Aktif',
-            // Metadata validation
-            'include' => 'nullable|array',
-            'exclude' => 'nullable|array',
-            'minOrder' => 'nullable|integer|min:1',
-            'maxOrder' => 'nullable|integer|min:1',
-            'popular' => 'nullable|boolean',
-            'icon' => 'nullable|string|max:100',
-            'deskripsiDetail' => 'nullable|string',
+            'formData.include' => 'nullable|array',
+            'formData.exclude' => 'nullable|array',
+            'formData.min_order' => 'nullable|integer|min:1',
+            'formData.max_order' => 'nullable|integer|min:1',
+            'formData.is_popular' => 'nullable|boolean',
+            'formData.icon' => 'nullable|string|max:100',
         ];
 
         // Add conditional validation based on tipe layanan
@@ -169,7 +138,7 @@ class Edit extends Component
         }
 
         // Validate max_order > min_order if both set
-        if ($this->minOrder && $this->maxOrder && $this->maxOrder <= $this->minOrder) {
+        if ($this->formData['min_order'] && $this->formData['max_order'] && $this->formData['max_order'] <= $this->formData['min_order']) {
             $this->error('Max order harus lebih besar dari min order', position: 'toast-bottom');
 
             return;
@@ -178,26 +147,20 @@ class Edit extends Component
         $this->validate($rules);
 
         try {
-            // Prepare data before saving
-            $saveData = $this->formData;
-
-            // Set default values for fields based on tipe layanan
-            if ($saveData['tipe_layanan'] === 'per_kg') {
-                $saveData['harga_per_satuan'] = null;
-                $saveData['satuan'] = 'kg';
+            // Set default values based on tipe layanan
+            if ($this->formData['tipe_layanan'] === 'per_kg') {
+                $this->formData['harga_per_satuan'] = null;
+                $this->formData['satuan'] = 'kg';
             } else {
-                $saveData['harga_per_kg'] = 0;
+                $this->formData['harga_per_kg'] = 0;
             }
 
-            DB::transaction(function () use ($saveData): void {
+            // Convert is_popular to boolean
+            $this->formData['is_popular'] = (bool) $this->formData['is_popular'];
+
+            DB::transaction(function (): void {
                 $layanan = Layanan::findOrFail($this->layananId);
-                $layanan->update($saveData);
-
-                // Update metadata using LayananHelper
-                $this->setMetadata($layanan);
-
-                // Save metadata
-                $layanan->save();
+                $layanan->update($this->formData);
             });
 
             $this->success('Layanan berhasil diupdate!', position: 'toast-bottom');
@@ -218,52 +181,6 @@ class Edit extends Component
                 'formData' => $this->formData,
             ]);
             $this->error('Gagal memperbarui layanan. Silakan coba lagi.', position: 'toast-bottom');
-        }
-    }
-
-    /**
-     * Set metadata untuk layanan menggunakan LayananHelper
-     */
-    protected function setMetadata(Layanan $layanan): void
-    {
-        try {
-            // Set metadata using helper methods
-            if (! empty($this->include)) {
-                LayananHelper::setInclude($layanan, $this->include);
-            } else {
-                LayananHelper::setInclude($layanan, []);
-            }
-
-            if (! empty($this->exclude)) {
-                LayananHelper::setExclude($layanan, $this->exclude);
-            } else {
-                LayananHelper::setExclude($layanan, []);
-            }
-
-            if ($this->minOrder !== null) {
-                LayananHelper::setMinOrder($layanan, $this->minOrder);
-            }
-
-            if ($this->maxOrder !== null) {
-                LayananHelper::setMaxOrder($layanan, $this->maxOrder);
-            }
-
-            LayananHelper::setPopular($layanan, (bool) $this->popular);
-
-            if (! empty($this->icon)) {
-                LayananHelper::setIcon($layanan, $this->icon);
-            }
-
-            if (! empty($this->deskripsiDetail)) {
-                LayananHelper::setMetadata($layanan, LayananHelper::META_DESKRIPSI_DETAIL, $this->deskripsiDetail);
-            }
-        } catch (Exception $e) {
-            Log::error('Failed to set layanan metadata', [
-                'layanan_id' => $layanan->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-            throw $e;
         }
     }
 

@@ -34,15 +34,7 @@
             @endscope
 
             @scope('cell_nama_layanan', $item)
-            @php
-            $isPopular = \App\Helper\Database\LayananHelper::isPopular($item);
-            @endphp
-            <div class="flex flex-col">
-                <span class="font-medium">{{ $item->nama_layanan }}</span>
-                @if($isPopular)
-                <span class="badge badge-warning badge-xs mt-1 w-fit">Popular</span>
-                @endif
-            </div>
+            <span class="font-medium">{{ $item->nama_layanan }}</span>
             @endscope
 
             @scope('cell_tipe_layanan', $item)
@@ -65,6 +57,19 @@
 
             @scope('cell_durasi_jam', $item)
             <span class="badge badge-outline badge-sm">{{ $item->durasi_jam }} jam</span>
+            @endscope
+
+            @scope('cell_is_popular', $item)
+            <div class="flex items-center justify-center">
+                @php
+                $isPopular = \App\Helper\Database\LayananHelper::isPopular($item);
+                @endphp
+                @if($isPopular)
+                <x-icon name="o-check-circle" class="w-6 h-6 text-success" />
+                @else
+                <x-icon name="o-x-circle" class="w-6 h-6 text-error" />
+                @endif
+            </div>
             @endscope
 
             @scope('cell_status', $item)

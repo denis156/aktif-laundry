@@ -61,10 +61,10 @@
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Minimum Order" type="number" wire:model="minOrder" placeholder="Contoh: 2"
+                    <x-input label="Minimum Order" type="number" wire:model="formData.min_order" placeholder="Contoh: 2"
                         hint="Jumlah minimum order (opsional)"
                         suffix="{{ $formData['tipe_layanan'] === 'per_kg' ? 'kg' : 'pcs' }}" />
-                    <x-input label="Maximum Order" type="number" wire:model="maxOrder" placeholder="Contoh: 50"
+                    <x-input label="Maximum Order" type="number" wire:model="formData.max_order" placeholder="Contoh: 50"
                         hint="Jumlah maksimum order (opsional)"
                         suffix="{{ $formData['tipe_layanan'] === 'per_kg' ? 'kg' : 'pcs' }}" />
                 </div>
@@ -74,7 +74,7 @@
                         <label class="label">
                             <span class="label-text font-medium mb-2">Yang Termasuk dalam Layanan</span>
                         </label>
-                        <livewire:management.component.string-list-input :initialValue="$include"
+                        <livewire:management.component.string-list-input :initialValue="$formData['include']"
                             eventName="includeUpdated" placeholder="Contoh: Cuci bersih dengan detergen premium" />
                         <p class="text-xs opacity-70 mt-1">Daftar fasilitas atau hal yang termasuk dalam layanan ini
                         </p>
@@ -84,7 +84,7 @@
                         <label class="label">
                             <span class="label-text font-medium mb-2">Yang Tidak Termasuk dalam Layanan</span>
                         </label>
-                        <livewire:management.component.string-list-input :initialValue="$exclude"
+                        <livewire:management.component.string-list-input :initialValue="$formData['exclude']"
                             eventName="excludeUpdated" placeholder="Contoh: Tidak termasuk pengharum pakaian" />
                         <p class="text-xs opacity-70 mt-1">Daftar hal yang tidak termasuk atau ada batasan dalam
                             layanan</p>
@@ -92,16 +92,12 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <livewire:management.component.icon-picker :initialValue="$icon" eventName="iconSelected"
+                    <livewire:management.component.icon-picker :initialValue="$formData['icon']" eventName="iconSelected"
                         label="Icon" placeholder="Cari icon..." hint="Ketik minimal 2 huruf untuk mencari icon" />
 
-                    <x-group label="Layanan Populer" wire:model="popular" :options="$popularOptions"
+                    <x-group label="Layanan Populer" wire:model="formData.is_popular" :options="$popularOptions"
                         hint="Layanan populer akan ditampilkan lebih menonjol" class="checked:btn-primary!" inline />
                 </div>
-
-                <x-textarea label="Deskripsi Detail Layanan" wire:model="deskripsiDetail"
-                    placeholder="Jelaskan layanan ini secara detail untuk pelanggan..." rows="4"
-                    hint="Deskripsi lengkap untuk ditampilkan ke pelanggan (opsional)" />
             </x-card>
         </div>
 

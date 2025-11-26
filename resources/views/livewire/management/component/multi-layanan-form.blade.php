@@ -6,46 +6,35 @@
 
     @foreach($items as $index => $item)
     @php
+    // Get layanan option data (already loaded, no query)
+    $selectedLayanan = !empty($item['layanan_id']) ? $this->getLayananById($item['layanan_id']) : null;
+    $tipeLayanan = $item['tipe_layanan'] ?? null;
+
     // Determine card background color based on layanan type
     $cardBgClass = 'bg-base-100';
-    if (!empty($item['layanan_id'])) {
-    $layanan = \App\Models\Layanan::find($item['layanan_id']);
-    if ($layanan) {
-    if ($layanan->tipe_layanan === 'per_kg') {
-    $cardBgClass = 'bg-info/10';
-    } elseif ($layanan->tipe_layanan === 'per_satuan') {
-    $cardBgClass = 'bg-warning/10';
+    if ($tipeLayanan === 'per_kg') {
+        $cardBgClass = 'bg-info/10';
+    } elseif ($tipeLayanan === 'per_satuan') {
+        $cardBgClass = 'bg-warning/10';
     }
-    }
-    }
+
+    $layananIcon = $selectedLayanan['icon'] ?? null;
     @endphp
     <div class="card {{ $cardBgClass }} border border-base-300 transition-colors duration-300">
         <div class="card-body p-4">
             <!-- Header Layanan -->
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-3">
-                    @php
-                    $layananIcon = null;
-                    $layananModel = null;
-                    if (!empty($item['layanan_id'])) {
-                    $layananModel = \App\Models\Layanan::find($item['layanan_id']);
-                    if ($layananModel) {
-                    $layananIcon = \App\Helper\Database\LayananHelper::getIcon($layananModel);
-                    }
-                    }
-                    @endphp
                     @if($layananIcon)
                     <x-icon name="{{ $layananIcon }}" class="w-5 h-5 text-primary" />
                     @else
                     <x-icon name="o-sparkles" class="w-5 h-5 text-primary" />
                     @endif
                     <span class="font-bold">Layanan {{ $index + 1 }}</span>
-                    @if($layananModel)
-                    @if($layananModel->tipe_layanan === 'per_kg')
+                    @if($tipeLayanan === 'per_kg')
                     <span class="badge badge-info badge-sm">Per Kg</span>
-                    @elseif($layananModel->tipe_layanan === 'per_satuan')
+                    @elseif($tipeLayanan === 'per_satuan')
                     <span class="badge badge-warning badge-sm">Per Satuan</span>
-                    @endif
                     @endif
                 </div>
                 @if(count($items) > 1)
@@ -60,11 +49,6 @@
                 <label class="label">
                     <span class="label-text font-medium">Pilih Layanan & Jumlah</span>
                 </label>
-
-                @php
-                $selectedLayanan = !empty($item['layanan_id']) ? collect($layananOptions)->firstWhere('id',
-                $item['layanan_id']) : null;
-                @endphp
 
                 <div class="flex items-center gap-2">
                     {{-- Icon Layanan --}}
@@ -84,36 +68,25 @@
                         </select>
 
                         <!-- Dynamic input based on layanan type -->
-                        @if(!empty($item['layanan_id']))
-                        @php
-                        $layanan = \App\Models\Layanan::find($item['layanan_id']);
-                        @endphp
-
-                        @if($layanan && $layanan->tipe_layanan == 'per_kg')
+                        @if($tipeLayanan === 'per_kg')
                         <input type="text" wire:model.live="items.{{ $index }}.berat_kg"
                             class="input input-bordered join-item w-24" placeholder="Berat" hint="kg" />
                         <div class="join-item bg-base-200 flex items-center px-3 border border-base-300">
                             <span class="text-sm font-medium">kg</span>
                         </div>
-                        @elseif($layanan && $layanan->tipe_layanan == 'per_satuan')
+                        @elseif($tipeLayanan === 'per_satuan')
                         <input type="number" wire:model.live="items.{{ $index }}.jumlah_satuan"
                             class="input input-bordered join-item w-20" placeholder="Jml" min="1" />
                         <div class="join-item bg-base-200 flex items-center px-3 border border-base-300">
-                            <span class="text-sm font-medium">{{ $layanan->satuan ?? 'pcs' }}</span>
+                            <span class="text-sm font-medium">{{ $item['satuan'] ?? 'pcs' }}</span>
                         </div>
-                        @endif
                         @endif
                     </div>
                 </div>
             </div>
 
             <!-- Dynamic Form based on layanan type -->
-            @if(!empty($item['layanan_id']))
-            @php
-            $layanan = \App\Models\Layanan::find($item['layanan_id']);
-            @endphp
-
-            @if($layanan && $layanan->tipe_layanan == 'per_kg')
+            @if($tipeLayanan === 'per_kg')
             <!-- Form tambahan untuk layanan per kg (jenis pakaian) -->
             <div class="space-y-3 mt-3">
                 <!-- Jenis Pakaian -->
@@ -122,12 +95,12 @@
                     <div class="space-y-2">
                         @foreach($item['jenis_pakaian'] as $idx => $jp)
                         @php
-                        $selectedJp = !empty($jp['jenis_id']) ? collect($jenisPakaianOptions)->firstWhere('id',
-                        $jp['jenis_id']) : null;
+                        $selectedJp = !empty($jp['jenis_id']) ? $this->getJenisPakaianById($jp['jenis_id']) : null;
+                        $jpIcon = $selectedJp['icon'] ?? null;
                         @endphp
                         <div class="flex items-center gap-2">
-                            @if($selectedJp && !empty($selectedJp['icon']))
-                            <x-icon name="{{ $selectedJp['icon'] }}" class="w-5 h-5 shrink-0" />
+                            @if($jpIcon)
+                            <x-icon name="{{ $jpIcon }}" class="w-5 h-5 shrink-0" />
                             @else
                             <x-icon name="o-square-3-stack-3d" class="w-5 h-5 shrink-0 opacity-30" />
                             @endif
@@ -159,7 +132,6 @@
                     </button>
                 </div>
             </div>
-            @endif
             @endif
         </div>
     </div>

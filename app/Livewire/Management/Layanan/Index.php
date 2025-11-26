@@ -44,6 +44,7 @@ class Index extends Component
     public function clear(): void
     {
         $this->reset(['search', 'statusFilter', 'minHarga', 'maxHarga']);
+        $this->resetPage();
         $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
     }
 
@@ -59,16 +60,7 @@ class Index extends Component
         try {
             $layanan = Layanan::findOrFail($this->deleteId);
 
-            // Check if layanan is being used in transaksi
-            $transaksiCount = $layanan->transaksiLayanan()->count();
-            if ($transaksiCount > 0) {
-                Log::warning('Attempt to delete layanan with existing transactions', [
-                    'layanan_id' => $this->deleteId,
-                    'layanan_name' => $this->deleteName,
-                    'transaksi_count' => $transaksiCount,
-                ]);
-                $this->error('Tidak dapat menghapus layanan yang sudah digunakan dalam transaksi', position: 'toast-bottom');
-
+            if ($this->cannotDeleteLayanan($layanan)) {
                 return;
             }
 
@@ -80,8 +72,7 @@ class Index extends Component
             ]);
 
             $this->success("Layanan {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
-            $this->deleteModal = false;
-            $this->reset(['deleteId', 'deleteName']);
+            $this->closeDeleteModal();
         } catch (ModelNotFoundException $e) {
             Log::error('Layanan not found for deletion', [
                 'layanan_id' => $this->deleteId,
@@ -99,15 +90,40 @@ class Index extends Component
         }
     }
 
+    protected function cannotDeleteLayanan(Layanan $layanan): bool
+    {
+        $transaksiCount = $layanan->transaksiLayanan()->count();
+
+        if ($transaksiCount > 0) {
+            Log::warning('Attempt to delete layanan with existing transactions', [
+                'layanan_id' => $this->deleteId,
+                'layanan_name' => $this->deleteName,
+                'transaksi_count' => $transaksiCount,
+            ]);
+            $this->error('Tidak dapat menghapus layanan yang sudah digunakan dalam transaksi', position: 'toast-bottom');
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function closeDeleteModal(): void
+    {
+        $this->deleteModal = false;
+        $this->reset(['deleteId', 'deleteName']);
+    }
+
     public function headers(): array
     {
         return [
-            ['key' => 'icon', 'label' => '', 'class' => 'w-12', 'sortable' => false],
+            ['key' => 'icon', 'label' => 'Icon', 'class' => 'w-12', 'sortable' => false],
             ['key' => 'kode_layanan', 'label' => 'Kode', 'class' => 'w-20'],
             ['key' => 'nama_layanan', 'label' => 'Nama Layanan', 'class' => 'w-48', 'sortable' => false],
             ['key' => 'tipe_layanan', 'label' => 'Tipe', 'class' => 'w-20', 'sortable' => false],
             ['key' => 'harga', 'label' => 'Harga', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'durasi_jam', 'label' => 'Durasi (Jam)', 'class' => 'w-24'],
+            ['key' => 'is_popular', 'label' => 'Popular', 'class' => 'w-20', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
@@ -115,25 +131,7 @@ class Index extends Component
     public function layanan(): mixed
     {
         try {
-            return Layanan::query()
-                ->when($this->search, function ($query) {
-                    $query->where(function ($q) {
-                        $q->where('nama_layanan', 'like', "%{$this->search}%")
-                            ->orWhere('kode_layanan', 'like', "%{$this->search}%")
-                            ->orWhere('tipe_layanan', 'like', "%{$this->search}%");
-                    });
-                })
-                ->when($this->statusFilter, function ($query) {
-                    $query->where('status', $this->statusFilter);
-                })
-                ->when($this->minHarga > 0 || $this->maxHarga < 999999, function ($query) {
-                    $query->where(function ($q) {
-                        $q->whereBetween('harga_per_kg', [$this->minHarga, $this->maxHarga])
-                            ->orWhereBetween('harga_per_satuan', [$this->minHarga, $this->maxHarga]);
-                    });
-                })
-                ->orderBy($this->sortBy['column'], $this->sortBy['direction'])
-                ->paginate($this->perPage);
+            return $this->buildLayananQuery()->paginate($this->perPage);
         } catch (Exception $e) {
             Log::error('Failed to fetch layanan list', [
                 'search' => $this->search,
@@ -145,6 +143,50 @@ class Index extends Component
 
             return collect();
         }
+    }
+
+    protected function buildLayananQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return Layanan::query()
+            ->select([
+                'id',
+                'kode_layanan',
+                'nama_layanan',
+                'tipe_layanan',
+                'satuan',
+                'harga_per_kg',
+                'harga_per_satuan',
+                'durasi_jam',
+                'status',
+                'is_popular',
+                'icon',
+            ])
+            ->when($this->search, fn ($query) => $this->applySearch($query))
+            ->when($this->statusFilter, fn ($query) => $query->where('status', $this->statusFilter))
+            ->when($this->hasHargaFilter(), fn ($query) => $this->applyHargaFilter($query))
+            ->orderBy($this->sortBy['column'], $this->sortBy['direction']);
+    }
+
+    protected function applySearch(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->where(function ($q) {
+            $q->where('nama_layanan', 'like', "%{$this->search}%")
+                ->orWhere('kode_layanan', 'like', "%{$this->search}%")
+                ->orWhere('tipe_layanan', 'like', "%{$this->search}%");
+        });
+    }
+
+    protected function hasHargaFilter(): bool
+    {
+        return $this->minHarga > 0 || $this->maxHarga < 999999;
+    }
+
+    protected function applyHargaFilter(\Illuminate\Database\Eloquent\Builder $query): void
+    {
+        $query->where(function ($q) {
+            $q->whereBetween('harga_per_kg', [$this->minHarga, $this->maxHarga])
+                ->orWhereBetween('harga_per_satuan', [$this->minHarga, $this->maxHarga]);
+        });
     }
 
     public function render(): mixed
