@@ -75,14 +75,13 @@
         {{-- Kendaraan section --}}
         <div class="lg:grid grid-cols-5 mt-8">
             <div class="col-span-2">
-                <x-header title="Kendaraan" subtitle="Data kendaraan kurir"
-                    size="text-lg" />
+                <x-header title="Kendaraan" subtitle="Data kendaraan kurir" size="text-lg" />
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-select label="Jenis Kendaraan" wire:model="formData.jenis_kendaraan" icon="o-truck"
-                        :options="$jenisKendaraanOptions"
-                        option-value="id" option-label="name" placeholder="Pilih jenis kendaraan" />
+                        :options="$jenisKendaraanOptions" option-value="id" option-label="name"
+                        placeholder="Pilih jenis kendaraan" />
 
                     <x-input label="No. Kendaraan/Plat" wire:model="formData.no_kendaraan"
                         placeholder="Contoh: DT 1234 AB" icon="o-identification" />
@@ -97,8 +96,8 @@
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Nama Bank" wire:model="formData.bank_name"
-                        placeholder="Contoh: BRI, BCA, Mandiri" icon="o-building-library" />
+                    <x-input label="Nama Bank" wire:model="formData.bank_name" placeholder="Contoh: BRI, BCA, Mandiri"
+                        icon="o-building-library" />
 
                     <x-input label="Nomor Rekening" wire:model="formData.bank_account_number"
                         placeholder="Contoh: 1234567890" icon="o-credit-card" />
@@ -143,8 +142,7 @@
                         required type="datetime-local" />
 
                     <x-select label="Status" wire:model="formData.status" icon="o-check-circle"
-                        :options="$statusOptions"
-                        option-value="id" option-label="name" required />
+                        :options="$statusOptions" option-value="id" option-label="name" required />
                 </div>
             </x-card>
         </div>

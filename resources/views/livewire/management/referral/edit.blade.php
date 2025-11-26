@@ -72,20 +72,12 @@
                     </div>
 
                     <div class="space-y-4">
-                        <x-select
-                            label="Promo untuk Referrer (Yang Mengajak)"
-                            wire:model="promo_referrer_id"
-                            :options="$promoOptions"
-                            placeholder="Pilih promo (opsional)"
-                            icon="o-user-plus"
+                        <x-select label="Promo untuk Referrer (Yang Mengajak)" wire:model="promo_referrer_id"
+                            :options="$promoOptions" placeholder="Pilih promo (opsional)" icon="o-user-plus"
                             hint="Promo yang diberikan ke yang mengajak saat referral berhasil" />
 
-                        <x-select
-                            label="Promo untuk Referee (Yang Diajak)"
-                            wire:model="promo_referee_id"
-                            :options="$promoOptions"
-                            placeholder="Pilih promo (opsional)"
-                            icon="o-user"
+                        <x-select label="Promo untuk Referee (Yang Diajak)" wire:model="promo_referee_id"
+                            :options="$promoOptions" placeholder="Pilih promo (opsional)" icon="o-user"
                             hint="Promo yang diberikan ke pendaftar baru yang pakai kode" />
                     </div>
                 </x-card>
@@ -102,11 +94,8 @@
                         </div>
                     </div>
 
-                    <x-input
-                        label="Campaign Source"
-                        wire:model="campaign_source"
-                        placeholder="Misal: instagram, facebook, whatsapp"
-                        icon="o-megaphone"
+                    <x-input label="Campaign Source" wire:model="campaign_source"
+                        placeholder="Misal: instagram, facebook, whatsapp" icon="o-megaphone"
                         hint="Sumber campaign untuk tracking dan analitik (maksimal 100 karakter)" />
                 </x-card>
 

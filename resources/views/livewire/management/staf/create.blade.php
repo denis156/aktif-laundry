@@ -19,8 +19,8 @@
                 </x-file>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Nama Lengkap" wire:model.live="name" placeholder="Masukkan nama lengkap" icon="o-user"
-                        required />
+                    <x-input label="Nama Lengkap" wire:model.live="name" placeholder="Masukkan nama lengkap"
+                        icon="o-user" required />
                     <x-input label="Nomor HP" wire:model="no_hp" placeholder="08xx atau +62xxx" icon="o-phone"
                         hint="Format: +62, 62, 08, atau 8" required />
 
@@ -30,8 +30,9 @@
                     <x-group label="Role Pengguna" wire:model="super_admin" :options="$roleOptions"
                         class="checked:btn-primary!" hint="Pilih role untuk pengguna ini" />
 
-                    <x-password label="Password" wire:model="password" placeholder="Minimal {{ $passwordMinLength }} karakter"
-                        hint="Password untuk login sistem" icon="o-lock-closed" right required />
+                    <x-password label="Password" wire:model="password"
+                        placeholder="Minimal {{ $passwordMinLength }} karakter" hint="Password untuk login sistem"
+                        icon="o-lock-closed" right required />
 
                     <x-password label="Konfirmasi Password" wire:model="password_confirmation"
                         placeholder="Ketik ulang password" icon="o-lock-closed" right required />
@@ -63,8 +64,7 @@
                         hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota dulu' : '' }}" required />
 
                     <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
-                        placeholder="Pilih kelurahan"
-                        hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}"
+                        placeholder="Pilih kelurahan" hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}"
                         :disabled="empty($kecamatan)" required />
                 </div>
             </x-card>

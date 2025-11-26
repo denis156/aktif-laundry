@@ -24,11 +24,10 @@
 
             @scope('cell_avatar', $item)
             @php
-                $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($item->avatar_url, $item->nama, 128);
+            $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($item->avatar_url, $item->nama, 128);
             @endphp
             <div class="flex items-center justify-center">
-                <img src="{{ $avatarUrl }}" alt="Avatar {{ $item->nama }}"
-                    class="w-10 h-10 rounded-full object-cover">
+                <img src="{{ $avatarUrl }}" alt="Avatar {{ $item->nama }}" class="w-10 h-10 rounded-full object-cover">
             </div>
             @endscope
 
@@ -42,22 +41,22 @@
 
             @scope('cell_jenis_kendaraan', $item)
             @if($item->jenis_kendaraan)
-                <span class="badge badge-outline badge-sm">{{ $item->jenis_kendaraan }}</span>
-                @if($item->no_kendaraan)
-                    <div class="text-xs text-base-content/60">{{ $item->no_kendaraan }}</div>
-                @endif
+            <span class="badge badge-outline badge-sm">{{ $item->jenis_kendaraan }}</span>
+            @if($item->no_kendaraan)
+            <div class="text-xs text-base-content/60">{{ $item->no_kendaraan }}</div>
+            @endif
             @else
-                <span class="text-base-content/40">-</span>
+            <span class="text-base-content/40">-</span>
             @endif
             @endscope
 
             @scope('cell_status', $item)
             @if ($item->status === 'Aktif')
-                <x-badge value="Aktif" class="badge-success badge-sm" />
+            <x-badge value="Aktif" class="badge-success badge-sm" />
             @elseif ($item->status === 'Cuti')
-                <x-badge value="Cuti" class="badge-warning badge-sm" />
+            <x-badge value="Cuti" class="badge-warning badge-sm" />
             @else
-                <x-badge value="Tidak Aktif" class="badge-error badge-sm" />
+            <x-badge value="Tidak Aktif" class="badge-error badge-sm" />
             @endif
             @endscope
 
@@ -77,8 +76,8 @@
         with-close-button class="lg:w-1/3">
         <div class="space-y-5">
             <x-select label="Status Kurir" wire:model.live="statusFilter" icon="o-funnel"
-                :options="array_merge([['id' => '', 'name' => 'Semua Status']], $statusOptions)"
-                option-value="id" option-label="name" />
+                :options="array_merge([['id' => '', 'name' => 'Semua Status']], $statusOptions)" option-value="id"
+                option-label="name" />
 
             <x-select label="Jenis Kendaraan" wire:model.live="jenisKendaraanFilter" icon="o-truck"
                 :options="array_merge([['id' => '', 'name' => 'Semua Kendaraan']], $jenisKendaraanOptions)"

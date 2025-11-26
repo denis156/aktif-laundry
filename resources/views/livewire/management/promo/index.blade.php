@@ -51,11 +51,11 @@
             $tipeDiskonOption = collect($allTipeDiskonOptions)->firstWhere('id', $item->tipe_diskon);
             $tipeLabel = $tipeDiskonOption['name'] ?? ucfirst($item->tipe_diskon);
             $badgeClass = match($item->tipe_diskon) {
-                'persen' => 'badge-warning',
-                'nominal' => 'badge-info',
-                'gratis_kg', 'gratis_hari' => 'badge-success',
-                'cashback' => 'badge-secondary',
-                default => 'badge-neutral'
+            'persen' => 'badge-warning',
+            'nominal' => 'badge-info',
+            'gratis_kg', 'gratis_hari' => 'badge-success',
+            'cashback' => 'badge-secondary',
+            default => 'badge-neutral'
             };
             @endphp
             <span class="badge {{ $badgeClass }} badge-sm truncate">{{ $tipeLabel }}</span>

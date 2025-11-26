@@ -23,11 +23,10 @@
 
             @scope('cell_avatar_url', $user)
             @php
-                $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($user->avatar_url, $user->name, 128);
+            $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($user->avatar_url, $user->name, 128);
             @endphp
             <div class="flex items-center justify-center">
-                <img src="{{ $avatarUrl }}" alt="Avatar {{ $user->name }}"
-                    class="w-10 h-10 rounded-full object-cover">
+                <img src="{{ $avatarUrl }}" alt="Avatar {{ $user->name }}" class="w-10 h-10 rounded-full object-cover">
             </div>
             @endscope
 

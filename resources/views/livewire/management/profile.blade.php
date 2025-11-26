@@ -4,8 +4,8 @@
             Kelola informasi profil dan keamanan akun Anda
         </x-slot:subtitle>
         <x-slot:actions>
-            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle"
-                @click="$wire.modalKonfirmasiLogout = true" class="btn-error" responsive />
+            <x-button label="Keluar" icon="o-arrow-right-start-on-rectangle" @click="$wire.modalKonfirmasiLogout = true"
+                class="btn-error" responsive />
         </x-slot:actions>
     </x-header>
 

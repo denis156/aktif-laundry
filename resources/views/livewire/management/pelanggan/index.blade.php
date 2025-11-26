@@ -68,8 +68,8 @@
     <x-drawer wire:model="drawer" title="Filter Pelanggan" subtitle="Saring data sesuai kebutuhan" right separator
         with-close-button class="lg:w-1/3">
         <div class="space-y-5">
-            <x-select label="Status Pelanggan" wire:model.live="statusFilter" icon="o-funnel"
-                :options="$statusOptions" option-value="id" option-label="name" />
+            <x-select label="Status Pelanggan" wire:model.live="statusFilter" icon="o-funnel" :options="$statusOptions"
+                option-value="id" option-label="name" />
         </div>
 
         <x-slot:actions>

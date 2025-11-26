@@ -13,9 +13,9 @@
     // Determine card background color based on layanan type
     $cardBgClass = 'bg-base-100';
     if ($tipeLayanan === 'per_kg') {
-        $cardBgClass = 'bg-info/10';
+    $cardBgClass = 'bg-info/10';
     } elseif ($tipeLayanan === 'per_satuan') {
-        $cardBgClass = 'bg-warning/10';
+    $cardBgClass = 'bg-warning/10';
     }
 
     $layananIcon = $selectedLayanan['icon'] ?? null;

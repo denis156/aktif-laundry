@@ -65,8 +65,7 @@
                         hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota dulu' : '' }}" required />
 
                     <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
-                        placeholder="Pilih kelurahan"
-                        hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}"
+                        placeholder="Pilih kelurahan" hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}"
                         :disabled="empty($kecamatan)" required />
                 </div>
             </x-card>

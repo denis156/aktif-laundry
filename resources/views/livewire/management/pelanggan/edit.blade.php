@@ -18,8 +18,8 @@
                 </x-file>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Kode Pelanggan" wire:model="kode_pelanggan" readonly
-                        hint="Kode tidak dapat diubah" icon="o-hashtag" />
+                    <x-input label="Kode Pelanggan" wire:model="kode_pelanggan" readonly hint="Kode tidak dapat diubah"
+                        icon="o-hashtag" />
 
                     <x-input label="Nama Pelanggan" wire:model="nama" placeholder="Contoh: Ahmad Rizki" icon="o-user"
                         required />

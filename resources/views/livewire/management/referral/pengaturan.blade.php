@@ -12,7 +12,9 @@
         @if(!$isReferralEnabled)
         <x-alert icon="o-exclamation-triangle" class="alert-warning shadow-md">
             <span class="font-semibold">Sistem Referral Nonaktif</span>
-            <span class="text-sm">Aktifkan sistem referral di halaman <a href="/management/pengaturan" class="link link-warning font-medium" wire:navigate>Pengaturan</a> untuk menggunakan fitur ini.</span>
+            <span class="text-sm">Aktifkan sistem referral di halaman <a href="/management/pengaturan"
+                    class="link link-warning font-medium" wire:navigate>Pengaturan</a> untuk menggunakan fitur
+                ini.</span>
         </x-alert>
         @endif
 
@@ -29,10 +31,14 @@
                         <div class="flex-1 space-y-2 text-sm">
                             <p class="font-semibold text-info">Cara Kerja Sistem Referral:</p>
                             <ul class="list-disc list-inside space-y-1 text-base-content/70">
-                                <li><span class="font-medium">Auto-generate:</span> Kode referral dibuat otomatis saat pelanggan register</li>
-                                <li><span class="font-medium">Referrer:</span> Pelanggan yang mengajak (pemilik kode)</li>
-                                <li><span class="font-medium">Referee:</span> Pelanggan baru yang pakai kode referral</li>
-                                <li><span class="font-medium">Promo otomatis:</span> Promo yang dipilih di bawah akan otomatis terhubung ke setiap kode referral baru</li>
+                                <li><span class="font-medium">Auto-generate:</span> Kode referral dibuat otomatis saat
+                                    pelanggan register</li>
+                                <li><span class="font-medium">Referrer:</span> Pelanggan yang mengajak (pemilik kode)
+                                </li>
+                                <li><span class="font-medium">Referee:</span> Pelanggan baru yang pakai kode referral
+                                </li>
+                                <li><span class="font-medium">Promo otomatis:</span> Promo yang dipilih di bawah akan
+                                    otomatis terhubung ke setiap kode referral baru</li>
                             </ul>
                         </div>
                     </div>
@@ -46,28 +52,19 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-bold">Promo Default</h3>
-                            <p class="text-sm text-base-content/70">Pilih promo yang akan digunakan untuk sistem referral</p>
+                            <p class="text-sm text-base-content/70">Pilih promo yang akan digunakan untuk sistem
+                                referral</p>
                         </div>
                     </div>
 
                     <div class="space-y-4">
-                        <x-select
-                            label="Promo untuk Referrer (Yang Mengajak)"
-                            wire:model="default_promo_referrer_id"
-                            :options="$promoOptions"
-                            placeholder="Pilih promo (opsional)"
-                            icon="o-user-plus"
-                            hint="Promo yang diberikan ke yang mengajak saat referral berhasil digunakan"
-                            inline />
+                        <x-select label="Promo untuk Referrer (Yang Mengajak)" wire:model="default_promo_referrer_id"
+                            :options="$promoOptions" placeholder="Pilih promo (opsional)" icon="o-user-plus"
+                            hint="Promo yang diberikan ke yang mengajak saat referral berhasil digunakan" inline />
 
-                        <x-select
-                            label="Promo untuk Referee (Yang Diajak)"
-                            wire:model="default_promo_referee_id"
-                            :options="$promoOptions"
-                            placeholder="Pilih promo (opsional)"
-                            icon="o-user"
-                            hint="Promo yang diberikan ke pendaftar baru yang menggunakan kode referral"
-                            inline />
+                        <x-select label="Promo untuk Referee (Yang Diajak)" wire:model="default_promo_referee_id"
+                            :options="$promoOptions" placeholder="Pilih promo (opsional)" icon="o-user"
+                            hint="Promo yang diberikan ke pendaftar baru yang menggunakan kode referral" inline />
                     </div>
                 </x-card>
 
@@ -90,9 +87,10 @@
                                     <span class="text-sm opacity-80">Promo Referrer:</span>
                                     <span class="font-bold text-sm">
                                         @if($default_promo_referrer_id)
-                                            {{ collect($promoOptions)->firstWhere('id', $default_promo_referrer_id)['name'] ?? 'Tidak diketahui' }}
+                                        {{ collect($promoOptions)->firstWhere('id', $default_promo_referrer_id)['name']
+                                        ?? 'Tidak diketahui' }}
                                         @else
-                                            <span class="opacity-60">Belum dipilih</span>
+                                        <span class="opacity-60">Belum dipilih</span>
                                         @endif
                                     </span>
                                 </div>
@@ -101,9 +99,10 @@
                                     <span class="text-sm opacity-80">Promo Referee:</span>
                                     <span class="font-bold text-sm">
                                         @if($default_promo_referee_id)
-                                            {{ collect($promoOptions)->firstWhere('id', $default_promo_referee_id)['name'] ?? 'Tidak diketahui' }}
+                                        {{ collect($promoOptions)->firstWhere('id', $default_promo_referee_id)['name']
+                                        ?? 'Tidak diketahui' }}
                                         @else
-                                            <span class="opacity-60">Belum dipilih</span>
+                                        <span class="opacity-60">Belum dipilih</span>
                                         @endif
                                     </span>
                                 </div>
@@ -131,8 +130,10 @@
                                 <h4 class="font-semibold">Bantuan</h4>
                             </div>
                             <div class="space-y-2 text-sm text-base-content/70">
-                                <p><span class="font-medium">Kosongkan</span> jika tidak ingin memberikan promo otomatis</p>
-                                <p><span class="font-medium">Promo</span> bisa diubah manual per referral di halaman Edit</p>
+                                <p><span class="font-medium">Kosongkan</span> jika tidak ingin memberikan promo otomatis
+                                </p>
+                                <p><span class="font-medium">Promo</span> bisa diubah manual per referral di halaman
+                                    Edit</p>
                             </div>
                         </div>
                     </x-card>

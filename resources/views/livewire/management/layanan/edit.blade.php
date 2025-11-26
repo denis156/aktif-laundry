@@ -65,8 +65,8 @@
                     <x-input label="Minimum Order" type="number" wire:model="formData.min_order" placeholder="Contoh: 2"
                         hint="Jumlah minimum order (opsional)"
                         suffix="{{ $formData['tipe_layanan'] === 'per_kg' ? 'kg' : 'pcs' }}" />
-                    <x-input label="Maximum Order" type="number" wire:model="formData.max_order" placeholder="Contoh: 50"
-                        hint="Jumlah maksimum order (opsional)"
+                    <x-input label="Maximum Order" type="number" wire:model="formData.max_order"
+                        placeholder="Contoh: 50" hint="Jumlah maksimum order (opsional)"
                         suffix="{{ $formData['tipe_layanan'] === 'per_kg' ? 'kg' : 'pcs' }}" />
                 </div>
 
@@ -93,8 +93,9 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <livewire:management.component.icon-picker :initialValue="$formData['icon']" eventName="iconSelected"
-                        label="Icon" placeholder="Cari icon..." hint="Ketik minimal 2 huruf untuk mencari icon" />
+                    <livewire:management.component.icon-picker :initialValue="$formData['icon']"
+                        eventName="iconSelected" label="Icon" placeholder="Cari icon..."
+                        hint="Ketik minimal 2 huruf untuk mencari icon" />
 
                     <x-group label="Layanan Populer" wire:model="formData.is_popular" :options="$popularOptions"
                         hint="Layanan populer akan ditampilkan lebih menonjol" class="checked:btn-primary!" inline />
