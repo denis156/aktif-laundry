@@ -15,25 +15,30 @@ use App\Models\Kurir;
 use App\Models\Layanan;
 use App\Models\Pelanggan;
 use App\Models\Promo;
-use App\Models\Referral;
 use App\Models\Transaksi;
 use App\Models\TransaksiLayanan;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\On;
+use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Mary\Traits\Toast;
+use Mary\Traits\WithMediaSync;
 
 #[Title('Tambah Transaksi')]
 #[Layout('layouts.management.app')]
 class Create extends Component
 {
     use Toast;
+    use WithFileUploads;
+    use WithMediaSync;
 
     public array $pelangganOptions = [];
 
@@ -43,32 +48,55 @@ class Create extends Component
 
     public array $kurirOptions = [];
 
-    // Metadata fields
-    public ?int $selectedPromoId = null;
-
-    public ?int $selectedReferralId = null;
-
     public ?int $kurirJemputId = null;
 
     public ?int $kurirAntarId = null;
+
+    // Image Library - Temporary files
+    #[Rule(['fotoTimbangan.*' => 'nullable|image|max:5120'])]
+    public array $fotoTimbangan = [];
+
+    #[Rule(['fotoPembayaran.*' => 'nullable|image|max:5120'])]
+    public array $fotoPembayaran = [];
+
+    // Image Library - Library metadata
+    public Collection $libraryTimbangan;
+
+    public Collection $libraryPembayaran;
 
     public array $formData = [
         'kode_transaksi' => '',
         'tanggal_masuk' => '',
         'kasir_id' => null,
         'pelanggan_id' => '',
+        'nama_pelanggan' => '',
         'promo_id' => null,
         'referral_id' => null,
         'kode_promo' => '',
-        'nama_pelanggan' => '',
+        'kode_referral' => '',
         'subtotal' => 0,
-        'diskon' => 0,
         'total' => 0,
-        'metode_pembayaran' => TransaksiHelper::METODE_TUNAI,
+        'metode_pembayaran' => TransaksiHelper::METODE_BAYAR_SAAT_JEMPUT,
+        'tipe_bayar' => null,
+        'status_bayar' => TransaksiHelper::STATUS_BELUM_BAYAR,
+        'tanggal_bayar' => null,
+        'jumlah_bayar' => null,
         'tanggal_selesai' => '',
         'status' => TransaksiHelper::STATUS_MENUNGGU,
         'catatan' => '',
+        'catatan_internal' => '',
     ];
+
+    // Promo validation result
+    public array $promoResult = [
+        'valid' => false,
+        'diskon' => 0,
+        'pesan' => '',
+        'tipe' => '',
+    ];
+
+    // Cache promo object
+    protected $cachedPromo = null;
 
     // Multi-layanan data
     public array $multiLayananData = [
@@ -89,6 +117,10 @@ class Create extends Component
             'totalSubtotal' => 0,
             'totalGrandTotal' => 0,
         ];
+
+        // Initialize image library metadata as empty collections
+        $this->libraryTimbangan = new Collection();
+        $this->libraryPembayaran = new Collection();
 
         $this->search();
         $this->loadOptions();
@@ -144,6 +176,85 @@ class Create extends Component
         $this->calculateTanggalSelesaiFromMultiLayanan();
     }
 
+    public function updatedFormDataPromoId(): void
+    {
+        $this->calculatePromoDiskon();
+    }
+
+    protected function calculatePromoDiskon(): void
+    {
+        $promoId = $this->formData['promo_id'];
+
+        if (! $promoId) {
+            $this->promoResult = [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => '',
+                'tipe' => '',
+            ];
+            $this->formData['kode_promo'] = '';
+            $this->cachedPromo = null;
+            $this->updateTotal();
+
+            return;
+        }
+
+        // Use cached promo if available
+        if ($this->cachedPromo && $this->cachedPromo->id === $promoId) {
+            $promo = $this->cachedPromo;
+        } else {
+            $promo = PromoHelper::getById($promoId);
+            $this->cachedPromo = $promo;
+        }
+
+        if (! $promo) {
+            $this->promoResult = [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => 'Promo tidak ditemukan',
+                'tipe' => '',
+            ];
+            $this->formData['kode_promo'] = '';
+            $this->cachedPromo = null;
+            $this->updateTotal();
+
+            return;
+        }
+
+        // Hitung total berat dari multiLayananData
+        $totalBerat = 0.0;
+        foreach ($this->multiLayananData['items'] as $item) {
+            if (($item['tipe_layanan'] ?? '') === 'per_kg') {
+                $totalBerat += (float) ($item['berat_kg'] ?? 0);
+            }
+        }
+
+        // Hitung diskon menggunakan PromoHelper
+        $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
+        $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
+
+        $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
+
+        if ($this->promoResult['valid']) {
+            $this->formData['kode_promo'] = $promo->kode_promo;
+        } else {
+            $this->formData['kode_promo'] = '';
+            $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
+        }
+
+        $this->updateTotal();
+    }
+
+    protected function updateTotal(): void
+    {
+        $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
+        $diskon = (int) ($this->promoResult['diskon'] ?? 0);
+
+        $this->multiLayananData['totalGrandTotal'] = $subtotal - $diskon;
+        $this->formData['total'] = $this->multiLayananData['totalGrandTotal'];
+        $this->formData['subtotal'] = $subtotal;
+    }
+
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
@@ -170,78 +281,6 @@ class Create extends Component
             if ($pelanggan instanceof Pelanggan) {
                 $this->formData['nama_pelanggan'] = $pelanggan->nama;
             }
-        }
-    }
-
-    public function updatedFormDataDiskon(): void
-    {
-        $this->formData['total'] = (float) $this->formData['subtotal'] - (float) $this->formData['diskon'];
-    }
-
-    public function updatedSelectedPromoId(?int $value): void
-    {
-        if ($value) {
-            $this->formData['promo_id'] = $value;
-            $this->calculatePromoDiskon();
-        } else {
-            $this->formData['promo_id'] = null;
-            $this->formData['kode_promo'] = '';
-            $this->formData['diskon'] = 0;
-            $this->formData['total'] = (float) $this->formData['subtotal'];
-        }
-    }
-
-    protected function calculatePromoDiskon(): void
-    {
-        $promoId = $this->formData['promo_id'];
-
-        if (! $promoId) {
-            $this->formData['diskon'] = 0;
-            $this->formData['kode_promo'] = '';
-            $this->formData['total'] = (float) $this->formData['subtotal'];
-
-            return;
-        }
-
-        $promo = PromoHelper::getById($promoId);
-
-        if (! $promo) {
-            $this->warning('Promo tidak ditemukan', position: 'toast-bottom');
-            $this->selectedPromoId = null;
-            $this->formData['promo_id'] = null;
-            $this->formData['diskon'] = 0;
-            $this->formData['kode_promo'] = '';
-            $this->formData['total'] = (float) $this->formData['subtotal'];
-
-            return;
-        }
-
-        // Hitung total berat dari multiLayananData
-        $totalBerat = 0.0;
-        foreach ($this->multiLayananData['items'] as $item) {
-            if (($item['tipe_layanan'] ?? '') === 'per_kg') {
-                $totalBerat += (float) ($item['berat_kg'] ?? 0);
-            }
-        }
-
-        // Hitung diskon menggunakan PromoHelper
-        $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
-        $subtotal = (int) $this->formData['subtotal'];
-
-        $result = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
-
-        if ($result['valid']) {
-            $this->formData['diskon'] = $result['diskon'];
-            $this->formData['kode_promo'] = $promo->kode_promo;
-            $this->formData['total'] = (float) ($subtotal - $result['diskon']);
-            $this->success("Promo {$promo->kode_promo} diterapkan! {$result['pesan']}", position: 'toast-bottom');
-        } else {
-            $this->warning($result['pesan'], position: 'toast-bottom');
-            $this->selectedPromoId = null;
-            $this->formData['promo_id'] = null;
-            $this->formData['diskon'] = 0;
-            $this->formData['kode_promo'] = '';
-            $this->formData['total'] = (float) $this->formData['subtotal'];
         }
     }
 
@@ -310,8 +349,24 @@ class Create extends Component
             'formData.kode_transaksi' => 'required|unique:transaksi,kode_transaksi',
             'formData.tanggal_masuk' => 'required|date',
             'formData.pelanggan_id' => 'required|exists:pelanggan,id',
-            'formData.metode_pembayaran' => 'required|in:Tunai,Transfer,QRIS,Debit',
-            'formData.status' => 'required|in:Menunggu,Proses,Selesai,Diambil,Batal',
+            'formData.metode_pembayaran' => [
+                'required',
+                'in:'.implode(',', TransaksiHelper::getAllMetodePembayaran()),
+            ],
+            'formData.tipe_bayar' => [
+                'nullable',
+                'in:'.implode(',', TransaksiHelper::getAllTipeBayar()),
+            ],
+            'formData.status_bayar' => [
+                'required',
+                'in:'.implode(',', TransaksiHelper::getAllStatusBayar()),
+            ],
+            'formData.status' => [
+                'required',
+                'in:'.implode(',', TransaksiHelper::getAllStatus()),
+            ],
+            'fotoTimbangan.*' => 'nullable|image|max:5120',
+            'fotoPembayaran.*' => 'nullable|image|max:5120',
         ]);
 
         try {
@@ -346,11 +401,34 @@ class Create extends Component
                 // Simpan transaksi
                 $transaksi = Transaksi::create($transaksiData);
 
-                // === Handle Promo & Referral ===
+                // === Handle File Uploads dengan Image Library ===
+                // Sync foto bukti timbangan using WithMediaSync trait
+                $this->syncMedia(
+                    model: $transaksi,
+                    library: 'libraryTimbangan',
+                    files: 'fotoTimbangan',
+                    storage_subpath: '/transaksi/timbangan',
+                    model_field: 'foto_bukti_timbangan',
+                    visibility: 'public',
+                    disk: 'public'
+                );
+
+                // Sync foto bukti pembayaran using WithMediaSync trait
+                $this->syncMedia(
+                    model: $transaksi,
+                    library: 'libraryPembayaran',
+                    files: 'fotoPembayaran',
+                    storage_subpath: '/transaksi/pembayaran',
+                    model_field: 'foto_bukti_pembayaran',
+                    visibility: 'public',
+                    disk: 'public'
+                );
+
+                // === Handle Promo & Kurir ===
 
                 // 1. Increment promo usage jika ada promo yang digunakan
                 if ($this->formData['promo_id']) {
-                    $promo = PromoHelper::getById($this->formData['promo_id']);
+                    $promo = $this->cachedPromo ?? PromoHelper::getById($this->formData['promo_id']);
                     if ($promo) {
                         PromoHelper::incrementUsage($promo);
                         Log::info('Transaksi Create: Promo usage incremented', [
@@ -360,23 +438,7 @@ class Create extends Component
                     }
                 }
 
-                // 2. Increment referral counter jika ada
-                if ($this->selectedReferralId) {
-                    $referral = Referral::find($this->selectedReferralId);
-                    if ($referral) {
-                        // Set referral_id ke transaksi
-                        $transaksi->referral_id = $referral->id;
-
-                        // Increment referral counter
-                        ReferralHelper::incrementReferral($referral);
-                        Log::info('Transaksi Create: Referral incremented', [
-                            'referral_id' => $referral->id,
-                            'kode_referral' => $referral->kode_referral,
-                        ]);
-                    }
-                }
-
-                // 3. Kurir Jemput
+                // 2. Kurir Jemput
                 if ($this->kurirJemputId) {
                     $kurir = Kurir::find($this->kurirJemputId);
                     if ($kurir) {
@@ -386,7 +448,7 @@ class Create extends Component
                     TransaksiHelper::setKurirJemput($transaksi, null);
                 }
 
-                // 4. Kurir Antar
+                // 3. Kurir Antar
                 if ($this->kurirAntarId) {
                     $kurir = Kurir::find($this->kurirAntarId);
                     if ($kurir) {
@@ -396,7 +458,7 @@ class Create extends Component
                     TransaksiHelper::setKurirAntar($transaksi, null);
                 }
 
-                // Save metadata ke database
+                // Save ke database
                 $transaksi->save();
 
                 // Collect all layanan IDs and load them at once to prevent N+1 queries
@@ -519,7 +581,6 @@ class Create extends Component
     public function getPelangganOptions(): array
     {
         try {
-            // Gunakan PelangganHelper untuk get options (OOP approach)
             return PelangganHelper::getPelangganOptions('', 100);
         } catch (Exception $e) {
             Log::error('Transaksi Create: Error getting pelanggan options', [
@@ -532,8 +593,27 @@ class Create extends Component
 
     public function getLayananOptions(): array
     {
-        // Gunakan LayananHelper untuk get options (OOP approach)
         return LayananHelper::getLayananOptions();
+    }
+
+    public function getStatusOptions(): array
+    {
+        return TransaksiHelper::getStatusOptions();
+    }
+
+    public function getMetodePembayaranOptions(): array
+    {
+        return TransaksiHelper::getMetodePembayaranOptions();
+    }
+
+    public function getTipeBayarOptions(): array
+    {
+        return TransaksiHelper::getTipeBayarOptions();
+    }
+
+    public function getStatusBayarOptions(): array
+    {
+        return TransaksiHelper::getStatusBayarOptions();
     }
 
     public function render(): mixed
@@ -541,6 +621,10 @@ class Create extends Component
         return view('livewire.management.transaksi.create', [
             'pelangganOptions' => $this->getPelangganOptions(),
             'layananOptions' => $this->getLayananOptions(),
+            'statusOptions' => $this->getStatusOptions(),
+            'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
+            'tipeBayarOptions' => $this->getTipeBayarOptions(),
+            'statusBayarOptions' => $this->getStatusBayarOptions(),
         ]);
     }
 }

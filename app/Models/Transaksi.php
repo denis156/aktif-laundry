@@ -77,8 +77,8 @@ class Transaksi extends Model
             'referral_id' => 'integer',
             'kurir_jemput_id' => 'integer',
             'kurir_antar_id' => 'integer',
-            'foto_bukti_timbangan' => 'array',
-            'foto_bukti_pembayaran' => 'array',
+            'foto_bukti_timbangan' => 'collection',
+            'foto_bukti_pembayaran' => 'collection',
         ];
     }
 

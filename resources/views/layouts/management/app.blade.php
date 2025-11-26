@@ -22,6 +22,13 @@
     <script src="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro@2.9.6/build/vanilla-calendar.min.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/vanilla-calendar-pro@2.9.6/build/vanilla-calendar.min.css"
         rel="stylesheet">
+
+    {{-- Cropper.js --}}
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css" />
+
+    {{-- Sortable.js --}}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.1/Sortable.min.js"></script>
 </head>
 
 <body class="min-h-screen font-sans antialiased bg-base-200">
@@ -56,12 +63,13 @@
                 <x-menu-separator />
 
                 @php
-                    $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($user->avatar_url, $user->name);
+                $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($user->avatar_url, $user->name);
                 @endphp
                 <x-list-item :item="$user" value="name" sub-value="email" no-separator no-hover
                     class="-mx-2 -my-2! rounded">
                     <x-slot:avatar>
-                        <img src="{{ $avatarUrl }}" alt="{{ $user->name }}" class="w-11 h-11 rounded-full object-cover avatar-online" />
+                        <img src="{{ $avatarUrl }}" alt="{{ $user->name }}"
+                            class="w-11 h-11 rounded-full object-cover avatar-online" />
                     </x-slot:avatar>
                     <x-slot:actions>
                         <livewire:component.dark-mode-swap swap-class="swap-rotate" icon-size="h-6 w-6" />

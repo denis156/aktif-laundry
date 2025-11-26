@@ -68,57 +68,28 @@
             @endif
             @endscope
 
-            @scope('cell_metadata_info', $item)
-            <div class="flex flex-col gap-1">
-                @php
-                $promoInfo = \App\Helper\Database\TransaksiHelper::getPromoInfo($item);
-                $referralInfo = \App\Helper\Database\TransaksiHelper::getReferralInfo($item);
-                $kurirJemput = \App\Helper\Database\TransaksiHelper::getKurirJemput($item);
-                $kurirAntar = \App\Helper\Database\TransaksiHelper::getKurirAntar($item);
-                @endphp
-
-                @if($promoInfo)
-                <x-badge value="{{ $promoInfo['kode_promo'] ?? 'Promo' }}" class="badge-primary badge-xs" />
-                @endif
-
-                @if($referralInfo)
-                <x-badge value="{{ $referralInfo['kode_referral'] ?? 'Referral' }}" class="badge-secondary badge-xs" />
-                @endif
-
-                @if($kurirJemput)
-                <span class="text-xs text-info flex items-center gap-1">
-                    <x-icon name="o-arrow-up-tray" class="w-3 h-3" />
-                    {{ Str::limit($kurirJemput, 10) }}
-                </span>
-                @endif
-
-                @if($kurirAntar)
-                <span class="text-xs text-success flex items-center gap-1">
-                    <x-icon name="o-arrow-down-tray" class="w-3 h-3" />
-                    {{ Str::limit($kurirAntar, 10) }}
-                </span>
-                @endif
-
-                @if(!$promoInfo && !$referralInfo && !$kurirJemput && !$kurirAntar)
-                <span class="text-xs text-base-content/40">-</span>
-                @endif
-            </div>
-            @endscope
-
             @scope('cell_total', $item)
             <span class="font-semibold text-success truncate">Rp
                 {{ number_format((float) $item->total, 0, ',', '.') }}</span>
             @endscope
 
             @scope('cell_metode_pembayaran', $item)
-            @if ($item->metode_pembayaran == 'Tunai')
-            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-info badge-sm" />
-            @elseif($item->metode_pembayaran == 'Transfer')
-            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-primary badge-sm" />
-            @elseif($item->metode_pembayaran == 'QRIS')
-            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-secondary badge-sm" />
+            @if ($item->metode_pembayaran == 'Bayar Saat Jemput')
+            <x-badge value="Jemput" class="badge-info badge-sm truncate" />
+            @elseif($item->metode_pembayaran == 'Bayar Saat Antar')
+            <x-badge value="Antar" class="badge-primary badge-sm truncate" />
             @else
-            <x-badge value="{{ $item->metode_pembayaran }}" class="badge-accent badge-sm" />
+            <x-badge value="{{ $item->metode_pembayaran ?? '-' }}" class="badge-accent badge-sm" />
+            @endif
+            @endscope
+
+            @scope('cell_tipe_bayar', $item)
+            @if ($item->tipe_bayar == 'Tunai')
+            <x-badge value="Tunai" class="badge-success badge-sm truncate" />
+            @elseif($item->tipe_bayar == 'Non-Tunai')
+            <x-badge value="Non-Tunai" class="badge-secondary badge-sm truncate" />
+            @else
+            <span class="text-base-content/50">-</span>
             @endif
             @endscope
 
@@ -152,22 +123,16 @@
     <x-drawer wire:model="drawer" title="Filter Transaksi" subtitle="Saring data sesuai kebutuhan" right separator
         with-close-button class="lg:w-1/3">
         <div class="space-y-5">
-            <x-select label="Status Transaksi" wire:model.live="statusFilter" icon="o-flag" :options="[
-                ['id' => '', 'name' => 'Semua Status'],
-                ['id' => 'Menunggu', 'name' => 'Menunggu'],
-                ['id' => 'Proses', 'name' => 'Proses'],
-                ['id' => 'Selesai', 'name' => 'Selesai'],
-                ['id' => 'Diambil', 'name' => 'Diambil'],
-                ['id' => 'Batal', 'name' => 'Batal'],
-            ]" option-value="id" option-label="name" />
+            @php
+            $statusOptionsWithAll = array_merge([['id' => '', 'name' => 'Semua Status']], $statusOptions);
+            $metodePembayaranOptionsWithAll = array_merge([['id' => '', 'name' => 'Semua Metode']], $metodePembayaranOptions);
+            @endphp
 
-            <x-select label="Metode Pembayaran" wire:model.live="metodePembayaranFilter" icon="o-credit-card" :options="[
-                    ['id' => '', 'name' => 'Semua Metode'],
-                    ['id' => 'Tunai', 'name' => 'Tunai'],
-                    ['id' => 'Transfer', 'name' => 'Transfer'],
-                    ['id' => 'QRIS', 'name' => 'QRIS'],
-                    ['id' => 'Debit', 'name' => 'Debit'],
-                ]" option-value="id" option-label="name" />
+            <x-select label="Status Transaksi" wire:model.live="statusFilter" icon="o-flag"
+                :options="$statusOptionsWithAll" option-value="id" option-label="name" />
+
+            <x-select label="Metode Pembayaran" wire:model.live="metodePembayaranFilter" icon="o-credit-card"
+                :options="$metodePembayaranOptionsWithAll" option-value="id" option-label="name" />
 
             <div class="space-y-3">
                 <label class="block text-sm font-semibold">Range Tanggal</label>

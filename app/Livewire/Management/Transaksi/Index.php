@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Livewire\Management\Transaksi;
 
 use App\Exports\TransaksiExport;
+use App\Helper\Database\TransaksiHelper;
 use App\Models\Transaksi;
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -63,12 +64,6 @@ class Index extends Component
     {
         try {
             $transaksi = Transaksi::findOrFail($this->deleteId);
-
-            // Kurangi total transaksi pelanggan
-            if ($transaksi->pelanggan) {
-                $transaksi->pelanggan->decrement('total_transaksi');
-            }
-
             $transaksi->delete();
 
             $this->success("Transaksi {$this->deleteName} berhasil dihapus!", position: 'toast-bottom');
@@ -111,14 +106,14 @@ class Index extends Component
             ['key' => 'tanggal_masuk', 'label' => 'Tgl Masuk', 'class' => 'w-32'],
             ['key' => 'nama_pelanggan', 'label' => 'Pelanggan', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'layanan_info', 'label' => 'Layanan', 'class' => 'w-40', 'sortable' => false],
-            ['key' => 'metadata_info', 'label' => 'Promo/Kurir', 'class' => 'w-32', 'sortable' => false],
             ['key' => 'total', 'label' => 'Total', 'class' => 'w-28'],
-            ['key' => 'metode_pembayaran', 'label' => 'Pembayaran', 'class' => 'w-24', 'sortable' => false],
+            ['key' => 'metode_pembayaran', 'label' => 'Metode Bayar', 'class' => 'w-28', 'sortable' => false],
+            ['key' => 'tipe_bayar', 'label' => 'Tipe Bayar', 'class' => 'w-24', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
 
-    public function transaksi()
+    public function getTransaksi()
     {
         return Transaksi::query()
             ->with(['pelanggan', 'kasir', 'transaksiLayanan.layanan'])
@@ -127,9 +122,7 @@ class Index extends Component
                     $q->where('kode_transaksi', 'like', "%{$this->search}%")
                         ->orWhere('nama_pelanggan', 'like', "%{$this->search}%")
                         ->orWhereHas('transaksiLayanan', function ($subQuery) {
-                            $subQuery->whereHas('layanan', function ($layananQuery) {
-                                $layananQuery->where('nama_layanan', 'like', "%{$this->search}%");
-                            });
+                            $subQuery->where('nama_layanan', 'like', "%{$this->search}%");
                         });
                 });
             })
@@ -149,11 +142,23 @@ class Index extends Component
             ->paginate($this->perPage);
     }
 
+    public function getStatusOptions(): array
+    {
+        return TransaksiHelper::getStatusOptions();
+    }
+
+    public function getMetodePembayaranOptions(): array
+    {
+        return TransaksiHelper::getMetodePembayaranOptions();
+    }
+
     public function render()
     {
         return view('livewire.management.transaksi.index', [
-            'transaksi' => $this->transaksi(),
+            'transaksi' => $this->getTransaksi(),
             'headers' => $this->headers(),
+            'statusOptions' => $this->getStatusOptions(),
+            'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
         ]);
     }
 }

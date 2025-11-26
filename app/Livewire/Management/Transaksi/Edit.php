@@ -21,19 +21,25 @@ use App\Models\Transaksi;
 use App\Models\TransaksiLayanan;
 use Exception;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 use Mary\Traits\Toast;
+use Mary\Traits\WithMediaSync;
 
 #[Title('Edit Transaksi')]
 #[Layout('layouts.management.app')]
 class Edit extends Component
 {
     use Toast;
+    use WithFileUploads;
+    use WithMediaSync;
 
     public int $transaksiId;
 
@@ -54,22 +60,36 @@ class Edit extends Component
 
     public ?int $kurirAntarId = null;
 
+    // Image Library - Temporary files
+    #[Rule(['fotoTimbangan.*' => 'nullable|image|max:5120'])]
+    public array $fotoTimbangan = [];
+
+    #[Rule(['fotoPembayaran.*' => 'nullable|image|max:5120'])]
+    public array $fotoPembayaran = [];
+
+    // Image Library - Library metadata
+    public Collection $libraryTimbangan;
+
+    public Collection $libraryPembayaran;
+
     public array $formData = [
         'kode_transaksi' => '',
         'tanggal_masuk' => '',
         'kasir_id' => null,
         'pelanggan_id' => '',
-        'promo_id' => null,
         'referral_id' => null,
-        'kode_promo' => '',
         'nama_pelanggan' => '',
         'subtotal' => 0,
-        'diskon' => 0,
         'total' => 0,
-        'metode_pembayaran' => 'Tunai',
+        'metode_pembayaran' => TransaksiHelper::METODE_BAYAR_SAAT_JEMPUT,
+        'tipe_bayar' => null,
+        'status_bayar' => TransaksiHelper::STATUS_BELUM_BAYAR,
+        'tanggal_bayar' => null,
+        'jumlah_bayar' => null,
         'tanggal_selesai' => '',
-        'status' => 'Menunggu',
+        'status' => TransaksiHelper::STATUS_MENUNGGU,
         'catatan' => '',
+        'catatan_internal' => '',
     ];
 
     // Multi-layanan data
@@ -121,29 +141,34 @@ class Edit extends Component
                 'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d\TH:i'),
                 'kasir_id' => $transaksi->kasir_id,
                 'pelanggan_id' => $transaksi->pelanggan_id,
-                'promo_id' => $transaksi->promo_id,
                 'referral_id' => $transaksi->referral_id,
-                'kode_promo' => $transaksi->kode_promo ?? '',
                 'nama_pelanggan' => $transaksi->nama_pelanggan,
                 'subtotal' => $transaksi->subtotal,
-                'diskon' => $transaksi->diskon,
                 'total' => $transaksi->total,
                 'metode_pembayaran' => $transaksi->metode_pembayaran,
+                'tipe_bayar' => $transaksi->tipe_bayar,
+                'status_bayar' => $transaksi->status_bayar,
+                'tanggal_bayar' => $transaksi->tanggal_bayar
+                    ? $transaksi->tanggal_bayar->format('Y-m-d\TH:i')
+                    : null,
+                'jumlah_bayar' => $transaksi->jumlah_bayar,
                 'tanggal_selesai' => $transaksi->tanggal_selesai
                     ? $transaksi->tanggal_selesai->format('Y-m-d\TH:i')
                     : '',
                 'status' => $transaksi->status,
                 'catatan' => $transaksi->catatan ?? '',
+                'catatan_internal' => $transaksi->catatan_internal ?? '',
             ];
-
-            // Set selectedPromoId untuk UI dropdown
-            if ($transaksi->promo_id) {
-                $this->selectedPromoId = $transaksi->promo_id;
-            }
 
             // Set selectedReferralId untuk UI dropdown
             if ($transaksi->referral_id) {
                 $this->selectedReferralId = $transaksi->referral_id;
+            }
+
+            // Set selectedPromoId dari transaksiPromo jika ada
+            $latestPromo = $transaksi->transaksiPromo()->latest()->first();
+            if ($latestPromo) {
+                $this->selectedPromoId = $latestPromo->promo_id;
             }
 
             // Load multi-layanan data
@@ -151,6 +176,11 @@ class Edit extends Component
 
             // Load metadata
             $this->loadMetadata($transaksi);
+
+            // Load existing image library metadata - ensure it's always Collection
+            // Handle backward compatibility: null, string JSON, array, or Collection
+            $this->libraryTimbangan = $this->ensureCollection($transaksi->foto_bukti_timbangan);
+            $this->libraryPembayaran = $this->ensureCollection($transaksi->foto_bukti_pembayaran);
         } catch (Exception $e) {
             Log::error('Transaksi Edit: Failed to load transaksi', [
                 'transaksi_id' => $this->transaksiId,
@@ -269,7 +299,7 @@ class Edit extends Component
     {
         $this->multiLayananData = $data;
         $this->formData['subtotal'] = $data['totalSubtotal'];
-        $this->formData['total'] = $data['totalGrandTotal'] - (float) $this->formData['diskon'];
+        $this->formData['total'] = $data['totalGrandTotal'];
 
         // Calculate tanggal selesai based on layanan with longest duration
         $this->calculateTanggalSelesaiFromMultiLayanan();
@@ -305,25 +335,8 @@ class Edit extends Component
         }
     }
 
-    public function updatedFormDataDiskon(): void
-    {
-        $this->formData['total'] = (float) $this->formData['subtotal'] - (float) $this->formData['diskon'];
-    }
-
     protected function loadMetadata(Transaksi $transaksi): void
     {
-        // Load promo info
-        $promoInfo = TransaksiHelper::getPromoInfo($transaksi);
-        if ($promoInfo && isset($promoInfo['promo_id'])) {
-            $this->selectedPromoId = $promoInfo['promo_id'];
-        }
-
-        // Load referral info
-        $referralInfo = TransaksiHelper::getReferralInfo($transaksi);
-        if ($referralInfo && isset($referralInfo['referral_id'])) {
-            $this->selectedReferralId = $referralInfo['referral_id'];
-        }
-
         // Load kurir info
         $kurirJemput = TransaksiHelper::getKurirJemput($transaksi);
         if ($kurirJemput && isset($kurirJemput['id'])) {
@@ -336,70 +349,45 @@ class Edit extends Component
         }
     }
 
-    public function updatedSelectedPromoId(?int $value): void
+    /**
+     * Ensure data is always Collection for Image Library component
+     * Handle backward compatibility: null, string JSON, array, or Collection
+     */
+    protected function ensureCollection(mixed $data): Collection
     {
-        if ($value) {
-            $this->formData['promo_id'] = $value;
-            $this->calculatePromoDiskon();
-        } else {
-            $this->formData['promo_id'] = null;
-            $this->formData['kode_promo'] = '';
-            $this->formData['diskon'] = 0;
-            $this->formData['total'] = (float) $this->formData['subtotal'];
-        }
-    }
-
-    protected function calculatePromoDiskon(): void
-    {
-        $promoId = $this->formData['promo_id'];
-
-        if (! $promoId) {
-            $this->formData['diskon'] = 0;
-            $this->formData['kode_promo'] = '';
-            $this->formData['total'] = (float) $this->formData['subtotal'];
-
-            return;
+        // Already a Collection
+        if ($data instanceof Collection) {
+            return $data;
         }
 
-        $promo = PromoHelper::getById($promoId);
-
-        if (! $promo) {
-            $this->warning('Promo tidak ditemukan', position: 'toast-bottom');
-            $this->selectedPromoId = null;
-            $this->formData['promo_id'] = null;
-            $this->formData['diskon'] = 0;
-            $this->formData['kode_promo'] = '';
-            $this->formData['total'] = (float) $this->formData['subtotal'];
-
-            return;
+        // Null or empty
+        if (empty($data)) {
+            return new Collection();
         }
 
-        // Hitung total berat dari multiLayananData
-        $totalBerat = 0.0;
-        foreach ($this->multiLayananData['items'] as $item) {
-            if (($item['tipe_layanan'] ?? '') === 'per_kg') {
-                $totalBerat += (float) ($item['berat_kg'] ?? 0);
+        // Array
+        if (is_array($data)) {
+            return new Collection($data);
+        }
+
+        // String JSON (dari data lama)
+        if (is_string($data)) {
+            $decoded = json_decode($data, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                return new Collection($decoded);
             }
         }
 
-        // Hitung diskon menggunakan PromoHelper
-        $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
-        $subtotal = (int) $this->formData['subtotal'];
+        // Fallback: empty Collection
+        return new Collection();
+    }
 
-        $result = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
-
-        if ($result['valid']) {
-            $this->formData['diskon'] = $result['diskon'];
-            $this->formData['kode_promo'] = $promo->kode_promo;
-            $this->formData['total'] = (float) ($subtotal - $result['diskon']);
-            $this->success("Promo {$promo->kode_promo} diterapkan! {$result['pesan']}", position: 'toast-bottom');
+    public function updatedSelectedPromoId(?int $value): void
+    {
+        if ($value) {
+            $this->selectedPromoId = $value;
         } else {
-            $this->warning($result['pesan'], position: 'toast-bottom');
             $this->selectedPromoId = null;
-            $this->formData['promo_id'] = null;
-            $this->formData['diskon'] = 0;
-            $this->formData['kode_promo'] = '';
-            $this->formData['total'] = (float) $this->formData['subtotal'];
         }
     }
 
@@ -473,8 +461,24 @@ class Edit extends Component
         $this->validate([
             'formData.tanggal_masuk' => 'required|date',
             'formData.pelanggan_id' => 'required|exists:pelanggan,id',
-            'formData.metode_pembayaran' => 'required|in:Tunai,Transfer,QRIS,Debit',
-            'formData.status' => 'required|in:Menunggu,Proses,Selesai,Diambil,Batal',
+            'formData.metode_pembayaran' => [
+                'required',
+                'in:'.implode(',', TransaksiHelper::getAllMetodePembayaran()),
+            ],
+            'formData.tipe_bayar' => [
+                'nullable',
+                'in:'.implode(',', TransaksiHelper::getAllTipeBayar()),
+            ],
+            'formData.status_bayar' => [
+                'required',
+                'in:'.implode(',', TransaksiHelper::getAllStatusBayar()),
+            ],
+            'formData.status' => [
+                'required',
+                'in:'.implode(',', TransaksiHelper::getAllStatus()),
+            ],
+            'fotoTimbangan.*' => 'nullable|image|max:5120',
+            'fotoPembayaran.*' => 'nullable|image|max:5120',
         ]);
 
         try {
@@ -503,40 +507,62 @@ class Edit extends Component
                 // Update transaksi
                 $transaksi->update($transaksiData);
 
-                // === Handle Metadata ===
+                // === Handle File Uploads dengan Image Library ===
+                // Sync foto bukti timbangan using WithMediaSync trait
+                $this->syncMedia(
+                    model: $transaksi,
+                    library: 'libraryTimbangan',
+                    files: 'fotoTimbangan',
+                    storage_subpath: '/transaksi/timbangan',
+                    model_field: 'foto_bukti_timbangan',
+                    visibility: 'public',
+                    disk: 'public'
+                );
 
-                // 1. Promo metadata
+                // Sync foto bukti pembayaran using WithMediaSync trait
+                $this->syncMedia(
+                    model: $transaksi,
+                    library: 'libraryPembayaran',
+                    files: 'fotoPembayaran',
+                    storage_subpath: '/transaksi/pembayaran',
+                    model_field: 'foto_bukti_pembayaran',
+                    visibility: 'public',
+                    disk: 'public'
+                );
+
+                // === Handle Referral, Promo & Kurir ===
+
+                // 1. Set referral_id jika ada
+                if ($this->selectedReferralId) {
+                    $referral = Referral::find($this->selectedReferralId);
+                    if ($referral) {
+                        TransaksiHelper::setReferral($transaksi, $referral->id);
+                    }
+                } else {
+                    TransaksiHelper::setReferral($transaksi, null);
+                }
+
+                // 2. Handle promo - hapus semua promo lama dan tambah yang baru jika ada
+                $transaksi->transaksiPromo()->delete();
+
                 if ($this->selectedPromoId) {
                     $promo = Promo::find($this->selectedPromoId);
                     if ($promo) {
-                        TransaksiHelper::setPromoInfo($transaksi, [
+                        $transaksi->transaksiPromo()->create([
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
                             'nama_promo' => $promo->nama_promo,
                             'tipe_diskon' => $promo->tipe_diskon,
-                            'nilai_diskon' => $promo->nilai_diskon,
-                            'nilai_diskon_real' => $this->formData['diskon'],
+                            'nilai_diskon_persen' => $promo->nilai_diskon_persen,
+                            'nilai_diskon_nominal' => $promo->nilai_diskon_nominal,
+                            'diskon_maksimal' => $promo->diskon_maksimal,
+                            'gratis_kg' => $promo->gratis_kg,
+                            'gratis_hari' => $promo->gratis_hari,
+                            'diterapkan_ke' => $promo->diterapkan_ke,
+                            'layanan_id' => $promo->layanan_id,
+                            'urutan_apply' => 1,
                         ]);
                     }
-                } else {
-                    // Hapus promo jika tidak ada
-                    TransaksiHelper::setPromoInfo($transaksi, null);
-                }
-
-                // 2. Referral metadata
-                if ($this->selectedReferralId) {
-                    $referral = Referral::find($this->selectedReferralId);
-                    if ($referral) {
-                        TransaksiHelper::setReferralInfo($transaksi, [
-                            'referral_id' => $referral->id,
-                            'kode_referral' => $referral->kode_referral,
-                            'pelanggan_referrer_id' => $referral->pelanggan_id,
-                            'poin_diberikan' => $referral->poin_referee,
-                        ]);
-                    }
-                } else {
-                    // Hapus referral jika tidak ada
-                    TransaksiHelper::setReferralInfo($transaksi, null);
                 }
 
                 // 3. Kurir Jemput
@@ -559,7 +585,7 @@ class Edit extends Component
                     TransaksiHelper::setKurirAntar($transaksi, null);
                 }
 
-                // Save metadata ke database
+                // Save ke database
                 $transaksi->save();
 
                 // Hapus transaksi layanan lama (force delete untuk menghindari duplikasi)
@@ -675,7 +701,6 @@ class Edit extends Component
     public function getPelangganOptions(): array
     {
         try {
-            // Gunakan PelangganHelper untuk get options (OOP approach)
             return PelangganHelper::getPelangganOptions('', 100);
         } catch (Exception $e) {
             Log::error('Transaksi Edit: Error getting pelanggan options', [
@@ -688,8 +713,27 @@ class Edit extends Component
 
     public function getLayananOptions(): array
     {
-        // Gunakan LayananHelper untuk get options (OOP approach)
         return LayananHelper::getLayananOptions();
+    }
+
+    public function getStatusOptions(): array
+    {
+        return TransaksiHelper::getStatusOptions();
+    }
+
+    public function getMetodePembayaranOptions(): array
+    {
+        return TransaksiHelper::getMetodePembayaranOptions();
+    }
+
+    public function getTipeBayarOptions(): array
+    {
+        return TransaksiHelper::getTipeBayarOptions();
+    }
+
+    public function getStatusBayarOptions(): array
+    {
+        return TransaksiHelper::getStatusBayarOptions();
     }
 
     public function render()
@@ -697,6 +741,10 @@ class Edit extends Component
         return view('livewire.management.transaksi.edit', [
             'pelangganOptions' => $this->getPelangganOptions(),
             'layananOptions' => $this->getLayananOptions(),
+            'statusOptions' => $this->getStatusOptions(),
+            'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
+            'tipeBayarOptions' => $this->getTipeBayarOptions(),
+            'statusBayarOptions' => $this->getStatusBayarOptions(),
         ]);
     }
 }
