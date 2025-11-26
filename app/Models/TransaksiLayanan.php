@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 // ? Menyimpan detail layanan dalam transaksi
 // ? Satu transaksi bisa punya banyak layanan (multi-service)
 // ? Mendukung per_kg (jenis_pakaian array) atau per_satuan
-// ? Semua data sudah disimpan di kolom terpisah (tidak ada metadata)
+// ? Semua data sudah disimpan di kolom terpisah
 
 class TransaksiLayanan extends Model
 {

@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 //
 // ? Menyimpan header transaksi laundry
 // ? Mendukung multi-service (satu transaksi bisa punya banyak layanan)
-// ? Semua data sudah disimpan di kolom terpisah (tidak ada metadata)
+// ? Semua data sudah disimpan di kolom terpisah
 
 class Transaksi extends Model
 {
