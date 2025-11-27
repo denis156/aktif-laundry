@@ -53,7 +53,7 @@ class VerifyEmail extends Component
 
             $this->error(
                 "Tunggu {$seconds} detik sebelum mengirim ulang email verifikasi.",
-                position: 'toast-bottom'
+                position: 'toast-top'
             );
 
             return;
@@ -73,7 +73,7 @@ class VerifyEmail extends Component
 
             $this->success(
                 'Email verifikasi telah dikirim. Silakan cek inbox atau spam folder Anda.',
-                position: 'toast-bottom',
+                position: 'toast-top',
                 timeout: 5000
             );
         } catch (Exception $e) {
@@ -86,7 +86,7 @@ class VerifyEmail extends Component
 
             $this->error(
                 'Terjadi kesalahan sistem. Silakan coba lagi.',
-                position: 'toast-bottom'
+                position: 'toast-top'
             );
         }
     }
@@ -114,7 +114,7 @@ class VerifyEmail extends Component
 
             $this->error(
                 'Terjadi kesalahan sistem. Silakan coba lagi.',
-                position: 'toast-bottom'
+                position: 'toast-top'
             );
         }
     }

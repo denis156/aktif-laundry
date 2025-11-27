@@ -47,7 +47,7 @@ class ForgotPassword extends Component
 
                 $this->success(
                     'Link reset password telah dikirim ke email Anda. Silakan cek inbox atau spam folder.',
-                    position: 'toast-bottom',
+                    position: 'toast-top',
                     timeout: 5000
                 );
 
@@ -61,7 +61,7 @@ class ForgotPassword extends Component
 
                 $this->error(
                     'Gagal mengirim link reset password. Silakan coba lagi.',
-                    position: 'toast-bottom'
+                    position: 'toast-top'
                 );
             }
         } catch (Exception $e) {
@@ -73,7 +73,7 @@ class ForgotPassword extends Component
 
             $this->error(
                 'Terjadi kesalahan sistem. Silakan coba lagi.',
-                position: 'toast-bottom'
+                position: 'toast-top'
             );
         }
     }

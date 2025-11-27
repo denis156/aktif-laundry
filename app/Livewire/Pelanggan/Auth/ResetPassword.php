@@ -83,7 +83,7 @@ class ResetPassword extends Component
             if ($status === Password::PASSWORD_RESET) {
                 $this->success(
                     'Password berhasil direset. Silakan login dengan password baru Anda.',
-                    position: 'toast-bottom',
+                    position: 'toast-top',
                     timeout: 5000,
                     redirectTo: route('login.pelanggan')
                 );
@@ -95,7 +95,7 @@ class ResetPassword extends Component
 
                 $this->error(
                     'Link reset password tidak valid atau sudah kadaluarsa. Silakan minta link baru.',
-                    position: 'toast-bottom'
+                    position: 'toast-top'
                 );
             }
         } catch (Exception $e) {
@@ -107,7 +107,7 @@ class ResetPassword extends Component
 
             $this->error(
                 'Terjadi kesalahan sistem. Silakan coba lagi.',
-                position: 'toast-bottom'
+                position: 'toast-top'
             );
         }
     }

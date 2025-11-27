@@ -111,12 +111,12 @@ class Register extends Component
                 ]);
             });
 
-            $this->success('Pendaftaran berhasil! Selamat datang di '.config('app.name'), position: 'toast-bottom');
+            $this->success('Pendaftaran berhasil! Selamat datang di '.config('app.name'), position: 'toast-top');
 
             // Redirect ke beranda atau email verification
             $pelanggan = Auth::guard('pelanggan')->user();
             if ($pelanggan && ! $pelanggan->hasVerifiedEmail()) {
-                $this->info('Silakan verifikasi email Anda terlebih dahulu.', position: 'toast-bottom');
+                $this->info('Silakan verifikasi email Anda terlebih dahulu.', position: 'toast-top');
                 $this->redirect(route('pelanggan.verification.notice'), navigate: true);
             } else {
                 $this->redirect(route('beranda.pelanggan'), navigate: false);
@@ -130,9 +130,9 @@ class Register extends Component
             ]);
 
             if (str_contains($e->getMessage(), 'Format nomor HP tidak valid')) {
-                $this->error($e->getMessage(), position: 'toast-bottom');
+                $this->error($e->getMessage(), position: 'toast-top');
             } else {
-                $this->error('Terjadi kesalahan sistem. Silakan coba lagi.', position: 'toast-bottom');
+                $this->error('Terjadi kesalahan sistem. Silakan coba lagi.', position: 'toast-top');
             }
         }
     }
