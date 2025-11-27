@@ -49,34 +49,36 @@
             $quantity = $totalBerat ?? $totalItem ?? '-';
             @endphp
 
-            <x-card wire:key="transaksi-{{ $transaksi->id }}" title="{{ $transaksi->kode_transaksi }}"
-                subtitle="{{ $transaksi->tanggal_masuk->locale('id')->isoFormat('DD MMMM YYYY, HH:mm') }}"
-                class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer">
-                <x-slot:menu>
-                    <x-avatar :image="$avatarUrl" class="w-10 h-10 rounded-full shrink-0" />
-                </x-slot:menu>
+            <a href="{{ route('detail-pesanan.pelanggan', $transaksi->id) }}" wire:navigate class="block">
+                <x-card wire:key="transaksi-{{ $transaksi->id }}" title="{{ $transaksi->kode_transaksi }}"
+                    subtitle="{{ $transaksi->tanggal_masuk->locale('id')->isoFormat('DD MMMM YYYY, HH:mm') }}"
+                    class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer">
+                    <x-slot:menu>
+                        <x-avatar :image="$avatarUrl" class="w-10 h-10 rounded-full shrink-0" />
+                    </x-slot:menu>
 
-                <div class="flex items-center justify-between gap-3">
-                    <div class="flex flex-col flex-1 min-w-0">
-                        <div class="flex items-center gap-2">
-                            @if ($firstLayanan)
-                            <span class="text-xs text-primary font-medium">{{ $firstLayanan->nama_layanan }}</span>
-                            @if ($totalLayanan > 1)
-                            <span class="text-xs text-base-content/40">+{{ $totalLayanan - 1 }} lainnya</span>
-                            @endif
-                            <span class="text-xs text-base-content/40">•</span>
-                            @endif
-                            <span class="text-xs text-base-content/60">{{ $quantity }}</span>
+                    <div class="flex items-center justify-between gap-3">
+                        <div class="flex flex-col flex-1 min-w-0">
+                            <div class="flex items-center gap-2">
+                                @if ($firstLayanan)
+                                <span class="text-xs text-primary font-medium">{{ $firstLayanan->nama_layanan }}</span>
+                                @if ($totalLayanan > 1)
+                                <span class="text-xs text-base-content/40">+{{ $totalLayanan - 1 }} lainnya</span>
+                                @endif
+                                <span class="text-xs text-base-content/40">•</span>
+                                @endif
+                                <span class="text-xs text-base-content/60">{{ $quantity }}</span>
+                            </div>
+                            <div class="flex items-center gap-2 mt-1">
+                                <span class="text-sm font-semibold text-base-content">Rp
+                                    {{ number_format($transaksi->total, 0, ',', '.') }}</span>
+                            </div>
                         </div>
-                        <div class="flex items-center gap-2 mt-1">
-                            <span class="text-sm font-semibold text-base-content">Rp
-                                {{ number_format($transaksi->total, 0, ',', '.') }}</span>
-                        </div>
+
+                        <x-badge :value="$transaksi->status" class="{{ $badgeClass }} badge-sm shrink-0" />
                     </div>
-
-                    <x-badge :value="$transaksi->status" class="{{ $badgeClass }} badge-sm shrink-0" />
-                </div>
-            </x-card>
+                </x-card>
+            </a>
             @endforeach
         </div>
         @endforeach

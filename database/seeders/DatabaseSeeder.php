@@ -42,6 +42,9 @@ class DatabaseSeeder extends Seeder
         // ! 4. Pelanggan (Observer will auto-create Referral if enabled)
         $this->seedPelanggan();
 
+        // ! 4b. Pelanggan Default untuk Testing
+        $this->seedPelangganDefault();
+
         // ! 5. Kurir
         $this->seedKurir();
 
@@ -60,6 +63,7 @@ class DatabaseSeeder extends Seeder
         $this->command->info('🔑 Default Credentials:');
         $this->command->line('   Super Admin: admin@aktiflaundry.com / password');
         $this->command->line('   Staff: budi@aktiflaundry.com / password');
+        $this->command->line('   Pelanggan: pelanggan@aktiflaundry.com / password');
         $this->command->newLine();
     }
 
@@ -324,6 +328,191 @@ class DatabaseSeeder extends Seeder
 
         $this->command->info('   ✓ Created 35 pelanggan');
         $this->command->info('   ✓ Referral auto-created by Observer (if enabled)');
+    }
+
+    /**
+     * Seed Pelanggan Default untuk Testing (dengan banyak transaksi 6 bulan)
+     */
+    private function seedPelangganDefault(): void
+    {
+        $this->command->info('🎯 Seeding Pelanggan Default (Testing)...');
+
+        // Get next kode pelanggan
+        $kodePelanggan = 'PLG'.str_pad((string) (Pelanggan::withTrashed()->count() + 1), 3, '0', STR_PAD_LEFT);
+
+        // Create default pelanggan
+        $pelangganDefault = Pelanggan::create([
+            'kode_pelanggan' => $kodePelanggan,
+            'nama' => 'Pelanggan Testing',
+            'email' => 'pelanggan@aktiflaundry.com',
+            'no_hp' => '81234567899',
+            'password' => Hash::make('password'),
+            'email_verified_at' => now(),
+            'alamat' => 'Jl. Testing No. 123, Kendari',
+            'detail_alamat' => 'Jl. Testing No. 123',
+            'kelurahan' => 'Mandonga',
+            'kecamatan' => 'Mandonga',
+            'kabupaten_kota' => 'Kota Kendari',
+            'provinsi' => 'Sulawesi Tenggara',
+            'latitude' => -3.9689,
+            'longitude' => 122.5129,
+            'status' => 'Aktif',
+            'loyalty_points' => 5000,
+            'tanggal_daftar' => now()->subMonths(6),
+        ]);
+
+        $this->command->info("   ✓ Created pelanggan: {$pelangganDefault->nama} ({$pelangganDefault->kode_pelanggan})");
+
+        // Create transaksi untuk pelanggan default (6 bulan ke belakang)
+        $kasir = User::all();
+        $layanan = Layanan::all();
+        $promoAktif = Promo::where('status', 'Aktif')->get();
+
+        $transaksiCount = 0;
+        $transaksiLayananCount = 0;
+
+        // Distribusi transaksi per bulan (total ~35-45 transaksi)
+        $transaksiPerBulan = [
+            0 => 10, // Bulan ini
+            1 => 8,  // 1 bulan lalu
+            2 => 7,  // 2 bulan lalu
+            3 => 5,  // 3 bulan lalu
+            4 => 4,  // 4 bulan lalu
+            5 => 3,  // 5 bulan lalu
+        ];
+
+        foreach ($transaksiPerBulan as $bulanLalu => $jumlah) {
+            for ($i = 0; $i < $jumlah; $i++) {
+                $selectedKasir = $kasir->random();
+
+                // Random 1-3 layanan per transaksi
+                $jumlahLayanan = fake()->numberBetween(1, 3);
+                $selectedLayanan = $layanan->random($jumlahLayanan);
+
+                // Hitung subtotal dari semua layanan
+                $subtotal = 0;
+                $totalBerat = 0;
+                $totalItem = 0;
+                $transaksLayananData = [];
+
+                foreach ($selectedLayanan as $lay) {
+                    if ($lay->tipe_layanan === 'per_kg') {
+                        $berat = fake()->randomFloat(2, 2, 10);
+                        $harga = $lay->harga_per_kg * $berat;
+                        $totalBerat += $berat;
+
+                        // Generate jenis pakaian
+                        $jenisPakaianAll = JenisPakaian::all();
+                        $jumlahJenis = fake()->numberBetween(2, 4);
+                        $jenisPakaian = [];
+
+                        if ($jenisPakaianAll->isNotEmpty()) {
+                            $selected = $jenisPakaianAll->random(min($jumlahJenis, $jenisPakaianAll->count()));
+                            foreach ($selected as $jp) {
+                                $jenisPakaian[] = [
+                                    'jenis_pakaian_id' => $jp->id,
+                                    'nama_jenis' => $jp->nama_jenis,
+                                    'jumlah' => fake()->numberBetween(1, 5),
+                                ];
+                            }
+                        }
+
+                        $transaksLayananData[] = [
+                            'layanan' => $lay,
+                            'berat_kg' => $berat,
+                            'harga_per_kg' => $lay->harga_per_kg,
+                            'jumlah_satuan' => null,
+                            'harga_per_satuan' => null,
+                            'subtotal' => (int) $harga,
+                            'jenis_pakaian' => $jenisPakaian,
+                        ];
+                    } else {
+                        $jumlah = fake()->numberBetween(1, 3);
+                        $harga = $lay->harga_per_satuan * $jumlah;
+                        $totalItem += $jumlah;
+
+                        $transaksLayananData[] = [
+                            'layanan' => $lay,
+                            'berat_kg' => null,
+                            'harga_per_kg' => null,
+                            'jumlah_satuan' => $jumlah,
+                            'harga_per_satuan' => $lay->harga_per_satuan,
+                            'subtotal' => (int) $harga,
+                            'jenis_pakaian' => null,
+                        ];
+                    }
+
+                    $subtotal += (int) $harga;
+                }
+
+                $total = $subtotal;
+
+                // Random tanggal dalam bulan yang ditentukan
+                $startDate = now()->subMonths($bulanLalu)->startOfMonth();
+                $endDate = $bulanLalu === 0 ? now() : now()->subMonths($bulanLalu)->endOfMonth();
+                $tanggalMasuk = fake()->dateTimeBetween($startDate, $endDate);
+
+                $durasiJam = $selectedLayanan->max('durasi_jam') ?? 24;
+                $tanggalSelesai = (clone $tanggalMasuk)->modify("+{$durasiJam} hours");
+
+                // Status lebih bervariasi berdasarkan umur transaksi
+                $status = match (true) {
+                    $bulanLalu >= 2 => fake()->randomElement(['Selesai', 'Diambil', 'Diambil']),
+                    $bulanLalu === 1 => fake()->randomElement(['Selesai', 'Selesai', 'Diambil']),
+                    default => fake()->randomElement(['Menunggu', 'Proses', 'Selesai', 'Diambil']),
+                };
+
+                $statusBayar = match ($status) {
+                    'Diambil' => 'Sudah Bayar',
+                    'Selesai' => fake()->randomElement(['Sudah Bayar', 'Sudah Bayar', 'Belum Bayar']),
+                    default => fake()->randomElement(['Belum Bayar', 'Sudah Bayar']),
+                };
+
+                // Create transaksi
+                $transaksi = Transaksi::create([
+                    'kode_transaksi' => TransaksiHelper::generateKodeTransaksi(),
+                    'tanggal_masuk' => $tanggalMasuk,
+                    'kasir_id' => $selectedKasir->id,
+                    'pelanggan_id' => $pelangganDefault->id,
+                    'nama_pelanggan' => $pelangganDefault->nama,
+                    'total_berat' => $totalBerat,
+                    'total_item' => $totalItem,
+                    'jumlah_layanan' => $jumlahLayanan,
+                    'subtotal' => $subtotal,
+                    'total' => $total,
+                    'metode_pembayaran' => fake()->randomElement(['Bayar Saat Jemput', 'Bayar Saat Antar']),
+                    'tipe_bayar' => fake()->randomElement(['Tunai', 'Non-Tunai']),
+                    'status_bayar' => $statusBayar,
+                    'tanggal_bayar' => $statusBayar === 'Sudah Bayar' ? $tanggalSelesai : null,
+                    'jumlah_bayar' => $statusBayar === 'Sudah Bayar' ? $total : null,
+                    'tanggal_selesai' => $tanggalSelesai,
+                    'status' => $status,
+                    'catatan' => fake()->optional(0.3)->sentence(),
+                ]);
+
+                $transaksiCount++;
+
+                // Create transaksi layanan
+                foreach ($transaksLayananData as $tl) {
+                    TransaksiLayanan::create([
+                        'transaksi_id' => $transaksi->id,
+                        'layanan_id' => $tl['layanan']->id,
+                        'nama_layanan' => $tl['layanan']->nama_layanan,
+                        'jenis_pakaian' => $tl['jenis_pakaian'],
+                        'berat_kg' => $tl['berat_kg'],
+                        'harga_per_kg' => $tl['harga_per_kg'],
+                        'jumlah_satuan' => $tl['jumlah_satuan'],
+                        'harga_per_satuan' => $tl['harga_per_satuan'],
+                        'subtotal' => $tl['subtotal'],
+                    ]);
+                    $transaksiLayananCount++;
+                }
+            }
+        }
+
+        $this->command->info("   ✓ Created {$transaksiCount} transaksi for {$pelangganDefault->nama}");
+        $this->command->info("   ✓ Created {$transaksiLayananCount} transaksi layanan");
+        $this->command->info('   ✓ Transaksi tersebar dalam 6 bulan terakhir');
     }
 
     /**

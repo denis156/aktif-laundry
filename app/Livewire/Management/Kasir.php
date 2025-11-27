@@ -381,11 +381,11 @@ class Kasir extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -644,16 +644,34 @@ class Kasir extends Component
                     }
                 }
 
-                // Increment promo usage jika ada promo yang digunakan
-                if ($this->formData['promo_id']) {
-                    // Use cached promo if available
+                // Simpan snapshot promo ke transaksi_promo (audit trail)
+                if ($this->formData['promo_id'] && $this->promoResult['valid'] && $this->promoResult['diskon'] > 0) {
                     $promo = $this->cachedPromo ?? PromoHelper::getById((int) $this->formData['promo_id']);
                     if ($promo) {
-                        PromoHelper::incrementUsage($promo);
-                        Log::info('Kasir: Promo usage incremented', [
+                        // Create TransaksiPromo record dengan snapshot data promo
+                        $transaksi->transaksiPromo()->create([
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
-                            'kuota_terpakai' => $promo->kuota_terpakai + 1,
+                            'nama_promo' => $promo->nama_promo,
+                            'tipe_diskon' => $promo->tipe_diskon,
+                            'nilai_diskon_persen' => $promo->nilai_diskon,
+                            'nilai_diskon_nominal' => $this->promoResult['diskon'], // Nilai diskon aktual yang diterapkan
+                            'diskon_maksimal' => $promo->diskon_maksimal,
+                            'gratis_kg' => $promo->gratis_kg,
+                            'gratis_hari' => $promo->gratis_hari,
+                            'diterapkan_ke' => $promo->diterapkan_ke ?? 'subtotal', // Default 'subtotal' jika null
+                            'layanan_id' => $promo->layanan_id,
+                            'urutan_apply' => 1, // Future: untuk multiple promo
+                        ]);
+
+                        // Increment usage count
+                        PromoHelper::incrementUsage($promo);
+
+                        Log::info('Kasir: Promo saved and usage incremented', [
+                            'transaksi_id' => $transaksi->id,
+                            'promo_id' => $promo->id,
+                            'kode_promo' => $promo->kode_promo,
+                            'diskon_nominal' => $this->promoResult['diskon'],
                         ]);
                     }
                 }

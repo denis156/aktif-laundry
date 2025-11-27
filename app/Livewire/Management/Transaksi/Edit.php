@@ -98,6 +98,17 @@ class Edit extends Component
         'totalGrandTotal' => 0,
     ];
 
+    // Promo validation result
+    public array $promoResult = [
+        'valid' => false,
+        'diskon' => 0,
+        'pesan' => '',
+        'tipe' => '',
+    ];
+
+    // Cache promo object
+    protected $cachedPromo = null;
+
     protected $listeners = ['jenisPakaianUpdated', 'multiLayananUpdated'];
 
     public function mount(int $id): void
@@ -133,7 +144,7 @@ class Edit extends Component
     protected function loadTransaksi(): void
     {
         try {
-            $transaksi = Transaksi::with(['transaksiLayanan.layanan'])->findOrFail($this->transaksiId);
+            $transaksi = Transaksi::with(['transaksiLayanan.layanan', 'transaksiPromo.promo'])->findOrFail($this->transaksiId);
 
             $this->formData = [
                 'kode_transaksi' => $transaksi->kode_transaksi,
@@ -172,6 +183,16 @@ class Edit extends Component
 
             // Load multi-layanan data
             $this->loadMultiLayananData($transaksi);
+
+            // Load promo result dari transaksiPromo existing
+            if ($latestPromo) {
+                $this->promoResult = [
+                    'valid' => true,
+                    'diskon' => $latestPromo->nilai_diskon_nominal ?? 0,
+                    'pesan' => "Promo {$latestPromo->nama_promo} diterapkan",
+                    'tipe' => $latestPromo->tipe_diskon ?? '',
+                ];
+            }
 
             // Load metadata
             $this->loadMetadata($transaksi);
@@ -298,7 +319,13 @@ class Edit extends Component
     {
         $this->multiLayananData = $data;
         $this->formData['subtotal'] = $data['totalSubtotal'];
-        $this->formData['total'] = $data['totalGrandTotal'];
+
+        // Recalculate promo diskon jika ada promo yang dipilih
+        if ($this->selectedPromoId) {
+            $this->calculatePromoDiskon();
+        } else {
+            $this->formData['total'] = $data['totalGrandTotal'];
+        }
 
         // Calculate tanggal selesai based on layanan with longest duration
         $this->calculateTanggalSelesaiFromMultiLayanan();
@@ -307,11 +334,11 @@ class Edit extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -322,6 +349,83 @@ class Edit extends Component
 
         $tanggalTerlama = TransaksiHelper::getTanggalSelesaiTerlama($tempTransaksi);
         $this->formData['tanggal_selesai'] = $tanggalTerlama ? $tanggalTerlama->format('Y-m-d H:i') : '';
+    }
+
+    public function updatedSelectedPromoId(): void
+    {
+        $this->calculatePromoDiskon();
+    }
+
+    protected function calculatePromoDiskon(): void
+    {
+        $promoId = $this->selectedPromoId;
+
+        if (! $promoId) {
+            $this->promoResult = [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => '',
+                'tipe' => '',
+            ];
+            $this->cachedPromo = null;
+            $this->updateTotal();
+
+            return;
+        }
+
+        // Convert to integer for type safety
+        $promoId = (int) $promoId;
+
+        // Use cached promo if available
+        if ($this->cachedPromo && $this->cachedPromo->id === $promoId) {
+            $promo = $this->cachedPromo;
+        } else {
+            $promo = PromoHelper::getById($promoId);
+            $this->cachedPromo = $promo;
+        }
+
+        if (! $promo) {
+            $this->promoResult = [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => 'Promo tidak ditemukan',
+                'tipe' => '',
+            ];
+            $this->cachedPromo = null;
+            $this->updateTotal();
+
+            return;
+        }
+
+        // Hitung total berat dari multiLayananData
+        $totalBerat = 0.0;
+        foreach ($this->multiLayananData['items'] as $item) {
+            if (($item['tipe_layanan'] ?? '') === 'per_kg') {
+                $totalBerat += (float) ($item['berat_kg'] ?? 0);
+            }
+        }
+
+        // Hitung diskon menggunakan PromoHelper
+        $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
+        $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
+
+        $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
+
+        if (! $this->promoResult['valid']) {
+            $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
+        }
+
+        $this->updateTotal();
+    }
+
+    protected function updateTotal(): void
+    {
+        $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
+        $diskon = (int) ($this->promoResult['diskon'] ?? 0);
+
+        $this->multiLayananData['totalGrandTotal'] = $subtotal - $diskon;
+        $this->formData['total'] = $this->multiLayananData['totalGrandTotal'];
+        $this->formData['subtotal'] = $subtotal;
     }
 
     public function updatedFormDataPelangganId(mixed $value): void
@@ -361,7 +465,7 @@ class Edit extends Component
 
         // Null or empty
         if (empty($data)) {
-            return new Collection();
+            return new Collection;
         }
 
         // Array
@@ -378,16 +482,7 @@ class Edit extends Component
         }
 
         // Fallback: empty Collection
-        return new Collection();
-    }
-
-    public function updatedSelectedPromoId(?int $value): void
-    {
-        if ($value) {
-            $this->selectedPromoId = $value;
-        } else {
-            $this->selectedPromoId = null;
-        }
+        return new Collection;
     }
 
     public function printReceipt(): void
@@ -538,22 +633,30 @@ class Edit extends Component
                 // 1. Handle promo - hapus semua promo lama dan tambah yang baru jika ada
                 $transaksi->transaksiPromo()->delete();
 
-                if ($this->selectedPromoId) {
-                    $promo = Promo::find($this->selectedPromoId);
+                if ($this->selectedPromoId && $this->promoResult['valid'] && $this->promoResult['diskon'] > 0) {
+                    $promo = $this->cachedPromo ?? PromoHelper::getById((int) $this->selectedPromoId);
                     if ($promo) {
+                        // Create TransaksiPromo record dengan snapshot data promo
                         $transaksi->transaksiPromo()->create([
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
                             'nama_promo' => $promo->nama_promo,
                             'tipe_diskon' => $promo->tipe_diskon,
-                            'nilai_diskon_persen' => $promo->nilai_diskon_persen ?? 0,
-                            'nilai_diskon_nominal' => $promo->nilai_diskon_nominal ?? 0,
-                            'diskon_maksimal' => $promo->diskon_maksimal ?? 0,
-                            'gratis_kg' => $promo->gratis_kg ?? 0,
-                            'gratis_hari' => $promo->gratis_hari ?? 0,
-                            'diterapkan_ke' => $promo->diterapkan_ke ?? 'subtotal',
+                            'nilai_diskon_persen' => $promo->nilai_diskon,
+                            'nilai_diskon_nominal' => $this->promoResult['diskon'], // Nilai diskon aktual yang diterapkan
+                            'diskon_maksimal' => $promo->diskon_maksimal,
+                            'gratis_kg' => $promo->gratis_kg,
+                            'gratis_hari' => $promo->gratis_hari,
+                            'diterapkan_ke' => $promo->diterapkan_ke ?? 'subtotal', // Default 'subtotal' jika null
                             'layanan_id' => $promo->layanan_id,
-                            'urutan_apply' => 1,
+                            'urutan_apply' => 1, // Future: untuk multiple promo
+                        ]);
+
+                        Log::info('Transaksi Edit: Promo saved', [
+                            'transaksi_id' => $transaksi->id,
+                            'promo_id' => $promo->id,
+                            'kode_promo' => $promo->kode_promo,
+                            'diskon_nominal' => $this->promoResult['diskon'],
                         ]);
                     }
                 }

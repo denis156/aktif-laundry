@@ -37,7 +37,7 @@ class Receipt extends Component
     {
         try {
             // Get Transaksi Data menggunakan eager loading untuk performa
-            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])
+            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan', 'transaksiPromo.promo'])
                 ->findOrFail($this->transaksiId);
 
             $this->transaksiData = [
@@ -46,7 +46,6 @@ class Receipt extends Component
                 'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d H:i:s'),
                 'nama_pelanggan' => $transaksi->nama_pelanggan,
                 'subtotal' => $transaksi->subtotal,
-                'diskon' => $transaksi->diskon,
                 'total' => $transaksi->total,
                 'metode_pembayaran' => $transaksi->metode_pembayaran,
                 'tanggal_selesai' => $transaksi->tanggal_selesai?->format('Y-m-d H:i:s') ?? '',
@@ -55,6 +54,13 @@ class Receipt extends Component
                 'total_berat' => $transaksi->total_berat,
                 'total_item' => $transaksi->total_item,
                 'jumlah_layanan' => $transaksi->jumlah_layanan,
+                'promo' => $transaksi->transaksiPromo->map(function ($tp) {
+                    return [
+                        'nama_promo' => $tp->nama_promo,
+                        'kode_promo' => $tp->kode_promo,
+                        'diskon' => $tp->nilai_diskon_nominal,
+                    ];
+                })->toArray(),
             ];
 
             // Get Setting Data menggunakan PengaturanHelper
@@ -114,7 +120,7 @@ class Receipt extends Component
     {
         try {
             // Get Transaksi Data dengan eager loading
-            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan'])
+            $transaksi = Transaksi::with(['pelanggan', 'transaksiLayanan.layanan', 'transaksiPromo.promo'])
                 ->findOrFail($id);
 
             $transaksiData = [
@@ -123,7 +129,6 @@ class Receipt extends Component
                 'tanggal_masuk' => $transaksi->tanggal_masuk->format('Y-m-d H:i:s'),
                 'nama_pelanggan' => $transaksi->nama_pelanggan,
                 'subtotal' => $transaksi->subtotal,
-                'diskon' => $transaksi->diskon,
                 'total' => $transaksi->total,
                 'metode_pembayaran' => $transaksi->metode_pembayaran,
                 'tanggal_selesai' => $transaksi->tanggal_selesai?->format('Y-m-d H:i:s') ?? '',
@@ -132,6 +137,13 @@ class Receipt extends Component
                 'total_berat' => $transaksi->total_berat,
                 'total_item' => $transaksi->total_item,
                 'jumlah_layanan' => $transaksi->jumlah_layanan,
+                'promo' => $transaksi->transaksiPromo->map(function ($tp) {
+                    return [
+                        'nama_promo' => $tp->nama_promo,
+                        'kode_promo' => $tp->kode_promo,
+                        'diskon' => $tp->nilai_diskon_nominal,
+                    ];
+                })->toArray(),
             ];
 
             // Get Setting Data

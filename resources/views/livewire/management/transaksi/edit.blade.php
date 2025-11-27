@@ -64,7 +64,7 @@
                     <x-input label="Subtotal" type="number" wire:model.live="formData.subtotal" readonly prefix="Rp"
                         hint="Otomatis dihitung" />
 
-                    <x-input label="Diskon" type="number" value="0" readonly prefix="Rp"
+                    <x-input label="Diskon" type="number" wire:model.live="promoResult.diskon" readonly prefix="Rp"
                         hint="Dari promo (jika ada)" />
 
                     <x-input label="Total Bayar" type="number" wire:model.live="formData.total" readonly prefix="Rp"

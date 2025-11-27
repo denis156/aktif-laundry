@@ -58,16 +58,23 @@ class KeyValueJenisPakaian extends Component
 
         if (is_array($jsonData) && ! empty($jsonData)) {
             foreach ($jsonData as $item) {
-                if (isset($item['nama'], $item['jumlah'])) {
-                    $nama = $item['nama'];
-                    $jumlah = (int) $item['jumlah'];
+                // Support format baru (nama_jenis) dan format lama (nama)
+                $nama = $item['nama_jenis'] ?? $item['nama'] ?? null;
+                $jenisId = $item['jenis_pakaian_id'] ?? $item['jenis_id'] ?? null;
+                $jumlah = $item['jumlah'] ?? 1;
 
-                    $jenis = $this->jenisPakaianOptions->firstWhere('name', $nama);
+                if ($nama && $jumlah) {
+                    // Cari jenis pakaian berdasarkan ID atau nama
+                    if ($jenisId) {
+                        $jenis = $this->jenisPakaianOptions->firstWhere('id', $jenisId);
+                    } else {
+                        $jenis = $this->jenisPakaianOptions->firstWhere('name', $nama);
+                    }
 
                     $this->items[] = [
                         'jenis_id' => $jenis['id'] ?? '',
-                        'nama' => $nama,
-                        'jumlah' => max(1, $jumlah),
+                        'nama' => $jenis['name'] ?? $nama,
+                        'jumlah' => max(1, (int) $jumlah),
                     ];
                 }
             }
@@ -137,7 +144,8 @@ class KeyValueJenisPakaian extends Component
 
         $jsonData = array_map(
             fn (array $item) => [
-                'nama' => $item['nama'],
+                'jenis_pakaian_id' => (int) $item['jenis_id'],
+                'nama_jenis' => $item['nama'],
                 'jumlah' => (int) $item['jumlah'],
             ],
             $validItems

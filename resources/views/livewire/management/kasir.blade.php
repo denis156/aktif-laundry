@@ -224,11 +224,13 @@
                         </div>
                         @endif
 
+                        @if (($promoResult['diskon'] ?? 0) > 0)
                         <div class="flex justify-between items-center py-2 border-b border-primary-content/20">
                             <span class="text-sm opacity-90">Diskon:</span>
-                            <span class="font-bold text-warning">Rp {{ number_format((float) ($formData['diskon'] ?? 0),
+                            <span class="font-bold text-warning">- Rp {{ number_format((float) ($promoResult['diskon'] ?? 0),
                                 0, ',', '.') }}</span>
                         </div>
+                        @endif
 
                         <!-- TOTAL -->
                         <div class="flex justify-between items-center py-4 mt-2 bg-primary-content/20 rounded-lg px-4">

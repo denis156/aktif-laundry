@@ -301,10 +301,16 @@
             <span class="label">Subtotal:</span>
             <span class="value">Rp {{ number_format((int)$transaksiData['subtotal'], 0, ',', '.') }}</span>
         </div>
-        <div class="row">
-            <span class="label">Diskon:</span>
-            <span class="value">Rp {{ number_format((int)$transaksiData['diskon'], 0, ',', '.') }}</span>
-        </div>
+
+        @if(!empty($transaksiData['promo']))
+            @foreach($transaksiData['promo'] as $promo)
+            <div class="row">
+                <span class="label">{{ $promo['nama_promo'] }}:</span>
+                <span class="value">- Rp {{ number_format((int)$promo['diskon'], 0, ',', '.') }}</span>
+            </div>
+            @endforeach
+        @endif
+
         <div class="row total">
             <span class="label">TOTAL:</span>
             <span class="value">Rp {{ number_format((int)$transaksiData['total'], 0, ',', '.') }}</span>

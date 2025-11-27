@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -21,7 +22,7 @@ return new class () extends Migration {
             $table->string('nama_layanan')->comment('Snapshot nama layanan saat transaksi');
 
             // Untuk layanan per_kg
-            $table->json('jenis_pakaian')->nullable()->comment('[{"jenis_id":"1","nama":"Baju","jumlah":5},{"jenis_id":"2","nama":"Celana","jumlah":7}]');
+            $table->json('jenis_pakaian')->nullable()->comment('[{"jenis_pakaian_id":1,"nama_jenis":"Kemeja","jumlah":5},{"jenis_pakaian_id":2,"nama_jenis":"Celana","jumlah":7}]');
             $table->decimal('berat_kg', 8, 2)->nullable();
             $table->integer('harga_per_kg')->nullable();
 
