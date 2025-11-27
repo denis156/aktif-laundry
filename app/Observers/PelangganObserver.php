@@ -31,6 +31,10 @@ class PelangganObserver
             $defaultPromoReferrerId = PengaturanHelper::getValue('default_promo_referrer_id', null);
             $defaultPromoRefereeId = PengaturanHelper::getValue('default_promo_referee_id', null);
 
+            // Convert to int or null for type safety with PostgreSQL bigint columns
+            $defaultPromoReferrerId = $defaultPromoReferrerId ? (int) $defaultPromoReferrerId : null;
+            $defaultPromoRefereeId = $defaultPromoRefereeId ? (int) $defaultPromoRefereeId : null;
+
             // Generate referral code
             $kodeReferral = ReferralHelper::generateKodeReferral();
 

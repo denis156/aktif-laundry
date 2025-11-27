@@ -101,14 +101,6 @@
                         <x-select label="Pilih Promo" wire:model.live="formData.promo_id" :options="$promoOptions"
                             placeholder="Pilih promo (opsional)" icon="o-tag"
                             hint="Diskon otomatis dihitung berdasarkan promo" />
-
-                        @if($promoResult['valid'])
-                        <div class="alert alert-success">
-                            <x-icon name="o-check-circle" class="w-5 h-5" />
-                            <span>{{ $promoResult['pesan'] }} - Diskon: Rp {{ number_format($promoResult['diskon'], 0,
-                                ',', '.') }}</span>
-                        </div>
-                        @endif
                     </div>
 
                     <!-- Catatan -->

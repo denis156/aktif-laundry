@@ -319,6 +319,9 @@ class Kasir extends Component
             return;
         }
 
+        // Convert to integer for type safety
+        $promoId = (int) $promoId;
+
         // Use cached promo if available
         if ($this->cachedPromo && $this->cachedPromo->id === $promoId) {
             $promo = $this->cachedPromo;
@@ -644,7 +647,7 @@ class Kasir extends Component
                 // Increment promo usage jika ada promo yang digunakan
                 if ($this->formData['promo_id']) {
                     // Use cached promo if available
-                    $promo = $this->cachedPromo ?? PromoHelper::getById($this->formData['promo_id']);
+                    $promo = $this->cachedPromo ?? PromoHelper::getById((int) $this->formData['promo_id']);
                     if ($promo) {
                         PromoHelper::incrementUsage($promo);
                         Log::info('Kasir: Promo usage incremented', [

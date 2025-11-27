@@ -114,14 +114,6 @@
                         :options="$referralOptions" option-value="id" option-label="name"
                         placeholder="Pilih referral..." hint="Untuk tracking referral" />
                 </div>
-
-                @if($promoResult['valid'])
-                <x-alert title="Promo Diterapkan!" description="{{ $promoResult['pesan'] }}" icon="o-check-circle"
-                    class="alert-success mt-4" />
-                @elseif(!empty($promoResult['pesan']))
-                <x-alert title="Promo Tidak Valid" description="{{ $promoResult['pesan'] }}" icon="o-x-circle"
-                    class="alert-warning mt-4" />
-                @endif
             </x-card>
         </div>
 

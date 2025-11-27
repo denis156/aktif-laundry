@@ -16,7 +16,6 @@ use App\Models\Kurir;
 use App\Models\Layanan;
 use App\Models\Pelanggan;
 use App\Models\Promo;
-use App\Models\Referral;
 use App\Models\Transaksi;
 use App\Models\TransaksiLayanan;
 use Exception;
@@ -308,11 +307,11 @@ class Edit extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -362,7 +361,7 @@ class Edit extends Component
 
         // Null or empty
         if (empty($data)) {
-            return new Collection();
+            return new Collection;
         }
 
         // Array
@@ -379,7 +378,7 @@ class Edit extends Component
         }
 
         // Fallback: empty Collection
-        return new Collection();
+        return new Collection;
     }
 
     public function updatedSelectedPromoId(?int $value): void
@@ -489,6 +488,9 @@ class Edit extends Component
                 // ID Kasir
                 $this->formData['kasir_id'] = Auth::id() ?? 1;
 
+                // Update referral_id from selectedReferralId
+                $this->formData['referral_id'] = $this->selectedReferralId;
+
                 // Prepare transaksi data
                 $transaksiData = $this->formData;
                 $transaksiData['jumlah_layanan'] = count($this->multiLayananData['items']);
@@ -530,19 +532,10 @@ class Edit extends Component
                     disk: 'public'
                 );
 
-                // === Handle Referral, Promo & Kurir ===
+                // === Handle Promo & Kurir ===
+                // Note: referral_id already handled in formData update above
 
-                // 1. Set referral_id jika ada
-                if ($this->selectedReferralId) {
-                    $referral = Referral::find($this->selectedReferralId);
-                    if ($referral) {
-                        TransaksiHelper::setReferral($transaksi, $referral->id);
-                    }
-                } else {
-                    TransaksiHelper::setReferral($transaksi, null);
-                }
-
-                // 2. Handle promo - hapus semua promo lama dan tambah yang baru jika ada
+                // 1. Handle promo - hapus semua promo lama dan tambah yang baru jika ada
                 $transaksi->transaksiPromo()->delete();
 
                 if ($this->selectedPromoId) {
@@ -553,19 +546,19 @@ class Edit extends Component
                             'kode_promo' => $promo->kode_promo,
                             'nama_promo' => $promo->nama_promo,
                             'tipe_diskon' => $promo->tipe_diskon,
-                            'nilai_diskon_persen' => $promo->nilai_diskon_persen,
-                            'nilai_diskon_nominal' => $promo->nilai_diskon_nominal,
-                            'diskon_maksimal' => $promo->diskon_maksimal,
-                            'gratis_kg' => $promo->gratis_kg,
-                            'gratis_hari' => $promo->gratis_hari,
-                            'diterapkan_ke' => $promo->diterapkan_ke,
+                            'nilai_diskon_persen' => $promo->nilai_diskon_persen ?? 0,
+                            'nilai_diskon_nominal' => $promo->nilai_diskon_nominal ?? 0,
+                            'diskon_maksimal' => $promo->diskon_maksimal ?? 0,
+                            'gratis_kg' => $promo->gratis_kg ?? 0,
+                            'gratis_hari' => $promo->gratis_hari ?? 0,
+                            'diterapkan_ke' => $promo->diterapkan_ke ?? 'subtotal',
                             'layanan_id' => $promo->layanan_id,
                             'urutan_apply' => 1,
                         ]);
                     }
                 }
 
-                // 3. Kurir Jemput
+                // 2. Kurir Jemput
                 if ($this->kurirJemputId) {
                     $kurir = Kurir::find($this->kurirJemputId);
                     if ($kurir) {
@@ -575,7 +568,7 @@ class Edit extends Component
                     TransaksiHelper::setKurirJemput($transaksi, null);
                 }
 
-                // 4. Kurir Antar
+                // 3. Kurir Antar
                 if ($this->kurirAntarId) {
                     $kurir = Kurir::find($this->kurirAntarId);
                     if ($kurir) {
