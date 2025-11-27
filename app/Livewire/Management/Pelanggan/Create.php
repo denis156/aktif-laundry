@@ -49,6 +49,12 @@ class Create extends Component
 
     public string $provinsi = '';
 
+    public string $latitude = '';
+
+    public string $longitude = '';
+
+    public string $sharelok = '';
+
     // Options untuk select
     public array $kelurahanOptions = [];
 
@@ -149,6 +155,59 @@ class Create extends Component
         $this->updateAlamatPreview();
     }
 
+    public function updatedSharelok(): void
+    {
+        $this->extractCoordinatesFromUrl();
+    }
+
+    private function extractCoordinatesFromUrl(): void
+    {
+        if (empty($this->sharelok)) {
+            return;
+        }
+
+        // Pattern untuk berbagai format Google Maps URL
+        $patterns = [
+            // Format: @-3.992409,122.517426
+            '/@(-?\d+\.?\d*),(-?\d+\.?\d*)/',
+            // Format: !3d-3.992409!4d122.517426
+            '/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/',
+            // Format: 3°59'32.7"S 122°31'02.7"E (DMS)
+            '/(\d+)°(\d+)\'([\d.]+)"([NS])\s+(\d+)°(\d+)\'([\d.]+)"([EW])/',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $this->sharelok, $matches)) {
+                if (count($matches) === 9) {
+                    // DMS format
+                    $lat = $this->convertDMSToDecimal((int) $matches[1], (int) $matches[2], (float) $matches[3], $matches[4]);
+                    $lon = $this->convertDMSToDecimal((int) $matches[5], (int) $matches[6], (float) $matches[7], $matches[8]);
+                    $this->latitude = (string) $lat;
+                    $this->longitude = (string) $lon;
+
+                    return;
+                } elseif (count($matches) === 3) {
+                    // Decimal format
+                    $this->latitude = $matches[1];
+                    $this->longitude = $matches[2];
+
+                    return;
+                }
+            }
+        }
+    }
+
+    private function convertDMSToDecimal(int $degrees, int $minutes, float $seconds, string $direction): float
+    {
+        $decimal = $degrees + ($minutes / 60) + ($seconds / 3600);
+
+        if ($direction === 'S' || $direction === 'W') {
+            $decimal *= -1;
+        }
+
+        return round($decimal, 6);
+    }
+
     private function updateAlamatPreview(): void
     {
         // Generate alamat preview dari komponen yang sudah diisi
@@ -192,6 +251,8 @@ class Create extends Component
                     'kecamatan' => $this->kecamatan,
                     'kabupaten_kota' => $this->kabupaten_kota,
                     'provinsi' => $this->provinsi,
+                    'latitude' => ! empty($this->latitude) ? $this->latitude : null,
+                    'longitude' => ! empty($this->longitude) ? $this->longitude : null,
                     'avatar_url' => $avatarPath,
                 ], $this->tanggal_daftar);
             });
@@ -215,6 +276,8 @@ class Create extends Component
             'kecamatan' => 'required|string',
             'kabupaten_kota' => 'nullable|string',
             'provinsi' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
             'tanggal_daftar' => 'required|date',
             'status' => 'required|in:Aktif,Tidak Aktif',
         ];
@@ -247,6 +310,10 @@ class Create extends Component
             'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
             'kelurahan.required' => 'Kelurahan wajib dipilih',
             'kecamatan.required' => 'Kecamatan wajib dipilih',
+            'latitude.numeric' => 'Latitude harus berupa angka',
+            'latitude.between' => 'Latitude harus antara -90 sampai 90',
+            'longitude.numeric' => 'Longitude harus berupa angka',
+            'longitude.between' => 'Longitude harus antara -180 sampai 180',
             'tanggal_daftar.required' => 'Tanggal daftar wajib diisi',
             'tanggal_daftar.date' => 'Format tanggal tidak valid',
             'status.required' => 'Status wajib dipilih',

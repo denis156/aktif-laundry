@@ -45,7 +45,7 @@
             <div class="col-span-2">
                 <x-header title="Alamat" subtitle="Informasi alamat lengkap" size="text-lg" />
             </div>
-            <x-card class="col-span-3">
+            <x-card class="col-span-3" body-class="space-y-4">
                 <x-textarea label="Detail Alamat" wire:model.live="detail_alamat"
                     placeholder="Contoh: Jl. Merdeka No. 123, RT 01/RW 02, Dekat Masjid Al-Ikhlas"
                     hint="Isi dengan: nama jalan, nomor rumah, RT/RW, dan patokan (dekat tempat terkenal/masjid/sekolah)"
@@ -64,6 +64,35 @@
                     <x-input label="Kabupaten/Kota" wire:model="kabupaten_kota" placeholder="Kota Kendari" disabled />
 
                     <x-input label="Provinsi" wire:model="provinsi" placeholder="Sulawesi Tenggara" disabled />
+                </div>
+            </x-card>
+        </div>
+
+        {{-- Lokasi section --}}
+        <div class="lg:grid grid-cols-5 mt-8">
+            <div class="col-span-2">
+                <x-header title="Lokasi" subtitle="Peta lokasi pelanggan" size="text-lg" />
+            </div>
+            <x-card class="col-span-3" body-class="space-y-4">
+                <x-input label="Ekstrak Sharelok Pelanggan" wire:model.live="sharelok"
+                    placeholder="Paste URL Google Maps dari pelanggan"
+                    hint="Otomatis mengisi Latitude dan Longitude dari URL Google Maps" icon="o-link" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-input label="Latitude (Opsional)" wire:model="latitude" type="number" step="any"
+                        placeholder="Contoh: -3.9778" hint="Koordinat lintang lokasi pelanggan" icon="o-map-pin" />
+
+                    <x-input label="Longitude (Opsional)" wire:model="longitude" type="number" step="any"
+                        placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan" icon="o-map-pin" />
+                </div>
+
+                <div id="map" wire:ignore style="height: 400px; border-radius: 0.5rem;"></div>
+
+                <div class="text-sm text-gray-600 dark:text-gray-400">
+                    <p>
+                        <span class="font-semibold">Petunjuk:</span> Klik pada peta untuk mengubah lokasi pelanggan.
+                        Koordinat akan otomatis terisi.
+                    </p>
                 </div>
             </x-card>
         </div>
@@ -89,4 +118,18 @@
             <x-button label="Simpan Perubahan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
         </x-slot:actions>
     </x-form>
+
+    @script
+        <script>
+            // Inisialisasi peta menggunakan utility function
+            window.LeafletUtils.initLeafletMap('map', {
+                defaultLat: -3.9778,
+                defaultLng: 122.5145,
+                zoom: 15,
+                wire: $wire,
+                latitudeProperty: 'latitude',
+                longitudeProperty: 'longitude'
+            });
+        </script>
+    @endscript
 </div>
