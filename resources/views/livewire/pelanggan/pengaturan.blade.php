@@ -4,12 +4,12 @@
 
     <div class="space-y-4 flex flex-col justify-center items-center mb-24">
         {{-- Avatar --}}
-        <div class="avatar avatar-online avatar-placeholder">
+        <div class="avatar avatar-placeholder">
             <div class="w-24 ring-primary ring-offset-base-100 ring-2 ring-offset-2 rounded-full">
-                <img src="{{ $avatarUrl ?? asset('images/Logo.png') }}" />
+                <img src="{{ $avatarUrl }}" />
             </div>
         </div>
-        <p class="font-bold text-lg">{{ $nama ?? 'Pelanggan' }}</p>
+        <p class="font-bold text-lg">{{ $nama }}</p>
 
         {{-- Tema --}}
         <div class="w-full space-y-2">
@@ -25,16 +25,112 @@
             </x-card>
         </div>
 
-        {{-- Notifikasi --}}
+        {{-- Izin --}}
         <div class="w-full space-y-2">
-            <p class="font-bold text-base-content/60 text-md ml-2">Notifikasi</p>
+            <p class="font-bold text-base-content/60 text-md ml-2">Izin</p>
             <x-card class="shadow-lg border border-primary">
-                <div class="flex justify-between items-center">
-                    <span class="text-md font-medium">Notif Pesanan</span>
-                    <x-toggle class="toggle-success toggle-xl" right />
+                <div class="space-y-4">
+                    {{-- Notifikasi --}}
+                    <div class="flex justify-between items-center">
+                        <span class="text-md font-medium">Notifikasi</span>
+                        <x-toggle
+                            class="toggle-success toggle-xl"
+                            x-data="{
+                                isGranted: false,
+                                async init() {
+                                    await this.$nextTick();
+                                    // Wait for store to be ready
+                                    const checkStore = setInterval(() => {
+                                        if (Alpine.store('permissions')) {
+                                            clearInterval(checkStore);
+                                            this.isGranted = Alpine.store('permissions').notification;
+                                            this.$watch('$store.permissions.notification', value => {
+                                                this.isGranted = value;
+                                                $wire.call('syncNotifikasiStatus', value);
+                                            });
+                                        }
+                                    }, 50);
+                                },
+                                async toggle() {
+                                    // Get the NEW value after toggle
+                                    const newValue = !this.isGranted;
+
+                                    if (newValue) {
+                                        // User wants to enable - request permission first
+                                        const result = await Alpine.store('permissions').requestNotification();
+
+                                        if (result.granted) {
+                                            // Permission granted - update the toggle
+                                            Alpine.store('permissions').notification = true;
+                                            // Show test notification
+                                            const notification = new Notification('Notifikasi Aktif!', {
+                                                body: 'Anda akan menerima notifikasi untuk pesanan laundry Anda',
+                                                icon: '{{ asset('images/Logo.png') }}'
+                                            });
+                                        } else {
+                                            // Permission denied - keep toggle off
+                                            alert(result.error || 'Izin notifikasi ditolak');
+                                        }
+                                    } else {
+                                        // User wants to disable - just turn off
+                                        Alpine.store('permissions').notification = false;
+                                    }
+                                }
+                            }"
+                            x-model="isGranted"
+                            @click.prevent="toggle()"
+                            right />
+                    </div>
+                    <div class="divider"></div>
+                    {{-- Lokasi --}}
+                    <div class="flex justify-between items-center">
+                        <span class="text-md font-medium">Lokasi</span>
+                        <x-toggle
+                            class="toggle-success toggle-xl"
+                            x-data="{
+                                isGranted: false,
+                                async init() {
+                                    await this.$nextTick();
+                                    // Wait for store to be ready
+                                    const checkStore = setInterval(() => {
+                                        if (Alpine.store('permissions')) {
+                                            clearInterval(checkStore);
+                                            this.isGranted = Alpine.store('permissions').location;
+                                            this.$watch('$store.permissions.location', value => {
+                                                this.isGranted = value;
+                                                $wire.call('syncLokasiStatus', value);
+                                            });
+                                        }
+                                    }, 50);
+                                },
+                                async toggle() {
+                                    // Get the NEW value after toggle
+                                    const newValue = !this.isGranted;
+
+                                    if (newValue) {
+                                        // User wants to enable - request permission first
+                                        const result = await Alpine.store('permissions').requestLocation();
+
+                                        if (result.granted) {
+                                            // Permission granted - update the toggle
+                                            Alpine.store('permissions').location = true;
+                                        } else {
+                                            // Permission denied - keep toggle off
+                                            alert(result.error || 'Izin lokasi ditolak');
+                                        }
+                                    } else {
+                                        // User wants to disable - just turn off
+                                        Alpine.store('permissions').location = false;
+                                    }
+                                }
+                            }"
+                            x-model="isGranted"
+                            @click.prevent="toggle()"
+                            right />
+                    </div>
                 </div>
                 <div class="divider"></div>
-                <p class="text-sm text-base-content/60">Terima notifikasi instan saat ada update status pesanan laundry Anda</p>
+                <p class="text-sm text-base-content/60">Berikan izin notifikasi dan lokasi untuk pengalaman terbaik</p>
             </x-card>
         </div>
 
@@ -60,7 +156,8 @@
                     {{-- Ubah Password --}}
                     <div class="flex justify-between items-center">
                         <span class="text-md font-medium">Ubah Password</span>
-                        <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" />
+                        <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm"
+                            @click="$wire.modalUbahPassword = true" />
                     </div>
                     <div class="divider"></div>
                     {{-- Keluar --}}
@@ -71,13 +168,36 @@
                     </div>
                 </div>
                 <div class="divider"></div>
-                <p class="text-sm text-base-content/60">Kelola keamanan akun termasuk ubah password dan keluar dari sistem</p>
+                <p class="text-sm text-base-content/60">Kelola keamanan akun termasuk ubah password dan keluar dari
+                    sistem</p>
             </x-card>
         </div>
     </div>
 
+    {{-- Modal Ubah Password --}}
+    <x-modal wire:model="modalUbahPassword" title="Ubah Password" class="modal-bottom w-full backdrop-blur" persistent>
+        <x-form wire:submit="savePassword" no-separator>
+            <x-password label="Password Lama" wire:model="current_password" placeholder="Masukkan password lama"
+                icon="o-lock-closed" required right />
+
+            <x-password label="Password Baru" wire:model="password"
+                placeholder="Minimal {{ $passwordMinLength }} karakter" icon="o-lock-closed" required right />
+
+            <x-password label="Konfirmasi Password Baru" wire:model="password_confirmation"
+                placeholder="Ketik ulang password baru" icon="o-lock-closed" required right />
+
+            <x-slot:actions>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <x-button label="Batal" class="btn-ghost" @click="$wire.modalUbahPassword = false" />
+                    <x-button label="Simpan" type="submit" class="btn-warning" spinner="savePassword" />
+                </div>
+            </x-slot:actions>
+        </x-form>
+    </x-modal>
+
     {{-- Modal Konfirmasi Logout --}}
-    <x-modal wire:model="modalKonfirmasiLogout" title="Konfirmasi Keluar" class="modal-bottom w-full backdrop-blur">
+    <x-modal wire:model="modalKonfirmasiLogout" title="Konfirmasi Keluar" class="modal-bottom w-full backdrop-blur"
+        persistent>
         <div class="space-y-4">
             <div class="flex justify-center">
                 <x-icon name="iconpark.info-o" class="w-16 h-16 text-warning" />
@@ -87,11 +207,12 @@
         </div>
 
         <x-slot:actions>
-            <div class="flex gap-3 w-full">
-                <x-button label="Batal" class="btn-ghost flex-1" @click="$wire.modalKonfirmasiLogout = false" />
-                <x-button label="Ya, Keluar" icon="iconpark.pushdoor-o" class="btn-error flex-1" wire:click="logout"
+            <div class="grid grid-cols-2 gap-4 w-full">
+                <x-button label="Batal" class="btn-ghost" @click="$wire.modalKonfirmasiLogout = false" />
+                <x-button label="Ya, Keluar" icon="iconpark.pushdoor-o" class="btn-error" wire:click="logout"
                     spinner="logout" no-wire-navigate />
             </div>
         </x-slot:actions>
     </x-modal>
+
 </div>

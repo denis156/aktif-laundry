@@ -1,21 +1,24 @@
 <div class="container mx-auto">
     <x-header title="Profil Saya" subtitle="Kelola informasi profil dan data pribadi Anda" icon="iconpark.user-o"
-        icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
+        icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator>
+        <x-slot:actions>
+            <x-button icon="iconpark.lefttwo-o" class="btn-secondary btn-sm" label="Kembali"
+                link="{{ route('pengaturan.pelanggan') }}" />
+        </x-slot:actions>
+    </x-header>
 
     <div class="space-y-4 mb-24">
         {{-- Avatar & Nama --}}
-        <x-card class="shadow-lg border border-primary">
+        <x-card class="bg-base-200">
             <div class="flex flex-col items-center space-y-4">
-                <div class="avatar avatar-online avatar-placeholder">
-                    <div class="w-24 ring-primary ring-offset-base-100 ring-2 ring-offset-2 rounded-full">
-                        <img src="{{ $avatarUrl ?? asset('images/Logo.png') }}" />
-                    </div>
-                </div>
+                <x-file wire:model="avatar" accept="image/png, image/jpeg, image/jpg">
+                    <img src="{{ $avatarUrl }}" class="w-40 h-40 rounded-full object-cover" />
+                </x-file>
                 <div class="text-center">
-                    <p class="font-bold text-xl">{{ $nama ?? 'Pelanggan' }}</p>
-                    <p class="text-sm text-base-content/60">{{ $kodePelanggan }}</p>
+                    <p class="font-bold text-xl">{{ $nama }}</p>
+                    <p class="font-thin text-sm">Klik gambar untuk upload avatar baru (max {{ $avatarMaxSizeMB }} MB)
+                    </p>
                 </div>
-                <x-button label="Ubah Foto" icon="iconpark.camera-o" class="btn-primary btn-sm" />
             </div>
         </x-card>
 
@@ -28,8 +31,9 @@
                     <div>
                         <p class="text-xs text-base-content/60 mb-1">Nama Lengkap</p>
                         <div class="flex justify-between items-center">
-                            <span class="text-md font-medium">{{ $nama ?? '-' }}</span>
-                            <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" />
+                            <span class="text-md font-medium">{{ $nama }}</span>
+                            <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm"
+                                @click="$wire.editNamaModal = true" />
                         </div>
                     </div>
                     <div class="divider"></div>
@@ -37,8 +41,9 @@
                     <div>
                         <p class="text-xs text-base-content/60 mb-1">No. Telepon</p>
                         <div class="flex justify-between items-center">
-                            <span class="text-md font-medium">{{ $noHp ?? '-' }}</span>
-                            <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" />
+                            <span class="text-md font-medium">{{ $no_hp ?: '-' }}</span>
+                            <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm"
+                                @click="$wire.editNoHpModal = true" />
                         </div>
                     </div>
                     <div class="divider"></div>
@@ -46,8 +51,9 @@
                     <div>
                         <p class="text-xs text-base-content/60 mb-1">Email</p>
                         <div class="flex justify-between items-center">
-                            <span class="text-md font-medium truncate">{{ $email ?? '-' }}</span>
-                            <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm" />
+                            <span class="text-md font-medium truncate">{{ $email ?: '-' }}</span>
+                            <x-button label="Ubah" icon="iconpark.write-o" class="btn-success btn-sm"
+                                @click="$wire.editEmailModal = true" />
                         </div>
                     </div>
                 </div>
@@ -60,11 +66,82 @@
             <x-card class="shadow-lg border border-primary">
                 <div>
                     <p class="text-xs text-base-content/60 mb-2">Alamat Lengkap</p>
-                    <p class="text-md">{{ $alamat ?? 'Belum ada alamat' }}</p>
+                    <p class="text-md">{{ $alamat ?: 'Belum ada alamat' }}</p>
                 </div>
                 <div class="divider"></div>
-                <x-button label="Ubah Alamat" icon="iconpark.write-o" class="btn-success btn-sm btn-block" />
+                <x-button label="Ubah Alamat" icon="iconpark.write-o" class="btn-success btn-sm btn-block"
+                    @click="$wire.editAlamatModal = true" />
             </x-card>
         </div>
     </div>
+
+    {{-- Modal Edit Nama --}}
+    <x-modal wire:model="editNamaModal" title="Ubah Nama" class="modal-bottom w-full backdrop-blur" persistent>
+        <x-form wire:submit="saveNama" no-separator>
+            <x-input label="Nama Lengkap" wire:model="nama" placeholder="Nama Anda" icon="o-user" required />
+
+            <x-slot:actions>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <x-button label="Batal" class="btn-ghost" @click="$wire.editNamaModal = false" />
+                    <x-button label="Simpan" type="submit" class="btn-primary" spinner="saveNama" />
+                </div>
+            </x-slot:actions>
+        </x-form>
+    </x-modal>
+
+    {{-- Modal Edit No HP --}}
+    <x-modal wire:model="editNoHpModal" title="Ubah No. Telepon" class="modal-bottom w-full backdrop-blur" persistent>
+        <x-form wire:submit="saveNoHp" no-separator>
+            <x-input label="No. HP" wire:model="no_hp" placeholder="Contoh: 08123456789" icon="o-phone" required />
+
+            <x-slot:actions>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <x-button label="Batal" class="btn-ghost" @click="$wire.editNoHpModal = false" />
+                    <x-button label="Simpan" type="submit" class="btn-primary" spinner="saveNoHp" />
+                </div>
+            </x-slot:actions>
+        </x-form>
+    </x-modal>
+
+    {{-- Modal Edit Email --}}
+    <x-modal wire:model="editEmailModal" title="Ubah Email" class="modal-bottom w-full backdrop-blur" persistent>
+        <x-form wire:submit="saveEmail" no-separator>
+            <x-input label="Email" type="email" wire:model="email" placeholder="Contoh: email@contoh.com"
+                icon="o-envelope" hint="Opsional" />
+
+            <x-slot:actions>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <x-button label="Batal" class="btn-ghost" @click="$wire.editEmailModal = false" />
+                    <x-button label="Simpan" type="submit" class="btn-primary" spinner="saveEmail" />
+                </div>
+            </x-slot:actions>
+        </x-form>
+    </x-modal>
+
+    {{-- Modal Edit Alamat --}}
+    <x-modal wire:model="editAlamatModal" title="Ubah Alamat" class="modal-bottom w-full backdrop-blur" persistent>
+        <x-form wire:submit="saveAlamat" no-separator>
+            <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
+                placeholder="Pilih kecamatan" icon="o-map-pin" required />
+
+            <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
+                placeholder="Pilih kelurahan" hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}" icon="o-map"
+                :disabled="empty($kecamatan)" required />
+
+            <x-textarea label="Detail Alamat" wire:model.live="detail_alamat"
+                placeholder="Nama jalan, No. rumah, RT/RW, Patokan"
+                hint="Contoh: Jl. Sudirman No. 45, RT 02/RW 05, Samping Indomaret" rows="3" required />
+
+            {{-- <x-input label="Kabupaten/Kota" wire:model="kabupaten_kota" placeholder="Kota Kendari" disabled /> --}}
+
+            {{-- <x-input label="Provinsi" wire:model="provinsi" placeholder="Sulawesi Tenggara" disabled /> --}}
+
+            <x-slot:actions>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <x-button label="Batal" class="btn-ghost" @click="$wire.editAlamatModal = false" />
+                    <x-button label="Simpan" type="submit" class="btn-primary" spinner="saveAlamat" />
+                </div>
+            </x-slot:actions>
+        </x-form>
+    </x-modal>
 </div>

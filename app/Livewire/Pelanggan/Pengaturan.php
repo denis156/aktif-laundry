@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pelanggan;
 
+use App\Helper\AvatarPlaceholder;
+use App\Helper\Database\PelangganHelper;
 use Exception;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -20,13 +24,22 @@ class Pengaturan extends Component
 
     public bool $modalKonfirmasiLogout = false;
 
-    public ?string $nama = null;
+    public bool $modalUbahPassword = false;
 
-    public ?string $noHp = null;
+    public string $nama = '';
 
-    public ?string $email = null;
+    public string $currentAvatarUrl = '';
 
-    public ?string $avatarUrl = null;
+    public bool $notifikasi_aktif = false;
+
+    public bool $lokasi_aktif = false;
+
+    // Password fields
+    public string $current_password = '';
+
+    public string $password = '';
+
+    public string $password_confirmation = '';
 
     /**
      * Mount component and load pelanggan data
@@ -37,10 +50,85 @@ class Pengaturan extends Component
 
         if ($pelanggan) {
             $this->nama = $pelanggan->nama;
-            $this->noHp = $pelanggan->no_hp;
-            $this->email = $pelanggan->email;
-            // TODO: Implement avatar URL from metadata when needed
-            $this->avatarUrl = null;
+            $this->currentAvatarUrl = $pelanggan->avatar_url ?? '';
+            $this->notifikasi_aktif = $pelanggan->notifikasi_aktif ?? false;
+            $this->lokasi_aktif = $pelanggan->lokasi_aktif ?? false;
+        }
+    }
+
+    /**
+     * Sync notification status dengan browser permission
+     * Dipanggil dari Alpine.js store saat permission berubah
+     */
+    public function syncNotifikasiStatus(bool $status): void
+    {
+        try {
+            $pelanggan = Auth::guard('pelanggan')->user();
+            $pelanggan->update(['notifikasi_aktif' => $status]);
+            $this->notifikasi_aktif = $status;
+        } catch (Exception $e) {
+            Log::error('Pengaturan: Failed to sync notification status', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    /**
+     * Sync location status dengan browser permission
+     * Dipanggil dari Alpine.js store saat permission berubah
+     */
+    public function syncLokasiStatus(bool $status): void
+    {
+        try {
+            $pelanggan = Auth::guard('pelanggan')->user();
+            $pelanggan->update(['lokasi_aktif' => $status]);
+            $this->lokasi_aktif = $status;
+        } catch (Exception $e) {
+            Log::error('Pengaturan: Failed to sync location status', [
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    public function savePassword(): void
+    {
+        $this->validate([
+            'current_password' => 'required',
+            'password' => 'required|min:'.PelangganHelper::PASSWORD_MIN_LENGTH.'|confirmed',
+        ], [
+            'current_password.required' => 'Password lama wajib diisi',
+            'password.required' => 'Password baru wajib diisi',
+            'password.min' => 'Password minimal '.PelangganHelper::PASSWORD_MIN_LENGTH.' karakter',
+            'password.confirmed' => 'Konfirmasi password tidak cocok',
+        ]);
+
+        try {
+            DB::transaction(function () {
+                $pelanggan = Auth::guard('pelanggan')->user();
+
+                if (! Hash::check($this->current_password, $pelanggan->password)) {
+                    throw new Exception('Password lama tidak sesuai');
+                }
+
+                $pelanggan->update(['password' => Hash::make($this->password)]);
+
+                $this->current_password = '';
+                $this->password = '';
+                $this->password_confirmation = '';
+            });
+
+            $this->modalUbahPassword = false;
+            $this->success('Password berhasil diperbarui!', position: 'toast-top');
+        } catch (Exception $e) {
+            $errorMessage = $e->getMessage();
+            if (str_contains($errorMessage, 'Password lama tidak sesuai')) {
+                $this->error($errorMessage, position: 'toast-top');
+            } else {
+                Log::error('Pengaturan: Failed to update password', [
+                    'error' => $e->getMessage(),
+                ]);
+                $this->error('Gagal memperbarui password. Silakan coba lagi.', position: 'toast-top');
+            }
         }
     }
 
@@ -59,7 +147,7 @@ class Pengaturan extends Component
             request()->session()->invalidate();
             request()->session()->regenerateToken();
 
-            $this->success('Berhasil keluar dari sistem', position: 'toast-bottom');
+            $this->success('Berhasil keluar dari sistem', position: 'toast-top');
             $this->redirect(route('login.pelanggan'), navigate: true);
         } catch (Exception $e) {
             Log::error('Error during pelanggan logout from pengaturan', [
@@ -67,12 +155,17 @@ class Pengaturan extends Component
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $this->error('Terjadi kesalahan saat keluar. Silakan coba lagi.', position: 'toast-bottom');
+            $this->error('Terjadi kesalahan saat keluar. Silakan coba lagi.', position: 'toast-top');
         }
     }
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.pengaturan');
+        $avatarUrl = AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->nama, 256);
+
+        return view('livewire.pelanggan.pengaturan', [
+            'avatarUrl' => $avatarUrl,
+            'passwordMinLength' => PelangganHelper::PASSWORD_MIN_LENGTH,
+        ]);
     }
 }
