@@ -190,12 +190,12 @@ class Profile extends Component
                 $this->avatar = null;
             });
 
-            $this->success('Avatar berhasil diperbarui!', position: 'toast-bottom');
+            $this->success('Avatar berhasil diperbarui!', position: 'toast-top');
         } catch (Exception $e) {
             Log::error('Profile Update: Failed to update avatar', [
                 'error' => $e->getMessage(),
             ]);
-            $this->error('Gagal memperbarui avatar. Silakan coba lagi.', position: 'toast-bottom');
+            $this->error('Gagal memperbarui avatar. Silakan coba lagi.', position: 'toast-top');
         }
     }
 
@@ -215,12 +215,12 @@ class Profile extends Component
             });
 
             $this->editNamaModal = false;
-            $this->success('Nama berhasil diperbarui!', position: 'toast-bottom');
+            $this->success('Nama berhasil diperbarui!', position: 'toast-top');
         } catch (Exception $e) {
             Log::error('Profile Update: Failed to update nama', [
                 'error' => $e->getMessage(),
             ]);
-            $this->error('Gagal memperbarui nama. Silakan coba lagi.', position: 'toast-bottom');
+            $this->error('Gagal memperbarui nama. Silakan coba lagi.', position: 'toast-top');
         }
     }
 
@@ -247,16 +247,16 @@ class Profile extends Component
             });
 
             $this->editNoHpModal = false;
-            $this->success('No. HP berhasil diperbarui!', position: 'toast-bottom');
+            $this->success('No. HP berhasil diperbarui!', position: 'toast-top');
         } catch (Exception $e) {
             $errorMessage = $e->getMessage();
             if (str_contains($errorMessage, 'Format nomor HP tidak valid')) {
-                $this->error($errorMessage, position: 'toast-bottom');
+                $this->error($errorMessage, position: 'toast-top');
             } else {
                 Log::error('Profile Update: Failed to update no_hp', [
                     'error' => $e->getMessage(),
                 ]);
-                $this->error('Gagal memperbarui No. HP. Silakan coba lagi.', position: 'toast-bottom');
+                $this->error('Gagal memperbarui No. HP. Silakan coba lagi.', position: 'toast-top');
             }
         }
     }
@@ -277,12 +277,12 @@ class Profile extends Component
             });
 
             $this->editEmailModal = false;
-            $this->success('Email berhasil diperbarui!', position: 'toast-bottom');
+            $this->success('Email berhasil diperbarui!', position: 'toast-top');
         } catch (Exception $e) {
             Log::error('Profile Update: Failed to update email', [
                 'error' => $e->getMessage(),
             ]);
-            $this->error('Gagal memperbarui email. Silakan coba lagi.', position: 'toast-bottom');
+            $this->error('Gagal memperbarui email. Silakan coba lagi.', position: 'toast-top');
         }
     }
 
@@ -325,12 +325,12 @@ class Profile extends Component
             });
 
             $this->editAlamatModal = false;
-            $this->success('Alamat berhasil diperbarui!', position: 'toast-bottom');
+            $this->success('Alamat berhasil diperbarui!', position: 'toast-top');
         } catch (Exception $e) {
             Log::error('Profile Update: Failed to update address', [
                 'error' => $e->getMessage(),
             ]);
-            $this->error('Gagal memperbarui alamat. Silakan coba lagi.', position: 'toast-bottom');
+            $this->error('Gagal memperbarui alamat. Silakan coba lagi.', position: 'toast-top');
         }
     }
 

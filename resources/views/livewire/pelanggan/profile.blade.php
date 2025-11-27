@@ -3,7 +3,7 @@
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator>
         <x-slot:actions>
             <x-button icon="iconpark.lefttwo-o" class="btn-secondary btn-sm" label="Kembali"
-                link="{{ route('pengaturan.pelanggan') }}" />
+                link="{{ route('pengaturan.pelanggan') }}" responsive />
         </x-slot:actions>
     </x-header>
 

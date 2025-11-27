@@ -6,10 +6,9 @@
         <span class="text-md font-extrabold uppercase">{{ config('app.name') }}</span>
     </div>
     <div class="navbar-end">
-        <div class="avatar avatar-online avatar-placeholder">
-            <div class="h-10 w-auto rounded-full ring-2 ring-success ring-offset ring-offset-base-100">
-                <img src="https://img.daisyui.com/images/profile/demo/yellingcat@192.webp" />
-            </div>
-        </div>
+        <a href="{{ route('profile.pelanggan') }}" wire:navigate class="cursor-pointer">
+            <x-avatar :image="$this->avatarUrl"
+                class="w-10 h-10 rounded-full ring-2 ring-success ring-offset-2 ring-offset-base-200 hover:ring-primary transition-all" />
+        </a>
     </div>
 </nav>
