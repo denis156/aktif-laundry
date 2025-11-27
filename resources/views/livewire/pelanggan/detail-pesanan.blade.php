@@ -134,5 +134,54 @@
                 @endif
             </div>
         </x-card>
+
+        {{-- Foto Bukti Timbangan --}}
+        @php
+            $fotoTimbangan = $this->getFotoTimbangan();
+        @endphp
+        @if (!empty($fotoTimbangan))
+        <x-card title="Foto Bukti Timbangan" subtitle="Bukti timbangan cucian Anda" class="shadow-lg border border-primary w-full">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                @foreach ($fotoTimbangan as $foto)
+                @if (!empty($foto))
+                <button type="button" wire:click="showImage('{{ $foto }}')" class="block overflow-hidden rounded-lg shadow-lg border-b-4 border-r-4 border-success active:border-0 active:shadow-sm transition-all cursor-pointer">
+                    <img src="{{ $foto }}" alt="Foto Timbangan" class="w-full h-40 object-cover" />
+                </button>
+                @endif
+                @endforeach
+            </div>
+        </x-card>
+        @endif
+
+        {{-- Foto Bukti Pembayaran --}}
+        @php
+            $fotoPembayaran = $this->getFotoPembayaran();
+        @endphp
+        @if (!empty($fotoPembayaran))
+        <x-card title="Foto Bukti Pembayaran" subtitle="Bukti pembayaran Anda" class="shadow-lg border border-primary w-full">
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                @foreach ($fotoPembayaran as $foto)
+                @if (!empty($foto))
+                <button type="button" wire:click="showImage('{{ $foto }}')" class="block overflow-hidden rounded-lg shadow-lg border-b-4 border-r-4 border-success active:border-0 active:shadow-sm transition-all cursor-pointer">
+                    <img src="{{ $foto }}" alt="Foto Pembayaran" class="w-full h-40 object-cover" />
+                </button>
+                @endif
+                @endforeach
+            </div>
+        </x-card>
+        @endif
     </div>
+
+    {{-- Modal untuk menampilkan gambar full --}}
+    <x-modal wire:model="imageModal" title="Lihat Gambar" class="modal-bottom w-full backdrop-blur" persistent>
+        <div class="flex flex-col items-center space-y-4">
+            @if ($selectedImage)
+            <img src="{{ $selectedImage }}" alt="Full Image" class="w-full max-h-[70vh] object-contain rounded-lg" />
+            @endif
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Tutup" class="btn-primary btn-block" @click="$wire.imageModal = false" />
+        </x-slot:actions>
+    </x-modal>
 </div>

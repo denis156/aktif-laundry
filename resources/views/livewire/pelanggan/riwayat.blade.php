@@ -25,13 +25,11 @@
 
             @foreach ($group['transaksi'] as $transaksi)
             @php
-            $pelanggan = $transaksi->pelanggan;
             $firstLayanan = $transaksi->transaksiLayanan->first();
             $totalLayanan = $transaksi->transaksiLayanan->count();
 
-            // Avatar
-            $avatarUrl = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder($pelanggan->avatar_url, $pelanggan->nama,
-            256);
+            // Avatar dengan prioritas: kurir antar > kurir jemput > pelanggan
+            $avatarUrl = $this->getTransaksiAvatar($transaksi);
 
             // Status badge styling
             $badgeClass = match ($transaksi->status) {

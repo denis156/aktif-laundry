@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pelanggan;
 
+use App\Helper\AvatarPlaceholder;
 use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
@@ -31,7 +32,12 @@ class Riwayat extends Component
 
         $query = Transaksi::query()
             ->where('pelanggan_id', $pelanggan->id)
-            ->with(['transaksiLayanan.layanan'])
+            ->with([
+                'transaksiLayanan.layanan',
+                'pelanggan',
+                'kurirJemput',
+                'kurirAntar',
+            ])
             ->orderBy('tanggal_masuk', 'desc');
 
         if (! $this->showAll) {
@@ -112,6 +118,41 @@ class Riwayat extends Component
         }
 
         return $grouped;
+    }
+
+    /**
+     * Get avatar URL with priority: kurir antar > kurir jemput > pelanggan
+     */
+    public function getTransaksiAvatar(Transaksi $transaksi): string
+    {
+        // Prioritas 1: Kurir Antar (gunakan nama dari kolom, avatar dari relasi)
+        if ($transaksi->kurir_antar_nama) {
+            $avatarUrl = $transaksi->kurirAntar?->avatar_url ?? null;
+
+            return AvatarPlaceholder::getAvatarOrPlaceholder(
+                $avatarUrl,
+                $transaksi->kurir_antar_nama,
+                256
+            );
+        }
+
+        // Prioritas 2: Kurir Jemput (gunakan nama dari kolom, avatar dari relasi)
+        if ($transaksi->kurir_jemput_nama) {
+            $avatarUrl = $transaksi->kurirJemput?->avatar_url ?? null;
+
+            return AvatarPlaceholder::getAvatarOrPlaceholder(
+                $avatarUrl,
+                $transaksi->kurir_jemput_nama,
+                256
+            );
+        }
+
+        // Prioritas 3: Pelanggan
+        return AvatarPlaceholder::getAvatarOrPlaceholder(
+            $transaksi->pelanggan->avatar_url ?? null,
+            $transaksi->pelanggan->nama,
+            256
+        );
     }
 
     public function render(): mixed

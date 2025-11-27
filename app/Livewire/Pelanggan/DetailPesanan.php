@@ -15,6 +15,10 @@ class DetailPesanan extends Component
 {
     public Transaksi $transaksi;
 
+    public bool $imageModal = false;
+
+    public string $selectedImage = '';
+
     public function mount(int $id): void
     {
         $pelanggan = auth('pelanggan')->user();
@@ -81,6 +85,79 @@ class DetailPesanan extends Component
             'harga' => $harga,
             'jenis_pakaian' => $isPerKg ? ($item->jenis_pakaian ?? []) : [],
         ];
+    }
+
+    /**
+     * Show image in modal
+     */
+    public function showImage(string $imageUrl): void
+    {
+        $this->selectedImage = $imageUrl;
+        $this->imageModal = true;
+    }
+
+    /**
+     * Get foto bukti timbangan URLs
+     */
+    public function getFotoTimbangan(): array
+    {
+        $foto = $this->transaksi->foto_bukti_timbangan;
+
+        if (empty($foto)) {
+            return [];
+        }
+
+        // Jika Collection, convert ke array
+        if ($foto instanceof \Illuminate\Support\Collection) {
+            $foto = $foto->toArray();
+        }
+
+        // Jika JSON string, decode
+        if (is_string($foto)) {
+            $decoded = json_decode($foto, true);
+            $foto = is_array($decoded) ? $decoded : [];
+        }
+
+        // Jika array, ambil URLs
+        if (is_array($foto)) {
+            return array_filter(array_map(function ($item) {
+                return is_array($item) ? ($item['url'] ?? '') : $item;
+            }, $foto));
+        }
+
+        return [];
+    }
+
+    /**
+     * Get foto bukti pembayaran URLs
+     */
+    public function getFotoPembayaran(): array
+    {
+        $foto = $this->transaksi->foto_bukti_pembayaran;
+
+        if (empty($foto)) {
+            return [];
+        }
+
+        // Jika Collection, convert ke array
+        if ($foto instanceof \Illuminate\Support\Collection) {
+            $foto = $foto->toArray();
+        }
+
+        // Jika JSON string, decode
+        if (is_string($foto)) {
+            $decoded = json_decode($foto, true);
+            $foto = is_array($decoded) ? $decoded : [];
+        }
+
+        // Jika array, ambil URLs
+        if (is_array($foto)) {
+            return array_filter(array_map(function ($item) {
+                return is_array($item) ? ($item['url'] ?? '') : $item;
+            }, $foto));
+        }
+
+        return [];
     }
 
     public function render(): mixed
