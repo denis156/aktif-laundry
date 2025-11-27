@@ -49,6 +49,10 @@ class Profile extends Component
 
     public string $provinsi = '';
 
+    public string $latitude = '';
+
+    public string $longitude = '';
+
     // Options untuk select
     public array $kelurahanOptions = [];
 
@@ -96,6 +100,8 @@ class Profile extends Component
         $this->kecamatan = $pelanggan->kecamatan ?? '';
         $this->kabupaten_kota = $pelanggan->kabupaten_kota ?? RegionalLocation::getRegencyName();
         $this->provinsi = $pelanggan->provinsi ?? RegionalLocation::getProvinceName();
+        $this->latitude = $pelanggan->latitude ? (string) $pelanggan->latitude : '';
+        $this->longitude = $pelanggan->longitude ? (string) $pelanggan->longitude : '';
 
         $this->alamat = $pelanggan->alamat ?? '';
     }
@@ -286,11 +292,17 @@ class Profile extends Component
             'detail_alamat' => 'required|string|max:500',
             'kelurahan' => 'required|string',
             'kecamatan' => 'required|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
         ], [
             'detail_alamat.required' => 'Detail alamat wajib diisi',
             'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
             'kelurahan.required' => 'Kelurahan wajib dipilih',
             'kecamatan.required' => 'Kecamatan wajib dipilih',
+            'latitude.numeric' => 'Latitude harus berupa angka',
+            'latitude.between' => 'Latitude harus antara -90 sampai 90',
+            'longitude.numeric' => 'Longitude harus berupa angka',
+            'longitude.between' => 'Longitude harus antara -180 sampai 180',
         ]);
 
         try {
@@ -303,7 +315,9 @@ class Profile extends Component
                     $this->kelurahan,
                     $this->kecamatan,
                     $this->kabupaten_kota,
-                    $this->provinsi
+                    $this->provinsi,
+                    ! empty($this->latitude) ? (float) $this->latitude : null,
+                    ! empty($this->longitude) ? (float) $this->longitude : null
                 );
 
                 $pelanggan->save();

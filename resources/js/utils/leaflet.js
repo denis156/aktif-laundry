@@ -27,14 +27,12 @@ export function initLeafletMap(mapElementId, options = {}) {
     } = options;
 
     if (!wire) {
-        console.error('Livewire wire object is required');
         return null;
     }
 
     const lat = wire[latitudeProperty] ? parseFloat(wire[latitudeProperty]) : defaultLat;
     const lng = wire[longitudeProperty] ? parseFloat(wire[longitudeProperty]) : defaultLng;
 
-    // Buat peta
     const map = L.map(mapElementId, {
         zoomControl: true,
         attributionControl: false
@@ -96,7 +94,6 @@ export function initLeafletMap(mapElementId, options = {}) {
             icon: customIcon
         }).addTo(map);
 
-        // Update koordinat saat marker di-drag
         marker.on('dragend', function() {
             isUpdatingFromMap = true;
             const position = marker.getLatLng();
@@ -136,12 +133,27 @@ export function initLeafletMap(mapElementId, options = {}) {
 
     // Watch untuk perubahan latitude dari input
     wire.$watch(latitudeProperty, (value) => {
-        if (value && wire[longitudeProperty] && marker && !isUpdatingFromMap) {
+        if (value && wire[longitudeProperty] && !isUpdatingFromMap) {
             const newLat = parseFloat(value);
             const newLng = parseFloat(wire[longitudeProperty]);
-            marker.setLatLng([newLat, newLng]);
 
-            // Hanya set view jika perubahan signifikan
+            if (marker) {
+                marker.setLatLng([newLat, newLng]);
+            } else {
+                marker = L.marker([newLat, newLng], {
+                    draggable: true,
+                    icon: customIcon
+                }).addTo(map);
+
+                marker.on('dragend', function() {
+                    isUpdatingFromMap = true;
+                    const position = marker.getLatLng();
+                    wire[latitudeProperty] = position.lat.toFixed(6);
+                    wire[longitudeProperty] = position.lng.toFixed(6);
+                    setTimeout(() => { isUpdatingFromMap = false; }, 100);
+                });
+            }
+
             const currentCenter = map.getCenter();
             const distance = Math.abs(currentCenter.lat - newLat) + Math.abs(currentCenter.lng - newLng);
             if (distance > 0.01) {
@@ -152,12 +164,27 @@ export function initLeafletMap(mapElementId, options = {}) {
 
     // Watch untuk perubahan longitude dari input
     wire.$watch(longitudeProperty, (value) => {
-        if (value && wire[latitudeProperty] && marker && !isUpdatingFromMap) {
+        if (value && wire[latitudeProperty] && !isUpdatingFromMap) {
             const newLat = parseFloat(wire[latitudeProperty]);
             const newLng = parseFloat(value);
-            marker.setLatLng([newLat, newLng]);
 
-            // Hanya set view jika perubahan signifikan
+            if (marker) {
+                marker.setLatLng([newLat, newLng]);
+            } else {
+                marker = L.marker([newLat, newLng], {
+                    draggable: true,
+                    icon: customIcon
+                }).addTo(map);
+
+                marker.on('dragend', function() {
+                    isUpdatingFromMap = true;
+                    const position = marker.getLatLng();
+                    wire[latitudeProperty] = position.lat.toFixed(6);
+                    wire[longitudeProperty] = position.lng.toFixed(6);
+                    setTimeout(() => { isUpdatingFromMap = false; }, 100);
+                });
+            }
+
             const currentCenter = map.getCenter();
             const distance = Math.abs(currentCenter.lat - newLat) + Math.abs(currentCenter.lng - newLng);
             if (distance > 0.01) {

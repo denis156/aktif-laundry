@@ -132,9 +132,17 @@
                 placeholder="Nama jalan, No. rumah, RT/RW, Patokan"
                 hint="Contoh: Jl. Sudirman No. 45, RT 02/RW 05, Samping Indomaret" rows="3" required />
 
-            {{-- <x-input label="Kabupaten/Kota" wire:model="kabupaten_kota" placeholder="Kota Kendari" disabled /> --}}
-
-            {{-- <x-input label="Provinsi" wire:model="provinsi" placeholder="Sulawesi Tenggara" disabled /> --}}
+            {{-- Lokasi di Peta --}}
+            <div class="space-y-2">
+                <label class="text-sm font-medium">Lokasi di Peta</label>
+                <div id="map-pelanggan" wire:ignore style="height: 300px; border-radius: 0.5rem;"></div>
+                <button type="button" id="getLocationBtn" class="btn btn-success btn-sm btn-block mt-2">
+                    <x-icon name="iconpark.localpin-o" />
+                    Ambil Lokasi Saya
+                </button>
+                <p class="text-xs text-base-content/60">Klik pada peta atau drag marker untuk set lokasi, atau gunakan tombol
+                    di atas untuk deteksi lokasi otomatis</p>
+            </div>
 
             <x-slot:actions>
                 <div class="grid grid-cols-2 gap-4 w-full">
@@ -144,4 +152,133 @@
             </x-slot:actions>
         </x-form>
     </x-modal>
+
+    @script
+        <script>
+            let pelangganMap = null;
+            let pelangganMarker = null;
+            let mapInitialized = false;
+
+            $wire.$watch('editAlamatModal', (value) => {
+                if (value === true && !mapInitialized) {
+                    setTimeout(() => {
+                        initPelangganMap();
+                        mapInitialized = true;
+                    }, 500);
+                } else if (value === false) {
+                    mapInitialized = false;
+                }
+            });
+
+            function initPelangganMap() {
+                if (pelangganMap) {
+                    pelangganMap.remove();
+                    pelangganMap = null;
+                    pelangganMarker = null;
+                }
+
+                const mapElement = document.getElementById('map-pelanggan');
+                if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
+                    return;
+                }
+
+                const mapData = window.LeafletUtils.initLeafletMap('map-pelanggan', {
+                    defaultLat: -3.9778,
+                    defaultLng: 122.5145,
+                    zoom: 15,
+                    wire: $wire,
+                    latitudeProperty: 'latitude',
+                    longitudeProperty: 'longitude'
+                });
+
+                pelangganMap = mapData.map;
+                pelangganMarker = mapData.marker;
+
+                setTimeout(() => {
+                    const getLocationBtn = document.getElementById('getLocationBtn');
+                    if (!getLocationBtn) {
+                        return;
+                    }
+
+                    const newBtn = getLocationBtn.cloneNode(true);
+                    getLocationBtn.parentNode.replaceChild(newBtn, getLocationBtn);
+
+                    newBtn.addEventListener('click', function(e) {
+                        e.preventDefault();
+
+                        if (!navigator.geolocation) {
+                            alert('Geolocation tidak didukung oleh browser Anda');
+                            return;
+                        }
+
+                        const btnText = this.innerHTML;
+                        this.innerHTML = '<span class="loading loading-spinner loading-sm"></span> Mengambil lokasi...';
+                        this.disabled = true;
+
+                        navigator.geolocation.getCurrentPosition(
+                            (position) => {
+                                const lat = position.coords.latitude;
+                                const lng = position.coords.longitude;
+
+                                $wire.latitude = lat.toFixed(6);
+                                $wire.longitude = lng.toFixed(6);
+
+                                const customIcon = L.icon({
+                                    iconUrl: '/images/marker.png',
+                                    iconSize: [48, 48],
+                                    iconAnchor: [24, 48],
+                                    popupAnchor: [0, -48]
+                                });
+
+                                if (pelangganMarker) {
+                                    pelangganMarker.setLatLng([lat, lng]);
+                                } else {
+                                    pelangganMarker = L.marker([lat, lng], {
+                                        draggable: true,
+                                        icon: customIcon
+                                    }).addTo(pelangganMap);
+
+                                    pelangganMarker.on('dragend', function() {
+                                        const position = pelangganMarker.getLatLng();
+                                        $wire.latitude = position.lat.toFixed(6);
+                                        $wire.longitude = position.lng.toFixed(6);
+                                    });
+                                }
+
+                                pelangganMap.setView([lat, lng], 15);
+
+                                this.innerHTML = btnText;
+                                this.disabled = false;
+                            },
+                            (error) => {
+                                let errorMsg = 'Gagal mendapatkan lokasi';
+
+                                switch(error.code) {
+                                    case error.PERMISSION_DENIED:
+                                        errorMsg = 'Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser Anda.';
+                                        break;
+                                    case error.POSITION_UNAVAILABLE:
+                                        errorMsg = 'Informasi lokasi tidak tersedia.';
+                                        break;
+                                    case error.TIMEOUT:
+                                        errorMsg = 'Waktu permintaan lokasi habis.';
+                                        break;
+                                }
+
+                                alert(errorMsg);
+
+                                this.innerHTML = btnText;
+                                this.disabled = false;
+                            },
+                            {
+                                enableHighAccuracy: true,
+                                timeout: 10000,
+                                maximumAge: 0
+                            }
+                        );
+                    });
+                }, 100);
+            }
+        </script>
+    @endscript
 </div>
