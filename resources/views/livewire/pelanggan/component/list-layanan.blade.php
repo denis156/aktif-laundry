@@ -12,23 +12,20 @@
         <div class="w-full space-x-4 flex overflow-x-auto snap-x snap-mandatory no-scrollbar">
             @foreach ($layananList as $layanan)
                 @php
-                    // Tentukan warna berdasarkan index atau popular
-                    $colorClass = $layanan['popular'] ? 'warning' : 'success';
-
-                    // Ambil include items
-                    $includeItems = $layanan['include'];
-                    $visibleCount = min(count($includeItems), 4);
-                    $remainingCount = count($includeItems) - $visibleCount;
+                    $colorClass = $layanan->is_popular ? 'warning' : 'success';
+                    $harga = $layanan->tipe_layanan === 'per_kg'
+                        ? number_format($layanan->harga_per_kg, 0, ',', '.')
+                        : number_format($layanan->harga_per_satuan, 0, ',', '.');
                 @endphp
 
-                <x-card title="{{ $layanan['nama_layanan'] }}" subtitle="Rp {{ $layanan['harga'] }}/{{ $layanan['satuan'] }}"
+                <x-card title="{{ $layanan->nama_layanan }}" subtitle="Rp {{ $harga }}/{{ $layanan->satuan }}"
                     class="w-[78dvw] shadow-lg border border-b-5 border-r-5 border-{{ $colorClass }} text-{{ $colorClass }} flex-none snap-start">
                     <x-slot:menu>
-                        @if ($layanan['popular'])
+                        @if ($layanan->is_popular)
                             <x-badge class="badge-sm badge-{{ $colorClass }}" value="Populer" />
                         @endif
-                        @if (!empty($layanan['icon']))
-                            <x-icon name="{{ $layanan['icon'] }}" class="h-10 text-{{ $colorClass }}" />
+                        @if ($layanan->icon)
+                            <x-icon name="{{ $layanan->icon }}" class="h-10 text-{{ $colorClass }}" />
                         @else
                             <x-icon name="o-sparkles" class="h-10 text-{{ $colorClass }}" />
                         @endif
@@ -39,11 +36,11 @@
                         <li class="text-{{ $colorClass }}">
                             <x-icon name="iconpark.checkone-o"
                                 class="w-4 h-4 me-2 inline-block text-{{ $colorClass }}" />
-                            <span>{{ \App\Helper\Database\LayananHelper::formatEstimasiWaktu($layanan['durasi_jam']) }}</span>
+                            <span>{{ \App\Helper\Database\LayananHelper::formatEstimasiWaktu($layanan->durasi_jam) }}</span>
                         </li>
 
-                        {{-- Include items --}}
-                        @foreach (array_slice($includeItems, 0, $visibleCount) as $item)
+                        {{-- Include items (max 3) --}}
+                        @foreach ($this->getVisibleIncludeItems($layanan) as $item)
                             <li class="text-{{ $colorClass }}">
                                 <x-icon name="iconpark.checkone-o"
                                     class="w-4 h-4 me-2 inline-block text-{{ $colorClass }}" />
@@ -51,12 +48,12 @@
                             </li>
                         @endforeach
 
-                        {{-- Tampilkan sisa item jika ada --}}
-                        @if ($remainingCount > 0)
+                        {{-- Tampilkan sisa item jika ada lebih dari 3 --}}
+                        @if ($this->getRemainingIncludeCount($layanan) > 0)
                             <li class="text-base-content/60">
                                 <x-icon name="iconpark.more-o"
                                     class="w-4 h-4 me-2 inline-block text-base-content/60" />
-                                <span>+{{ $remainingCount }} keuntungan lainnya</span>
+                                <span>{{ $this->getRemainingIncludeCount($layanan) }} benefit lainnya</span>
                             </li>
                         @endif
                     </ul>
