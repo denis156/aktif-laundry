@@ -84,7 +84,7 @@ class ListLayanan extends Component
                 'trace' => $e->getTraceAsString(),
             ]);
             $this->layananList = [];
-            $this->error('Gagal memuat daftar layanan', position: 'toast-bottom');
+            $this->error('Gagal memuat daftar layanan', position: 'toast-top');
         }
     }
 
@@ -117,7 +117,7 @@ class ListLayanan extends Component
     public function lanjutKeForm(): void
     {
         if (empty($this->selectedLayananIds)) {
-            $this->warning('Pilih minimal 1 layanan terlebih dahulu', position: 'toast-bottom');
+            $this->warning('Pilih minimal 1 layanan terlebih dahulu', position: 'toast-top');
 
             return;
         }

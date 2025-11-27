@@ -152,7 +152,7 @@ class Pesan extends Component
 
         // Redirect ke list jika tidak ada layanan tersisa
         if (empty($this->selectedLayananIds)) {
-            $this->warning('Pilih minimal 1 layanan', position: 'toast-bottom');
+            $this->warning('Pilih minimal 1 layanan', position: 'toast-top');
             $this->redirect(route('pesanan.pelanggan'), navigate: true);
         }
     }
@@ -252,7 +252,7 @@ class Pesan extends Component
                 'pelanggan_id' => Auth::id(),
             ]);
 
-            $this->error('Pilih minimal 1 layanan!', position: 'toast-bottom');
+            $this->error('Pilih minimal 1 layanan!', position: 'toast-top');
 
             return;
         }
@@ -428,7 +428,7 @@ class Pesan extends Component
 
             Log::info('Pesan: Transaction committed successfully');
 
-            $this->success('Pesanan berhasil dibuat! Tim kami akan segera menghubungi Anda.', position: 'toast-bottom', timeout: 5000);
+            $this->success('Pesanan berhasil dibuat! Tim kami akan segera menghubungi Anda.', position: 'toast-top', timeout: 5000);
 
             // Redirect ke halaman riwayat atau home
             $this->redirect('/pelanggan/riwayat', navigate: true);
@@ -447,7 +447,7 @@ class Pesan extends Component
                 'pelanggan_id' => Auth::id(),
             ]);
 
-            $this->error('Gagal membuat pesanan. Silakan coba lagi atau hubungi CS kami.', timeout: 10000, position: 'toast-bottom');
+            $this->error('Gagal membuat pesanan. Silakan coba lagi atau hubungi CS kami.', timeout: 10000, position: 'toast-top');
         }
     }
 
