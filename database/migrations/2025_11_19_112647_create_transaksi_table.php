@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -18,7 +19,7 @@ return new class () extends Migration {
             $table->dateTime('tanggal_masuk');
 
             // Relations
-            $table->foreignId('kasir_id')->constrained('users')->onDelete('restrict');
+            $table->foreignId('kasir_id')->nullable()->constrained('users')->onDelete('restrict')->comment('Nullable untuk order dari pelanggan langsung');
             $table->foreignId('pelanggan_id')->constrained('pelanggan')->onDelete('restrict');
             $table->foreignId('referral_id')->nullable()->constrained('referral')->nullOnDelete()->comment('Referral yang dipakai (jika ada)');
             $table->string('nama_pelanggan')->comment('Snapshot nama pelanggan saat transaksi');
