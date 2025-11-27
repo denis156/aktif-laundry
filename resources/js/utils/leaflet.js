@@ -36,7 +36,8 @@ export function initLeafletMap(mapElementId, options = {}) {
 
     // Buat peta
     const map = L.map(mapElementId, {
-        zoomControl: false
+        zoomControl: true,
+        attributionControl: false
     }).setView([lat, lng], zoom);
 
     // Definisikan berbagai tile layers
@@ -59,8 +60,8 @@ export function initLeafletMap(mapElementId, options = {}) {
         })
     };
 
-    // Set default layer (Google Hybrid untuk melihat jalan + satellite)
-    mapLayers['Google Hybrid'].addTo(map);
+    // Set default layer (Google Street)
+    mapLayers['Google Street'].addTo(map);
 
     // Tambahkan layer control
     L.control.layers(mapLayers, {}, {
@@ -68,21 +69,31 @@ export function initLeafletMap(mapElementId, options = {}) {
         collapsed: true
     }).addTo(map);
 
-    // Tambahkan zoom control di kanan bawah
-    L.control.zoom({
-        position: 'bottomright',
-        zoomInTitle: 'Zoom in',
-        zoomOutTitle: 'Zoom out'
-    }).addTo(map);
+    // Sembunyikan atribut Leaflet dengan CSS (backup method)
+    setTimeout(() => {
+        const attributionElements = document.getElementsByClassName('leaflet-control-attribution');
+        for (let i = 0; i < attributionElements.length; i++) {
+            attributionElements[i].style.display = 'none';
+        }
+    }, 100);
 
     // Flag untuk mencegah loop update
     let isUpdatingFromMap = false;
+
+    // Buat ikon marker kustom
+    const customIcon = L.icon({
+        iconUrl: '/images/marker.png',
+        iconSize: [48, 48], // ukuran ikon (diperbesar)
+        iconAnchor: [24, 48], // titik anchor ikon (tengah bawah)
+        popupAnchor: [0, -48] // posisi popup relatif terhadap ikon
+    });
 
     // Tambahkan marker
     let marker = null;
     if (wire[latitudeProperty] && wire[longitudeProperty]) {
         marker = L.marker([lat, lng], {
-            draggable: true
+            draggable: true,
+            icon: customIcon
         }).addTo(map);
 
         // Update koordinat saat marker di-drag
@@ -105,7 +116,8 @@ export function initLeafletMap(mapElementId, options = {}) {
             marker.setLatLng([clickLat, clickLng]);
         } else {
             marker = L.marker([clickLat, clickLng], {
-                draggable: true
+                draggable: true,
+                icon: customIcon
             }).addTo(map);
 
             marker.on('dragend', function() {
