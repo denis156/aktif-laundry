@@ -105,7 +105,7 @@ class PengaturanHelper
     {
         return match ($type) {
             self::TYPE_BOOLEAN => filter_var($value, FILTER_VALIDATE_BOOLEAN),
-            self::TYPE_NUMBER => is_numeric($value) ? (str_contains($value, '.') ? (float) $value : (int) $value) : $value,
+            self::TYPE_NUMBER => $value === '' ? null : (is_numeric($value) ? (str_contains($value, '.') ? (float) $value : (int) $value) : $value),
             self::TYPE_JSON => json_decode($value, true),
             default => $value,
         };
