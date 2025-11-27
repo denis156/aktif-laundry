@@ -33,8 +33,7 @@ class TransaksiFactory extends Factory
         $tanggalSelesai = (clone $tanggalMasuk)->modify("+{$durasiJam} hours");
 
         $subtotal = fake()->numberBetween(30000, 200000);
-        $diskon = fake()->randomElement([0, 0, 0, 5000, 10000, 20000]);
-        $total = $subtotal - $diskon;
+        $total = $subtotal;
 
         // Payment data
         $metodePembayaran = fake()->randomElement(TransaksiHelper::getAllMetodePembayaran());
@@ -72,7 +71,6 @@ class TransaksiFactory extends Factory
             'total_item' => 0,
             'jumlah_layanan' => 0,
             'subtotal' => $subtotal,
-            'diskon' => $diskon,
             'total' => $total,
             // Payment
             'metode_pembayaran' => $metodePembayaran,
