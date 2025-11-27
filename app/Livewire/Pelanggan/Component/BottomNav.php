@@ -59,8 +59,16 @@ class BottomNav extends Component
             return true;
         }
 
-        // Handle base route case (beranda.pelanggan matches /pelanggan)
-        if ($routeName === 'beranda.pelanggan' && $currentRoute === 'beranda.pelanggan') {
+        // Check if current route is a sub-route of the navigation item
+        // For example: 'pesanan-form.pelanggan' should activate 'pesanan.pelanggan'
+        // and 'profile.pelanggan' should activate 'pengaturan.pelanggan'
+        $routeMapping = [
+            'pesanan.pelanggan' => ['pesanan-form.pelanggan'],
+            'pengaturan.pelanggan' => ['profile.pelanggan'],
+            'riwayat.pelanggan' => ['detail-pesanan.pelanggan'],
+        ];
+
+        if (isset($routeMapping[$routeName]) && in_array($currentRoute, $routeMapping[$routeName])) {
             return true;
         }
 
@@ -73,7 +81,6 @@ class BottomNav extends Component
     public function getNavButtonClasses(string $routeName): string
     {
         $baseClasses = '';
-
         if ($this->isActive($routeName)) {
             return $baseClasses.' dock-active';
         }
@@ -88,8 +95,8 @@ class BottomNav extends Component
     {
         if ($this->isActive($routeName)) {
             return [
-                'icon' => 'text-primary',
-                'label' => 'text-primary font-extrabold',
+                'icon' => 'text-base-content',
+                'label' => 'text-base-content font-extrabold',
             ];
         }
 
