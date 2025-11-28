@@ -335,11 +335,11 @@ class Edit extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi;
+        $tempTransaksi = new Transaksi();
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan;
+                $tempTransaksiLayanan = new TransaksiLayanan();
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -470,7 +470,7 @@ class Edit extends Component
 
         // Null or empty
         if (empty($data)) {
-            return new Collection;
+            return new Collection();
         }
 
         // Array
@@ -487,7 +487,7 @@ class Edit extends Component
         }
 
         // Fallback: empty Collection
-        return new Collection;
+        return new Collection();
     }
 
     public function printReceipt(): void
