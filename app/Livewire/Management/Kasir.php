@@ -381,11 +381,11 @@ class Kasir extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -664,10 +664,9 @@ class Kasir extends Component
                             'urutan_apply' => 1, // Future: untuk multiple promo
                         ]);
 
-                        // Increment usage count
-                        PromoHelper::incrementUsage($promo);
+                        // Observer TransaksiPromoObserver akan otomatis increment kuota
 
-                        Log::info('Kasir: Promo saved and usage incremented', [
+                        Log::info('Kasir: Promo saved', [
                             'transaksi_id' => $transaksi->id,
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
@@ -936,8 +935,10 @@ class Kasir extends Component
 
     public function getPromoOptions(): array
     {
-        // Get promo yang aktif dari PromoHelper
-        return PromoHelper::getPromoOptions();
+        // Get promo yang aktif dari PromoHelper, filter berdasarkan pelanggan
+        $pelangganId = $this->formData['pelanggan_id'] ?? null;
+
+        return PromoHelper::getPromoOptions($pelangganId ? (int) $pelangganId : null);
     }
 
     public function render()

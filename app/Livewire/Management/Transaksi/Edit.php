@@ -121,7 +121,8 @@ class Edit extends Component
 
     public function loadOptions(): void
     {
-        $this->promoOptions = PromoHelper::getPromoOptions();
+        $pelangganId = $this->formData['pelanggan_id'] ?? null;
+        $this->promoOptions = PromoHelper::getPromoOptions($pelangganId ? (int) $pelangganId : null);
         $this->referralOptions = ReferralHelper::getReferralOptions();
         $this->kurirOptions = KurirHelper::getKurirOptions();
     }
@@ -334,11 +335,11 @@ class Edit extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -409,7 +410,8 @@ class Edit extends Component
         $pelangganId = $this->formData['pelanggan_id'] ? (int) $this->formData['pelanggan_id'] : null;
         $subtotal = (int) ($this->multiLayananData['totalSubtotal'] ?? 0);
 
-        $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
+        // Pass transaksiId agar tidak dihitung sebagai usage saat edit transaksi yang sama
+        $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId, $this->transaksiId);
 
         if (! $this->promoResult['valid']) {
             $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
@@ -436,6 +438,9 @@ class Edit extends Component
                 $this->formData['nama_pelanggan'] = $pelanggan->nama;
             }
         }
+
+        // Reload promo options karena pelanggan berubah
+        $this->loadOptions();
     }
 
     protected function loadMetadata(Transaksi $transaksi): void
@@ -465,7 +470,7 @@ class Edit extends Component
 
         // Null or empty
         if (empty($data)) {
-            return new Collection();
+            return new Collection;
         }
 
         // Array
@@ -482,7 +487,7 @@ class Edit extends Component
         }
 
         // Fallback: empty Collection
-        return new Collection();
+        return new Collection;
     }
 
     public function printReceipt(): void

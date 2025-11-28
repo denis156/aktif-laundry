@@ -79,10 +79,10 @@
             </div>
             <x-card class="col-span-3">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Tanggal Mulai" wire:model="formData.tanggal_mulai" type="date" icon="o-calendar"
+                    <x-input label="Tanggal Mulai" wire:model="formData.tanggal_mulai" type="datetime-local" icon="o-calendar"
                         required />
 
-                    <x-input label="Tanggal Berakhir" wire:model="formData.tanggal_berakhir" type="date"
+                    <x-input label="Tanggal Berakhir" wire:model="formData.tanggal_berakhir" type="datetime-local"
                         icon="o-calendar-days" required />
                 </div>
 

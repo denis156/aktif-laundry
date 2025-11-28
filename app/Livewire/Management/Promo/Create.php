@@ -59,8 +59,8 @@ class Create extends Component
     public function mount(): void
     {
         $this->refreshKodePromo();
-        $this->formData['tanggal_mulai'] = now()->format('Y-m-d');
-        $this->formData['tanggal_berakhir'] = now()->addDays(30)->format('Y-m-d');
+        $this->formData['tanggal_mulai'] = now()->format('Y-m-d\TH:i');
+        $this->formData['tanggal_berakhir'] = now()->addDays(30)->endOfDay()->format('Y-m-d\TH:i');
     }
 
     public function refreshKodePromo(): void

@@ -226,6 +226,60 @@ class PromoHelper
     }
 
     /**
+     * Hitung berapa kali pelanggan sudah menggunakan promo ini
+     *
+     * @param  Promo  $promo  Promo yang akan dicek
+     * @param  int  $pelangganId  ID pelanggan
+     * @param  int|null  $excludeTransaksiId  ID transaksi yang dikecualikan (untuk saat edit)
+     */
+    public static function getUserPromoUsageCount(Promo $promo, int $pelangganId, ?int $excludeTransaksiId = null): int
+    {
+        try {
+            return \App\Models\TransaksiPromo::where('promo_id', $promo->id)
+                ->whereHas('transaksi', function ($query) use ($pelangganId, $excludeTransaksiId) {
+                    $query->where('pelanggan_id', $pelangganId);
+
+                    // Exclude transaksi tertentu jika ada (untuk saat edit transaksi)
+                    if ($excludeTransaksiId !== null) {
+                        $query->where('id', '!=', $excludeTransaksiId);
+                    }
+                })
+                ->count();
+        } catch (\Exception $e) {
+            Log::error('Failed to get user promo usage count', [
+                'promo_id' => $promo->id,
+                'pelanggan_id' => $pelangganId,
+                'exclude_transaksi_id' => $excludeTransaksiId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return 0;
+        }
+    }
+
+    /**
+     * Cek apakah user masih bisa menggunakan promo ini
+     *
+     * @param  Promo  $promo  Promo yang akan dicek
+     * @param  int  $pelangganId  ID pelanggan
+     * @param  int|null  $excludeTransaksiId  ID transaksi yang dikecualikan (untuk saat edit)
+     * @return bool True jika masih bisa digunakan, false jika sudah mencapai limit
+     */
+    public static function canUserUsePromo(Promo $promo, int $pelangganId, ?int $excludeTransaksiId = null): bool
+    {
+        // Jika tidak ada batasan max_per_user, berarti bisa digunakan unlimited
+        if ($promo->max_per_user === null) {
+            return true;
+        }
+
+        // Hitung sudah berapa kali user pakai promo ini
+        $usageCount = self::getUserPromoUsageCount($promo, $pelangganId, $excludeTransaksiId);
+
+        // Return true jika usage count masih di bawah limit
+        return $usageCount < $promo->max_per_user;
+    }
+
+    /**
      * Tambah counter penggunaan dan update status jika habis
      *
      * @throws \Exception
@@ -284,8 +338,10 @@ class PromoHelper
 
     /**
      * Get promo options untuk dropdown (hanya yang valid)
+     *
+     * @param  int|null  $pelangganId  ID pelanggan untuk filter promo yang masih bisa digunakan
      */
-    public static function getPromoOptions(): array
+    public static function getPromoOptions(?int $pelangganId = null): array
     {
         try {
             return Promo::where('status', 'Aktif')
@@ -293,7 +349,27 @@ class PromoHelper
                 ->where('tanggal_berakhir', '>=', now())
                 ->orderBy('kode_promo')
                 ->get()
-                ->filter(fn ($promo) => self::hasQuota($promo))
+                ->filter(function ($promo) use ($pelangganId) {
+                    // Cek masih ada kuota total
+                    if (! self::hasQuota($promo)) {
+                        return false;
+                    }
+
+                    // Jika pelanggan ID diberikan, filter lebih lanjut
+                    if ($pelangganId !== null) {
+                        // Cek apakah pelanggan di-exclude
+                        if (self::isPelangganExcluded($promo, $pelangganId)) {
+                            return false;
+                        }
+
+                        // Cek apakah pelanggan sudah mencapai batas max_per_user
+                        if (! self::canUserUsePromo($promo, $pelangganId)) {
+                            return false;
+                        }
+                    }
+
+                    return true;
+                })
                 ->map(fn ($promo) => [
                     'id' => $promo->id,
                     'name' => $promo->kode_promo.' - '.$promo->nama_promo.' ('.self::formatNilaiDiskon($promo->tipe_diskon, $promo->nilai_diskon).')',
@@ -301,6 +377,7 @@ class PromoHelper
                 ->toArray();
         } catch (\Exception $e) {
             Log::error('Failed to get promo options', [
+                'pelanggan_id' => $pelangganId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -316,9 +393,10 @@ class PromoHelper
      * @param  int  $subtotal  Subtotal transaksi dalam Rupiah
      * @param  float  $totalBerat  Total berat dalam kg (untuk tipe gratis_kg)
      * @param  int|null  $pelangganId  ID pelanggan untuk validasi exclude
+     * @param  int|null  $excludeTransaksiId  ID transaksi yang dikecualikan (untuk saat edit)
      * @return array{valid: bool, diskon: int, pesan: string, tipe: string}
      */
-    public static function hitungDiskon(Promo $promo, int $subtotal, float $totalBerat = 0, ?int $pelangganId = null): array
+    public static function hitungDiskon(Promo $promo, int $subtotal, float $totalBerat = 0, ?int $pelangganId = null, ?int $excludeTransaksiId = null): array
     {
         // Validasi promo masih valid
         if (! self::isValid($promo)) {
@@ -346,6 +424,18 @@ class PromoHelper
                 'valid' => false,
                 'diskon' => 0,
                 'pesan' => 'Promo tidak berlaku untuk pelanggan ini',
+                'tipe' => $promo->tipe_diskon,
+            ];
+        }
+
+        // Validasi max_per_user
+        if ($pelangganId && ! self::canUserUsePromo($promo, $pelangganId, $excludeTransaksiId)) {
+            $maxPerUser = $promo->max_per_user;
+
+            return [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => "Anda sudah menggunakan promo ini {$maxPerUser}x (maksimal {$maxPerUser}x per orang)",
                 'tipe' => $promo->tipe_diskon,
             ];
         }

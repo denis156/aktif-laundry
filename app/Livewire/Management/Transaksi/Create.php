@@ -119,8 +119,8 @@ class Create extends Component
         ];
 
         // Initialize image library metadata as empty collections
-        $this->libraryTimbangan = new Collection();
-        $this->libraryPembayaran = new Collection();
+        $this->libraryTimbangan = new Collection;
+        $this->libraryPembayaran = new Collection;
 
         $this->search();
         $this->loadOptions();
@@ -128,7 +128,8 @@ class Create extends Component
 
     public function loadOptions(): void
     {
-        $this->promoOptions = PromoHelper::getPromoOptions();
+        $pelangganId = $this->formData['pelanggan_id'] ?? null;
+        $this->promoOptions = PromoHelper::getPromoOptions($pelangganId ? (int) $pelangganId : null);
         $this->referralOptions = ReferralHelper::getReferralOptions();
         $this->kurirOptions = KurirHelper::getKurirOptions();
     }
@@ -261,11 +262,11 @@ class Create extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -285,6 +286,9 @@ class Create extends Component
                 $this->formData['nama_pelanggan'] = $pelanggan->nama;
             }
         }
+
+        // Reload promo options karena pelanggan berubah
+        $this->loadOptions();
     }
 
     public function save(): void
@@ -449,10 +453,9 @@ class Create extends Component
                             'urutan_apply' => 1, // Future: untuk multiple promo
                         ]);
 
-                        // Increment usage count
-                        PromoHelper::incrementUsage($promo);
+                        // Observer TransaksiPromoObserver akan otomatis increment kuota
 
-                        Log::info('Transaksi Create: Promo saved and usage incremented', [
+                        Log::info('Transaksi Create: Promo saved', [
                             'transaksi_id' => $transaksi->id,
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,

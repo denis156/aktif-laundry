@@ -100,8 +100,9 @@ class Pesan extends Component
                 })
                 ->toArray();
 
-            // Load promo aktif
-            $this->promoOptions = PromoHelper::getPromoOptions();
+            // Load promo aktif untuk pelanggan ini
+            $pelangganId = Auth::id();
+            $this->promoOptions = PromoHelper::getPromoOptions($pelangganId);
         } catch (Exception $e) {
             Log::error('Pesan: Failed to load options', [
                 'error' => $e->getMessage(),
@@ -211,6 +212,19 @@ class Pesan extends Component
                 'valid' => false,
                 'diskon' => 0,
                 'pesan' => 'Promo tidak berlaku untuk Anda',
+                'tipe' => $promo->tipe_diskon,
+            ];
+
+            return;
+        }
+
+        // Check apakah pelanggan sudah mencapai limit max_per_user
+        if ($pelangganId && ! PromoHelper::canUserUsePromo($promo, $pelangganId)) {
+            $maxPerUser = $promo->max_per_user;
+            $this->promoResult = [
+                'valid' => false,
+                'diskon' => 0,
+                'pesan' => "Anda sudah menggunakan promo ini {$maxPerUser}x (maksimal {$maxPerUser}x per orang)",
                 'tipe' => $promo->tipe_diskon,
             ];
 
