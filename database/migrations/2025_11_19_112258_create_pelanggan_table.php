@@ -44,6 +44,7 @@ return new class extends Migration
             // Referral (pelanggan yang pakai kode referral orang saat daftar)
             $table->foreignId('direferensikan_oleh')->nullable()->constrained('pelanggan')->onDelete('set null')->comment('ID pelanggan yang nge-refer');
 
+            $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
 

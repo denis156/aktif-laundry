@@ -55,6 +55,7 @@ return new class () extends Migration {
             $table->timestamp('email_verified_at')->nullable();
             $table->string('device_token')->nullable()->comment('token untuk push notification');
 
+            $table->rememberToken();
             $table->timestamps();
             $table->softDeletes();
 
