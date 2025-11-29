@@ -35,4 +35,28 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Google OAuth Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk Google OAuth 2.0 Social Login
+    | Digunakan untuk login pelanggan menggunakan akun Google mereka
+    |
+    | Setup:
+    | 1. Buka Google Cloud Console: https://console.cloud.google.com/
+    | 2. Buat project baru atau pilih project yang ada
+    | 3. Enable Google+ API atau People API
+    | 4. Buat OAuth 2.0 credentials (Web Application)
+    | 5. Tambahkan Authorized redirect URIs di Google Console
+    | 6. Copy Client ID dan Client Secret ke .env file
+    |
+    */
+
+    'google' => [
+        'client_id' => env('GOOGLE_CLIENT_ID'),
+        'client_secret' => env('GOOGLE_CLIENT_SECRET'),
+        'redirect' => config('app.url').'/pelanggan/auth/google/callback',
+    ],
+
 ];

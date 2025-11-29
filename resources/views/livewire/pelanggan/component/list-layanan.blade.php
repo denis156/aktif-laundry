@@ -60,8 +60,10 @@
 
                     <x-slot:actions separator>
                         <div class="w-full grid grid-cols-2 gap-2">
-                            <x-button label="Detail" class="btn-sm btn-soft btn-neutral" />
-                            <x-button label="Pesan" class="btn-sm btn-{{ $colorClass }}" />
+                            <x-button label="Detail" class="btn-sm btn-soft btn-neutral"
+                                link="{{ route('detail-layanan.pelanggan', $layanan->id) }}" />
+                            <x-button label="Pesan" class="btn-sm btn-{{ $colorClass }}"
+                                wire:click="toggleLayanan({{ $layanan->id }})" />
                         </div>
                     </x-slot:actions>
                 </x-card>

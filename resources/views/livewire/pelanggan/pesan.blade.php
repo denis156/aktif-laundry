@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 pb-24">
+<div class="container mx-auto pb-24">
     <x-header title="Buat Pesanan" subtitle="Detail pesanan Anda" icon="iconpark.listview-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 

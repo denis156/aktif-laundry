@@ -53,6 +53,27 @@ class Pesan extends Component
 
     public function mount(): void
     {
+        // Cek kelengkapan data profil (no telpon dan alamat)
+        $pelanggan = Auth::user();
+
+        // Validasi data alamat dan no telpon
+        if (empty($pelanggan->no_hp) || empty($pelanggan->alamat)) {
+            // Data profil belum lengkap, redirect ke halaman profile
+            Log::warning('Pesan: Profile data incomplete, redirecting to profile page', [
+                'pelanggan_id' => $pelanggan->id,
+                'has_phone' => ! empty($pelanggan->no_hp),
+                'has_address' => ! empty($pelanggan->alamat),
+            ]);
+
+            // Set flag bahwa user datang dari halaman pemesanan
+            session()->flash('from_pesanan', true);
+
+            // Redirect ke halaman profile
+            $this->redirect(route('profile.pelanggan'), navigate: true);
+
+            return;
+        }
+
         $this->loadOptions();
 
         // Load selected layanan from session

@@ -130,10 +130,13 @@ class PelangganHelper
     public static function createPelanggan(array $data, ?string $tanggalDaftar = null): Pelanggan
     {
         try {
-            // Normalize nomor HP
-            $normalizedPhone = PhoneNumber::normalize($data['no_hp'] ?? '');
-            if (! $normalizedPhone) {
-                throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+            // Normalize nomor HP (optional untuk Google OAuth)
+            $normalizedPhone = null;
+            if (! empty($data['no_hp'])) {
+                $normalizedPhone = PhoneNumber::normalize($data['no_hp']);
+                if (! $normalizedPhone) {
+                    throw new \Exception('Format nomor HP tidak valid. Gunakan format: +62, 62, 08, atau 8');
+                }
             }
 
             // Build alamat lengkap

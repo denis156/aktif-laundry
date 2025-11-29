@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 pb-48">
+<div class="container mx-auto pb-48">
     <x-header title="Pilih Layanan" subtitle="Pilih layanan yang Anda butuhkan" icon="iconpark.listview-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 
@@ -43,7 +43,8 @@
 
             <x-slot:actions separator>
                 <div class="w-full grid grid-cols-2 gap-2">
-                    <x-button label="Detail" class="btn-sm btn-soft btn-neutral" />
+                    <x-button label="Detail" class="btn-sm btn-soft btn-neutral"
+                        link="{{ route('detail-layanan.pelanggan', ['id' => $layanan['id']]) }}" />
                     @if ($this->isSelected($layanan['id']))
                     <x-button wire:click="toggleLayanan({{ $layanan['id'] }})" label="Batal"
                         class="btn-sm btn-error" />

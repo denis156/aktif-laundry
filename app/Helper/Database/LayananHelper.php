@@ -151,6 +151,18 @@ class LayananHelper
     }
 
     /**
+     * Format harga menjadi string yang mudah dibaca
+     */
+    public static function formatHarga(?float $harga, ?string $satuan): string
+    {
+        if ($harga === null) {
+            return 'Rp 0/'.($satuan ?? 'satuan');
+        }
+
+        return 'Rp '.number_format($harga, 0, ',', '.').'/'.($satuan ?? 'satuan');
+    }
+
+    /**
      * Generate kode layanan otomatis
      */
     public static function generateKodeLayanan(): string

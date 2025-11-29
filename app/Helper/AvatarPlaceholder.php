@@ -62,15 +62,21 @@ class AvatarPlaceholder
     /**
      * Generate URL avatar atau placeholder menggunakan UI Avatars API
      *
-     * @param  string|null  $avatarUrl  Path ke avatar (tanpa asset/storage prefix)
+     * @param  string|null  $avatarUrl  Path/URL ke avatar (bisa lokal atau external)
      * @param  string|null  $name  Nama untuk placeholder
      * @param  int  $size  Ukuran avatar dalam pixel
      * @return string URL final (uploaded avatar atau UI Avatars API)
      */
     public static function getAvatarOrPlaceholder(?string $avatarUrl, ?string $name, int $size = self::DEFAULT_SIZE): string
     {
-        // Jika ada avatar yang diupload, gunakan itu
+        // Jika ada avatar yang diupload atau dari Google OAuth
         if ($avatarUrl) {
+            // Cek apakah avatar adalah URL external (Google OAuth, dll)
+            if (str_starts_with($avatarUrl, 'http://') || str_starts_with($avatarUrl, 'https://')) {
+                return $avatarUrl;
+            }
+
+            // Jika bukan URL external, anggap sebagai path lokal
             return asset('storage/'.$avatarUrl);
         }
 

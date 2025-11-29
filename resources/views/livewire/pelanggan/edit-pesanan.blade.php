@@ -1,4 +1,4 @@
-<div class="container mx-auto px-4 pb-24">
+<div class="container mx-auto">
     <x-header title="Edit Pesanan" subtitle="Perbarui detail pesanan Anda" icon="iconpark.write-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 
@@ -51,7 +51,7 @@
                 </x-card>
                 {{-- Submit button --}}
                 <x-slot:actions>
-                    <div class="grid grid-cols-2 w-full gap-4">
+                    <div class="grid grid-cols-2 gap-4 w-full">
                         <x-button label="Batal" link="{{ route('detail-pesanan.pelanggan', ['id' => $transaksi->id]) }}" wire:navigate
                             class="btn-secondary" />
                         <x-button label="Simpan" type="submit" class="btn-primary" spinner="submit" />

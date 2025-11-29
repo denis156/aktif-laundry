@@ -47,7 +47,9 @@ use App\Livewire\Pelanggan\Auth\Register as PelangganRegister;
 use App\Livewire\Pelanggan\Auth\ResetPassword as PelangganResetPassword;
 use App\Livewire\Pelanggan\Auth\VerifyEmail as PelangganVerifyEmail;
 use App\Livewire\Pelanggan\Beranda as PelangganBeranda;
+use App\Livewire\Pelanggan\DetailLayanan as PelangganDetailLayanan;
 use App\Livewire\Pelanggan\DetailPesanan as PelangganDetailPesanan;
+use App\Livewire\Pelanggan\DetailPromo as PelangganDetailPromo;
 use App\Livewire\Pelanggan\EditPesanan as PelangganEditPesanan;
 use App\Livewire\Pelanggan\ListLayanan as PelangganListLayanan;
 use App\Livewire\Pelanggan\Pengaturan as PelangganPengaturan;
@@ -224,6 +226,7 @@ Route::middleware(['guest:pelanggan'])->prefix('pelanggan')->group(function () {
 
     // Reset Password Route di /pelanggan/reset-password/{token}
     Route::get('/reset-password/{token}', PelangganResetPassword::class)->name('pelanggan.password.reset');
+
 });
 
 // Pelanggan Logout Route (authenticated)
@@ -256,6 +259,8 @@ Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')
     Route::get('/', PelangganBeranda::class)->name('beranda.pelanggan');
     Route::get('/pesan', PelangganListLayanan::class)->name('pesanan.pelanggan');
     Route::get('/pesan/form', PelangganPesan::class)->name('pesanan-form.pelanggan');
+    Route::get('/promo/{id}', PelangganDetailPromo::class)->name('detail-promo.pelanggan');
+    Route::get('/layanan/{id}', PelangganDetailLayanan::class)->name('detail-layanan.pelanggan');
     Route::get('/riwayat', PelangganRiwayat::class)->name('riwayat.pelanggan');
     Route::get('/riwayat/{id}', PelangganDetailPesanan::class)->name('detail-pesanan.pelanggan');
     Route::get('/riwayat/{id}/edit', PelangganEditPesanan::class)->name('edit-pesanan.pelanggan');

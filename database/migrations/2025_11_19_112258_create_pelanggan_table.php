@@ -6,7 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class () extends Migration {
+return new class extends Migration
+{
     /**
      * Run the migrations.
      */
@@ -16,14 +17,14 @@ return new class () extends Migration {
             $table->id();
             $table->string('kode_pelanggan')->unique()->comment('PLG001, PLG002, etc');
             $table->string('nama');
-            $table->string('no_hp', 15);
+            $table->string('no_hp', 15)->nullable();
             $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable()->comment('Password untuk login aplikasi customer (optional)');
             $table->string('device_token')->nullable()->comment('token untuk push notification');
 
             // Alamat lengkap
-            $table->text('alamat')->comment('Alamat lengkap (display)');
+            $table->text('alamat')->nullable()->comment('Alamat lengkap (display)');
             $table->text('detail_alamat')->nullable()->comment('Detail alamat atau patokan (jalan, nomor, RT/RW)');
             $table->string('kelurahan', 100)->nullable()->index();
             $table->string('kecamatan', 100)->nullable()->index();
