@@ -4,6 +4,10 @@
         <x-slot:actions>
             <x-button icon="iconpark.lefttwo-o" class="btn-secondary btn-sm" label="Kembali"
                 link="{{ route('riwayat.pelanggan') }}" responsive />
+            @if ($transaksi->status === 'Menunggu')
+            <x-button icon="iconpark.write-o" class="btn-success btn-sm" label="Edit"
+                link="{{ route('edit-pesanan.pelanggan', ['id' => $transaksi->id]) }}" responsive />
+            @endif
         </x-slot:actions>
     </x-header>
 

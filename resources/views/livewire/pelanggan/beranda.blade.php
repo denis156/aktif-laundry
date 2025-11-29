@@ -20,13 +20,13 @@
                     <div class="stat-value text-sm font-bold text-success-content">0</div>
                     <div class="stat-desc text-success-content">Pesananmu yang selesai</div>
                 </div>
-                <div class="stat bg-error text-error-content">
+                <div class="stat bg-warning text-warning-content">
                     <div class="stat-figure">
-                        <x-icon name="iconpark.close-o" class="h-6 text-error-content" />
+                        <x-icon name="iconpark.close-o" class="h-6 text-warning-content" />
                     </div>
-                    <div class="stat-title text-xs font-bold text-error-content">Batal</div>
-                    <div class="stat-value text-sm font-bold text-error-content">0</div>
-                    <div class="stat-desc text-error-content">Pesananmu yang dibatalkan</div>
+                    <div class="stat-title text-xs font-bold text-warning-content">Batal</div>
+                    <div class="stat-value text-sm font-bold text-warning-content">0</div>
+                    <div class="stat-desc text-warning-content">Pesananmu yang dibatalkan</div>
                 </div>
             </div>
         </x-card>

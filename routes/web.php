@@ -48,6 +48,7 @@ use App\Livewire\Pelanggan\Auth\ResetPassword as PelangganResetPassword;
 use App\Livewire\Pelanggan\Auth\VerifyEmail as PelangganVerifyEmail;
 use App\Livewire\Pelanggan\Beranda as PelangganBeranda;
 use App\Livewire\Pelanggan\DetailPesanan as PelangganDetailPesanan;
+use App\Livewire\Pelanggan\EditPesanan as PelangganEditPesanan;
 use App\Livewire\Pelanggan\ListLayanan as PelangganListLayanan;
 use App\Livewire\Pelanggan\Pengaturan as PelangganPengaturan;
 use App\Livewire\Pelanggan\Pesan as PelangganPesan;
@@ -257,6 +258,7 @@ Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')
     Route::get('/pesan/form', PelangganPesan::class)->name('pesanan-form.pelanggan');
     Route::get('/riwayat', PelangganRiwayat::class)->name('riwayat.pelanggan');
     Route::get('/riwayat/{id}', PelangganDetailPesanan::class)->name('detail-pesanan.pelanggan');
+    Route::get('/riwayat/{id}/edit', PelangganEditPesanan::class)->name('edit-pesanan.pelanggan');
     Route::get('/pengaturan', PelangganPengaturan::class)->name('pengaturan.pelanggan');
     Route::get('/pengaturan/profile', PelangganProfile::class)->name('profile.pelanggan');
 });

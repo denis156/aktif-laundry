@@ -82,7 +82,7 @@
                     </ul>
                 </div>
             </nav>
-            
+
             <!-- Page content here -->
             <main class="flex-1">
                 <livewire:landing-page.beranda />
@@ -90,6 +90,8 @@
                 <livewire:landing-page.smart-clean />
 
                 <livewire:landing-page.pesan />
+
+                <livewire:component.fab-download>
             </main>
 
             <!-- Footer Content -->
