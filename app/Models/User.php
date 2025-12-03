@@ -64,6 +64,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'super_admin' => 'boolean',
             'gaji' => 'integer',
+            'jam_masuk' => 'datetime:H:i',
+            'jam_keluar' => 'datetime:H:i',
             'latitude' => 'decimal:8',
             'longitude' => 'decimal:8',
         ];
