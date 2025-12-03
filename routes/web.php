@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use App\Livewire\Kurir\Auth\ForgotPassword as KurirForgotPassword;
 use App\Livewire\Kurir\Auth\Login as KurirLogin;
 use App\Livewire\Kurir\Auth\ResetPassword as KurirResetPassword;
