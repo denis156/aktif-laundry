@@ -127,6 +127,8 @@
                 <x-menu-sub title="Pengaturan" icon="o-cog-6-tooth">
                     <x-menu-item title="Staf" icon="o-user-group" link="{{ route('staf.index') }}"
                         wire:navigate.hover />
+                    <x-menu-item title="Fonnte WhatsApp" icon="o-chat-bubble-left-right" link="{{ route('fonnte.index') }}"
+                        wire:navigate.hover />
                     <x-menu-item title="Konfigurasi" icon="o-adjustments-horizontal" link="{{ route('pengaturan') }}"
                         wire:navigate.hover />
                 </x-menu-sub>

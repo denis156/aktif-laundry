@@ -59,4 +59,31 @@ return [
         'redirect' => config('app.url').'/pelanggan/auth/google/callback',
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Fonnte API Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk Fonnte WhatsApp API
+    | Digunakan untuk mengirim pesan WhatsApp, mengelola device, dan aktivasi QR
+    |
+    | Setup:
+    | 1. Daftar akun di: https://fonnte.com/
+    | 2. Dapatkan API token dari dashboard Fonnte
+    | 3. Copy token ke .env file sebagai FONNTE_TOKEN
+    | 4. Gunakan helper app/Helper/FonnteHelper.php untuk integrasi
+    |
+    | Fitur yang tersedia:
+    | - Kirim pesan WhatsApp melalui device yang terdaftar
+    | - Tambah dan hapus device WhatsApp
+    | - Aktivasi device dengan QR code
+    | - Monitor status device
+    | - Kirim pesan dengan format media (image, document, dll)
+    |
+    */
+
+    'fonnte' => [
+        'fonnte_token' => env('FONNTE_TOKEN'),
+    ],
+
 ];

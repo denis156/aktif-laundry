@@ -16,6 +16,9 @@ use App\Livewire\Management\Auth\ResetPassword;
 use App\Livewire\Management\Auth\VerifyEmail;
 use App\Livewire\Management\Component\Receipt;
 use App\Livewire\Management\Dashboard;
+use App\Livewire\Management\Fonnte\Create as FonnteCreate;
+use App\Livewire\Management\Fonnte\Edit as FonnteEdit;
+use App\Livewire\Management\Fonnte\Index as FonnteIndex;
 use App\Livewire\Management\JenisPakaian\Create as JenisPakaianCreate;
 use App\Livewire\Management\JenisPakaian\Edit as JenisPakaianEdit;
 use App\Livewire\Management\JenisPakaian\Index as JenisPakaianIndex;
@@ -186,6 +189,13 @@ Route::middleware(['auth', 'verified'])->prefix('management')->group(function ()
         Route::get('/staf', StafIndex::class)->name('staf.index');
         Route::get('/staf/create', StafCreate::class)->name('staf.create');
         Route::get('/staf/edit/{id}', StafEdit::class)->name('staf.edit');
+    });
+
+    // Fonnte Routes di /management/fonnte (Super Admin Only)
+    Route::middleware('super_admin')->group(function () {
+        Route::get('/fonnte', FonnteIndex::class)->name('fonnte.index');
+        Route::get('/fonnte/create', FonnteCreate::class)->name('fonnte.create');
+        Route::get('/fonnte/edit/{token}', FonnteEdit::class)->name('fonnte.edit');
     });
 
     // Kurir Routes di /management/kurir
