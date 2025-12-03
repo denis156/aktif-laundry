@@ -3,7 +3,7 @@
         <!-- Headline Section -->
         <div class="text-center mb-16 max-w-4xl mx-auto">
             <h2 class="text-2xl lg:text-4xl font-bold text-success mb-6">
-                Mulai Hari Ini, <br> Jadilah Versi Aktif Terbersih Dirimu
+                Mulai Hari Ini, <br> Jadilah Versi AKTIF Terbersih Dirimu
             </h2>
             <div class="w-24 h-1 bg-success mx-auto mb-8 rounded-full"></div>
 
@@ -13,7 +13,7 @@
                     Cucianmu kami urus, kamu bebas fokus jalani aktivitasmu
                     dengan harga <span class="font-semibold text-primary">Rp 5.000/kg</span> layanan
                     spesialis <span class="uppercase font-bold text-primary">cuci-setrika-lipat</span> +
-                    <span class="font-semibold text-primary">Free antar-jemput Se-Kendari</span>
+                    <span class="font-semibold text-primary">Free antar-jemput Seluruh Kota Kendari</span>
                 </p>
             </div>
         </div>
@@ -85,7 +85,7 @@
                         </li>
                         <li>
                             <x-icon name="o-check-circle" class="size-2 me-1 inline-block text-primary" />
-                            <span>Gratis antar-jemput</span>
+                            <span>Dan Lain-lain</span>
                         </li>
                     </ul>
                     <div class="mt-6">
