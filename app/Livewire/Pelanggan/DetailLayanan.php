@@ -19,6 +19,13 @@ class DetailLayanan extends Component
 
     public ?Layanan $layanan = null;
 
+    public string $tabSelected = 'detail-tab';
+
+    public function getColorClass(): string
+    {
+        return $this->layanan->is_popular ? 'warning' : 'success';
+    }
+
     public function mount(int $id): void
     {
         $this->layanan = Layanan::where('id', $id)

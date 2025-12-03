@@ -1,138 +1,263 @@
-<div class="container mx-auto pb-48">
-    <x-header title="Detail Layanan" subtitle="{{ $layanan->nama }}" icon="iconpark.localpin-o"
-        icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator>
+<div class="container mx-auto">
+    <x-header title="Detail Layanan" subtitle="{{ $layanan->nama_layanan }} - {{ $layanan->kode_layanan }}" separator>
         <x-slot:actions>
             <x-button icon="iconpark.lefttwo-o" class="btn-secondary btn-sm" label="Kembali"
                 link="{{ route('pesanan.pelanggan') }}" responsive />
         </x-slot:actions>
     </x-header>
 
-    @if ($layanan)
-    <div class="space-y-4">
+    <!-- Tabs Navigation -->
+    <x-tabs wire:model="tabSelected" active-class="bg-{{ $this->getColorClass() }} rounded text-white!"
+        label-class="font-semibold text-lg" label-div-class="bg-primary/10 rounded flex justify-around w-full p-2">
+        <x-tab name="detail-tab" label="Detail" />
+        <x-tab name="harga-tab" label="Harga" />
+        <x-tab name="waktu-tab" label="Waktu" />
+    </x-tabs>
 
-        {{-- Icon & Info Card --}}
-        <x-card title="Informasi Layanan" subtitle="Detail informasi layanan laundry"
-            class="shadow-lg border border-primary">
-            <div class="space-y-4">
-                {{-- Icon & Nama --}}
-                <div class="flex items-center gap-4">
-                    <div class="w-20 h-20 bg-primary/10 rounded-xl flex items-center justify-center">
-                        <img src="{{ $this->getIconUrl() }}" alt="{{ $layanan->nama }}"
-                            class="w-12 h-12 object-contain" />
-                    </div>
-                    <div class="flex-1">
-                        <h2 class="text-xl font-bold text-base-content">{{ $layanan->nama }}</h2>
-                        @if ($layanan->slug)
-                        <p class="text-sm text-base-content/60 font-mono">{{ $layanan->slug }}</p>
-                        @endif
-                    </div>
+    <!-- Detail Card -->
+    <x-card wire:show="tabSelected === 'detail-tab'"
+        class="shadow-lg border border-{{ $this->getColorClass() }} w-full mb-34" title="{{ $layanan->nama_layanan }}"
+        subtitle="{{ $layanan->kode_layanan }}" body-class="space-y-4" shadow separator>
+        <x-slot:menu>
+            @if($layanan->is_popular)
+            <x-badge value="Populer" class="badge-sm badge-{{ $this->getColorClass() }}" />
+            @endif
+            @if($layanan->icon)
+            <x-icon name="{{ $layanan->icon }}" class="h-10 text-{{ $this->getColorClass() }}" />
+            @else
+            <x-icon name="o-sparkles" class="h-10 text-{{ $this->getColorClass() }}" />
+            @endif
+        </x-slot:menu>
+        <div>
+            <h3 class="font-semibold text-lg mb-2">Informasi Layanan</h3>
+            <div class="space-y-2">
+                <div class="flex justify-between">
+                    <span class="text-secondary">Kode Layanan:</span>
+                    <span class="font-medium uppercase">{{ $layanan->kode_layanan }}</span>
                 </div>
-
-                {{-- Harga --}}
-                <div class="flex items-center gap-3 p-4 bg-primary/10 rounded-lg">
-                    <x-icon name="iconpark.papermoney-o" class="w-8 h-8 text-primary" />
-                    <div>
-                        <p class="text-xs text-base-content/60">Harga Layanan</p>
-                        <span class="text-2xl font-bold text-primary">{{ $this->getHargaFormatted() }}</span>
-                    </div>
+                <div class="flex justify-between">
+                    <span class="text-secondary">Nama Layanan:</span>
+                    <span class="font-medium uppercase">{{ $layanan->nama_layanan }}</span>
                 </div>
-
-                {{-- Deskripsi --}}
-                @if ($layanan->deskripsi)
-                <div>
-                    <h3 class="font-semibold text-base-content mb-2 flex items-center gap-2">
-                        <x-icon name="iconpark.info-o" class="w-5 h-5 text-base-content/60" />
-                        Deskripsi Layanan
-                    </h3>
-                    <p class="text-sm text-base-content/80 bg-base-200/50 p-3 rounded-lg">{{ $layanan->deskripsi }}</p>
+                <div class="flex justify-between">
+                    <span class="text-secondary">Tipe Layanan:</span>
+                    <span class="font-medium uppercase">{{ ucfirst($layanan->tipe_layanan) }}</span>
+                </div>
+                @if($layanan->satuan)
+                <div class="flex justify-between">
+                    <span class="text-secondary">Satuan:</span>
+                    <span class="font-medium uppercase">{{ $layanan->satuan }}</span>
                 </div>
                 @endif
             </div>
-        </x-card>
+        </div>
 
-        {{-- Detail Layanan Card --}}
-        <x-card title="Informasi Detail" subtitle="Spesifikasi lengkap layanan" class="shadow-lg border border-primary">
-            <div class="space-y-4">
-                {{-- Kategori --}}
-                @if ($layanan->kategori)
-                <div class="flex items-center justify-between p-3 bg-base-200/50 rounded-lg">
-                    <div class="flex items-center gap-2">
-                        <x-icon name="iconpark.tag-o" class="w-5 h-5 text-base-content/60" />
-                        <span class="text-sm font-medium">Kategori</span>
-                    </div>
-                    <span class="text-sm font-bold capitalize">{{ $layanan->kategori }}</span>
-                </div>
-                @endif
+        @if($layanan->deskripsi)
+        <div>
+            <h4 class="font-semibold mb-2">Deskripsi</h4>
+            <p class="text-secondary">{{ $layanan->deskripsi }}</p>
+        </div>
+        @endif
 
-                {{-- Satuan Harga --}}
-                <div class="flex items-center justify-between p-3 bg-base-200/50 rounded-lg">
-                    <div class="flex items-center gap-2">
-                        <x-icon name="iconpark.scale-o" class="w-5 h-5 text-base-content/60" />
-                        <span class="text-sm font-medium">Satuan Harga</span>
-                    </div>
-                    <span class="text-sm font-bold">Per {{ ucfirst($layanan->satuan_harga) }}</span>
-                </div>
+        @if($layanan->include || $layanan->exclude)
+        <div class="flex flex-row gap-8">
+            @if($layanan->include && is_array($layanan->include) && count($layanan->include) > 0)
+            <div class="flex-1">
+                <h4 class="font-semibold mb-2 text-success">Cover Layanan:</h4>
+                <ul class="flex flex-col gap-2 text-xs">
+                    @foreach($layanan->include as $item)
+                    <li>
+                        <x-icon name="o-check-circle" class="size-4 me-2 inline-block text-success" />
+                        <span>{{ $item }}</span>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
 
-                {{-- Waktu Estimasi --}}
-                @if ($layanan->estimasi_hari)
-                <div class="flex items-center justify-between p-3 bg-base-200/50 rounded-lg">
-                    <div class="flex items-center gap-2">
-                        <x-icon name="iconpark.time-o" class="w-5 h-5 text-base-content/60" />
-                        <span class="text-sm font-medium">Estimasi Selesai</span>
-                    </div>
-                    <span class="text-sm font-bold">{{ $layanan->estimasi_hari }} Hari</span>
-                </div>
-                @endif
+            @if($layanan->exclude && is_array($layanan->exclude) && count($layanan->exclude) > 0)
+            <div class="flex-1">
+                <h4 class="font-semibold mb-2 text-error">Di Luar Cover:</h4>
+                <ul class="flex flex-col gap-2 text-xs">
+                    @foreach($layanan->exclude as $item)
+                    <li>
+                        <x-icon name="o-x-circle" class="size-4 me-2 inline-block text-error" />
+                        <span>{{ $item }}</span>
+                    </li>
+                    @endforeach
+                </ul>
+            </div>
+            @endif
+        </div>
+        @endif
+    </x-card>
 
-                {{-- Status --}}
-                <div class="flex items-center justify-between p-3 bg-base-200/50 rounded-lg">
-                    <div class="flex items-center gap-2">
-                        <x-icon name="iconpark.checkone-o" class="w-5 h-5 text-base-content/60" />
-                        <span class="text-sm font-medium">Status</span>
+    <!-- Harga Card -->
+    <x-card wire:show="tabSelected === 'harga-tab'"
+        class="shadow-lg border border-{{ $this->getColorClass() }} w-full mb-34" title="Rincian Harga"
+        subtitle="Informasi harga dan ketentuan" body-class="space-y-4" shadow separator>
+        <div class="space-y-4">
+            <!-- Harga Utama -->
+            <div>
+                <h3 class="font-semibold text-lg mb-2">Informasi Harga</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Tipe Harga:</span>
+                        <span class="font-medium uppercase">{{ ucfirst($layanan->tipe_layanan) }}</span>
                     </div>
-                    <div class="badge {{ $layanan->status === 'Aktif' ? 'badge-success' : 'badge-error' }} badge-sm">
-                        {{ $layanan->status }}
+
+                    @if($layanan->tipe_layanan === 'per_kg' && $layanan->harga_per_kg > 0)
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Harga per Kg:</span>
+                        <span class="font-medium uppercase text-success">Rp {{ number_format($layanan->harga_per_kg, 0,
+                            ',', '.') }}</span>
+                    </div>
+                    @endif
+
+                    @if($layanan->tipe_layanan === 'per_satuan' && $layanan->harga_per_satuan > 0)
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Harga per {{ $layanan->satuan }}:</span>
+                        <span class="font-medium uppercase text-success">Rp {{ number_format($layanan->harga_per_satuan,
+                            0, ',', '.') }}</span>
+                    </div>
+                    @endif
+
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Satuan:</span>
+                        <span class="font-medium">{{ $layanan->satuan }}</span>
                     </div>
                 </div>
             </div>
 
-            {{-- Catatan Khusus --}}
-            @if ($layanan->catatan)
-            <div class="border-t pt-4 mt-6">
-                <h4 class="font-semibold text-base-content mb-3 flex items-center gap-2">
-                    <x-icon name="iconpark.file-text-o" class="w-5 h-5 text-base-content/60" />
-                    Catatan Khusus
-                </h4>
-                <div class="text-sm text-base-content/80 space-y-2 bg-base-200/30 p-4 rounded-lg">
-                    {!! nl2br(e($layanan->catatan)) !!}
+            <!-- Ketentuan Order -->
+            @if($layanan->min_order || $layanan->max_order)
+            <div>
+                <h3 class="font-semibold text-lg mb-2">Ketentuan Order</h3>
+                <div class="space-y-2">
+                    @if($layanan->min_order)
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Minimum Order:</span>
+                        <span class="font-medium">{{ $layanan->min_order }} {{ $layanan->satuan }}</span>
+                    </div>
+                    @endif
+
+                    @if($layanan->max_order)
+                    <div class="flex justify-between">
+                        <span class="text-secondary">Maksimum Order:</span>
+                        <span class="font-medium">{{ $layanan->max_order }} {{ $layanan->satuan }}</span>
+                    </div>
+                    @endif
                 </div>
             </div>
             @endif
-        </x-card>
 
-        {{-- Features/Keunggulan --}}
-        @if ($layanan->features)
-        <x-card title="Keunggulan Layanan" class="shadow-lg">
-            <div class="grid grid-cols-1 gap-3">
-                @foreach(explode("\n", $layanan->features) as $feature)
-                @if(trim($feature))
-                <div class="flex items-center gap-3 p-3 bg-success/5 rounded-lg">
-                    <x-icon name="iconpark.check-o" class="w-5 h-5 text-success" />
-                    <span class="text-sm text-base-content/80">{{ trim($feature) }}</span>
+            <!-- Contoh Perhitungan -->
+            @if($layanan->tipe_layanan === 'per_kg' && $layanan->harga_per_kg > 0)
+            <div>
+                <h4 class="font-semibold mb-2">Contoh Perhitungan</h4>
+                <div class="space-y-2">
+                    <div class="text-sm text-secondary">
+                        <span>Jika cucian Anda {{ $layanan->min_order ?? 5 }} kg</span>
+                        <span class="block">({{ $layanan->min_order ?? 5 }} kg × Rp {{
+                            number_format($layanan->harga_per_kg, 0, ',', '.') }}/kg)</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-{{ $this->getColorClass() }}/10 rounded p-2">
+                        <span class="text-sm">Total:</span>
+                        <span class="font-medium text-{{ $this->getColorClass() }}">Rp {{
+                            number_format(($layanan->min_order ?? 5) * $layanan->harga_per_kg, 0, ',', '.') }}</span>
+                    </div>
                 </div>
-                @endif
-                @endforeach
             </div>
-        </x-card>
-        @endif
+            @endif
 
-        {{-- Fixed Bottom Button --}}
-        <div class="fixed bottom-20 left-0 right-0 z-30 px-4 pb-4">
-            <div class="container mx-auto max-w-2xl">
-                <x-button label="Pesan Layanan Ini" class="btn-primary btn-lg w-full shadow-2xl"
-                    wire:click="pesanSekarang" spinner="pesanSekarang" />
+            @if($layanan->tipe_layanan === 'per_satuan' && $layanan->harga_per_satuan > 0)
+            <div>
+                <h4 class="font-semibold mb-2">Contoh Perhitungan</h4>
+                <div class="space-y-2">
+                    <div class="text-sm text-secondary">
+                        <span>Contoh 1: Jika pesanan {{ $layanan->min_order ?? 1 }} {{ $layanan->satuan }}</span>
+                        <span class="block">({{ $layanan->min_order ?? 1 }} {{ $layanan->satuan }} × Rp {{
+                            number_format($layanan->harga_per_satuan, 0, ',', '.') }}/{{ $layanan->satuan }})</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-{{ $this->getColorClass() }}/10 rounded p-2">
+                        <span class="text-sm">Total:</span>
+                        <span class="font-medium text-{{ $this->getColorClass() }}">Rp {{
+                            number_format(($layanan->min_order ?? 1) * $layanan->harga_per_satuan, 0, ',', '.')
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+    </x-card>
+
+    <!-- Waktu Card -->
+    <x-card wire:show="tabSelected === 'waktu-tab'"
+        class="shadow-lg border border-{{ $this->getColorClass() }} w-full mb-34" title="Estimasi Waktu"
+        subtitle="Perkiraan waktu pengerjaan" body-class="space-y-4" shadow>
+        <div class="space-y-4">
+            <!-- Informasi Utama -->
+            <div>
+                <div class="text-center mb-4">
+                    <div class="text-2xl font-bold text-{{ $this->getColorClass() }}">
+                        {{ \App\Helper\Database\LayananHelper::formatEstimasiWaktu($layanan->durasi_jam) }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Timeline Estimasi -->
+            <div>
+                <h4 class="font-semibold mb-4">Proses Laundry</h4>
+                <ul class="timeline timeline-vertical">
+                    <li>
+                        <div class="timeline-start timeline-box text-xs">Penjemputan</div>
+                        <div class="timeline-middle">
+                            <x-icon name="iconpark.checkone" class="w-5 h-5 text-{{ $this->getColorClass() }}" />
+                        </div>
+                        <hr class="bg-{{ $this->getColorClass() }}" />
+                    </li>
+                    <li>
+                        <hr class="bg-{{ $this->getColorClass() }}" />
+                        <div class="timeline-middle">
+                            <x-icon name="iconpark.checkone" class="w-5 h-5 text-{{ $this->getColorClass() }}" />
+                        </div>
+                        <div class="timeline-end timeline-box">Penimbangan</div>
+                        <hr class="bg-{{ $this->getColorClass() }}" />
+                    </li>
+                    <li>
+                        <hr class="bg-{{ $this->getColorClass() }}" />
+                        <div class="timeline-start timeline-box">Pencucian</div>
+                        <div class="timeline-middle">
+                            <x-icon name="iconpark.checkone" class="w-5 h-5 text-{{ $this->getColorClass() }}" />
+                        </div>
+                        <hr class="bg-{{ $this->getColorClass() }}" />
+                    </li>
+                    <li>
+                       <hr class="bg-{{ $this->getColorClass() }}" />
+                        <div class="timeline-middle">
+                            <x-icon name="iconpark.checkone" class="w-5 h-5 text-{{ $this->getColorClass() }}" />
+                        </div>
+                        <div class="timeline-end timeline-box">Pengeringan</div>
+                       <hr class="bg-{{ $this->getColorClass() }}" />
+                    </li>
+                    <li>
+                       <hr class="bg-{{ $this->getColorClass() }}" />
+                        <div class="timeline-start timeline-box">Pengemasan</div>
+                        <div class="timeline-middle">
+                            <x-icon name="iconpark.checkone" class="w-5 h-5 text-{{ $this->getColorClass() }}" />
+                        </div>
+                        <hr class="bg-{{ $this->getColorClass() }}" />
+                    </li>
+                    <li>
+                       <hr class="bg-{{ $this->getColorClass() }}" />
+                        <div class="timeline-end timeline-box">Pengiriman</div>
+                        <div class="timeline-middle">
+                            <x-icon name="iconpark.checkone" class="w-5 h-5 text-{{ $this->getColorClass() }}" />
+                        </div>
+                    </li>
+                </ul>
             </div>
         </div>
-    </div>
-    @endif
+    </x-card>
+
 </div>
