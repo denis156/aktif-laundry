@@ -68,7 +68,7 @@
         }
 
         .divider-solid {
-            border-top: 1px solid #000;
+            border-top: 1px dashed #000;
             margin: 2px 0;
         }
 
@@ -99,7 +99,7 @@
             text-align: left;
             font-size: 9px;
             padding: 1px 0;
-            border-bottom: 1px solid #000;
+            border-bottom: 1px dashed #000;
             font-weight: 900;
         }
 
@@ -122,14 +122,14 @@
             font-weight: 900;
             margin-top: 2px;
             padding-top: 2px;
-            border-top: 1px solid #000;
+            border-top: 1px dashed #000;
         }
 
         .footer {
             text-align: center;
             margin-top: 3px;
             padding-top: 2px;
-            border-top: 1px solid #000;
+            border-top: 1px dashed #000;
             font-size: 9px;
             font-weight: 600;
         }
@@ -149,53 +149,18 @@
 </head>
 
 <body>
-    <!-- HEADER TOKO -->
+    <!-- NO TRANSAKSI -->
     <div class="header">
-        <img src="{{ asset('images/Logo.png') }}" alt="Logo"
-            style="max-width: 108px; max-height: 108px; margin: 0 auto 3px; filter: grayscale(100%) contrast(3) brightness(0.3);">
-        @if(!empty($setting['whatsapp']))
-        <p>WA: {{ $setting['whatsapp'] }}</p>
-        @endif
-        @if(!empty($setting['email']))
-        <p>{{ $setting['email'] }}</p>
-        @endif
-        <p class="small">Buka: {{ $setting['jam_buka'] }} - Tutup: {{ $setting['jam_tutup'] }}</p>
+        <h1 style="font-size: 14px; margin-bottom: 4px;">{{ $transaksiData['kode_transaksi'] }}</h1>
     </div>
-
-    <!-- INFO TRANSAKSI -->
-    <div class="section">
-        <div class="row">
-            <span class="label">No:</span>
-            <span class="value bold">{{ $transaksiData['kode_transaksi'] }}</span>
-        </div>
-        <div class="row">
-            <span class="label">Tgl Masuk:</span>
-            <span class="value">{{ \Carbon\Carbon::parse($transaksiData['tanggal_masuk'])->format('d/m/Y') }}</span>
-        </div>
-        <div class="row">
-            <span class="label">Jam Masuk:</span>
-            <span class="value">{{ \Carbon\Carbon::parse($transaksiData['tanggal_masuk'])->format('H:i') }}</span>
-        </div>
-    </div>
-
-    <div class="divider"></div>
 
     <!-- INFO PELANGGAN -->
-    <div class="section">
-        <div class="row">
-            <span class="label bold">Pelanggan:</span>
-            <span class="value">{{ $transaksiData['nama_pelanggan'] }}</span>
-        </div>
-        <div class="row">
-            <span class="label">No. Telp:</span>
-            <span class="value">{{ $pelangganNoHp ?: '-' }}</span>
-        </div>
+    <div class="section" style="text-align: center;">
+        <div class="bold" style="font-size: 11px; margin-bottom: 2px;">{{ $transaksiData['nama_pelanggan'] }}</div>
         @if(!empty($pelangganAlamat))
-        <div style="margin-top: 3px;">
-            <div class="bold" style="margin-bottom: 1px;">Alamat:</div>
-            <div>{{ $pelangganAlamat }}</div>
-        </div>
+        <div style="margin-bottom: 2px; font-size: 9px;">{{ $pelangganAlamat }}</div>
         @endif
+        <div class="bold" style="font-size: 11px;">{{ $pelangganNoHp ?: '-' }}</div>
     </div>
 
     <div class="divider"></div>
@@ -295,6 +260,20 @@
 
     <div class="divider-solid"></div>
 
+    <!-- METODE PEMBAYARAN & STATUS -->
+    <div class="section">
+        <div class="row">
+            <span class="label">Pembayaran:</span>
+            <span class="value">{{ $transaksiData['metode_pembayaran'] }}</span>
+        </div>
+        <div class="row">
+            <span class="label">Status:</span>
+            <span class="value bold">{{ $transaksiData['status'] }}</span>
+        </div>
+    </div>
+
+    <div class="divider"></div>
+
     <!-- RINGKASAN PEMBAYARAN -->
     <div class="section">
         <div class="row">
@@ -314,30 +293,6 @@
         <div class="row total">
             <span class="label">TOTAL:</span>
             <span class="value">Rp {{ number_format((int)$transaksiData['total'], 0, ',', '.') }}</span>
-        </div>
-    </div>
-
-    <div class="divider"></div>
-
-    <!-- METODE PEMBAYARAN & STATUS -->
-    <div class="section">
-        <div class="row">
-            <span class="label">Pembayaran:</span>
-            <span class="value">{{ $transaksiData['metode_pembayaran'] }}</span>
-        </div>
-        <div class="row">
-            <span class="label">Status:</span>
-            <span class="value bold">{{ $transaksiData['status'] }}</span>
-        </div>
-        <div class="row">
-            <span class="label">Tgl Selesai:</span>
-            <span class="value">{{ !empty($transaksiData['tanggal_selesai']) ?
-                \Carbon\Carbon::parse($transaksiData['tanggal_selesai'])->format('d/m/Y') : '-' }}</span>
-        </div>
-        <div class="row">
-            <span class="label">Jam Selesai:</span>
-            <span class="value">{{ !empty($transaksiData['tanggal_selesai']) ?
-                \Carbon\Carbon::parse($transaksiData['tanggal_selesai'])->format('H:i') : '-' }}</span>
         </div>
     </div>
 
