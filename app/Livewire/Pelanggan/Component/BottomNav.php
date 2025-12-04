@@ -63,9 +63,9 @@ class BottomNav extends Component
         // For example: 'pesanan-form.pelanggan' should activate 'pesanan.pelanggan'
         // and 'profile.pelanggan' should activate 'pengaturan.pelanggan'
         $routeMapping = [
-            'pesanan.pelanggan' => ['pesanan-form.pelanggan'],
+            'pesanan.pelanggan' => ['pesanan-form.pelanggan', 'edit-pesanan.pelanggan'],
             'pengaturan.pelanggan' => ['profile.pelanggan'],
-            'riwayat.pelanggan' => ['detail-pesanan.pelanggan', 'edit-pesanan.pelanggan'],
+            'riwayat.pelanggan' => ['detail-pesanan.pelanggan'],
         ];
 
         if (isset($routeMapping[$routeName]) && in_array($currentRoute, $routeMapping[$routeName])) {

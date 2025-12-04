@@ -84,11 +84,14 @@ class Pengaturan extends Component
                 'Promo default untuk referee (yang diajak)'
             );
 
+            // Update semua referral yang belum punya promo khusus
+            $this->applyDefaultPromoToAllReferrals();
+
             DB::commit();
 
             $this->saveOriginalValues();
 
-            $this->success('Konfigurasi referral berhasil disimpan!', position: 'toast-bottom');
+            $this->success('Konfigurasi referral berhasil disimpan dan diterapkan ke semua pelanggan!', position: 'toast-bottom');
         } catch (Exception $e) {
             DB::rollBack();
 
@@ -96,6 +99,23 @@ class Pengaturan extends Component
                 'Gagal menyimpan konfigurasi: '.$e->getMessage(),
                 position: 'toast-bottom'
             );
+        }
+    }
+
+    protected function applyDefaultPromoToAllReferrals(): void
+    {
+        // Update referral yang promo_referrer_id nya null
+        if ($this->default_promo_referrer_id) {
+            DB::table('referral')
+                ->whereNull('promo_referrer_id')
+                ->update(['promo_referrer_id' => $this->default_promo_referrer_id]);
+        }
+
+        // Update referral yang promo_referee_id nya null
+        if ($this->default_promo_referee_id) {
+            DB::table('referral')
+                ->whereNull('promo_referee_id')
+                ->update(['promo_referee_id' => $this->default_promo_referee_id]);
         }
     }
 

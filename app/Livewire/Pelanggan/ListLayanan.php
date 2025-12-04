@@ -129,8 +129,24 @@ class ListLayanan extends Component
             'selected_ids' => $this->selectedLayananIds,
         ]);
 
-        // Redirect to form
-        $this->redirect(route('pesanan-form.pelanggan'), navigate: true);
+        // Check if coming from edit pesanan (via session)
+        if (session()->has('edit_transaksi_id')) {
+            $transaksiId = session('edit_transaksi_id');
+
+            // Clear the session BEFORE redirect
+            session()->forget('edit_transaksi_id');
+
+            Log::info('ListLayanan: Returning to edit pesanan', [
+                'transaksi_id' => $transaksiId,
+                'selected_ids' => $this->selectedLayananIds,
+            ]);
+
+            // Redirect back to edit pesanan
+            $this->redirect(route('edit-pesanan.pelanggan', ['id' => $transaksiId]), navigate: true);
+        } else {
+            // Redirect to form
+            $this->redirect(route('pesanan-form.pelanggan'), navigate: true);
+        }
     }
 
     public function render(): mixed

@@ -1,8 +1,8 @@
-<div class="container mx-auto pb-24">
+<div class="container mx-auto">
     <x-header title="Buat Pesanan" subtitle="Detail pesanan Anda" icon="iconpark.listview-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 
-    <div class="space-y-4">
+    <div class="space-y-4 mb-24">
         <x-card title="Layanan" subtitle="Daftar layanan yang di pilih" class="shadow-lg border border-primary"
             body-class="space-y-2">
             <x-slot:menu>

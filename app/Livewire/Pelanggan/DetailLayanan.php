@@ -60,8 +60,17 @@ class DetailLayanan extends Component
 
     public function pesanSekarang(): void
     {
-        $this->dispatch('select-layanan', layananId: $this->layanan->id);
-        $this->success('Layanan '.$this->layanan->nama.' telah dipilih!', position: 'toast-top');
+        if (! $this->layanan) {
+            $this->error('Layanan tidak ditemukan', position: 'toast-top');
+
+            return;
+        }
+
+        // Store layanan ID in session (gunakan array untuk konsistensi dengan ListLayanan)
+        $selectedLayananIds = [$this->layanan->id];
+        session(['selected_layanan_ids' => $selectedLayananIds]);
+
+        $this->success('Layanan '.$this->layanan->nama_layanan.' dipilih!', position: 'toast-top');
         $this->redirect(route('pesanan-form.pelanggan'), navigate: true);
     }
 

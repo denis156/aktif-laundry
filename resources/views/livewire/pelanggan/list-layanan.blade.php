@@ -1,4 +1,4 @@
-<div class="container mx-auto pb-48">
+<div class="container mx-auto">
     <x-header title="Pilih Layanan" subtitle="Pilih layanan yang Anda butuhkan" icon="iconpark.listview-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 
@@ -8,7 +8,7 @@
         <p class="text-sm text-base-content/60 mt-2">Belum ada layanan tersedia</p>
     </div>
     @else
-    <div class="space-y-4">
+    <div class="space-y-4 mb-34">
         @foreach ($layananList as $layanan)
         <x-card wire:key="layanan-{{ $layanan['id'] }}" title="{{ $layanan['nama'] }}"
             subtitle="Rp {{ number_format($layanan['harga'], 0, ',', '.') }}/{{ $layanan['satuan'] }}"
@@ -61,15 +61,13 @@
 
     {{-- Fixed Bottom Button --}}
     @if (!empty($layananList) && count($selectedLayananIds) > 0)
-    <div class="fixed bottom-20 left-0 right-0 z-30 px-4 pb-4">
-        <div class="container mx-auto max-w-2xl">
-            @php
-            $buttonLabel = 'Lanjut (' . count($selectedLayananIds) . ' Layanan)';
-            @endphp
+    @php
+    $buttonLabel = 'Lanjut (' . count($selectedLayananIds) . ' Layanan)';
+    @endphp
 
-            <x-button wire:click="lanjutKeForm" :label="$buttonLabel" class="btn-primary btn-lg w-full shadow-2xl"
-                spinner="lanjutKeForm" />
-        </div>
+    <div class="fab mb-18">
+        <x-button wire:click="lanjutKeForm" :label="$buttonLabel" class="btn-primary btn-md"
+            spinner="lanjutKeForm" />
     </div>
     @endif
 </div>

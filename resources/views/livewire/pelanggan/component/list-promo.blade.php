@@ -20,23 +20,16 @@
 
                 <x-card title="{{ $promo->nama_promo }}" subtitle="{{ $promo->kode_promo }}"
                     class="shadow-lg border border-b-5 border-r-5 border-info w-[78dvw] flex-none snap-start">
-                    <div class="space-y-3">
-                        {{-- Nilai Diskon --}}
-                        <div class="flex items-center gap-2">
-                            <x-icon name="iconpark.tag-o" class="w-5 h-5 text-info" />
-                            <span class="text-base font-semibold text-info">{{ $nilaiDiskonFormatted }}</span>
-                        </div>
-
-                        {{-- Deskripsi --}}
-                        @if ($promo->deskripsi)
-                            <p class="text-sm text-base-content/80">{{ $promo->deskripsi }}</p>
-                        @endif
-                    </div>
+                    {{-- Deskripsi --}}
+                    @if ($promo->deskripsi)
+                        <p class="text-sm text-base-content/80">{{ $promo->deskripsi }}</p>
+                    @endif
 
                     <x-slot:figure>
                         <div class="border-b-2 border-dashed border-info aspect-3/2 w-full bg-base-200">
                             <img src="{{ $this->getBannerUrl($promo) }}" alt="{{ $promo->nama_promo }}"
-                                class="w-full h-full object-cover" />
+                                class="w-full h-full object-cover"
+                                onerror="this.onerror=null; this.src='{{ asset('images/Logo.png') }}';" />
                         </div>
                     </x-slot:figure>
 
@@ -45,7 +38,7 @@
                             <x-button label="Detail" class="btn-sm btn-soft btn-neutral"
                                 link="{{ route('detail-promo.pelanggan', $promo->id) }}" />
                             <x-button label="Gunakan" class="btn-sm btn-info"
-                                wire:click="usePromo" icon="iconpark.ticket-o" />
+                                wire:click="usePromo({{ $promo->id }})" spinner="usePromo" />
                         </div>
                     </x-slot:actions>
                 </x-card>

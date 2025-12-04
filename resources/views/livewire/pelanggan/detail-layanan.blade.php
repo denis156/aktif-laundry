@@ -260,4 +260,7 @@
         </div>
     </x-card>
 
+    <div class="fab mb-18">
+        <x-button wire:click="pesanSekarang" class="btn-{{ $this->getColorClass() }} btn-md" label="Pesan Sekarang" spinner="pesanSekarang" />
+    </div>
 </div>

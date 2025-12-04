@@ -103,13 +103,13 @@ class Transaksi extends Model
     // * Relasi: Kurir jemput
     public function kurirJemput(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'kurir_jemput_id');
+        return $this->belongsTo(Kurir::class, 'kurir_jemput_id');
     }
 
     // * Relasi: Kurir antar
     public function kurirAntar(): BelongsTo
     {
-        return $this->belongsTo(User::class, 'kurir_antar_id');
+        return $this->belongsTo(Kurir::class, 'kurir_antar_id');
     }
 
     // * Relasi: Detail layanan transaksi

@@ -84,11 +84,23 @@ class DetailPromo extends Component
 
     public function usePromo(): void
     {
-        if ($this->promo) {
-            $this->dispatch('use-promo', kode: $this->promo->kode_promo);
-            $this->success('Promo '.$this->promo->kode_promo.' berhasil diterapkan!', position: 'toast-top');
-            $this->redirect(route('pesanan-form.pelanggan'), navigate: true);
+        if (! $this->promo) {
+            $this->error('Promo tidak ditemukan', position: 'toast-top');
+
+            return;
         }
+
+        if (! $this->canUsePromo()) {
+            $this->warning('Promo ini tidak dapat digunakan', position: 'toast-top');
+
+            return;
+        }
+
+        // Store promo ID in session
+        session(['selected_promo_id' => $this->promo->id]);
+
+        $this->success('Promo '.$this->promo->kode_promo.' dipilih! Silakan pilih layanan.', position: 'toast-top');
+        $this->redirect(route('pesanan.pelanggan'), navigate: true);
     }
 
     public function getMasaBerlakuFormatted(): string
@@ -134,29 +146,46 @@ class DetailPromo extends Component
     public function canUsePromo(): bool
     {
         if (! $this->promo) {
+            \Log::info('DetailPromo canUsePromo: promo is null');
+
             return false;
         }
 
         $pelangganId = Auth::guard('pelanggan')->id();
 
         if (! $pelangganId) {
+            \Log::info('DetailPromo canUsePromo: pelanggan not authenticated');
+
             return false;
         }
 
         // Cek kelayakan umum
-        if (! PromoHelper::canUserUsePromo($this->promo, $pelangganId)) {
+        $canUserUse = PromoHelper::canUserUsePromo($this->promo, $pelangganId);
+        if (! $canUserUse) {
+            \Log::info('DetailPromo canUsePromo: PromoHelper::canUserUsePromo returned false', [
+                'promo_id' => $this->promo->id,
+                'pelanggan_id' => $pelangganId,
+            ]);
+
             return false;
         }
 
         // Cek kuota
-        if (! PromoHelper::hasQuota($this->promo)) {
+        $hasQuota = PromoHelper::hasQuota($this->promo);
+        if (! $hasQuota) {
+            \Log::info('DetailPromo canUsePromo: PromoHelper::hasQuota returned false', [
+                'promo_id' => $this->promo->id,
+                'kuota_total' => $this->promo->kuota_total,
+                'kuota_terpakai' => $this->promo->kuota_terpakai,
+            ]);
+
             return false;
         }
 
-        // Cek masa berlaku
-        if (now()->lt($this->promo->tanggal_mulai) || now()->gt($this->promo->tanggal_berakhir)) {
-            return false;
-        }
+        \Log::info('DetailPromo canUsePromo: ALL CHECKS PASSED - returning true', [
+            'promo_id' => $this->promo->id,
+            'pelanggan_id' => $pelangganId,
+        ]);
 
         return true;
     }

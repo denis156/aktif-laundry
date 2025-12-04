@@ -6,9 +6,12 @@ namespace App\Livewire\Pelanggan\Component;
 
 use App\Models\Layanan;
 use Livewire\Component;
+use Mary\Traits\Toast;
 
 class ListLayanan extends Component
 {
+    use Toast;
+
     public function getVisibleIncludeItems(Layanan $layanan): array
     {
         $items = $layanan->include ?? [];
@@ -22,6 +25,19 @@ class ListLayanan extends Component
         $total = count($items);
 
         return max(0, $total - 3);
+    }
+
+    public function toggleLayanan(int $layananId): void
+    {
+        // Store layanan ID in session
+        $selectedLayananIds = [$layananId];
+        session(['selected_layanan_ids' => $selectedLayananIds]);
+
+        $layanan = Layanan::find($layananId);
+        $namaLayanan = $layanan ? $layanan->nama_layanan : 'Layanan';
+
+        $this->success($namaLayanan.' dipilih!', position: 'toast-top');
+        $this->redirect(route('pesanan-form.pelanggan'), navigate: true);
     }
 
     public function render(): mixed

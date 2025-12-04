@@ -83,6 +83,6 @@
     </x-card>
 
     <div class="fab mb-18">
-        <x-button wire:click="usePromo" class="btn-info btn-md @if(!$this->canUsePromo()) btn-disabled @endif" label="{{ $this->getActionButtonLabel() }}" />
+        <x-button wire:click="usePromo" class="btn-info btn-md" label="{{ $this->getActionButtonLabel() }}" :disabled="!$this->canUsePromo()" spinner="usePromo" />
     </div>
 </div>

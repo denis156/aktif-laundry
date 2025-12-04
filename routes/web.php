@@ -271,11 +271,11 @@ Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')
     Route::get('/', PelangganBeranda::class)->name('beranda.pelanggan');
     Route::get('/pesan', PelangganListLayanan::class)->name('pesanan.pelanggan');
     Route::get('/pesan/form', PelangganPesan::class)->name('pesanan-form.pelanggan');
+    Route::get('/pesan/{id}/edit', PelangganEditPesanan::class)->name('edit-pesanan.pelanggan');
     Route::get('/promo/{id}', PelangganDetailPromo::class)->name('detail-promo.pelanggan');
     Route::get('/layanan/{id}', PelangganDetailLayanan::class)->name('detail-layanan.pelanggan');
     Route::get('/riwayat', PelangganRiwayat::class)->name('riwayat.pelanggan');
     Route::get('/riwayat/{id}', PelangganDetailPesanan::class)->name('detail-pesanan.pelanggan');
-    Route::get('/riwayat/{id}/edit', PelangganEditPesanan::class)->name('edit-pesanan.pelanggan');
     Route::get('/pengaturan', PelangganPengaturan::class)->name('pengaturan.pelanggan');
     Route::get('/pengaturan/profile', PelangganProfile::class)->name('profile.pelanggan');
 });

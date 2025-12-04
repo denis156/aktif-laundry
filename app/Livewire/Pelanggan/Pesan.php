@@ -88,6 +88,21 @@ class Pesan extends Component
             Log::warning('Pesan: No layanan selected, redirecting to list');
             $this->redirect(route('pesanan.pelanggan'), navigate: true);
         }
+
+        // Load selected promo from session if available
+        if (session()->has('selected_promo_id')) {
+            $this->formData['promo_id'] = session('selected_promo_id');
+
+            Log::info('Pesan: Loaded selected promo from session', [
+                'promo_id' => $this->formData['promo_id'],
+            ]);
+
+            // Calculate promo discount
+            $this->calculatePromoDiskon();
+
+            // Clear session after loading
+            session()->forget('selected_promo_id');
+        }
     }
 
     public function loadOptions(): void

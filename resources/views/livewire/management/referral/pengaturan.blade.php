@@ -39,6 +39,7 @@
                                 </li>
                                 <li><span class="font-medium">Promo otomatis:</span> Promo yang dipilih di bawah akan
                                     otomatis terhubung ke setiap kode referral baru</li>
+                                <li><span class="font-medium">Auto-apply:</span> Saat simpan, promo akan otomatis diterapkan ke semua pelanggan yang belum punya promo khusus</li>
                             </ul>
                         </div>
                     </div>

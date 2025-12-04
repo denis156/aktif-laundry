@@ -52,6 +52,9 @@ class EditPesanan extends Component
     // Cache promo object
     protected $cachedPromo = null;
 
+    // Modal state
+    public bool $confirmDeleteModal = false;
+
     public function mount(int $id): void
     {
         $pelanggan = Auth::user();
@@ -83,6 +86,26 @@ class EditPesanan extends Component
 
         // Populate form with existing data
         $this->populateFormData();
+
+        // Load from session if coming back from list layanan
+        if (session()->has('selected_layanan_ids')) {
+            $sessionLayananIds = session('selected_layanan_ids', []);
+
+            // Merge dengan yang sudah ada (jika ada layanan baru dipilih)
+            $this->selectedLayananIds = array_unique(array_merge($this->selectedLayananIds, $sessionLayananIds));
+
+            Log::info('EditPesanan: Merged selected layanan from session', [
+                'transaksi_id' => $this->transaksi->id,
+                'selected_ids' => $this->selectedLayananIds,
+            ]);
+
+            // Clear session
+            session()->forget('selected_layanan_ids');
+        }
+
+        // Always clear edit_transaksi_id when entering edit page
+        // This prevents accidental redirect loops
+        session()->forget('edit_transaksi_id');
     }
 
     protected function populateFormData(): void
@@ -476,6 +499,74 @@ class EditPesanan extends Component
             ]);
 
             $this->error('Gagal memperbarui pesanan. Silakan coba lagi.', timeout: 10000, position: 'toast-top');
+        }
+    }
+
+    public function tambahLayanan(): void
+    {
+        // Store current selected layanan in session
+        session(['selected_layanan_ids' => $this->selectedLayananIds]);
+
+        // Store transaksi ID to return to edit page
+        session(['edit_transaksi_id' => $this->transaksi->id]);
+
+        Log::info('EditPesanan: Redirecting to list layanan', [
+            'transaksi_id' => $this->transaksi->id,
+            'current_selected_ids' => $this->selectedLayananIds,
+        ]);
+
+        // Redirect to list layanan
+        $this->redirect(route('pesanan.pelanggan'), navigate: true);
+    }
+
+    public function hapusPesanan(): void
+    {
+        Log::info('EditPesanan: Delete pesanan started', [
+            'transaksi_id' => $this->transaksi->id,
+            'status' => $this->transaksi->status,
+        ]);
+
+        // Only allow delete if status is 'Menunggu'
+        if ($this->transaksi->status !== TransaksiHelper::STATUS_MENUNGGU) {
+            Log::warning('EditPesanan: Cannot delete transaksi with status other than Menunggu', [
+                'transaksi_id' => $this->transaksi->id,
+                'status' => $this->transaksi->status,
+            ]);
+
+            $this->confirmDeleteModal = false;
+            $this->error('Pesanan hanya bisa dihapus jika masih berstatus Menunggu', position: 'toast-top', timeout: 5000);
+
+            return;
+        }
+
+        try {
+            DB::transaction(function () {
+                // Delete related records
+                $this->transaksi->transaksiLayanan()->delete();
+                $this->transaksi->transaksiPromo()->delete();
+
+                // Delete transaksi
+                $this->transaksi->delete();
+
+                Log::info('EditPesanan: Transaksi deleted successfully', [
+                    'transaksi_id' => $this->transaksi->id,
+                ]);
+            });
+
+            $this->confirmDeleteModal = false;
+            $this->success('Pesanan berhasil dihapus!', position: 'toast-top', timeout: 3000);
+
+            // Redirect to riwayat
+            $this->redirect(route('riwayat.pelanggan'), navigate: true);
+        } catch (Exception $e) {
+            Log::error('EditPesanan: Failed to delete transaksi', [
+                'transaksi_id' => $this->transaksi->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            $this->confirmDeleteModal = false;
+            $this->error('Gagal menghapus pesanan. Silakan coba lagi.', timeout: 10000, position: 'toast-top');
         }
     }
 
