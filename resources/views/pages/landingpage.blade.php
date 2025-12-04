@@ -5,6 +5,15 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="theme-color" content="#cf4040">
+
+    {{-- PWA Manifest --}}
+    <link rel="manifest" href="{{ route('manifest.pelanggan') }}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="Aktif Laundry">
+    <link rel="apple-touch-icon" href="{{ asset('icon.png') }}">
 
     <!-- SEO Meta Tags -->
     <title>{{ config('app.name') }} - Jasa Laundry Profesional Kendari | Cuci Setrika Rp 5.000/kg | Antar Jemput Gratis</title>
@@ -52,6 +61,22 @@
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+
+    {{-- Force light theme for landing page --}}
+    <script>
+        // Force light theme on landing page, ignore system preference and localStorage
+        document.documentElement.setAttribute('data-theme', 'light');
+
+        // Override after DOMContentLoaded
+        document.addEventListener('DOMContentLoaded', () => {
+            document.documentElement.setAttribute('data-theme', 'light');
+        });
+
+        // Override after Livewire navigated (if any)
+        document.addEventListener('livewire:navigated', () => {
+            document.documentElement.setAttribute('data-theme', 'light');
+        });
+    </script>
 </head>
 
 <body class="min-h-dvh antialiased bg-base-200">
@@ -91,7 +116,7 @@
 
                 <livewire:landing-page.pesan />
 
-                <livewire:component.fab-download>
+                <livewire:component.fab-landing-page>
             </main>
 
             <!-- Footer Content -->
@@ -154,6 +179,10 @@
             </ul>
         </aside>
     </div>
+
+    {{-- TOAST area --}}
+    <x-toast />
+
     @livewireScripts
 </body>
 

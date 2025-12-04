@@ -5,6 +5,12 @@
 
 // Initialize theme from localStorage or system preference
 export function initTheme() {
+    // Skip theme initialization on landing page - always stay light
+    if (window.location.pathname === '/') {
+        document.documentElement.setAttribute('data-theme', 'light');
+        return;
+    }
+
     const saved = localStorage.getItem('theme');
     const systemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     const shouldBeDark = saved === 'dark' || (!saved && systemDark);
@@ -59,7 +65,13 @@ export function setupThemeListener() {
 // Setup Livewire navigation listener
 export function setupLivewireListener() {
     document.addEventListener('livewire:navigated', () => {
-        initTheme();
+        // Force light theme on landing page
+        if (window.location.pathname === '/') {
+            document.documentElement.setAttribute('data-theme', 'light');
+        } else {
+            initTheme();
+        }
+
         // Sync Alpine store
         if (window.Alpine && Alpine.store('darkMode')) {
             Alpine.store('darkMode').on = isDarkMode();

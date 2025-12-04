@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use App\Helper\ManifestHelper;
 use App\Livewire\Kurir\Auth\ForgotPassword as KurirForgotPassword;
 use App\Livewire\Kurir\Auth\Login as KurirLogin;
 use App\Livewire\Kurir\Auth\ResetPassword as KurirResetPassword;
@@ -67,6 +68,10 @@ use Illuminate\Support\Facades\Route;
 
 // Landing Page Route - Public
 Route::view('/', 'pages.landingpage')->name('landing-page');
+
+// Dynamic Manifest for PWA - Using ManifestHelper
+Route::get('/manifest-kurir.json', fn () => response()->json(ManifestHelper::kurirManifest()))->name('manifest.kurir');
+Route::get('/manifest-pelanggan.json', fn () => response()->json(ManifestHelper::pelangganManifest()))->name('manifest.pelanggan');
 
 // Kurir Auth Routes - Guest (tanpa auth)
 Route::middleware(['guest:kurir'])->prefix('kurir')->group(function () {
