@@ -72,7 +72,7 @@
     <x-modal wire:model="confirmDeleteModal" title="Konfirmasi Hapus Pesanan" class="modal-bottom w-full backdrop-blur" persistent>
         <div class="space-y-4">
             <div class="flex justify-center">
-                <x-icon name="iconpark.info-o" class="w-16 h-16 text-error" />
+                <x-icon name="iconpark.delete-o" class="w-16 h-16 text-error" />
             </div>
             <p class="text-center text-base">Apakah Anda yakin ingin menghapus pesanan ini?</p>
             <p class="text-center text-sm text-base-content/60">Pesanan dengan kode <span class="font-bold">{{ $transaksi->kode_transaksi }}</span> akan dihapus secara permanen</p>
@@ -81,7 +81,7 @@
         <x-slot:actions>
             <div class="grid grid-cols-2 gap-4 w-full">
                 <x-button label="Batal" class="btn-ghost" @click="$wire.confirmDeleteModal = false" />
-                <x-button label="Ya, Hapus" icon="iconpark.delete-o" class="btn-error" wire:click="hapusPesanan" spinner="hapusPesanan" />
+                <x-button label="Ya, Hapus" class="btn-error" wire:click="hapusPesanan" spinner="hapusPesanan" />
             </div>
         </x-slot:actions>
     </x-modal>

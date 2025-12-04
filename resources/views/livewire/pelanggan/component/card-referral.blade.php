@@ -47,7 +47,7 @@
                 <x-button class="join-item btn-success" label="Salin" wire:click="salinKode" />
             </x-slot:prepend>
             <x-slot:append>
-                <x-button icon="iconpark.refresh-o" class="join-item btn-primary" tooltip="Generate Baru"
+                <x-button icon="iconpark.refresh-o" class="join-item btn-warning" tooltip="Generate Baru"
                     wire:click="confirmGenerate" />
             </x-slot:append>
         </x-input>
@@ -58,7 +58,7 @@
         class="modal-bottom w-full backdrop-blur" persistent>
         <div class="space-y-4">
             <div class="flex justify-center">
-                <x-icon name="iconpark.info-o" class="w-16 h-16 text-warning" />
+                <x-icon name="iconpark.refresh-o" class="w-16 h-16 text-warning" />
             </div>
             <div class="text-center space-y-2">
                 <p class="text-base font-semibold">Yakin ingin membuat kode referral baru?</p>
@@ -71,7 +71,7 @@
         <x-slot:actions>
             <div class="grid grid-cols-2 gap-4 w-full">
                 <x-button label="Batal" class="btn-ghost" @click="$wire.confirmGenerateModal = false" />
-                <x-button label="Ya, Generate Baru" icon="iconpark.refresh-o" class="btn-warning"
+                <x-button label="Ya, Generate" class="btn-warning"
                     wire:click="generateBaru" spinner="generateBaru" />
             </div>
         </x-slot:actions>

@@ -200,7 +200,7 @@
         persistent>
         <div class="space-y-4">
             <div class="flex justify-center">
-                <x-icon name="iconpark.info-o" class="w-16 h-16 text-warning" />
+                <x-icon name="iconpark.pushdoor-o" class="w-16 h-16 text-error" />
             </div>
             <p class="text-center text-base">Apakah Anda yakin ingin keluar dari sistem?</p>
             <p class="text-center text-sm text-base-content/60">Anda perlu login kembali untuk mengakses aplikasi</p>
@@ -209,7 +209,7 @@
         <x-slot:actions>
             <div class="grid grid-cols-2 gap-4 w-full">
                 <x-button label="Batal" class="btn-ghost" @click="$wire.modalKonfirmasiLogout = false" />
-                <x-button label="Ya, Keluar" icon="iconpark.pushdoor-o" class="btn-error" wire:click="logout"
+                <x-button label="Ya, Keluar" class="btn-error" wire:click="logout"
                     spinner="logout" no-wire-navigate />
             </div>
         </x-slot:actions>

@@ -50,7 +50,7 @@
             <a href="{{ route('detail-pesanan.pelanggan', $transaksi->id) }}" wire:navigate class="block">
                 <x-card wire:key="transaksi-{{ $transaksi->id }}" title="{{ $transaksi->kode_transaksi }}"
                     subtitle="{{ $transaksi->tanggal_masuk->locale('id')->isoFormat('DD MMMM YYYY, HH:mm') }}"
-                    class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer">
+                    class="shadow-lg border border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer">
                     <x-slot:menu>
                         <x-avatar :image="$avatarUrl" class="w-10 h-10 rounded-full shrink-0" />
                     </x-slot:menu>

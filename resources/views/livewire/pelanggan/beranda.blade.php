@@ -1,7 +1,7 @@
 <div class="container mx-auto">
     <div class="w-full space-y-8 flex flex-col justify-center items-center mb-24">
         <x-card class="w-full shadow-lg border border-primary">
-            <x-slot:figure class="flex justify-between h-28 border-b border-dashed">
+            <x-slot:figure class="flex justify-between h-28 border-b border-secondary border-dashed">
                 <div class="p-4 space-y-auto">
                     <h1 class="text-sm text-base-content/60 font-medium">Total Transaksi</h1>
                     <span class="text-5xl text-success font-bold">{{ $totalTransaksi }}</span>
@@ -11,22 +11,22 @@
                         icon="iconpark.plus-o" link="{{ route('pesanan.pelanggan') }}" />
                 </div>
             </x-slot:figure>
-            <div class="stats stats-vertical shadow-lg w-full">
-                <div class="stat bg-success">
+            <div class="stats stats-vertical shadow-lg w-full border border-b-4 border-r-4 border-secondary">
+                <div class="stat bg-info/84 text-base-content">
                     <div class="stat-figure">
-                        <x-icon name="iconpark.checkone-o" class="h-6 text-success-content" />
+                        <x-icon name="iconpark.close-o" class="h-6 text-base-content" />
                     </div>
-                    <div class="stat-title text-xs font-bold text-success-content">Selesai</div>
-                    <div class="stat-value text-sm font-bold text-success-content">{{ $transaksiSelesai }}</div>
-                    <div class="stat-desc text-success-content">Pesananmu yang selesai</div>
+                    <div class="stat-title text-xs font-bold text-base-content">Proses</div>
+                    <div class="stat-value text-sm font-bold text-base-content">{{ $transaksiProses }}</div>
+                    <div class="stat-desc text-base-content">Pesananmu yang diproses</div>
                 </div>
-                <div class="stat bg-warning text-warning-content">
+                <div class="stat bg-success/84 text-base-content">
                     <div class="stat-figure">
-                        <x-icon name="iconpark.close-o" class="h-6 text-warning-content" />
+                        <x-icon name="iconpark.checkone-o" class="h-6 text-base-content" />
                     </div>
-                    <div class="stat-title text-xs font-bold text-warning-content">Proses</div>
-                    <div class="stat-value text-sm font-bold text-warning-content">{{ $transaksiProses }}</div>
-                    <div class="stat-desc text-warning-content">Pesananmu yang diproses</div>
+                    <div class="stat-title text-xs font-bold text-base-content">Selesai</div>
+                    <div class="stat-value text-sm font-bold text-base-content">{{ $transaksiSelesai }}</div>
+                    <div class="stat-desc text-base-content">Pesananmu yang selesai</div>
                 </div>
             </div>
         </x-card>
@@ -82,7 +82,7 @@
                             <x-card wire:key="transaksi-{{ $transaksi->id }}"
                                 title="{{ $transaksi->kode_transaksi }}"
                                 subtitle="{{ $transaksi->tanggal_masuk->locale('id')->isoFormat('DD MMMM YYYY, HH:mm') }}"
-                                class="shadow-lg border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer">
+                                class="shadow-lg border border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer">
                                 <x-slot:menu>
                                     <x-avatar :image="$avatarUrl" class="w-10 h-10 rounded-full shrink-0" />
                                 </x-slot:menu>
