@@ -25,7 +25,7 @@
             Tutup <span class="btn btn-circle btn-xl btn-error"><x-icon name="iconpark.handlex-o" /></span>
         </div>
 
-        <x-button label="Chat Admin" icon="iconpark.communication-o" class="btn-md btn-success" />
+        <x-button link="{{ $this->getWhatsappCta() }}" label="Chat Admin" external class="btn-md btn-success" icon="iconpark.communication-o" />
 
         {{-- Conditional button based on PWA install status --}}
         <x-button x-show="!isPwaInstalled" label="Download Aplikasi" icon="iconpark.downloadfour-o"

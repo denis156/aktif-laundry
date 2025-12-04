@@ -43,24 +43,14 @@
     {{-- Service Worker Registration --}}
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw-kurir.js', { scope: '/kurir/' })
-                    .then((registration) => {
-                        console.log('SW Kurir registered:', registration.scope);
-
-                        // Check for updates
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('New SW Kurir available, please refresh.');
-                                }
-                            });
-                        });
-                    })
-                    .catch((error) => {
-                        console.error('SW Kurir registration failed:', error);
+            window.addEventListener('load', async () => {
+                try {
+                    await navigator.serviceWorker.register('/sw-kurir.js', {
+                        scope: '/kurir/'
                     });
+                } catch (error) {
+                    console.error('[SW Kurir] Registration failed:', error);
+                }
             });
         }
     </script>

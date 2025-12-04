@@ -43,24 +43,14 @@
     {{-- Service Worker Registration --}}
     <script>
         if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw-pelanggan.js', { scope: '/pelanggan/' })
-                    .then((registration) => {
-                        console.log('SW Pelanggan registered:', registration.scope);
-
-                        // Check for updates
-                        registration.addEventListener('updatefound', () => {
-                            const newWorker = registration.installing;
-                            newWorker.addEventListener('statechange', () => {
-                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                                    console.log('New SW Pelanggan available, please refresh.');
-                                }
-                            });
-                        });
-                    })
-                    .catch((error) => {
-                        console.error('SW Pelanggan registration failed:', error);
+            window.addEventListener('load', async () => {
+                try {
+                    await navigator.serviceWorker.register('/sw-pelanggan.js', {
+                        scope: '/pelanggan/'
                     });
+                } catch (error) {
+                    console.error('[SW Pelanggan] Registration failed:', error);
+                }
             });
         }
     </script>

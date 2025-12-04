@@ -61,11 +61,23 @@ class ManifestHelper
      * Icons yang sama digunakan untuk kurir dan pelanggan
      * Menggunakan icon.png 512x512 dari public folder
      *
+     * Chrome Android memerlukan minimal 1 icon dengan:
+     * - Size: 192x192 atau lebih besar
+     * - Purpose: 'any' atau 'any maskable'
+     * - Format: PNG recommended
+     *
      * @return array<int, array<string, string>>
      */
     private static function getIcons(): array
     {
         return [
+            // Icon 512x512 untuk any purpose (standard) - REQUIRED untuk Chrome
+            [
+                'src' => '/icon.png',
+                'sizes' => '512x512',
+                'type' => 'image/png',
+                'purpose' => 'any',
+            ],
             // Icon 512x512 untuk maskable (Android adaptive icons)
             [
                 'src' => '/icon.png',
@@ -73,14 +85,7 @@ class ManifestHelper
                 'type' => 'image/png',
                 'purpose' => 'maskable',
             ],
-            // Icon 512x512 untuk any purpose (standard)
-            [
-                'src' => '/icon.png',
-                'sizes' => '512x512',
-                'type' => 'image/png',
-                'purpose' => 'any',
-            ],
-            // Icon 192x192 untuk Chrome (required minimum)
+            // Icon 192x192 untuk Chrome (required minimum fallback)
             [
                 'src' => '/icon.png',
                 'sizes' => '192x192',

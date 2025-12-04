@@ -22,7 +22,6 @@
             Tutup <span class="btn btn-circle btn-xl btn-error"><x-icon name="iconpark.handlex-o" /></span>
         </div>
 
-        <x-button label="Chat Admin" icon="iconpark.communication-o" class="btn-md btn-success" />
         <x-button label="Download Aplikasi" icon="iconpark.downloadfour-o" class="btn-md btn-primary"
             wire:click="openInstallModal" />
     </div>

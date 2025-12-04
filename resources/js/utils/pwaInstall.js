@@ -10,8 +10,6 @@ let deferredPrompt = null;
  * Capture beforeinstallprompt event dan simpan untuk digunakan nanti
  */
 export function setupPWAInstall() {
-    console.log('[PWA] Setting up install handler...');
-
     window.addEventListener('beforeinstallprompt', (e) => {
         // PENTING: Prevent default mini-infobar/banner dari muncul
         e.preventDefault();
@@ -21,18 +19,13 @@ export function setupPWAInstall() {
 
         // Expose ke window untuk akses global
         window.deferredPrompt = e;
-
-        console.log('[PWA] beforeinstallprompt event captured and prevented');
     });
 
     // Listen untuk event setelah app ter-install
     window.addEventListener('appinstalled', () => {
-        console.log('[PWA] App installed successfully');
         deferredPrompt = null;
         window.deferredPrompt = null;
     });
-
-    console.log('[PWA] Install handler setup completed');
 }
 
 /**
@@ -47,19 +40,15 @@ export async function promptPWAInstall() {
     }
 
     if (!deferredPrompt) {
-        console.warn('[PWA] Install prompt not available');
         return 'unavailable';
     }
 
     try {
         // Show install prompt
-        console.log('[PWA] Showing install prompt...');
         deferredPrompt.prompt();
 
         // Wait for user response
         const { outcome } = await deferredPrompt.userChoice;
-
-        console.log('[PWA] User choice:', outcome);
 
         // Reset deferred prompt
         deferredPrompt = null;

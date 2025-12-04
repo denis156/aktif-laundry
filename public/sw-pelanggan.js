@@ -6,15 +6,12 @@ const PELANGGAN_SCOPE = '/pelanggan/';
 
 // Install Event - Skip waiting untuk activate immediately
 self.addEventListener('install', (event) => {
-    console.log('[SW Pelanggan] Installing service worker...');
     // Skip pre-caching, biarkan cache on-demand saat assets di-request
     event.waitUntil(self.skipWaiting());
 });
 
 // Activate Event - Cleanup old caches
 self.addEventListener('activate', (event) => {
-    console.log('[SW Pelanggan] Activating service worker...');
-
     event.waitUntil(
         caches.keys()
             .then((cacheNames) => {
@@ -25,16 +22,10 @@ self.addEventListener('activate', (event) => {
                             return cacheName.startsWith('aktif-laundry-pelanggan-') &&
                                    cacheName !== CACHE_NAME;
                         })
-                        .map((cacheName) => {
-                            console.log('[SW Pelanggan] Deleting old cache:', cacheName);
-                            return caches.delete(cacheName);
-                        })
+                        .map((cacheName) => caches.delete(cacheName))
                 );
             })
-            .then(() => {
-                console.log('[SW Pelanggan] Service worker activated');
-                return self.clients.claim(); // Take control immediately
-            })
+            .then(() => self.clients.claim()) // Take control immediately
     );
 });
 
@@ -59,7 +50,6 @@ self.addEventListener('fetch', (event) => {
             caches.match(request)
                 .then((cachedResponse) => {
                     if (cachedResponse) {
-                        console.log('[SW Pelanggan] Serving from cache:', url.pathname);
                         return cachedResponse;
                     }
 
@@ -72,7 +62,6 @@ self.addEventListener('fetch', (event) => {
                             caches.open(CACHE_NAME)
                                 .then((cache) => {
                                     cache.put(request, responseToCache);
-                                    console.log('[SW Pelanggan] Cached new asset:', url.pathname);
                                 });
 
                             return networkResponse;
@@ -85,13 +74,7 @@ self.addEventListener('fetch', (event) => {
         );
     } else {
         // Untuk halaman HTML dan data: Network Only (selalu online)
-        event.respondWith(
-            fetch(request)
-                .catch((error) => {
-                    console.error('[SW Pelanggan] Network request failed:', error);
-                    throw error;
-                })
-        );
+        event.respondWith(fetch(request));
     }
 });
 
@@ -107,17 +90,10 @@ function isAsset(pathname) {
 // Message Event - Handle messages dari client (optional, untuk future features)
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'SKIP_WAITING') {
-        console.log('[SW Pelanggan] Received SKIP_WAITING message');
         self.skipWaiting();
     }
 
     if (event.data && event.data.type === 'CLEAR_CACHE') {
-        console.log('[SW Pelanggan] Clearing cache...');
-        event.waitUntil(
-            caches.delete(CACHE_NAME)
-                .then(() => {
-                    console.log('[SW Pelanggan] Cache cleared');
-                })
-        );
+        event.waitUntil(caches.delete(CACHE_NAME));
     }
 });
