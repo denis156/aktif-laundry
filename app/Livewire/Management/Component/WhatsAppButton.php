@@ -61,7 +61,7 @@ class WhatsAppButton extends Component
 
         try {
             // Get connected device from Fonnte
-            $fonnte = new FonnteHelper;
+            $fonnte = new FonnteHelper();
             $devicesResponse = $fonnte->getAllDevices();
 
             if (! $devicesResponse['status']) {
