@@ -16,9 +16,9 @@ class Message extends Model
         'schedule',
         'typing',
         'delay',
-        'countrycode',
+        'countryCode',
         'file',
         'location',
-        'fllowup',
+        'followup',
     ];
 }

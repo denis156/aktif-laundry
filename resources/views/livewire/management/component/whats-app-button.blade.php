@@ -1,21 +1,7 @@
 <div>
     @if(!empty($phoneNumber))
-    <button wire:click="sendWhatsApp" class="btn {{ $btnClass }} btn-{{ $size }}" title="Kirim struk via WhatsApp">
-        <x-icon name="o-chat-bubble-left-right" class="w-4 h-4" />
-        WhatsApp
-    </button>
+    <x-button label="WhatsApp" icon="o-chat-bubble-left-right" wire:click="sendWhatsApp" spinner="sendWhatsApp" class="btn {{ $btnClass }} btn-{{ $size }}" />
     @else
-    <button class="btn btn-{{ $size }} btn-disabled" disabled title="Pelanggan tidak memiliki nomor WhatsApp">
-        <x-icon name="o-chat-bubble-left-right" class="w-4 h-4" />
-        WhatsApp
-    </button>
+    <x-button label="WhatsApp" icon="o-chat-bubble-left-right" class="btn-{{ $size }} btn-disabled"/>
     @endif
-
-    @script
-    <script>
-        $wire.on('open-whatsapp', (event) => {
-                window.open(event.url, '_blank');
-            });
-    </script>
-    @endscript
 </div>

@@ -45,43 +45,83 @@ class FonnteHelper
             return ['status' => false, 'error' => 'API token or device token is required.'];
         }
 
-        // Gunakan JSON format dengan Content-Type header yang benar
-        $response = Http::withHeaders([
-            'Authorization' => $token,
-            'Content-Type' => 'application/json',
-        ])->post($endpoint, $params);
+        try {
+            // Gunakan JSON format dengan Content-Type header yang benar dan timeout 10 detik
+            $response = Http::timeout(10)
+                ->connectTimeout(5)
+                ->withHeaders([
+                    'Authorization' => $token,
+                    'Content-Type' => 'application/json',
+                ])->post($endpoint, $params);
 
-        // Log respons untuk memudahkan debugging
-        Log::info('Fonnte API Response', [
-            'endpoint' => $endpoint,
-            'params' => $params,
-            'response' => $response->json(),
-            'status' => $response->status(),
-        ]);
+            // Parse response
+            $responseData = $response->json();
 
-        // Parse response
-        $responseData = $response->json();
+            // Check if response indicates error
+            if ($response->failed() || (isset($responseData['status']) && $responseData['status'] === false)) {
+                // Log error untuk debugging
+                Log::error('Fonnte API Error', [
+                    'endpoint' => $endpoint,
+                    'error' => $responseData['reason'] ?? 'Unknown error occurred',
+                ]);
 
-        // Check if response indicates error
-        if ($response->failed() || (isset($responseData['status']) && $responseData['status'] === false)) {
+                return [
+                    'status' => false,
+                    'error' => $responseData['reason'] ?? 'Unknown error occurred',
+                ];
+            }
+
+            return [
+                'status' => true,
+                'data' => $responseData,
+            ];
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            // Handle timeout dan connection errors
+            Log::error('Fonnte API Connection Error', [
+                'endpoint' => $endpoint,
+                'error' => $e->getMessage(),
+            ]);
+
             return [
                 'status' => false,
-                'error' => $responseData['reason'] ?? 'Unknown error occurred',
+                'error' => 'Tidak dapat terhubung ke Fonnte API. Silakan coba lagi nanti.',
+            ];
+        } catch (\Exception $e) {
+            // Handle other exceptions
+            Log::error('Fonnte API Exception', [
+                'endpoint' => $endpoint,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [
+                'status' => false,
+                'error' => 'Terjadi kesalahan saat menghubungi Fonnte API.',
             ];
         }
-
-        return [
-            'status' => true,
-            'data' => $responseData,
-        ];
     }
 
-    public function sendWhatsAppMessage($phoneNumber, $message, $deviceToken)
+    /**
+     * Send simple text message via WhatsApp
+     */
+    public function sendMessage(string $phoneNumber, string $message, string $deviceToken): array
     {
-        return $this->makeRequest(self::ENDPOINTS['send_message'], [
+        $params = [
             'target' => $phoneNumber,
             'message' => $message,
-        ], '', $deviceToken);
+            'countryCode' => '62',
+        ];
+
+        $response = $this->makeRequest(self::ENDPOINTS['send_message'], $params, false, $deviceToken);
+
+        // Log hanya jika error
+        if (! $response['status']) {
+            Log::error('Fonnte: Failed to send WhatsApp message', [
+                'error' => $response['error'] ?? 'Unknown error',
+                'target' => $phoneNumber,
+            ]);
+        }
+
+        return $response;
     }
 
     public function getAllDevices()
@@ -89,19 +129,30 @@ class FonnteHelper
         // Cek cache terlebih dahulu
         $cacheKey = 'fonnte_devices_list';
 
-        return Cache::remember($cacheKey, self::CACHE_TTL_DEVICES, function () {
-            $response = $this->makeRequest(self::ENDPOINTS['get_devices'], [], true);
+        // Coba ambil dari cache
+        $cached = Cache::get($cacheKey);
+        if ($cached !== null) {
+            return $cached;
+        }
 
-            // Check if API returns error in data
-            if ($response['status'] && isset($response['data']['status']) && $response['data']['status'] === false) {
-                return [
-                    'status' => false,
-                    'error' => $response['data']['reason'] ?? 'Unknown error from Fonnte API',
-                ];
-            }
+        // Jika tidak ada di cache, fetch dari API
+        $response = $this->makeRequest(self::ENDPOINTS['get_devices'], [], true);
 
-            return $response;
-        });
+        // Check if API returns error in data
+        if ($response['status'] && isset($response['data']['status']) && $response['data']['status'] === false) {
+            // Jangan cache error response
+            return [
+                'status' => false,
+                'error' => $response['data']['reason'] ?? 'Unknown error from Fonnte API',
+            ];
+        }
+
+        // Hanya cache jika response sukses
+        if ($response['status']) {
+            Cache::put($cacheKey, $response, self::CACHE_TTL_DEVICES);
+        }
+
+        return $response;
     }
 
     /**

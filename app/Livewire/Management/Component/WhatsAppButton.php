@@ -6,12 +6,17 @@ namespace App\Livewire\Management\Component;
 
 use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\TransaksiLayananHelper;
+use App\Helper\FonnteHelper;
 use App\Helper\PhoneNumber;
+use App\Models\Message;
 use App\Models\Transaksi;
 use Livewire\Component;
+use Mary\Traits\Toast;
 
 class WhatsAppButton extends Component
 {
+    use Toast;
+
     public int $transaksiId;
 
     public string $phoneNumber = '';
@@ -37,7 +42,7 @@ class WhatsAppButton extends Component
             ->find($this->transaksiId);
 
         if (! $transaksi) {
-            $this->dispatch('notify', type: 'error', message: 'Transaksi tidak ditemukan');
+            $this->error('Transaksi tidak ditemukan', position: 'toast-bottom');
 
             return;
         }
@@ -49,22 +54,75 @@ class WhatsAppButton extends Component
         $normalizedPhone = PhoneNumber::normalize($this->phoneNumber);
 
         if (! $normalizedPhone) {
-            $this->dispatch('notify', type: 'error', message: 'Nomor telepon tidak valid');
+            $this->error('Nomor telepon tidak valid', position: 'toast-bottom');
 
             return;
         }
 
-        // Generate WhatsApp URL menggunakan PhoneNumber Helper
-        $whatsappUrl = PhoneNumber::getWhatsAppUrl($normalizedPhone, $message);
+        try {
+            // Get connected device from Fonnte
+            $fonnte = new FonnteHelper;
+            $devicesResponse = $fonnte->getAllDevices();
 
-        if (! $whatsappUrl) {
-            $this->dispatch('notify', type: 'error', message: 'Gagal membuat URL WhatsApp');
+            if (! $devicesResponse['status']) {
+                $this->error('Gagal mengambil daftar device: '.($devicesResponse['error'] ?? 'Unknown error'), position: 'toast-bottom');
 
-            return;
+                return;
+            }
+
+            // Find first connected device
+            $connectedDevice = null;
+            if (isset($devicesResponse['data']['data'])) {
+                foreach ($devicesResponse['data']['data'] as $device) {
+                    if ($device['status'] === 'connect') {
+                        $connectedDevice = $device;
+                        break;
+                    }
+                }
+            }
+
+            if (! $connectedDevice) {
+                $this->error('Tidak ada device WhatsApp yang terhubung. Silakan hubungkan device terlebih dahulu.', position: 'toast-bottom');
+
+                return;
+            }
+
+            // Send message via Fonnte using connected device token
+            $response = $fonnte->sendMessage(
+                phoneNumber: $normalizedPhone,
+                message: $message,
+                deviceToken: $connectedDevice['token']
+            );
+
+            if (! $response['status']) {
+                $errorMessage = $response['error'] ?? 'Gagal mengirim pesan WhatsApp';
+                $this->error($errorMessage, position: 'toast-bottom');
+
+                return;
+            }
+
+            // Save message to database
+            Message::create([
+                'target' => $normalizedPhone,
+                'message' => $message,
+                'url' => null,
+                'filename' => null,
+                'schedule' => '0',
+                'typing' => 'false',
+                'delay' => '0',
+                'countryCode' => '62',
+                'file' => null,
+                'location' => null,
+                'followup' => '0',
+            ]);
+
+            $this->success('Pesan WhatsApp berhasil dikirim!', position: 'toast-bottom');
+
+            // Dispatch event untuk reset Alpine.js state
+            $this->dispatch('whatsapp-sent');
+        } catch (\Exception $e) {
+            $this->error('Terjadi kesalahan: '.$e->getMessage(), position: 'toast-bottom');
         }
-
-        // Dispatch event to open URL in new tab
-        $this->dispatch('open-whatsapp', url: $whatsappUrl);
     }
 
     private function generateReceiptText(Transaksi $transaksi): string
@@ -148,13 +206,15 @@ class WhatsAppButton extends Component
         $text .= "Pembayaran: {$transaksi->metode_pembayaran}\n";
         $text .= "Status: *{$transaksi->status}*\n";
 
-        if ($transaksi->tanggal_selesai) {
-            $text .= 'Selesai: '.$transaksi->tanggal_selesai->format('d/m/Y H:i')."\n";
-        }
-
         // Catatan
         if (! empty($transaksi->catatan)) {
             $text .= "\nCatatan: {$transaksi->catatan}\n";
+        }
+
+        // Tambahkan link website
+        $appUrl = config('app.url');
+        if (! empty($appUrl)) {
+            $text .= "\n🌐 Website: {$appUrl}\n";
         }
 
         $text .= "\n_Tetap Aktif, Tetap Bersih_\n";
