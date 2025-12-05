@@ -59,8 +59,16 @@ class BottomNav extends Component
             return true;
         }
 
-        // Handle base route case (beranda.kurir matches /kurir)
-        if ($routeName === 'beranda.kurir' && $currentRoute === 'beranda.kurir') {
+        // Check if current route is a sub-route of the navigation item
+        // For example: 'detail-aktifitas.kurir' should activate 'aktifitas.kurir'
+        // and 'profile.kurir' should activate 'pengaturan.kurir'
+        $routeMapping = [
+            'aktifitas.kurir' => ['detail-aktifitas.kurir'],
+            'rute.kurir' => ['rute-detail.kurir'],
+            'pengaturan.kurir' => ['profile.kurir'],
+        ];
+
+        if (isset($routeMapping[$routeName]) && in_array($currentRoute, $routeMapping[$routeName])) {
             return true;
         }
 
@@ -88,8 +96,8 @@ class BottomNav extends Component
     {
         if ($this->isActive($routeName)) {
             return [
-                'icon' => 'text-primary',
-                'label' => 'text-primary font-extrabold',
+                'icon' => 'text-base-content',
+                'label' => 'text-base-content font-extrabold',
             ];
         }
 
