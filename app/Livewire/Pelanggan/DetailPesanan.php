@@ -4,20 +4,36 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pelanggan;
 
+use App\Helper\QrisConvert;
 use App\Models\Transaksi;
+use Exception;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Rule;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithFileUploads;
 
 #[Title('Detail Pesanan')]
 #[Layout('layouts.pelanggan.app')]
 class DetailPesanan extends Component
 {
+    use WithFileUploads;
+
     public Transaksi $transaksi;
 
     public bool $imageModal = false;
 
     public string $selectedImage = '';
+
+    public string $qrCodeSvg = '';
+
+    public bool $uploadModal = false;
+
+    #[Rule(['fotoBuktiBayar' => 'required'])]
+    #[Rule(['fotoBuktiBayar.*' => 'image|max:5120'])]
+    public array $fotoBuktiBayar = [];
 
     public function mount(int $id): void
     {
@@ -33,6 +49,18 @@ class DetailPesanan extends Component
             ->where('id', $id)
             ->where('pelanggan_id', $pelanggan->id)
             ->firstOrFail();
+
+        // Generate QR Code dynamic on-demand untuk pembayaran
+        try {
+            $this->qrCodeSvg = QrisConvert::generateOnDemandQrCode((float) $this->transaksi->total);
+        } catch (Exception $qrError) {
+            // Jika gagal generate QR, gunakan fallback (kosong)
+            $this->qrCodeSvg = '';
+            Log::warning('QR Code generation failed for transaction', [
+                'transaksi_id' => $this->transaksi->id,
+                'error' => $qrError->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -158,6 +186,64 @@ class DetailPesanan extends Component
         }
 
         return [];
+    }
+
+    /**
+     * Remove file dari preview
+     */
+    public function removeFile(int $index): void
+    {
+        unset($this->fotoBuktiBayar[$index]);
+        $this->fotoBuktiBayar = array_values($this->fotoBuktiBayar);
+    }
+
+    /**
+     * Upload bukti pembayaran
+     */
+    public function uploadBuktiBayar(): void
+    {
+        // Validate
+        $this->validate();
+
+        try {
+            $uploadedFiles = [];
+
+            // Upload each file
+            foreach ($this->fotoBuktiBayar as $file) {
+                $filename = 'pembayaran_'.$this->transaksi->id.'_'.uniqid().'.'.$file->getClientOriginalExtension();
+                $path = $file->storeAs('foto-bukti-pembayaran', $filename, 'public');
+
+                $uploadedFiles[] = [
+                    'url' => Storage::url($path),
+                    'path' => $path,
+                    'original_name' => $file->getClientOriginalName(),
+                    'uuid' => \Illuminate\Support\Str::uuid()->toString(), // Add UUID for Mary UI compatibility
+                ];
+            }
+
+            // Update transaksi
+            $this->transaksi->update([
+                'foto_bukti_pembayaran' => $uploadedFiles,
+                'status_bayar' => 'Menunggu Verifikasi',
+            ]);
+
+            // Refresh transaksi
+            $this->transaksi->refresh();
+
+            // Reset form
+            $this->fotoBuktiBayar = [];
+            $this->uploadModal = false;
+
+            // Success notification
+            $this->dispatch('notify', type: 'success', message: 'Bukti pembayaran berhasil diunggah! Status pembayaran Anda akan segera diverifikasi.');
+        } catch (Exception $e) {
+            Log::error('Failed to upload payment proof', [
+                'transaksi_id' => $this->transaksi->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $this->dispatch('notify', type: 'error', message: 'Gagal mengunggah bukti pembayaran. Silakan coba lagi.');
+        }
     }
 
     public function render(): mixed

@@ -33,16 +33,17 @@ return [
     |--------------------------------------------------------------------------
     |
     | Pengaturan untuk generate QR Code
-    | - size: ukuran QR Code dalam pixel
-    | - error_correction: level error correction (L, M, Q, H)
-    | - margin: margin around QR Code
+    | - size: ukuran QR Code dalam pixel (default: 200 untuk web, 300 untuk print)
+    | - error_correction: level error correction L, M, Q, H (default: M)
+    |   L = Low (7% recovery), M = Medium (15%), Q = Quartile (25%), H = High (30%)
+    | - margin: margin around QR Code (default: 1)
     |
     */
 
     'qr_code' => [
-        'size' => 300,
-        'error_correction' => 'H',
-        'margin' => 4,
+        'size' => (int) env('QRIS_QR_SIZE', 200),
+        'error_correction' => env('QRIS_QR_ERROR_CORRECTION', 'M'),
+        'margin' => (int) env('QRIS_QR_MARGIN', 1),
     ],
 
     /*

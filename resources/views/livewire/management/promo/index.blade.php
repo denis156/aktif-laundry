@@ -1,4 +1,4 @@
-<div wire:poll.visible.30s>
+<div wire:poll.visible.10s>
     <!-- HEADER -->
     <x-header title="Promo" icon="o-tag" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Kelola Kode Promo & Diskon" separator progress-indicator>

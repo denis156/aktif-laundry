@@ -1,4 +1,4 @@
-<div class="container mx-auto">
+<div class="container mx-auto" wire:poll.visible.10s>
     <x-header title="{{ $transaksi->kode_transaksi }}"
         subtitle="{{ $transaksi->tanggal_masuk->locale('id')->isoFormat('DD MMMM YYYY, HH:mm') }}" separator>
         <x-slot:actions>
@@ -24,7 +24,7 @@
             <div class="space-y-3">
                 @foreach ($transaksi->transaksiLayanan as $item)
                 @php
-                    $layananData = $this->formatLayananItem($item);
+                $layananData = $this->formatLayananItem($item);
                 @endphp
 
                 <div class="flex items-start justify-between gap-3 pb-3 border-b border-base-300 last:border-0">
@@ -46,7 +46,8 @@
 
                     <div class="text-right">
                         <p class="text-sm font-semibold text-base-content">{{ $layananData['quantity'] }}</p>
-                        <p class="text-sm font-bold text-primary">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</p>
+                        <p class="text-sm font-bold text-primary">Rp {{ number_format($item->subtotal, 0, ',', '.') }}
+                        </p>
                     </div>
                 </div>
                 @endforeach
@@ -82,9 +83,37 @@
         {{-- Informasi Pembayaran --}}
         <x-card title="Pembayaran" subtitle="Detail pembayaran pesanan" class="shadow-lg border border-primary w-full"
             body-class="space-y-4">
+            @if($transaksi->status === 'Proses' && $transaksi->status_bayar === 'Belum Bayar')
+            <x-slot:figure>
+                @if(!empty($qrCodeSvg))
+                {{-- Dynamic QR Code dengan nominal transaksi --}}
+                <x-card body-class="flex flex-col items-center justify-center gap-2"
+                    class="border-b-2 border-secondary border-dashed w-full rounded-none">
+                    <div class="flex items-center justify-center">
+                        {!! $qrCodeSvg !!}
+                    </div>
+                    <div class="text-center">
+                        <p class="text-xs font-bold text-base-content">Scan untuk Pembayaran</p>
+                        <p class="text-xs text-base-content/70">QRIS - Rp {{ number_format($transaksi->total, 0, ',',
+                            '.') }}</p>
+                    </div>
+                </x-card>
+                @else
+                {{-- Fallback jika QR Code gagal generate --}}
+                <div
+                    class="w-full bg-base-200 border-b-2 border-secondary border-dashed p-4 flex items-center justify-center">
+                    <div class="text-center">
+                        <p class="text-xs text-base-content/60">QR Code tidak tersedia</p>
+                    </div>
+                </div>
+                @endif
+            </x-slot:figure>
+            @endif
+
             <x-slot:menu>
                 {{-- Status Pembayaran --}}
-                <x-badge :value="$transaksi->status_bayar" class="badge-sm {{ $this->getPaymentStatusBadgeClass() }} truncate" />
+                <x-badge :value="$transaksi->status_bayar"
+                    class="badge-sm {{ $this->getPaymentStatusBadgeClass() }} truncate" />
             </x-slot:menu>
             {{-- Rincian Biaya --}}
             <div class="space-y-2">
@@ -137,18 +166,27 @@
                 </div>
                 @endif
             </div>
+
+            @if($transaksi->status === 'Proses' && $transaksi->status_bayar === 'Belum Bayar')
+            <x-slot:actions separator>
+                <x-button label="Unggah Bukti Pembayaran" class="btn-warning btn-block"
+                    @click="$wire.uploadModal = true" />
+            </x-slot:actions>
+            @endif
         </x-card>
 
         {{-- Foto Bukti Timbangan --}}
         @php
-            $fotoTimbangan = $this->getFotoTimbangan();
+        $fotoTimbangan = $this->getFotoTimbangan();
         @endphp
         @if (!empty($fotoTimbangan))
-        <x-card title="Foto Bukti Timbangan" subtitle="Bukti timbangan cucian Anda" class="shadow-lg border border-primary w-full">
+        <x-card title="Foto Bukti Timbangan" subtitle="Bukti timbangan cucian Anda"
+            class="shadow-lg border border-primary w-full">
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 @foreach ($fotoTimbangan as $foto)
                 @if (!empty($foto))
-                <button type="button" wire:click="showImage('{{ $foto }}')" class="block overflow-hidden rounded-lg shadow-lg border-b-4 border-r-4 border-success active:border-0 active:shadow-sm transition-all cursor-pointer">
+                <button type="button" wire:click="showImage('{{ $foto }}')"
+                    class="block overflow-hidden rounded-lg shadow-lg border border-b-4 border-r-4 border-secondary active:border-0 active:shadow-sm transition-all cursor-pointer">
                     <img src="{{ $foto }}" alt="Foto Timbangan" class="w-full h-40 object-cover" />
                 </button>
                 @endif
@@ -159,14 +197,16 @@
 
         {{-- Foto Bukti Pembayaran --}}
         @php
-            $fotoPembayaran = $this->getFotoPembayaran();
+        $fotoPembayaran = $this->getFotoPembayaran();
         @endphp
         @if (!empty($fotoPembayaran))
-        <x-card title="Foto Bukti Pembayaran" subtitle="Bukti pembayaran Anda" class="shadow-lg border border-primary w-full">
-            <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
+        <x-card title="Foto Bukti Pembayaran" subtitle="Bukti pembayaran Anda"
+            class="shadow-lg border border-primary w-full">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 @foreach ($fotoPembayaran as $foto)
                 @if (!empty($foto))
-                <button type="button" wire:click="showImage('{{ $foto }}')" class="block overflow-hidden rounded-lg shadow-lg border-b-4 border-r-4 border-success active:border-0 active:shadow-sm transition-all cursor-pointer">
+                <button type="button" wire:click="showImage('{{ $foto }}')"
+                    class="block overflow-hidden rounded-lg shadow-lg border border-b-4 border-r-4 border-secondary active:border-0 active:shadow-sm transition-all cursor-pointer">
                     <img src="{{ $foto }}" alt="Foto Pembayaran" class="w-full h-40 object-cover" />
                 </button>
                 @endif
@@ -187,5 +227,47 @@
         <x-slot:actions>
             <x-button label="Tutup" class="btn-primary btn-block" @click="$wire.imageModal = false" />
         </x-slot:actions>
+    </x-modal>
+
+    {{-- Modal Upload Bukti Pembayaran --}}
+    <x-modal wire:model="uploadModal" title="Unggah Bukti Pembayaran"
+        subtitle="Unggah foto bukti transfer pembayaran. Anda dapat mengunggah lebih dari satu foto"
+        class="modal-bottom w-full backdrop-blur" persistent>
+        <x-form wire:submit="uploadBuktiBayar" no-separator>
+            <div class="space-y-4">
+                <x-file wire:model="fotoBuktiBayar" label="Foto Bukti Pembayaran" hint="Format: JPG, PNG (Max 5 MB)"
+                    accept="image/png, image/jpeg, image/jpg" multiple />
+
+                @error('fotoBuktiBayar')
+                <p class="text-error text-sm">{{ $message }}</p>
+                @enderror
+
+                {{-- Preview uploaded files --}}
+                @if (!empty($fotoBuktiBayar))
+                <div class="space-y-2">
+                    <p class="text-sm font-semibold">File yang akan diunggah:</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        @foreach ($fotoBuktiBayar as $index => $foto)
+                        <div class="relative">
+                            <img src="{{ $foto->temporaryUrl() }}" class="w-full h-32 object-cover rounded-lg" />
+                            <button type="button" wire:click="removeFile({{ $index }})"
+                                class="absolute top-1 right-1 btn btn-error btn-xs btn-circle">
+                                ✕
+                            </button>
+                        </div>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+            </div>
+
+            <x-slot:actions>
+                <div class="grid grid-cols-2 gap-4 w-full">
+                    <x-button label="Batal" class="btn-ghost" @click="$wire.uploadModal = false" />
+                    <x-button label="Unggah" type="submit" class="btn-primary" spinner="uploadBuktiBayar"
+                        :disabled="empty($fotoBuktiBayar)" />
+                </div>
+            </x-slot:actions>
+        </x-form>
     </x-modal>
 </div>

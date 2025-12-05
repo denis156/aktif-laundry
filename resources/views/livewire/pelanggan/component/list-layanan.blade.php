@@ -1,4 +1,4 @@
-<div class="w-full space-y-2">
+<div class="w-full space-y-2" wire:poll.visible.10s>
     <div class="flex justify-between items-center">
         <h1 class="text-lg font-bold text-base-content/80 uppercase">Layanan Kami</h1>
     </div>

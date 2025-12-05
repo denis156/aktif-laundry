@@ -1,4 +1,4 @@
-<div class="container mx-auto">
+<div class="container mx-auto" wire:poll.visible.10s>
     <x-header title="Riwayat Pesanan" subtitle="Lihat semua riwayat pesanan laundry Anda" icon="iconpark.history-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 

@@ -161,14 +161,17 @@ class QrisConvert
     public static function generateOnDemandQrCode(float $amount): string
     {
         try {
+            // Get QR code config from .env
+            $qrConfig = config('qrisconvert.qr_code');
+
             // Generate dynamic QRIS
             $dynamicQris = self::generateDynamicQris($amount);
 
-            // Generate QR Code string (base64 encoded)
+            // Generate QR Code string menggunakan config dari .env
             $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
-                ->size(300)
-                ->errorCorrection('H')
-                ->margin(0)
+                ->size($qrConfig['size'])
+                ->errorCorrection($qrConfig['error_correction'])
+                ->margin($qrConfig['margin'])
                 ->generate($dynamicQris);
 
             return (string) $qrCode;
@@ -185,6 +188,9 @@ class QrisConvert
             // Auto cleanup old QR codes sebelum generate baru
             self::autoCleanupOldQrCodes();
 
+            // Get QR code config from .env
+            $qrConfig = config('qrisconvert.qr_code');
+
             // Generate dynamic QRIS
             $dynamicQris = self::generateDynamicQris($amount);
 
@@ -193,11 +199,11 @@ class QrisConvert
             $shortTimestamp = substr((string) $timestamp, -6); // 6 digit terakhir
             $filename = 'qr-'.$transactionId.'-'.$shortTimestamp.'.svg';
 
-            // Generate QR Code SVG (lebih kecil dari PNG)
+            // Generate QR Code SVG menggunakan config dari .env
             $qrCode = \SimpleSoftwareIO\QrCode\Facades\QrCode::format('svg')
-                ->size(200) // lebih kecil untuk hemat storage
-                ->errorCorrection('M') // error correction medium (lebih kecil)
-                ->margin(1) // minimal margin
+                ->size($qrConfig['size'])
+                ->errorCorrection($qrConfig['error_correction'])
+                ->margin($qrConfig['margin'])
                 ->generate($dynamicQris);
 
             // Convert to string for storage

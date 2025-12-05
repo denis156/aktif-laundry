@@ -1,4 +1,4 @@
-<div class="container mx-auto">
+<div class="container mx-auto" wire:poll.visible.10s>
     <x-header title="Detail Promo" subtitle="{{ $promo->nama_promo }} - {{ $promo->kode_promo }}" separator>
         <x-slot:actions>
             <x-button icon="iconpark.lefttwo-o" class="btn-secondary btn-sm" label="Kembali"

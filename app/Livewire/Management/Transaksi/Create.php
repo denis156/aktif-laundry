@@ -119,8 +119,8 @@ class Create extends Component
         ];
 
         // Initialize image library metadata as empty collections
-        $this->libraryTimbangan = new Collection();
-        $this->libraryPembayaran = new Collection();
+        $this->libraryTimbangan = new Collection;
+        $this->libraryPembayaran = new Collection;
 
         $this->search();
         $this->loadOptions();
@@ -239,12 +239,14 @@ class Create extends Component
 
         $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
 
-        if ($this->promoResult['valid']) {
-            $this->formData['kode_promo'] = $promo->kode_promo;
-        } else {
-            $this->formData['kode_promo'] = '';
-            $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
-        }
+        // Di Create/Edit: Tetap simpan kode promo meskipun belum valid (data belum lengkap)
+        // Validasi promo akan dilakukan nanti di Kasir saat pembayaran
+        $this->formData['kode_promo'] = $promo->kode_promo;
+
+        // Tidak tampilkan warning di Create/Edit, karena data masih bisa berubah
+        // if (!$this->promoResult['valid']) {
+        //     $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
+        // }
 
         $this->updateTotal();
     }
@@ -262,11 +264,11 @@ class Create extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -309,7 +311,8 @@ class Create extends Component
         foreach ($this->multiLayananData['items'] as $index => $item) {
             if (! empty($item['layanan_id'])) {
                 if ($item['tipe_layanan'] === 'per_kg') {
-                    if (empty($item['berat_kg']) || $item['berat_kg'] < $minBeratKg) {
+                    // Validasi hanya jika berat_kg atau jenis_pakaian sudah diisi
+                    if (! empty($item['berat_kg']) && $item['berat_kg'] < $minBeratKg) {
                         Log::warning('Transaksi Create validation failed: berat_kg invalid', [
                             'layanan_index' => $index,
                             'layanan_nama' => $item['nama_layanan'] ?? '',
@@ -320,17 +323,10 @@ class Create extends Component
 
                         return;
                     }
-                    if (empty($item['jenis_pakaian']) || count($item['jenis_pakaian']) === 0) {
-                        Log::warning('Transaksi Create validation failed: jenis_pakaian kosong', [
-                            'layanan_index' => $index,
-                            'layanan_nama' => $item['nama_layanan'] ?? '',
-                        ]);
-                        $this->error('Jenis pakaian wajib diisi untuk layanan '.$item['nama_layanan'].'!', position: 'toast-bottom');
-
-                        return;
-                    }
+                    // Berat dan jenis pakaian sekarang optional untuk Create (belum dijemput)
                 } else {
-                    if (empty($item['jumlah_satuan']) || $item['jumlah_satuan'] < 1) {
+                    // Jumlah satuan sekarang optional untuk Create (belum dijemput)
+                    if (! empty($item['jumlah_satuan']) && $item['jumlah_satuan'] < 1) {
                         Log::warning('Transaksi Create validation failed: jumlah_satuan invalid', [
                             'layanan_index' => $index,
                             'layanan_nama' => $item['nama_layanan'] ?? '',
@@ -409,6 +405,15 @@ class Create extends Component
                 $transaksi = Transaksi::create($transaksiData);
 
                 // === Handle File Uploads dengan Image Library ===
+                // Ensure libraries have UUID before sync (fix Mary UI requirement)
+                $this->libraryTimbangan = $this->ensureCollectionHasUuid($this->libraryTimbangan);
+                $this->libraryPembayaran = $this->ensureCollectionHasUuid($this->libraryPembayaran);
+
+                // CRITICAL: Update model attributes with UUID-ensured data BEFORE syncMedia
+                // This prevents Mary UI from accessing old data without UUID from database
+                $transaksi->foto_bukti_timbangan = $this->libraryTimbangan;
+                $transaksi->foto_bukti_pembayaran = $this->libraryPembayaran;
+
                 // Sync foto bukti timbangan using WithMediaSync trait
                 $this->syncMedia(
                     model: $transaksi,
@@ -434,7 +439,10 @@ class Create extends Component
                 // === Handle Promo & Kurir ===
 
                 // 1. Simpan snapshot promo ke transaksi_promo (audit trail)
-                if ($this->formData['promo_id'] && $this->promoResult['valid'] && $this->promoResult['diskon'] > 0) {
+                // Di Create: Simpan promo yang dipilih pelanggan meskipun belum valid
+                // (karena data berat/layanan mungkin belum lengkap)
+                // Validasi promo akan dilakukan ulang di Kasir saat pembayaran
+                if ($this->formData['promo_id']) {
                     $promo = $this->cachedPromo ?? PromoHelper::getById((int) $this->formData['promo_id']);
                     if ($promo) {
                         // Create TransaksiPromo record dengan snapshot data promo
@@ -444,7 +452,7 @@ class Create extends Component
                             'nama_promo' => $promo->nama_promo,
                             'tipe_diskon' => $promo->tipe_diskon,
                             'nilai_diskon_persen' => $promo->nilai_diskon,
-                            'nilai_diskon_nominal' => $this->promoResult['diskon'], // Nilai diskon aktual yang diterapkan
+                            'nilai_diskon_nominal' => $this->promoResult['diskon'] ?? 0, // Bisa 0 jika belum valid
                             'diskon_maksimal' => $promo->diskon_maksimal,
                             'gratis_kg' => $promo->gratis_kg,
                             'gratis_hari' => $promo->gratis_hari,
@@ -459,7 +467,8 @@ class Create extends Component
                             'transaksi_id' => $transaksi->id,
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
-                            'diskon_nominal' => $this->promoResult['diskon'],
+                            'diskon_nominal' => $this->promoResult['diskon'] ?? 0,
+                            'valid' => $this->promoResult['valid'] ?? false,
                         ]);
                     }
                 }
@@ -640,6 +649,26 @@ class Create extends Component
     public function getStatusBayarOptions(): array
     {
         return TransaksiHelper::getStatusBayarOptions();
+    }
+
+    /**
+     * Ensure each item in Collection has UUID (required by Mary UI Image Library)
+     */
+    protected function ensureCollectionHasUuid(Collection $collection): Collection
+    {
+        return $collection->map(function ($item) {
+            // Convert to array if it's an object or anything else
+            if (! is_array($item)) {
+                $item = (array) $item;
+            }
+
+            // Always ensure uuid exists
+            if (! isset($item['uuid']) || empty($item['uuid'])) {
+                $item['uuid'] = \Illuminate\Support\Str::uuid()->toString();
+            }
+
+            return $item;
+        });
     }
 
     public function render(): mixed

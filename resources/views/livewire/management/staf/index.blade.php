@@ -1,4 +1,4 @@
-<div wire:poll.visible.30s>
+<div wire:poll.visible.10s>
     <!-- HEADER -->
     <x-header title="Staf" icon="o-user-group" icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Manajemen Pengguna & Hak Akses" separator progress-indicator>

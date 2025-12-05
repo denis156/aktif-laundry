@@ -1,4 +1,4 @@
-<div class="container mx-auto">
+<div class="container mx-auto" wire:poll.visible.10s>
     <div class="w-full space-y-8 flex flex-col justify-center items-center mb-24">
         <x-card class="w-full shadow-lg border border-primary">
             <x-slot:figure class="flex justify-between h-28 border-b border-secondary border-dashed">
