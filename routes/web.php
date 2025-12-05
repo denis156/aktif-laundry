@@ -9,6 +9,7 @@ use App\Livewire\Kurir\Auth\Login as KurirLogin;
 use App\Livewire\Kurir\Auth\ResetPassword as KurirResetPassword;
 use App\Livewire\Kurir\Auth\VerifyEmail as KurirVerifyEmail;
 use App\Livewire\Kurir\Beranda;
+use App\Livewire\Kurir\DetailAktifitas;
 use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
 use App\Livewire\Kurir\Rute;
 use App\Livewire\Management\Auth\ForgotPassword;
@@ -114,6 +115,7 @@ Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
 Route::middleware(['auth:kurir', 'verified.kurir'])->prefix('kurir')->group(function () {
     Route::get('/', Beranda::class)->name('beranda.kurir');
     Route::get('/aktifitas', Aktifitas::class)->name('aktifitas.kurir');
+    Route::get('/aktifitas/{id}', DetailAktifitas::class)->name('detail-aktifitas.kurir');
     Route::get('/rute', Rute::class)->name('rute.kurir');
     Route::get('/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
 });

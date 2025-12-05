@@ -94,17 +94,7 @@
             @endscope
 
             @scope('cell_status', $item)
-            @if ($item->status == 'Menunggu')
-            <x-badge value="{{ $item->status }}" class="badge-warning badge-sm" />
-            @elseif($item->status == 'Proses')
-            <x-badge value="{{ $item->status }}" class="badge-info badge-sm" />
-            @elseif($item->status == 'Selesai')
-            <x-badge value="{{ $item->status }}" class="badge-success badge-sm" />
-            @elseif($item->status == 'Diambil')
-            <x-badge value="{{ $item->status }}" class="badge-secondary badge-sm" />
-            @else
-            <x-badge value="{{ $item->status }}" class="badge-error badge-sm" />
-            @endif
+            <x-badge value="{{ $item->status }}" class="badge-sm {{ \App\Helper\Database\TransaksiHelper::getStatusBadgeClass($item->status) }}" />
             @endscope
 
             @scope('actions', $item)

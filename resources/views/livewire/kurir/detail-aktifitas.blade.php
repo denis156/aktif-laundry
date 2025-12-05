@@ -3,17 +3,44 @@
         subtitle="{{ $transaksi->tanggal_masuk->locale('id')->isoFormat('DD MMMM YYYY, HH:mm') }}" separator>
         <x-slot:actions>
             <x-button icon="iconpark.lefttwo-o" class="btn-secondary btn-sm" label="Kembali"
-                link="{{ route('riwayat.pelanggan') }}" responsive />
-            @if ($transaksi->status === 'Menunggu')
-            <x-button icon="iconpark.write-o" class="btn-success btn-sm" label="Edit"
-                link="{{ route('edit-pesanan.pelanggan', ['id' => $transaksi->id]) }}" responsive />
-            @endif
+                link="{{ route('aktifitas.kurir') }}" responsive />
         </x-slot:actions>
     </x-header>
 
     <div class="space-y-4 mb-24">
+        {{-- Informasi Pelanggan --}}
+        <x-card title="Pelanggan" subtitle="Informasi pelanggan" class="shadow-lg border border-primary w-full"
+            body-class="space-y-3">
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-base-content/60">Nama Pelanggan</span>
+                <span class="font-semibold">{{ $transaksi->nama_pelanggan }}</span>
+            </div>
+            @if ($transaksi->pelanggan?->no_hp)
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-base-content/60">No. Telepon</span>
+                <a href="{{ $this->getWhatsAppUrl() }}" target="_blank" class="font-semibold link link-primary">
+                    {{ \App\Helper\PhoneNumber::formatReadable($transaksi->pelanggan->no_hp) }}
+                </a>
+            </div>
+            @endif
+            @if ($transaksi->pelanggan?->email)
+            <div class="flex justify-between items-center text-sm">
+                <span class="text-base-content/60">Email</span>
+                <a href="mailto:{{ $transaksi->pelanggan->email }}" class="font-semibold link link-primary">
+                    {{ $transaksi->pelanggan->email }}
+                </a>
+            </div>
+            @endif
+            @if ($transaksi->pelanggan?->alamat)
+            <div class="flex flex-col text-sm gap-1">
+                <span class="text-base-content/60">Alamat</span>
+                <span class="font-semibold">{{ $transaksi->pelanggan->alamat }}</span>
+            </div>
+            @endif
+        </x-card>
+
         {{-- Informasi Pesanan --}}
-        <x-card title="Pesanan" subtitle="Detail pesanan laundry Anda" class="shadow-lg border border-primary w-full"
+        <x-card title="Pesanan" subtitle="Detail pesanan laundry" class="shadow-lg border border-primary w-full"
             body-class="space-y-4">
             <x-slot:menu>
                 {{-- Status Pesanan --}}
@@ -115,6 +142,7 @@
                 <x-badge :value="$transaksi->status_bayar"
                     class="badge-sm {{ $this->getPaymentStatusBadgeClass() }} truncate" />
             </x-slot:menu>
+
             {{-- Rincian Biaya --}}
             <div class="space-y-2">
                 <div class="flex justify-between items-center">
@@ -180,7 +208,7 @@
         $fotoTimbangan = $this->getFotoTimbangan();
         @endphp
         @if (!empty($fotoTimbangan))
-        <x-card title="Foto Bukti Timbangan" subtitle="Bukti timbangan cucian Anda"
+        <x-card title="Foto Bukti Timbangan" subtitle="Bukti timbangan cucian"
             class="shadow-lg border border-primary w-full">
             <div class="grid grid-cols-2 md:grid-cols-3 gap-3">
                 @foreach ($fotoTimbangan as $foto)
@@ -200,7 +228,7 @@
         $fotoPembayaran = $this->getFotoPembayaran();
         @endphp
         @if (!empty($fotoPembayaran))
-        <x-card title="Foto Bukti Pembayaran" subtitle="Bukti pembayaran Anda"
+        <x-card title="Foto Bukti Pembayaran" subtitle="Bukti pembayaran pelanggan"
             class="shadow-lg border border-primary w-full">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                 @foreach ($fotoPembayaran as $foto)
@@ -214,6 +242,16 @@
             </div>
         </x-card>
         @endif
+
+        {{-- Tombol Jemput Pesanan - hanya tampil jika belum ada yang jemput --}}
+        @if ($this->showJemputButton())
+        <x-button wire:click="openConfirmModal" label="Jemput Pesanan" class="btn-primary btn-block" />
+        @endif
+
+        {{-- Tombol Antar Pesanan - tampil jika status Selesai --}}
+        @if ($this->showAntarButton())
+        <x-button wire:click="openConfirmAntarModal" label="Antar Pesanan" class="btn-success btn-block" />
+        @endif
     </div>
 
     {{-- Modal untuk menampilkan gambar full --}}
@@ -226,6 +264,47 @@
 
         <x-slot:actions>
             <x-button label="Tutup" class="btn-primary btn-block" @click="$wire.imageModal = false" />
+        </x-slot:actions>
+    </x-modal>
+
+    {{-- Modal Konfirmasi Jemput Pesanan --}}
+    <x-modal wire:model="confirmModal" title="Konfirmasi Jemput Pesanan" class="modal-bottom w-full backdrop-blur"
+        persistent>
+        <div class="space-y-4">
+            <div class="flex justify-center">
+                <x-icon name="iconpark.help-o" class="w-16 h-16 text-primary" />
+            </div>
+            <p class="text-center text-base">Apakah Anda yakin ingin mengambil pesanan?</p>
+            <p class="text-center text-sm text-base-content/60">Pastikan Anda sudah menghubungi pelanggan terlebih
+                dahulu melalui nomor telepon di atas</p>
+        </div>
+
+        <x-slot:actions>
+            <div class="grid grid-cols-2 gap-4 w-full">
+                <x-button label="Batal" class="btn-ghost" @click="$wire.confirmModal = false" />
+                <x-button label="Ya, Jemput" wire:click="ambilPesanan" class="btn-primary" spinner="ambilPesanan" />
+            </div>
+        </x-slot:actions>
+    </x-modal>
+
+    {{-- Modal Konfirmasi Antar Pesanan --}}
+    <x-modal wire:model="confirmAntarModal" title="Konfirmasi Antar Pesanan" class="modal-bottom w-full backdrop-blur"
+        persistent>
+        <div class="space-y-4">
+            <div class="flex justify-center">
+                <x-icon name="iconpark.help-o" class="w-16 h-16 text-success" />
+            </div>
+            <p class="text-center text-base">Apakah Anda yakin ingin mengambil pesanan untuk diantar?</p>
+            <p class="text-center text-sm text-base-content/60">Pastikan Anda sudah menghubungi pelanggan terlebih
+                dahulu untuk konfirmasi waktu pengantaran</p>
+        </div>
+
+        <x-slot:actions>
+            <div class="grid grid-cols-2 gap-4 w-full">
+                <x-button label="Batal" class="btn-ghost" @click="$wire.confirmAntarModal = false" />
+                <x-button label="Ya, Antar" wire:click="ambilPesananAntar" class="btn-success"
+                    spinner="ambilPesananAntar" />
+            </div>
         </x-slot:actions>
     </x-modal>
 

@@ -24,13 +24,8 @@
                     <x-datetime label="Tanggal Masuk" type="datetime-local" wire:model="formData.tanggal_masuk"
                         icon="o-calendar" required />
 
-                    <x-select label="Status" wire:model="formData.status" icon="o-flag" :options="[
-                            ['id' => 'Menunggu', 'name' => 'Menunggu'],
-                            ['id' => 'Proses', 'name' => 'Proses'],
-                            ['id' => 'Selesai', 'name' => 'Selesai'],
-                            ['id' => 'Diambil', 'name' => 'Diambil'],
-                            ['id' => 'Batal', 'name' => 'Batal']
-                        ]" option-value="id" option-label="name" required />
+                    <x-select label="Status" wire:model="formData.status" icon="o-flag" :options="$statusOptions"
+                        option-value="id" option-label="name" required />
                 </div>
 
                 <x-choices label="Pelanggan" wire:model.live="formData.pelanggan_id" :options="$pelangganOptions"

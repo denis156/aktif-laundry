@@ -16,11 +16,24 @@ class TransaksiObserver
 {
     /**
      * Handle the Transaksi "saving" event.
-     * Tambahkan catatan jika promo tidak valid dan sudah ada transaksi layanan
+     * - Ubah status ke Proses jika ada kurir jemput
+     * - Tambahkan catatan jika promo tidak valid dan sudah ada transaksi layanan
      */
     public function saving(Transaksi $transaksi): void
     {
         try {
+            // Otomatis ubah status dari Menunggu ke Proses jika ada kurir jemput
+            if ($transaksi->status === 'Menunggu' && ! empty($transaksi->kurir_jemput_id)) {
+                $transaksi->status = 'Proses';
+
+                Log::info('TransaksiObserver: Status changed to Proses', [
+                    'transaksi_id' => $transaksi->id,
+                    'kode_transaksi' => $transaksi->kode_transaksi,
+                    'kurir_jemput_id' => $transaksi->kurir_jemput_id,
+                    'kurir_jemput_nama' => $transaksi->kurir_jemput_nama,
+                ]);
+            }
+
             // Cek kondisi: Status = Proses, Ada kurir jemput, Ada layanan
             $statusProses = $transaksi->status === 'Proses';
             $adaKurirJemput = ! empty($transaksi->kurir_jemput_id);

@@ -74,14 +74,7 @@ class DetailPesanan extends Component
      */
     public function getStatusBadgeClass(): string
     {
-        return match ($this->transaksi->status) {
-            'Menunggu' => 'badge-warning',
-            'Proses' => 'badge-info',
-            'Selesai' => 'badge-success',
-            'Diambil' => 'badge-neutral',
-            'Batal' => 'badge-error',
-            default => 'badge-ghost',
-        };
+        return \App\Helper\Database\TransaksiHelper::getStatusBadgeClass($this->transaksi->status);
     }
 
     /**
@@ -89,13 +82,7 @@ class DetailPesanan extends Component
      */
     public function getPaymentStatusBadgeClass(): string
     {
-        return match ($this->transaksi->status_bayar) {
-            'Belum Bayar' => 'badge-error',
-            'Menunggu Verifikasi' => 'badge-warning',
-            'Sudah Bayar' => 'badge-success',
-            'Ditolak' => 'badge-error',
-            default => 'badge-ghost',
-        };
+        return \App\Helper\Database\TransaksiHelper::getStatusBayarBadgeClass($this->transaksi->status_bayar);
     }
 
     /**

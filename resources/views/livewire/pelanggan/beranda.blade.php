@@ -63,14 +63,7 @@
                             $avatarUrl = $this->getTransaksiAvatar($transaksi);
 
                             // Status badge styling
-                            $badgeClass = match ($transaksi->status) {
-                                'Menunggu' => 'badge-warning',
-                                'Proses' => 'badge-info',
-                                'Selesai' => 'badge-success',
-                                'Diambil' => 'badge-neutral',
-                                'Batal' => 'badge-error',
-                                default => 'badge-ghost',
-                            };
+                            $badgeClass = \App\Helper\Database\TransaksiHelper::getStatusBadgeClass($transaksi->status);
 
                             // Calculate total weight or items
                             $totalBerat = $transaksi->total_berat > 0 ? number_format($transaksi->total_berat, 1) . ' kg' : null;
