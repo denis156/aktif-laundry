@@ -327,8 +327,8 @@ class DetailAktifitas extends Component
             // Success toast
             $this->success('Pesanan berhasil diambil untuk diantar!', position: 'toast-top', timeout: 5000);
 
-            // Redirect ke halaman aktifitas
-            $this->redirect(route('aktifitas.kurir'), navigate: true);
+            // Redirect ke halaman rute detail
+            $this->redirect(route('rute-detail.kurir', $this->transaksi->id), navigate: true);
         } catch (\Exception $e) {
             Log::error('Failed to take delivery order', [
                 'transaksi_id' => $this->transaksi->id,
@@ -388,8 +388,8 @@ class DetailAktifitas extends Component
             // Success toast
             $this->success('Pesanan berhasil diambil! Status akan berubah menjadi Proses.', position: 'toast-top', timeout: 5000);
 
-            // Redirect ke halaman aktifitas
-            $this->redirect(route('aktifitas.kurir'), navigate: true);
+            // Redirect ke halaman rute detail
+            $this->redirect(route('rute-detail.kurir', $this->transaksi->id), navigate: true);
         } catch (\Exception $e) {
             Log::error('Failed to take order', [
                 'transaksi_id' => $this->transaksi->id,
