@@ -61,7 +61,7 @@ class Pengaturan extends Component
             request()->session()->invalidate();
             request()->session()->regenerateToken();
 
-            $this->success('Berhasil keluar dari sistem', position: 'toast-bottom');
+            $this->success('Berhasil keluar dari sistem', position: 'toast-top');
             $this->redirect(route('login.kurir'), navigate: true);
         } catch (Exception $e) {
             Log::error('Error during kurir logout from pengaturan', [
@@ -69,7 +69,7 @@ class Pengaturan extends Component
                 'trace' => $e->getTraceAsString(),
             ]);
 
-            $this->error('Terjadi kesalahan saat keluar. Silakan coba lagi.', position: 'toast-bottom');
+            $this->error('Terjadi kesalahan saat keluar. Silakan coba lagi.', position: 'toast-top');
         }
     }
 
