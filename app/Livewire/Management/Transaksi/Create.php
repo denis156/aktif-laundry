@@ -98,6 +98,9 @@ class Create extends Component
     // Cache promo object
     protected $cachedPromo = null;
 
+    // Track previous promo validation status to prevent duplicate toasts
+    protected ?bool $previousPromoValidStatus = null;
+
     // Multi-layanan data
     public array $multiLayananData = [
         'items' => [],
@@ -167,8 +170,9 @@ class Create extends Component
         $this->formData['subtotal'] = $data['totalSubtotal'];
 
         // Recalculate promo diskon jika ada promo yang dipilih
+        // JANGAN tampilkan toast saat recalculate (showToast: false)
         if ($this->formData['promo_id']) {
-            $this->calculatePromoDiskon();
+            $this->calculatePromoDiskon(showToast: false);
         } else {
             $this->formData['total'] = $data['totalGrandTotal'];
         }
@@ -179,10 +183,12 @@ class Create extends Component
 
     public function updatedFormDataPromoId(): void
     {
-        $this->calculatePromoDiskon();
+        // Reset previous status saat promo berubah
+        $this->previousPromoValidStatus = null;
+        $this->calculatePromoDiskon(showToast: true);
     }
 
-    protected function calculatePromoDiskon(): void
+    protected function calculatePromoDiskon(bool $showToast = false): void
     {
         $promoId = $this->formData['promo_id'];
 
@@ -195,6 +201,7 @@ class Create extends Component
             ];
             $this->formData['kode_promo'] = '';
             $this->cachedPromo = null;
+            $this->previousPromoValidStatus = null;
             $this->updateTotal();
 
             return;
@@ -220,6 +227,7 @@ class Create extends Component
             ];
             $this->formData['kode_promo'] = '';
             $this->cachedPromo = null;
+            $this->previousPromoValidStatus = null;
             $this->updateTotal();
 
             return;
@@ -239,14 +247,17 @@ class Create extends Component
 
         $this->promoResult = PromoHelper::hitungDiskon($promo, $subtotal, $totalBerat, $pelangganId);
 
-        // Di Create/Edit: Tetap simpan kode promo meskipun belum valid (data belum lengkap)
+        // Di Create: Tetap simpan kode promo meskipun belum valid (data belum lengkap)
         // Validasi promo akan dilakukan nanti di Kasir saat pembayaran
         $this->formData['kode_promo'] = $promo->kode_promo;
 
-        // Tidak tampilkan warning di Create/Edit, karena data masih bisa berubah
-        // if (!$this->promoResult['valid']) {
-        //     $this->warning($this->promoResult['pesan'], position: 'toast-bottom');
-        // }
+        // Di Create: JANGAN tampilkan toast validasi
+        // Karena workflow: Create → Jemput → Timbang → Edit (baru tampilkan validasi)
+        // Toast hanya muncul di Edit setelah barang ditimbang (status = Proses & ada kurir jemput)
+        // Note: Parameter $showToast ada untuk konsistensi API dengan Edit.php, tapi tidak digunakan di sini
+
+        // Update previous status (untuk konsistensi, meskipun tidak digunakan di Create)
+        $this->previousPromoValidStatus = $this->promoResult['valid'];
 
         $this->updateTotal();
     }
@@ -401,6 +412,8 @@ class Create extends Component
                     }
                 }
 
+                // Catatan promo akan ditambahkan otomatis oleh TransaksiObserver jika promo tidak valid
+
                 // Simpan transaksi
                 $transaksi = Transaksi::create($transaksiData);
 
@@ -445,17 +458,30 @@ class Create extends Component
                 if ($this->formData['promo_id']) {
                     $promo = $this->cachedPromo ?? PromoHelper::getById((int) $this->formData['promo_id']);
                     if ($promo) {
+                        // Map nilai_diskon ke field yang tepat berdasarkan tipe_diskon
+                        $gratisKg = null;
+                        $gratisHari = null;
+                        $nilaiDiskonPersen = null;
+
+                        if ($promo->tipe_diskon === 'gratis_kg') {
+                            $gratisKg = $promo->nilai_diskon; // nilai_diskon berisi jumlah kg gratis
+                        } elseif ($promo->tipe_diskon === 'gratis_hari') {
+                            $gratisHari = $promo->nilai_diskon; // nilai_diskon berisi jumlah hari gratis
+                        } elseif ($promo->tipe_diskon === 'persen') {
+                            $nilaiDiskonPersen = $promo->nilai_diskon; // nilai_diskon berisi persentase
+                        }
+
                         // Create TransaksiPromo record dengan snapshot data promo
                         $transaksi->transaksiPromo()->create([
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
                             'nama_promo' => $promo->nama_promo,
                             'tipe_diskon' => $promo->tipe_diskon,
-                            'nilai_diskon_persen' => $promo->nilai_diskon,
+                            'nilai_diskon_persen' => $nilaiDiskonPersen,
                             'nilai_diskon_nominal' => $this->promoResult['diskon'] ?? 0, // Bisa 0 jika belum valid
                             'diskon_maksimal' => $promo->diskon_maksimal,
-                            'gratis_kg' => $promo->gratis_kg,
-                            'gratis_hari' => $promo->gratis_hari,
+                            'gratis_kg' => $gratisKg,
+                            'gratis_hari' => $gratisHari,
                             'diterapkan_ke' => $promo->diterapkan_ke ?? 'subtotal', // Default 'subtotal' jika null
                             'layanan_id' => $promo->layanan_id,
                             'urutan_apply' => 1, // Future: untuk multiple promo

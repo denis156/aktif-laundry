@@ -51,15 +51,21 @@ class DetailPesanan extends Component
             ->firstOrFail();
 
         // Generate QR Code dynamic on-demand untuk pembayaran
-        try {
-            $this->qrCodeSvg = QrisConvert::generateOnDemandQrCode((float) $this->transaksi->total);
-        } catch (Exception $qrError) {
-            // Jika gagal generate QR, gunakan fallback (kosong)
+        // Hanya generate jika subtotal dan total sudah ada (> 0)
+        if ($this->transaksi->subtotal > 0 && $this->transaksi->total > 0) {
+            try {
+                $this->qrCodeSvg = QrisConvert::generateOnDemandQrCode((float) $this->transaksi->total);
+            } catch (Exception $qrError) {
+                // Jika gagal generate QR, gunakan fallback (kosong)
+                $this->qrCodeSvg = '';
+                Log::warning('QR Code generation failed for transaction', [
+                    'transaksi_id' => $this->transaksi->id,
+                    'error' => $qrError->getMessage(),
+                ]);
+            }
+        } else {
+            // Belum ada subtotal/total, skip QR code generation
             $this->qrCodeSvg = '';
-            Log::warning('QR Code generation failed for transaction', [
-                'transaksi_id' => $this->transaksi->id,
-                'error' => $qrError->getMessage(),
-            ]);
         }
     }
 

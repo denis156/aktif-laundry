@@ -83,7 +83,7 @@
         {{-- Informasi Pembayaran --}}
         <x-card title="Pembayaran" subtitle="Detail pembayaran pesanan" class="shadow-lg border border-primary w-full"
             body-class="space-y-4">
-            @if($transaksi->status === 'Proses' && $transaksi->status_bayar === 'Belum Bayar')
+            @if($transaksi->status === 'Proses' && $transaksi->status_bayar === 'Belum Bayar' && $transaksi->subtotal > 0 && $transaksi->total > 0)
             <x-slot:figure>
                 @if(!empty($qrCodeSvg))
                 {{-- Dynamic QR Code dengan nominal transaksi --}}
@@ -167,7 +167,7 @@
                 @endif
             </div>
 
-            @if($transaksi->status === 'Proses' && $transaksi->status_bayar === 'Belum Bayar')
+            @if($transaksi->status === 'Proses' && $transaksi->status_bayar === 'Belum Bayar' && $transaksi->subtotal > 0 && $transaksi->total > 0)
             <x-slot:actions separator>
                 <x-button label="Unggah Bukti Pembayaran" class="btn-warning btn-block"
                     @click="$wire.uploadModal = true" />

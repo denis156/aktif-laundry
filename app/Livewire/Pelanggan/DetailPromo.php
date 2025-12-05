@@ -7,6 +7,7 @@ namespace App\Livewire\Pelanggan;
 use App\Helper\Database\PromoHelper;
 use App\Models\Promo;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -146,7 +147,7 @@ class DetailPromo extends Component
     public function canUsePromo(): bool
     {
         if (! $this->promo) {
-            \Log::info('DetailPromo canUsePromo: promo is null');
+            Log::info('DetailPromo canUsePromo: promo is null');
 
             return false;
         }
@@ -154,7 +155,7 @@ class DetailPromo extends Component
         $pelangganId = Auth::guard('pelanggan')->id();
 
         if (! $pelangganId) {
-            \Log::info('DetailPromo canUsePromo: pelanggan not authenticated');
+            Log::info('DetailPromo canUsePromo: pelanggan not authenticated');
 
             return false;
         }
@@ -162,7 +163,7 @@ class DetailPromo extends Component
         // Cek kelayakan umum
         $canUserUse = PromoHelper::canUserUsePromo($this->promo, $pelangganId);
         if (! $canUserUse) {
-            \Log::info('DetailPromo canUsePromo: PromoHelper::canUserUsePromo returned false', [
+            Log::info('DetailPromo canUsePromo: PromoHelper::canUserUsePromo returned false', [
                 'promo_id' => $this->promo->id,
                 'pelanggan_id' => $pelangganId,
             ]);
@@ -173,7 +174,7 @@ class DetailPromo extends Component
         // Cek kuota
         $hasQuota = PromoHelper::hasQuota($this->promo);
         if (! $hasQuota) {
-            \Log::info('DetailPromo canUsePromo: PromoHelper::hasQuota returned false', [
+            Log::info('DetailPromo canUsePromo: PromoHelper::hasQuota returned false', [
                 'promo_id' => $this->promo->id,
                 'kuota_total' => $this->promo->kuota_total,
                 'kuota_terpakai' => $this->promo->kuota_terpakai,
@@ -182,7 +183,7 @@ class DetailPromo extends Component
             return false;
         }
 
-        \Log::info('DetailPromo canUsePromo: ALL CHECKS PASSED - returning true', [
+        Log::info('DetailPromo canUsePromo: ALL CHECKS PASSED - returning true', [
             'promo_id' => $this->promo->id,
             'pelanggan_id' => $pelangganId,
         ]);
