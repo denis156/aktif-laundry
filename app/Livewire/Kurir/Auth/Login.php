@@ -56,7 +56,7 @@ class Login extends Component
 
                     $this->info(
                         'Silakan verifikasi email Anda terlebih dahulu.',
-                        position: 'toast-bottom'
+                        position: 'toast-top'
                     );
 
                     $this->redirect(route('kurir.verification.notice'), navigate: true);
@@ -64,7 +64,7 @@ class Login extends Component
                     return;
                 }
 
-                $this->success('Login berhasil! Selamat datang '.Auth::guard('kurir')->user()->nama, position: 'toast-bottom');
+                $this->success('Login berhasil! Selamat datang '.Auth::guard('kurir')->user()->nama, position: 'toast-top');
 
                 // Redirect ke dashboard kurir
                 $this->redirect(route('beranda.kurir'), navigate: false);
@@ -74,7 +74,7 @@ class Login extends Component
                 Log::warning('Kurir login attempt failed', [
                     'email' => $this->email,
                 ]);
-                $this->error('Email atau password salah!', position: 'toast-bottom');
+                $this->error('Email atau password salah!', position: 'toast-top');
             }
 
         } catch (Exception $e) {
@@ -83,7 +83,7 @@ class Login extends Component
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
-            $this->error('Terjadi kesalahan sistem. Silakan coba lagi.', position: 'toast-bottom');
+            $this->error('Terjadi kesalahan sistem. Silakan coba lagi.', position: 'toast-top');
         }
     }
 
