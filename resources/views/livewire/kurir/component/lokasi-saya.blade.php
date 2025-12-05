@@ -34,7 +34,7 @@
 
         {{-- Map Container --}}
         @if ($latitude && $longitude)
-            <div id="map-lokasi-kurir" wire:ignore class="w-full h-[42dvh] z-40"></div>
+            <div id="map-lokasi-kurir" wire:ignore class="w-full h-[42dvh] rounded z-40"></div>
         @else
             <div class="flex items-center justify-center h-[42dvh]">
                 <div class="text-center space-y-3 p-4">
