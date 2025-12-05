@@ -64,6 +64,7 @@ class DatabaseSeeder extends Seeder
         $this->command->line('   Super Admin: admin@aktiflaundry.com / password');
         $this->command->line('   Staff: budi@aktiflaundry.com / password');
         $this->command->line('   Pelanggan: pelanggan@aktiflaundry.com / password');
+        $this->command->line('   Kurir: kurir@aktiflaundry.com / password');
         $this->command->newLine();
     }
 
@@ -262,6 +263,7 @@ class DatabaseSeeder extends Seeder
             'jam_masuk' => '08:00',
             'jam_keluar' => '17:00',
             'alamat' => 'Kendari, Sulawesi Tenggara',
+            'email_verified_at' => now(),
         ]);
 
         // Staff Kasir
@@ -275,6 +277,7 @@ class DatabaseSeeder extends Seeder
             'jam_masuk' => '08:00',
             'jam_keluar' => '20:00',
             'alamat' => 'Kendari, Sulawesi Tenggara',
+            'email_verified_at' => now(),
         ]);
 
         // Staff Admin
@@ -288,6 +291,7 @@ class DatabaseSeeder extends Seeder
             'jam_masuk' => '09:00',
             'jam_keluar' => '21:00',
             'alamat' => 'Kendari, Sulawesi Tenggara',
+            'email_verified_at' => now(),
         ]);
 
         $this->command->info('   ✓ Created 3 users');
@@ -522,34 +526,35 @@ class DatabaseSeeder extends Seeder
     {
         $this->command->info('🏍️  Seeding Kurir...');
 
-        $counter = 1;
-
-        // 3 kurir motor aktif
-        for ($i = 0; $i < 3; $i++) {
-            Kurir::factory()->create([
-                'kode_kurir' => 'KUR'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
-                'jenis_kendaraan' => 'Motor',
-                'status' => 'Aktif',
-            ]);
-            $counter++;
-        }
-
-        // 2 kurir mobil aktif
-        for ($i = 0; $i < 2; $i++) {
-            Kurir::factory()->create([
-                'kode_kurir' => 'KUR'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
-                'jenis_kendaraan' => 'Mobil',
-                'status' => 'Aktif',
-            ]);
-            $counter++;
-        }
-
-        // 1 kurir tidak aktif
-        Kurir::factory()->inactive()->create([
-            'kode_kurir' => 'KUR'.str_pad((string) $counter, 3, '0', STR_PAD_LEFT),
+        // Kurir - Motor Aktif
+        Kurir::create([
+            'kode_kurir' => 'KUR001',
+            'nama' => 'Kurir',
+            'no_hp' => '81234567893',
+            'email' => 'kurir@aktiflaundry.com',
+            'email_verified_at' => now(),
+            'password' => Hash::make('password'),
+            'alamat' => 'Jl. Ahmad Yani No. 45, Kel. Mandonga, Kec. Mandonga, Kota Kendari, Sulawesi Tenggara',
+            'detail_alamat' => 'Jl. Ahmad Yani No. 45',
+            'kelurahan' => 'Mandonga',
+            'kecamatan' => 'Mandonga',
+            'kabupaten_kota' => 'Kota Kendari',
+            'provinsi' => 'Sulawesi Tenggara',
+            'latitude' => -3.9689,
+            'longitude' => 122.5129,
+            'no_kendaraan' => 'DT 1234 AB',
+            'jenis_kendaraan' => 'Motor',
+            'tanggal_bergabung' => now()->subMonths(12),
+            'status' => 'Aktif',
+            'bank_name' => 'BCA',
+            'bank_account_number' => '1234567890',
+            'bank_account_name' => 'Kurir',
+            'emergency_contact_name' => 'Siti Saputra',
+            'emergency_contact_phone' => '81298765432',
+            'emergency_contact_relation' => 'Saudara',
         ]);
 
-        $this->command->info('   ✓ Created 6 kurir');
+        $this->command->info('   ✓ Created 1 kurir');
     }
 
     /**
