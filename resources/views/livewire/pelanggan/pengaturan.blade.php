@@ -189,7 +189,7 @@
             <x-slot:actions>
                 <div class="grid grid-cols-2 gap-4 w-full">
                     <x-button label="Batal" class="btn-ghost" @click="$wire.modalUbahPassword = false" />
-                    <x-button label="Simpan" type="submit" class="btn-warning" spinner="savePassword" />
+                    <x-button label="Simpan" type="submit" class="btn-primary" spinner="savePassword" />
                 </div>
             </x-slot:actions>
         </x-form>
