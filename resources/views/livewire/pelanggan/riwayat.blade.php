@@ -81,14 +81,16 @@
         </div>
         @endforeach
 
-        @if (!$showAll)
+        @if (!$showAll && ($limit > 10 || $this->hasMoreData))
         <div class="grid grid-cols-2 w-full gap-4">
             @if ($limit > 10)
             <x-button wire:click="loadLess" label="Lebih Sedikit" icon="iconpark.aligntexttop-o"
-                class="btn-secondary btn-block" />
+                class="btn-secondary {{ $this->hasMoreData ? 'col-span-1' : 'col-span-2' }}" />
             @endif
+            @if ($this->hasMoreData)
             <x-button wire:click="loadMore" label="Lebih Banyak" icon="iconpark.aligntextbottom-o"
-                class="btn-primary {{ $limit > 10 ? '' : 'col-span-2' }}" />
+                class="btn-primary {{ $limit > 10 ? 'col-span-1' : 'col-span-2' }}" />
+            @endif
         </div>
         @endif
         @endif

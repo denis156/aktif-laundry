@@ -22,6 +22,20 @@ class Riwayat extends Component
     public bool $showAll = false;
 
     #[Computed]
+    public function totalTransaksi(): int
+    {
+        $pelanggan = auth('pelanggan')->user();
+
+        if (! $pelanggan) {
+            return 0;
+        }
+
+        return Transaksi::query()
+            ->where('pelanggan_id', $pelanggan->id)
+            ->count();
+    }
+
+    #[Computed]
     public function transaksiGrouped(): Collection
     {
         $pelanggan = auth('pelanggan')->user();
@@ -47,6 +61,12 @@ class Riwayat extends Component
         $transaksi = $query->get();
 
         return $this->groupTransaksiByPeriod($transaksi);
+    }
+
+    #[Computed]
+    public function hasMoreData(): bool
+    {
+        return $this->limit < $this->totalTransaksi;
     }
 
     public function loadMore(): void
