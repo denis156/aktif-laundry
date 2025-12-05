@@ -139,7 +139,7 @@
         function updatePopupContent(lat, lng, accuracy = null) {
             if (!lokasiMarker) return;
 
-            const accuracyText = accuracy ? `<div class="text-xs text-base-content/60 mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
+            const accuracyText = accuracy ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
 
             const popupContent = `
                 <div class="p-2">
@@ -147,7 +147,7 @@
                         <x-icon name="iconpark.localpin-o" class="w-5 h-5 text-primary" />
                         <strong class="text-base">Lokasi Anda</strong>
                     </div>
-                    <div class="text-xs text-base-content/60 font-mono">
+                    <div class="text-xs text-secondary font-mono">
                         ${lat.toFixed(6)}, ${lng.toFixed(6)}
                     </div>
                     ${accuracyText}

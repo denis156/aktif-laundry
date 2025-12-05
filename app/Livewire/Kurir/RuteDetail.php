@@ -6,6 +6,7 @@ namespace App\Livewire\Kurir;
 
 use App\Models\Transaksi;
 use Illuminate\Contracts\View\View;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -26,6 +27,16 @@ class RuteDetail extends Component
 
     public ?string $pelangganNoHp = null;
 
+    public ?float $kurirLatitude = null;
+
+    public ?float $kurirLongitude = null;
+
+    public ?float $kurirAccuracy = null;
+
+    public string $gpsStatus = 'initializing';
+
+    public bool $hasInitialLocation = false;
+
     public function mount(int $id): void
     {
         // Load transaksi dengan relasi pelanggan
@@ -45,6 +56,54 @@ class RuteDetail extends Component
             $this->pelangganAlamat = $this->transaksi->pelanggan->alamat;
             $this->pelangganNoHp = $this->transaksi->pelanggan->no_hp;
         }
+
+        // Load lokasi kurir terakhir dari database untuk inisialisasi map
+        $kurir = auth('kurir')->user();
+        if ($kurir) {
+            $this->kurirLatitude = $kurir->latitude ? (float) $kurir->latitude : null;
+            $this->kurirLongitude = $kurir->longitude ? (float) $kurir->longitude : null;
+
+            // Cek apakah sudah pernah ada lokasi tersimpan
+            if ($this->kurirLatitude && $this->kurirLongitude) {
+                $this->hasInitialLocation = true;
+            }
+        }
+
+        // Try to get cached location for this route
+        $cacheKey = 'kurir_route_start_'.$kurir?->id.'_'.$id;
+        $cachedLocation = Cache::get($cacheKey);
+
+        if ($cachedLocation && ! $this->hasInitialLocation) {
+            $this->kurirLatitude = $cachedLocation['latitude'];
+            $this->kurirLongitude = $cachedLocation['longitude'];
+            $this->hasInitialLocation = true;
+        }
+    }
+
+    public function updateKurirLocation(float $latitude, float $longitude, float $accuracy): void
+    {
+        $this->kurirLatitude = $latitude;
+        $this->kurirLongitude = $longitude;
+        $this->kurirAccuracy = $accuracy;
+        $this->gpsStatus = 'active';
+
+        // Cache lokasi awal untuk route ini (pertama kali saja)
+        if (! $this->hasInitialLocation) {
+            $kurir = auth('kurir')->user();
+            $cacheKey = 'kurir_route_start_'.$kurir?->id.'_'.$this->transaksi?->id;
+
+            Cache::put($cacheKey, [
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+            ], now()->addHours(24)); // Cache selama 24 jam
+
+            $this->hasInitialLocation = true;
+        }
+    }
+
+    public function updateGpsStatus(string $status): void
+    {
+        $this->gpsStatus = $status;
     }
 
     public function render(): View

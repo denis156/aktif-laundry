@@ -23,16 +23,15 @@
         <script>
             let ruteMap = null;
             let pelangganMarker = null;
+            let kurirMarker = null;
+            let routingControl = null;
+            let watchId = null;
+            let isMapInitialized = false;
+            let hasInitialRoute = false;
 
             function initRuteMap() {
                 const mapElement = document.getElementById('map-rute-detail');
-                if (!mapElement) {
-                    console.error('Map element not found!');
-                    return;
-                }
-
-                if (ruteMap) {
-                    console.log('Map already initialized');
+                if (!mapElement || isMapInitialized) {
                     return;
                 }
 
@@ -89,18 +88,182 @@
                     }
                 }, 100);
 
-                // Add pelanggan marker (default marker)
+                // Add pelanggan marker (default blue marker - tidak diubah)
                 pelangganMarker = L.marker([pelangganLat, pelangganLng]).addTo(ruteMap);
 
-                // Simple popup content
-                const popupContent = `
+                const pelangganNama = @js($pelangganNama);
+                const pelangganAlamat = @js($pelangganAlamat);
+
+                const pelangganPopup = `
                     <div class="p-2">
-                        <strong>@js($pelangganNama)</strong><br>
-                        <small>@js($pelangganAlamat)</small>
+                        <strong>${pelangganNama}</strong><br>
+                        <small>${pelangganAlamat}</small>
                     </div>
                 `;
 
-                pelangganMarker.bindPopup(popupContent);
+                pelangganMarker.bindPopup(pelangganPopup);
+
+                // Add kurir marker dengan custom icon
+                const kurirLat = parseFloat($wire.kurirLatitude) || pelangganLat;
+                const kurirLng = parseFloat($wire.kurirLongitude) || pelangganLng;
+
+                const customKurirIcon = L.icon({
+                    iconUrl: '/images/marker.png',
+                    iconSize: [48, 48],
+                    iconAnchor: [24, 48],
+                    popupAnchor: [0, -48]
+                });
+
+                kurirMarker = L.marker([kurirLat, kurirLng], {
+                    icon: customKurirIcon,
+                    draggable: false
+                }).addTo(ruteMap);
+
+                updateKurirPopupContent(kurirLat, kurirLng);
+
+                isMapInitialized = true;
+
+                // Initialize routing jika kurir sudah punya koordinat
+                if (kurirLat && kurirLng && (kurirLat !== pelangganLat || kurirLng !== pelangganLng)) {
+                    initRouting(kurirLat, kurirLng, pelangganLat, pelangganLng);
+                }
+
+                // Start GPS tracking untuk kurir
+                startKurirGPSTracking();
+            }
+
+            function initRouting(kurirLat, kurirLng, pelangganLat, pelangganLng) {
+                // Remove existing routing control jika ada
+                if (routingControl) {
+                    ruteMap.removeControl(routingControl);
+                    routingControl = null;
+                }
+
+                // Create routing control
+                routingControl = L.Routing.control({
+                    waypoints: [
+                        L.latLng(kurirLat, kurirLng),
+                        L.latLng(pelangganLat, pelangganLng)
+                    ],
+                    routeWhileDragging: false,
+                    addWaypoints: false,
+                    draggableWaypoints: false,
+                    fitSelectedRoutes: true,
+                    showAlternatives: false,
+                    lineOptions: {
+                        styles: [
+                            {color: '#3b82f6', opacity: 0.8, weight: 5}
+                        ],
+                        extendToWaypoints: true,
+                        missingRouteTolerance: 0
+                    },
+                    createMarker: function() {
+                        return null; // Don't create default markers
+                    },
+                    router: L.Routing.osrmv1({
+                        serviceUrl: 'https://router.project-osrm.org/route/v1'
+                    })
+                }).addTo(ruteMap);
+
+                hasInitialRoute = true;
+
+                // Event listener untuk route found
+                routingControl.on('routesfound', function(e) {
+                    const routes = e.routes;
+                    const summary = routes[0].summary;
+
+                    console.log('Route found:');
+                    console.log('Total distance: ' + (summary.totalDistance / 1000).toFixed(2) + ' km');
+                    console.log('Total time: ' + Math.round(summary.totalTime / 60) + ' minutes');
+                });
+
+                // Hide routing instructions panel
+                setTimeout(() => {
+                    const routingContainer = document.querySelector('.leaflet-routing-container');
+                    if (routingContainer) {
+                        routingContainer.style.display = 'none';
+                    }
+                }, 100);
+            }
+
+            function updateRouting(newKurirLat, newKurirLng) {
+                const pelangganLat = parseFloat(@js($pelangganLatitude));
+                const pelangganLng = parseFloat(@js($pelangganLongitude));
+
+                if (routingControl) {
+                    // Update waypoints
+                    routingControl.setWaypoints([
+                        L.latLng(newKurirLat, newKurirLng),
+                        L.latLng(pelangganLat, pelangganLng)
+                    ]);
+                } else {
+                    // Initialize routing jika belum ada
+                    initRouting(newKurirLat, newKurirLng, pelangganLat, pelangganLng);
+                }
+            }
+
+            function updateKurirPopupContent(lat, lng, accuracy = null) {
+                if (!kurirMarker) return;
+
+                const accuracyText = accuracy ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
+
+                const popupContent = `
+                    <div class="p-2">
+                        <div class="flex items-center gap-2 mb-1">
+                            <strong class="text-base">Lokasi Anda (Kurir)</strong>
+                        </div>
+                        <div class="text-xs text-secondary font-mono">
+                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                        </div>
+                        ${accuracyText}
+                    </div>
+                `;
+
+                kurirMarker.bindPopup(popupContent);
+            }
+
+            function startKurirGPSTracking() {
+                if (!navigator.geolocation) {
+                    console.error('Geolocation tidak didukung');
+                    $wire.call('updateGpsStatus', 'error');
+                    return;
+                }
+
+                // Update status ke "searching"
+                $wire.call('updateGpsStatus', 'searching');
+
+                watchId = navigator.geolocation.watchPosition(
+                    (position) => {
+                        const lat = position.coords.latitude;
+                        const lng = position.coords.longitude;
+                        const accuracy = position.coords.accuracy;
+
+                        // Call Livewire method
+                        $wire.call('updateKurirLocation', lat, lng, accuracy);
+
+                        // Update kurir marker
+                        if (kurirMarker && ruteMap) {
+                            kurirMarker.setLatLng([lat, lng]);
+                            updateKurirPopupContent(lat, lng, accuracy);
+
+                            // Update routing
+                            updateRouting(lat, lng);
+                        }
+                    },
+                    (error) => {
+                        // Don't log timeout errors (they're normal in indoor/poor signal conditions)
+                        if (error.code !== error.TIMEOUT) {
+                            console.error('GPS Error:', error.message);
+                        }
+
+                        // Don't update status or retry - watchPosition will keep trying automatically
+                    },
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 30000, // Increase timeout to 30 seconds
+                        maximumAge: 5000 // Allow cached position up to 5 seconds old
+                    }
+                );
             }
 
             // Initialize map after DOM ready
@@ -110,10 +273,21 @@
 
             // Cleanup on navigation
             document.addEventListener('livewire:navigating', () => {
+                if (watchId !== null) {
+                    navigator.geolocation.clearWatch(watchId);
+                    watchId = null;
+                }
                 if (ruteMap) {
+                    if (routingControl) {
+                        ruteMap.removeControl(routingControl);
+                        routingControl = null;
+                    }
                     ruteMap.remove();
                     ruteMap = null;
                     pelangganMarker = null;
+                    kurirMarker = null;
+                    isMapInitialized = false;
+                    hasInitialRoute = false;
                 }
             });
         </script>
