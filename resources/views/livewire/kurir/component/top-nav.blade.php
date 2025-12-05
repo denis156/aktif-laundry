@@ -1,26 +1,14 @@
 <nav class="navbar bg-primary text-primary-content sticky top-0 z-50">
     <div class="navbar-start">
-        <x-dropdown no-x-anchor scroll max-height="max-h-64 text-warning-content">
-            <x-slot:trigger>
-                <div class="indicator">
-                    <span class="indicator-item badge badge-warning badge-xs">2</span>
-                    <x-button icon="iconpark.remind-o" class="btn-circle btn-md" />
-                </div>
-            </x-slot:trigger>
-
-            <x-menu-item title="Menunggu penjemputan" badge="8" class="text-warningw text-xs"
-                badge-classes="badge-soft badge-warning badge-xs" />
-            <x-menu-item title="Menunggu pengantaran" badge="4" class="text-warningw text-xs"
-                badge-classes="badge-soft badge-warning badge-xs" />
-
-            {{-- Todo: Tampilan Jika Notif Kosong --}}
-            {{-- <x-menu-item title="Belum Ada Notifikasi terbaru" class="text-info text-xs" /> --}}
-        </x-dropdown>
+        <x-button icon="iconpark.setting-o" class="btn-circle" link="{{ route('pengaturan.kurir') }}" />
     </div>
     <div class="navbar-center">
-        <span class="text-md font-extrabold uppercase">{{ config('app.name') }}</span>
+        <span class="text-md font-extrabold uppercase">kurir {{ config('app.name') }}</span>
     </div>
     <div class="navbar-end">
-        <x-button icon="iconpark.setting-o" class="btn-circle btn-md" link="{{ route('pengaturan.kurir') }}" />
+        <a href="{{ route('profile.kurir') }}" wire:navigate class="cursor-pointer">
+            <x-avatar :image="$this->avatarUrl"
+                class="w-10 h-10 rounded-full ring-2 ring-success ring-offset-2 ring-offset-base-200 hover:ring-primary transition-all" />
+        </a>
     </div>
 </nav>
