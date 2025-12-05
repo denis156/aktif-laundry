@@ -93,7 +93,7 @@
         persistent>
         <div class="space-y-4">
             <div class="flex justify-center">
-                <img src="{{ asset('icon.png') }}" alt="App Icon" class="w-24 h-24 rounded-2xl shadow-lg" />
+                <img src="{{ asset('icon512_rounded.png') }}" alt="App Icon" class="w-24 h-24 rounded-2xl shadow-lg" />
             </div>
 
             <div class="text-center space-y-2">

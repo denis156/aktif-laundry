@@ -27,7 +27,7 @@ class ManifestHelper
             'scope' => '/kurir/',
             'display' => 'standalone',
             'orientation' => 'portrait',
-            'background_color' => '#ffffff',
+            'background_color' => '#fd1a1a',
             'theme_color' => '#cf4040',
             'categories' => ['business', 'productivity'],
             'icons' => self::getIcons(),
@@ -49,7 +49,7 @@ class ManifestHelper
             'scope' => '/pelanggan/',
             'display' => 'standalone',
             'orientation' => 'portrait',
-            'background_color' => '#ffffff',
+            'background_color' => '#fd1a1a',
             'theme_color' => '#cf4040',
             'categories' => ['lifestyle', 'utilities'],
             'icons' => self::getIcons(),
@@ -59,35 +59,42 @@ class ManifestHelper
     /**
      * Get array icons untuk PWA manifest
      * Icons yang sama digunakan untuk kurir dan pelanggan
-     * Menggunakan icon.png 512x512 dari public folder
      *
      * Chrome Android memerlukan minimal 1 icon dengan:
      * - Size: 192x192 atau lebih besar
-     * - Purpose: 'any' atau 'any maskable'
-     * - Format: PNG recommended
+     * - Purpose: 'any' atau 'maskable'
+     * - Format: PNG (GIF tidak akan animate di native splash screen)
+     *
+     * Android akan otomatis generate splash screen dari:
+     * - Icon PNG (512x512 atau 192x192)
+     * - background_color dari manifest
+     * - name dari manifest
+     *
+     * icon512_rounded.png - Icon dengan rounded corners untuk 'any' purpose
+     * icon512_maskable.png - Icon dengan safe zone untuk 'maskable' (Android adaptive icons)
      *
      * @return array<int, array<string, string>>
      */
     private static function getIcons(): array
     {
         return [
-            // Icon 512x512 untuk any purpose (standard) - REQUIRED untuk Chrome
+            // Icon 512x512 rounded untuk splash screen & app icon - REQUIRED untuk Chrome Android
             [
-                'src' => '/icon.png',
+                'src' => '/icon512_rounded.png',
                 'sizes' => '512x512',
                 'type' => 'image/png',
                 'purpose' => 'any',
             ],
-            // Icon 512x512 untuk maskable (Android adaptive icons)
+            // Icon 512x512 maskable untuk Android adaptive icons
             [
-                'src' => '/icon.png',
+                'src' => '/icon512_maskable.png',
                 'sizes' => '512x512',
                 'type' => 'image/png',
                 'purpose' => 'maskable',
             ],
-            // Icon 192x192 untuk Chrome (required minimum fallback)
+            // Icon 192x192 fallback untuk device lama
             [
-                'src' => '/icon.png',
+                'src' => '/icon512_rounded.png',
                 'sizes' => '192x192',
                 'type' => 'image/png',
                 'purpose' => 'any',
