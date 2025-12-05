@@ -47,7 +47,7 @@ return new class () extends Migration {
 
             // Status & Timeline
             $table->dateTime('tanggal_selesai')->nullable();
-            $table->string('status')->default('Menunggu')->comment('Menunggu, Proses, Selesai, Diambil, Batal');
+            $table->string('status')->default('Menunggu')->comment('Menunggu, Pengerjaan, Proses, Selesai, Diambil, Batal');
             $table->text('catatan')->nullable();
 
             // Snapshot kurir names (saat transaksi dibuat)

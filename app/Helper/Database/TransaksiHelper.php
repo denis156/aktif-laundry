@@ -22,6 +22,8 @@ class TransaksiHelper
 
     public const STATUS_PROSES = 'Proses';
 
+    public const STATUS_PENGERJAAN = 'Pengerjaan';
+
     public const STATUS_SELESAI = 'Selesai';
 
     public const STATUS_DIAMBIL = 'Diambil';
@@ -216,6 +218,7 @@ class TransaksiHelper
         return [
             self::STATUS_MENUNGGU,
             self::STATUS_PROSES,
+            self::STATUS_PENGERJAAN,
             self::STATUS_SELESAI,
             self::STATUS_DIAMBIL,
             self::STATUS_BATAL,
@@ -415,6 +418,7 @@ class TransaksiHelper
         return [
             ['id' => self::STATUS_MENUNGGU, 'name' => 'Menunggu'],
             ['id' => self::STATUS_PROSES, 'name' => 'Proses'],
+            ['id' => self::STATUS_PENGERJAAN, 'name' => 'Pengerjaan'],
             ['id' => self::STATUS_SELESAI, 'name' => 'Selesai'],
             ['id' => self::STATUS_DIAMBIL, 'name' => 'Diambil'],
             ['id' => self::STATUS_BATAL, 'name' => 'Batal'],
@@ -454,5 +458,36 @@ class TransaksiHelper
             ['id' => self::STATUS_SUDAH_BAYAR, 'name' => 'Sudah Bayar'],
             ['id' => self::STATUS_DITOLAK, 'name' => 'Ditolak'],
         ];
+    }
+
+    /**
+     * Get badge class untuk status transaksi
+     * Menunggu=Secondary, Proses=Warning, Pengerjaan=Info, Selesai=Success, Diambil=Neutral, Batal=Error
+     */
+    public static function getStatusBadgeClass(string $status): string
+    {
+        return match ($status) {
+            self::STATUS_MENUNGGU => 'badge-secondary',
+            self::STATUS_PROSES => 'badge-warning',
+            self::STATUS_PENGERJAAN => 'badge-info',
+            self::STATUS_SELESAI => 'badge-success',
+            self::STATUS_DIAMBIL => 'badge-neutral',
+            self::STATUS_BATAL => 'badge-error',
+            default => 'badge-ghost',
+        };
+    }
+
+    /**
+     * Get badge class untuk status pembayaran
+     */
+    public static function getStatusBayarBadgeClass(string $statusBayar): string
+    {
+        return match ($statusBayar) {
+            self::STATUS_BELUM_BAYAR => 'badge-error',
+            self::STATUS_MENUNGGU_VERIFIKASI => 'badge-warning',
+            self::STATUS_SUDAH_BAYAR => 'badge-success',
+            self::STATUS_DITOLAK => 'badge-error',
+            default => 'badge-ghost',
+        };
     }
 }

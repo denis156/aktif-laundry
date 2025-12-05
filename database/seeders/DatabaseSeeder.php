@@ -462,8 +462,8 @@ class DatabaseSeeder extends Seeder
                 // Status lebih bervariasi berdasarkan umur transaksi
                 $status = match (true) {
                     $bulanLalu >= 2 => fake()->randomElement(['Selesai', 'Diambil', 'Diambil']),
-                    $bulanLalu === 1 => fake()->randomElement(['Selesai', 'Selesai', 'Diambil']),
-                    default => fake()->randomElement(['Menunggu', 'Proses', 'Selesai', 'Diambil']),
+                    $bulanLalu === 1 => fake()->randomElement(['Pengerjaan', 'Selesai', 'Selesai', 'Diambil']),
+                    default => fake()->randomElement(['Menunggu', 'Proses', 'Pengerjaan', 'Selesai', 'Diambil']),
                 };
 
                 $statusBayar = match ($status) {
@@ -731,7 +731,7 @@ class DatabaseSeeder extends Seeder
                 'tipe_bayar' => fake()->randomElement(['Tunai', 'Non-Tunai']),
                 'status_bayar' => fake()->randomElement(['Belum Bayar', 'Sudah Bayar', 'Sudah Bayar']),
                 'tanggal_selesai' => $tanggalSelesai,
-                'status' => fake()->randomElement(['Menunggu', 'Proses', 'Selesai', 'Diambil']),
+                'status' => fake()->randomElement(['Menunggu', 'Proses', 'Pengerjaan', 'Selesai', 'Diambil']),
                 'catatan' => fake()->optional(0.3)->sentence(),
             ]);
 
