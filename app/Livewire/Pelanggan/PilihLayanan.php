@@ -14,7 +14,7 @@ use Mary\Traits\Toast;
 
 #[Title('Pilih Layanan')]
 #[Layout('layouts.pelanggan.app')]
-class ListLayanan extends Component
+class PilihLayanan extends Component
 {
     use Toast;
 
@@ -79,7 +79,7 @@ class ListLayanan extends Component
                 })
                 ->toArray();
         } catch (Exception $e) {
-            Log::error('ListLayanan: Failed to load layanan', [
+            Log::error('PilihLayanan: Failed to load layanan', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -108,7 +108,7 @@ class ListLayanan extends Component
         // Update session
         session(['selected_layanan_ids' => $this->selectedLayananIds]);
 
-        Log::info('ListLayanan: Layanan toggled', [
+        Log::info('PilihLayanan: Layanan toggled', [
             'layanan_id' => $layananId,
             'selected_ids' => $this->selectedLayananIds,
         ]);
@@ -125,7 +125,7 @@ class ListLayanan extends Component
         // Store selected IDs in session
         session(['selected_layanan_ids' => $this->selectedLayananIds]);
 
-        Log::info('ListLayanan: Proceeding to form', [
+        Log::info('PilihLayanan: Proceeding to form', [
             'selected_ids' => $this->selectedLayananIds,
         ]);
 
@@ -136,7 +136,7 @@ class ListLayanan extends Component
             // Clear the session BEFORE redirect
             session()->forget('edit_transaksi_id');
 
-            Log::info('ListLayanan: Returning to edit pesanan', [
+            Log::info('PilihLayanan: Returning to edit pesanan', [
                 'transaksi_id' => $transaksiId,
                 'selected_ids' => $this->selectedLayananIds,
             ]);
@@ -151,6 +151,6 @@ class ListLayanan extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.list-layanan');
+        return view('livewire.pelanggan.pilih-layanan');
     }
 }

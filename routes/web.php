@@ -53,13 +53,13 @@ use App\Livewire\Pelanggan\Auth\Register as PelangganRegister;
 use App\Livewire\Pelanggan\Auth\ResetPassword as PelangganResetPassword;
 use App\Livewire\Pelanggan\Auth\VerifyEmail as PelangganVerifyEmail;
 use App\Livewire\Pelanggan\Beranda as PelangganBeranda;
+use App\Livewire\Pelanggan\BuatPesanan as PelangganBuatPesanan;
 use App\Livewire\Pelanggan\DetailLayanan as PelangganDetailLayanan;
 use App\Livewire\Pelanggan\DetailPesanan as PelangganDetailPesanan;
 use App\Livewire\Pelanggan\DetailPromo as PelangganDetailPromo;
 use App\Livewire\Pelanggan\EditPesanan as PelangganEditPesanan;
-use App\Livewire\Pelanggan\ListLayanan as PelangganListLayanan;
 use App\Livewire\Pelanggan\Pengaturan as PelangganPengaturan;
-use App\Livewire\Pelanggan\Pesan as PelangganPesan;
+use App\Livewire\Pelanggan\PilihLayanan as PelangganPilihLayanan;
 use App\Livewire\Pelanggan\Profile as PelangganProfile;
 use App\Livewire\Pelanggan\Riwayat as PelangganRiwayat;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -274,8 +274,8 @@ Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
 // Protected Pelanggan Routes
 Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')->group(function () {
     Route::get('/', PelangganBeranda::class)->name('beranda.pelanggan');
-    Route::get('/pesan', PelangganListLayanan::class)->name('pesanan.pelanggan');
-    Route::get('/pesan/form', PelangganPesan::class)->name('pesanan-form.pelanggan');
+    Route::get('/pesan', PelangganPilihLayanan::class)->name('pesanan.pelanggan');
+    Route::get('/pesan/form', PelangganBuatPesanan::class)->name('pesanan-form.pelanggan');
     Route::get('/pesan/{id}/edit', PelangganEditPesanan::class)->name('edit-pesanan.pelanggan');
     Route::get('/promo/{id}', PelangganDetailPromo::class)->name('detail-promo.pelanggan');
     Route::get('/layanan/{id}', PelangganDetailLayanan::class)->name('detail-layanan.pelanggan');

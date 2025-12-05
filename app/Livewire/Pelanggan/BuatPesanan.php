@@ -18,9 +18,9 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Mary\Traits\Toast;
 
-#[Title('Pesan')]
+#[Title('Buat Pesanan')]
 #[Layout('layouts.pelanggan.app')]
-class Pesan extends Component
+class BuatPesanan extends Component
 {
     use Toast;
 
@@ -59,7 +59,7 @@ class Pesan extends Component
         // Validasi data alamat dan no telpon
         if (empty($pelanggan->no_hp) || empty($pelanggan->alamat)) {
             // Data profil belum lengkap, redirect ke halaman profile
-            Log::warning('Pesan: Profile data incomplete, redirecting to profile page', [
+            Log::warning('BuatPesanan: Profile data incomplete, redirecting to profile page', [
                 'pelanggan_id' => $pelanggan->id,
                 'has_phone' => ! empty($pelanggan->no_hp),
                 'has_address' => ! empty($pelanggan->alamat),
@@ -80,12 +80,12 @@ class Pesan extends Component
         if (session()->has('selected_layanan_ids')) {
             $this->selectedLayananIds = session('selected_layanan_ids', []);
 
-            Log::info('Pesan: Loaded selected layanan from session', [
+            Log::info('BuatPesanan: Loaded selected layanan from session', [
                 'selected_ids' => $this->selectedLayananIds,
             ]);
         } else {
             // If no layanan selected, redirect back to list
-            Log::warning('Pesan: No layanan selected, redirecting to list');
+            Log::warning('BuatPesanan: No layanan selected, redirecting to list');
             $this->redirect(route('pesanan.pelanggan'), navigate: true);
         }
 
@@ -93,7 +93,7 @@ class Pesan extends Component
         if (session()->has('selected_promo_id')) {
             $this->formData['promo_id'] = session('selected_promo_id');
 
-            Log::info('Pesan: Loaded selected promo from session', [
+            Log::info('BuatPesanan: Loaded selected promo from session', [
                 'promo_id' => $this->formData['promo_id'],
             ]);
 
@@ -140,7 +140,7 @@ class Pesan extends Component
             $pelangganId = Auth::id();
             $this->promoOptions = PromoHelper::getPromoOptions($pelangganId);
         } catch (Exception $e) {
-            Log::error('Pesan: Failed to load options', [
+            Log::error('BuatPesanan: Failed to load options', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -177,7 +177,7 @@ class Pesan extends Component
         // Update session
         session(['selected_layanan_ids' => $this->selectedLayananIds]);
 
-        Log::info('Pesan: Layanan removed', [
+        Log::info('BuatPesanan: Layanan removed', [
             'layanan_id' => $layananId,
             'remaining_ids' => $this->selectedLayananIds,
         ]);
@@ -290,7 +290,7 @@ class Pesan extends Component
 
     public function submit(): void
     {
-        Log::info('Pesan: Submit started', [
+        Log::info('BuatPesanan: Submit started', [
             'pelanggan_id' => Auth::id(),
             'selectedLayananIds' => $this->selectedLayananIds,
             'formData' => $this->formData,
@@ -298,7 +298,7 @@ class Pesan extends Component
 
         // Validasi minimal 1 layanan dipilih
         if (empty($this->selectedLayananIds)) {
-            Log::warning('Pesan: No layanan selected', [
+            Log::warning('BuatPesanan: No layanan selected', [
                 'pelanggan_id' => Auth::id(),
             ]);
 
@@ -322,9 +322,9 @@ class Pesan extends Component
                 'formData.catatan' => 'nullable|string|max:1000',
             ]);
 
-            Log::info('Pesan: Validation passed');
+            Log::info('BuatPesanan: Validation passed');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Pesan: Validation failed', [
+            Log::warning('BuatPesanan: Validation failed', [
                 'pelanggan_id' => Auth::id(),
                 'errors' => $e->errors(),
                 'formData' => $this->formData,
@@ -337,7 +337,7 @@ class Pesan extends Component
             DB::transaction(function () {
                 $pelanggan = Auth::user();
 
-                Log::info('Pesan: Starting transaction', [
+                Log::info('BuatPesanan: Starting transaction', [
                     'pelanggan_id' => $pelanggan->id,
                     'pelanggan_nama' => $pelanggan->nama,
                 ]);
@@ -345,7 +345,7 @@ class Pesan extends Component
                 // Generate kode transaksi
                 $kodeTransaksi = TransaksiHelper::generateKodeTransaksi();
 
-                Log::info('Pesan: Kode transaksi generated', [
+                Log::info('BuatPesanan: Kode transaksi generated', [
                     'kode_transaksi' => $kodeTransaksi,
                 ]);
 
@@ -368,14 +368,14 @@ class Pesan extends Component
                     'total' => 0, // Diisi staff nanti
                 ];
 
-                Log::info('Pesan: Creating transaksi', [
+                Log::info('BuatPesanan: Creating transaksi', [
                     'transaksi_data' => $transaksiData,
                 ]);
 
                 // Simpan transaksi
                 $transaksi = Transaksi::create($transaksiData);
 
-                Log::info('Pesan: Transaksi created successfully', [
+                Log::info('BuatPesanan: Transaksi created successfully', [
                     'transaksi_id' => $transaksi->id,
                     'kode_transaksi' => $transaksi->kode_transaksi,
                 ]);
@@ -386,7 +386,7 @@ class Pesan extends Component
                     $layanan = Layanan::find($layananId);
 
                     if (! $layanan) {
-                        Log::warning('Pesan: Layanan not found', [
+                        Log::warning('BuatPesanan: Layanan not found', [
                             'layanan_id' => $layananId,
                             'transaksi_id' => $transaksi->id,
                         ]);
@@ -405,7 +405,7 @@ class Pesan extends Component
                         'subtotal' => 0, // Diisi staff nanti
                     ];
 
-                    Log::info('Pesan: Creating transaksi_layanan', [
+                    Log::info('BuatPesanan: Creating transaksi_layanan', [
                         'transaksi_id' => $transaksi->id,
                         'layanan_id' => $layanan->id,
                         'data' => $transaksiLayananData,
@@ -414,7 +414,7 @@ class Pesan extends Component
                     $transaksi->transaksiLayanan()->create($transaksiLayananData);
                 }
 
-                Log::info('Pesan: All transaksi_layanan created', [
+                Log::info('BuatPesanan: All transaksi_layanan created', [
                     'transaksi_id' => $transaksi->id,
                     'count' => count($this->selectedLayananIds),
                 ]);
@@ -439,7 +439,7 @@ class Pesan extends Component
                             'urutan_apply' => 1,
                         ];
 
-                        Log::info('Pesan: Creating transaksi_promo', [
+                        Log::info('BuatPesanan: Creating transaksi_promo', [
                             'transaksi_id' => $transaksi->id,
                             'promo_id' => $promo->id,
                             'data' => $transaksiPromoData,
@@ -448,27 +448,27 @@ class Pesan extends Component
                         // Simpan snapshot promo (diskon akan dihitung staff nanti)
                         $transaksi->transaksiPromo()->create($transaksiPromoData);
 
-                        Log::info('Pesan: Promo saved (akan dihitung staff)', [
+                        Log::info('BuatPesanan: Promo saved (akan dihitung staff)', [
                             'transaksi_id' => $transaksi->id,
                             'promo_id' => $promo->id,
                             'kode_promo' => $promo->kode_promo,
                         ]);
                     } else {
-                        Log::warning('Pesan: Promo not found despite validation', [
+                        Log::warning('BuatPesanan: Promo not found despite validation', [
                             'transaksi_id' => $transaksi->id,
                             'promo_id' => $this->formData['promo_id'],
                         ]);
                     }
                 } else {
                     if ($this->formData['promo_id'] && ! $this->promoResult['valid']) {
-                        Log::warning('Pesan: Promo selected but not valid', [
+                        Log::warning('BuatPesanan: Promo selected but not valid', [
                             'promo_id' => $this->formData['promo_id'],
                             'promo_result' => $this->promoResult,
                         ]);
                     }
                 }
 
-                Log::info('Pesan: Transaksi berhasil dibuat', [
+                Log::info('BuatPesanan: Transaksi berhasil dibuat', [
                     'transaksi_id' => $transaksi->id,
                     'kode_transaksi' => $transaksi->kode_transaksi,
                     'pelanggan_id' => $pelanggan->id,
@@ -476,7 +476,7 @@ class Pesan extends Component
                 ]);
             });
 
-            Log::info('Pesan: Transaction committed successfully');
+            Log::info('BuatPesanan: Transaction committed successfully');
 
             $this->success('Pesanan berhasil dibuat! Tim kami akan segera menghubungi Anda.', position: 'toast-top', timeout: 5000);
 
@@ -486,7 +486,7 @@ class Pesan extends Component
             // Re-throw validation exception to show validation errors
             throw $e;
         } catch (Exception $e) {
-            Log::error('Pesan: Failed to create transaksi', [
+            Log::error('BuatPesanan: Failed to create transaksi', [
                 'error' => $e->getMessage(),
                 'error_class' => get_class($e),
                 'file' => $e->getFile(),
@@ -513,7 +513,7 @@ class Pesan extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.pesan', [
+        return view('livewire.pelanggan.buat-pesanan', [
             'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
             'tipeBayarOptions' => $this->getTipeBayarOptions(),
         ]);
