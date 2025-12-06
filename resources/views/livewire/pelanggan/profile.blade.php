@@ -1,5 +1,5 @@
 <div class="container mx-auto">
-    <x-header title="Profil Saya" subtitle="Kelola informasi profil dan data pribadi Anda" icon="iconpark.user-o"
+    <x-header title="Profil Saya" subtitle="Kelola data profil Anda" icon="iconpark.user-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator>
         <x-slot:actions>
             <x-button icon="iconpark.lefttwo-o" class="btn-secondary btn-sm" label="Kembali"

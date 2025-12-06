@@ -2,6 +2,23 @@
     <x-card title="Untung Bareng Teman!" subtitle="Bagikan kode & nikmati promo spesial"
         class="shadow-lg border border-primary col-span-full text-primary">
 
+        @if(!$this->isReferralEnabled())
+        {{-- Coming Soon Message --}}
+        <div class="text-center py-8 space-y-4">
+            <div class="flex justify-center">
+                <div class="bg-warning/10 p-4 rounded-full">
+                    <x-icon name="iconpark.time-o" class="w-16 h-16 text-warning" />
+                </div>
+            </div>
+            <div class="space-y-2">
+                <h3 class="text-lg font-bold text-base-content">Sedang Dalam Persiapan</h3>
+                <p class="text-sm text-base-content/70 max-w-sm mx-auto">
+                    Fitur referral sedang kami tingkatkan untuk memberikan pengalaman terbaik. Nantikan promo menarik yang akan segera hadir!
+                </p>
+            </div>
+            <x-badge class="badge-warning badge-dash" value="Segera Hadir"/>
+        </div>
+        @else
         {{-- Benefit Info --}}
         <div class="space-y-3 mb-4">
             {{-- Benefit untuk Kamu --}}
@@ -51,8 +68,10 @@
                     wire:click="confirmGenerate" />
             </x-slot:append>
         </x-input>
+        @endif
     </x-card>
 
+    @if($this->isReferralEnabled())
     {{-- Modal Konfirmasi Generate Baru --}}
     <x-modal wire:model="confirmGenerateModal" title="Konfirmasi Generate Kode Baru"
         class="modal-bottom w-full backdrop-blur" persistent>
@@ -103,4 +122,5 @@
             });
         });
     </script>
+    @endif
 </div>

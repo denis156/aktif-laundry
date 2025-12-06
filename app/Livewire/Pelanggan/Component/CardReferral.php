@@ -20,6 +20,12 @@ class CardReferral extends Component
     public bool $confirmGenerateModal = false;
 
     #[Computed]
+    public function isReferralEnabled(): bool
+    {
+        return (bool) PengaturanHelper::getValue('enable_referral', true);
+    }
+
+    #[Computed]
     public function referral(): ?Referral
     {
         $pelangganId = Auth::guard('pelanggan')->id();
@@ -82,7 +88,6 @@ class CardReferral extends Component
             return [
                 'Diskon untuk pendaftar baru',
                 'Promo khusus first order',
-                'Gratis ongkir',
             ];
         }
 

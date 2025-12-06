@@ -1,5 +1,5 @@
 <div class="container mx-auto">
-    <x-header title="Buat Pesanan" subtitle="Detail pesanan Anda" icon="iconpark.listview-o"
+    <x-header title="Buat Pesanan" subtitle="Detail pesanan Anda disini" icon="iconpark.listview-o"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8" separator />
 
     <div class="space-y-4 mb-24">
@@ -43,9 +43,11 @@
                     option-value="id" option-label="name" />
 
                 {{-- Promo section --}}
+                @if($this->isPromoEnabled())
                 <x-select label="Kode Promo (Opsional)" wire:model.live="formData.promo_id" :options="$promoOptions"
                     option-value="id" option-label="name" placeholder="Pilih promo yang tersedia..."
                     hint="Diskon akan dihitung setelah barang ditimbang" />
+                @endif
 
                 {{-- Catatan section --}}
                 <x-textarea label="Catatan (Opsional)" wire:model="formData.catatan"

@@ -86,18 +86,28 @@ class Profile extends Component
             $this->loadRegionalOptions();
 
             // Jika pelanggan datang dari halaman pemesanan dan data belum lengkap
-            if (session()->has('from_pesanan') && (empty($pelanggan->no_hp) || empty($pelanggan->alamat))) {
-                $this->warning(
-                    'Mohon lengkapi data profil Anda (no telpon dan alamat) sebelum melakukan pemesanan.',
-                    position: 'toast-top',
-                    timeout: 10000
-                );
+            if (session()->has('from_pesanan')) {
+                $isDataIncomplete = empty($pelanggan->no_hp)
+                    || empty($pelanggan->detail_alamat)
+                    || empty($pelanggan->kelurahan)
+                    || empty($pelanggan->kecamatan)
+                    || empty($pelanggan->latitude)
+                    || empty($pelanggan->longitude);
 
-                // Open modal untuk edit data yang tidak ada
-                if (empty($pelanggan->no_hp)) {
-                    $this->editNoHpModal = true;
-                } elseif (empty($pelanggan->alamat)) {
-                    $this->editAlamatModal = true;
+                if ($isDataIncomplete) {
+                    $this->warning(
+                        'Lengkapi no telpon dan alamat untuk melanjutkan pemesanan',
+                        position: 'toast-top',
+                        timeout: 5000
+                    );
+
+                    // Open modal untuk edit data yang tidak ada
+                    if (empty($pelanggan->no_hp)) {
+                        $this->editNoHpModal = true;
+                    } else {
+                        // Jika no HP sudah ada tapi alamat belum lengkap
+                        $this->editAlamatModal = true;
+                    }
                 }
             }
         }

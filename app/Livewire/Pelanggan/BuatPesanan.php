@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pelanggan;
 
+use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\PromoHelper;
 use App\Helper\Database\TransaksiHelper;
 use App\Models\Layanan;
@@ -13,6 +14,7 @@ use Exception;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -51,18 +53,35 @@ class BuatPesanan extends Component
     // Cache promo object
     protected $cachedPromo = null;
 
+    #[Computed]
+    public function isPromoEnabled(): bool
+    {
+        return (bool) PengaturanHelper::getValue('enable_promo', true);
+    }
+
     public function mount(): void
     {
-        // Cek kelengkapan data profil (no telpon dan alamat)
+        // Cek kelengkapan data profil (no telpon, alamat detail, dan koordinat)
         $pelanggan = Auth::user();
 
-        // Validasi data alamat dan no telpon
-        if (empty($pelanggan->no_hp) || empty($pelanggan->alamat)) {
+        // Validasi data lengkap pelanggan
+        $isDataIncomplete = empty($pelanggan->no_hp)
+            || empty($pelanggan->detail_alamat)
+            || empty($pelanggan->kelurahan)
+            || empty($pelanggan->kecamatan)
+            || empty($pelanggan->latitude)
+            || empty($pelanggan->longitude);
+
+        if ($isDataIncomplete) {
             // Data profil belum lengkap, redirect ke halaman profile
             Log::warning('BuatPesanan: Profile data incomplete, redirecting to profile page', [
                 'pelanggan_id' => $pelanggan->id,
                 'has_phone' => ! empty($pelanggan->no_hp),
-                'has_address' => ! empty($pelanggan->alamat),
+                'has_detail_alamat' => ! empty($pelanggan->detail_alamat),
+                'has_kelurahan' => ! empty($pelanggan->kelurahan),
+                'has_kecamatan' => ! empty($pelanggan->kecamatan),
+                'has_latitude' => ! empty($pelanggan->latitude),
+                'has_longitude' => ! empty($pelanggan->longitude),
             ]);
 
             // Set flag bahwa user datang dari halaman pemesanan

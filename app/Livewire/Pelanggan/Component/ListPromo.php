@@ -4,15 +4,23 @@ declare(strict_types=1);
 
 namespace App\Livewire\Pelanggan\Component;
 
+use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\PromoHelper;
 use App\Models\Promo;
 use Illuminate\Support\Facades\Auth;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 use Mary\Traits\Toast;
 
 class ListPromo extends Component
 {
     use Toast;
+
+    #[Computed]
+    public function isPromoEnabled(): bool
+    {
+        return (bool) PengaturanHelper::getValue('enable_promo', true);
+    }
 
     public function getBannerUrl(Promo $promo): string
     {

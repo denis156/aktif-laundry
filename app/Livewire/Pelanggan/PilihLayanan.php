@@ -6,6 +6,7 @@ namespace App\Livewire\Pelanggan;
 
 use App\Models\Layanan;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -118,6 +119,40 @@ class PilihLayanan extends Component
     {
         if (empty($this->selectedLayananIds)) {
             $this->warning('Pilih minimal 1 layanan terlebih dahulu', position: 'toast-top');
+
+            return;
+        }
+
+        // Cek kelengkapan data profil (no telpon, alamat detail, dan koordinat)
+        $pelanggan = Auth::user();
+
+        // Validasi data lengkap pelanggan
+        $isDataIncomplete = empty($pelanggan->no_hp)
+            || empty($pelanggan->detail_alamat)
+            || empty($pelanggan->kelurahan)
+            || empty($pelanggan->kecamatan)
+            || empty($pelanggan->latitude)
+            || empty($pelanggan->longitude);
+
+        if ($isDataIncomplete) {
+            Log::warning('PilihLayanan: Profile data incomplete, redirecting to profile page', [
+                'pelanggan_id' => $pelanggan->id,
+                'has_phone' => ! empty($pelanggan->no_hp),
+                'has_detail_alamat' => ! empty($pelanggan->detail_alamat),
+                'has_kelurahan' => ! empty($pelanggan->kelurahan),
+                'has_kecamatan' => ! empty($pelanggan->kecamatan),
+                'has_latitude' => ! empty($pelanggan->latitude),
+                'has_longitude' => ! empty($pelanggan->longitude),
+            ]);
+
+            // Store selected layanan IDs before redirecting
+            session(['selected_layanan_ids' => $this->selectedLayananIds]);
+
+            // Set flag bahwa user datang dari halaman pemesanan
+            session()->flash('from_pesanan', true);
+
+            // Redirect ke halaman profile
+            $this->redirect(route('profile.pelanggan'), navigate: true);
 
             return;
         }

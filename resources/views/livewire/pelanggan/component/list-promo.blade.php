@@ -3,7 +3,25 @@
         <h1 class="text-lg font-bold text-base-content/80 uppercase">Promo Spesial</h1>
     </div>
 
-    @if ($promoList->isEmpty())
+    @if (!$this->isPromoEnabled())
+        {{-- Coming Soon Message --}}
+        <x-card class="shadow-lg border border-warning">
+            <div class="text-center py-6 space-y-4">
+                <div class="flex justify-center">
+                    <div class="bg-warning/10 p-4 rounded-full">
+                        <x-icon name="iconpark.time-o" class="w-12 h-12 text-warning" />
+                    </div>
+                </div>
+                <div class="space-y-2">
+                    <h3 class="text-base font-bold text-base-content">Sedang Dalam Persiapan</h3>
+                    <p class="text-sm text-base-content/70 max-w-xs mx-auto">
+                        Kami sedang menyiapkan promo spesial untuk Anda. Nantikan penawaran menarik yang segera hadir!
+                    </p>
+                </div>
+                <x-badge class="badge-warning badge-dash" value="Segera Hadir"/>
+            </div>
+        </x-card>
+    @elseif ($promoList->isEmpty())
         <div class="w-full py-8 text-center">
             <x-icon name="iconpark.ticket-o" class="w-16 h-16 mx-auto text-base-content/20" />
             <p class="text-base-content/60 mt-2">Belum ada promo tersedia</p>
