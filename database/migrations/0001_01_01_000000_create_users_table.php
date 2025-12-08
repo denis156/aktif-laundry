@@ -19,8 +19,8 @@ return new class () extends Migration {
             $table->string('no_hp', 15)->unique()->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
-            $table->string('avatar_url')->nullable()->after('email');
-            $table->boolean('super_admin')->default(false)->after('avatar_url');
+            $table->string('avatar_url')->nullable();
+            $table->boolean('super_admin')->default(false);
 
             // Data Kepegawaian
             $table->integer('gaji')->nullable()->comment('Gaji pokok pegawai');
