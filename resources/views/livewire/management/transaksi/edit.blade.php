@@ -73,7 +73,7 @@
 
                     <x-select label="Tipe Bayar (Cara Bayar)" wire:model="formData.tipe_bayar" icon="o-banknotes"
                         :options="$tipeBayarOptions" option-value="id" option-label="name"
-                        hint="Tunai atau Non-Tunai" />
+                        placeholder="Pilih Tipe Bayar" hint="Tunai atau Non-Tunai" />
 
                     <x-select label="Status Bayar" wire:model="formData.status_bayar" icon="o-check-circle"
                         :options="$statusBayarOptions" option-value="id" option-label="name" required

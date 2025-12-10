@@ -8,6 +8,7 @@ use App\Exports\TransaksiExport;
 use App\Helper\Database\TransaksiHelper;
 use App\Models\Transaksi;
 use Exception;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -115,8 +116,13 @@ class Index extends Component
 
     public function getTransaksi()
     {
+        $user = Auth::user();
+
         return Transaksi::query()
             ->with(['pelanggan', 'kasir', 'transaksiLayanan.layanan'])
+            ->when(! $user->super_admin, function ($query) use ($user) {
+                $query->where('kasir_id', $user->id);
+            })
             ->when($this->search, function ($query) {
                 $query->where(function ($q) {
                     $q->where('kode_transaksi', 'like', "%{$this->search}%")

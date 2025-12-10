@@ -177,7 +177,7 @@
                             @foreach($tipeBayarOptions as $tipe)
                             <label
                                 class="flex items-center gap-3 cursor-pointer border border-base-300 rounded-lg p-3 hover:bg-base-200 transition {{ $formData['tipe_bayar'] == $tipe['id'] ? 'bg-success/10 border-success' : '' }}">
-                                <input type="radio" value="{{ $tipe['id'] }}" wire:model.live="formData.tipe_bayar"
+                                <input type="radio" name="tipe_bayar" value="{{ $tipe['id'] }}" wire:model.live="formData.tipe_bayar"
                                     class="radio radio-success" />
                                 <span class="label-text font-medium">{{ $tipe['name'] }}</span>
                             </label>

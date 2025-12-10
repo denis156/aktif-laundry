@@ -15,7 +15,6 @@ use Maatwebsite\Excel\Events\AfterSheet;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Style\NumberFormat;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
 class TransaksiExport implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings, WithMapping, WithStyles
@@ -47,23 +46,15 @@ class TransaksiExport implements FromCollection, ShouldAutoSize, WithColumnForma
     public function headings(): array
     {
         return [
-            'Kode Transaksi',
-            'Tanggal Masuk',
-            'Kasir',
-            'Kode Pelanggan',
-            'Nama Pelanggan',
-            'No. HP Pelanggan',
+            'No',
+            'Nama',
             'Layanan',
+            '',
             'Detail Layanan',
-            'Total Berat (kg)',
-            'Total Item (pcs)',
-            'Subtotal',
-            'Diskon',
-            'Total',
-            'Metode Pembayaran',
-            'Tanggal Selesai',
-            'Status',
-            'Catatan',
+            '',
+            '',
+            'Tipe Bayar',
+            'Status Bayar',
         ];
     }
 
@@ -72,49 +63,53 @@ class TransaksiExport implements FromCollection, ShouldAutoSize, WithColumnForma
      */
     public function map($transaksi): array
     {
-        // Prepare layanan info
-        $layananNames = [];
-        $layananDetails = [];
+        static $rowNumber = 1;
+        $currentNumber = $rowNumber;
+        $rowNumber++;
+
+        // Pisahkan layanan per kg dan per satuan
+        $layananPerKg = [];
+        $layananPerSatuan = [];
+        $totalBerat = 0;
+        $totalVolume = 0;
 
         foreach ($transaksi->transaksiLayanan as $tl) {
-            $layananNames[] = $tl->nama_layanan;
-
             if (TransaksiLayananHelper::isPerKg($tl)) {
-                $detail = $tl->nama_layanan.': '.$tl->berat_kg.' kg x Rp '.number_format($tl->harga_per_kg, 0, ',', '.');
-
-                // Add jenis pakaian if exists
-                if (! empty($tl->jenis_pakaian)) {
-                    $jenisList = [];
-                    foreach ($tl->jenis_pakaian as $jp) {
-                        $jenisList[] = $jp['nama'].' ('.$jp['jumlah'].')';
-                    }
-                    $detail .= ' ['.implode(', ', $jenisList).']';
-                }
+                $layananPerKg[] = '('.$tl->nama_layanan.')';
+                $totalBerat += $tl->berat_kg;
             } else {
-                $detail = $tl->nama_layanan.': '.$tl->jumlah_satuan.' pcs x Rp '.number_format($tl->harga_per_satuan, 0, ',', '.');
+                $layananPerSatuan[] = '('.$tl->nama_layanan.')';
+                $totalVolume += $tl->jumlah_satuan;
             }
+        }
 
-            $layananDetails[] = $detail;
+        // Format layanan
+        $perKgText = ! empty($layananPerKg) ? implode(', ', $layananPerKg) : '';
+        $perSatuanText = ! empty($layananPerSatuan) ? implode(', ', $layananPerSatuan) : '';
+
+        // Format detail layanan (berat dan volume)
+        $detailBerat = $totalBerat > 0 ? '('.$totalBerat.'Kg)' : '';
+        $detailVolume = $totalVolume > 0 ? '('.$totalVolume.')' : '';
+
+        // Tentukan status bayar berdasarkan status_bayar atau status transaksi
+        $statusBayar = $transaksi->status_bayar ?? ($transaksi->status === 'Selesai' ? 'Sudah Bayar' : 'Belum Bayar');
+
+        // Format tipe bayar - cek semua kemungkinan
+        $tipeBayar = '-';
+        if (! empty($transaksi->tipe_bayar)) {
+            $tipeBayar = $transaksi->tipe_bayar;
         }
 
         return [
-            $transaksi->kode_transaksi,
-            $transaksi->tanggal_masuk->format('d/m/Y H:i'),
-            $transaksi->kasir->name ?? '-',
-            $transaksi->pelanggan->kode_pelanggan ?? '-',
+            $currentNumber,
             $transaksi->nama_pelanggan,
-            $transaksi->pelanggan->no_hp ?? '-',
-            implode(', ', $layananNames),
-            implode(' | ', $layananDetails),
-            $transaksi->total_berat,
-            $transaksi->total_item,
-            $transaksi->subtotal,
-            $transaksi->diskon,
-            $transaksi->total,
-            $transaksi->metode_pembayaran,
-            $transaksi->tanggal_selesai ? $transaksi->tanggal_selesai->format('d/m/Y H:i') : '-',
-            $transaksi->status,
-            $transaksi->catatan ?? '-',
+            $perKgText,
+            $perSatuanText,
+            $detailBerat,
+            $detailVolume,
+            'Rp. '.number_format($transaksi->total, 0, ',', '.'),
+            $tipeBayar,
+            $statusBayar,
         ];
     }
 
@@ -124,9 +119,7 @@ class TransaksiExport implements FromCollection, ShouldAutoSize, WithColumnForma
     public function columnFormats(): array
     {
         return [
-            'K' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Subtotal
-            'L' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Diskon
-            'M' => NumberFormat::FORMAT_NUMBER_COMMA_SEPARATED1, // Total
+            // No formatting needed for these columns
         ];
     }
 
@@ -147,76 +140,118 @@ class TransaksiExport implements FromCollection, ShouldAutoSize, WithColumnForma
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
 
-                // Insert 1 row at the top for app name and date
-                $sheet->insertNewRowBefore(1, 1);
+                // Insert rows at the top for report header (2 rows for title + kasir, 1 row for double header)
+                $sheet->insertNewRowBefore(1, 3);
 
-                // Set row heights
-                $sheet->getRowDimension(1)->setRowHeight(50); // Row untuk app name dan tanggal (lebih besar dari header)
-                $sheet->getRowDimension(2)->setRowHeight(25); // Row untuk header tabel
-
-                // Get column count for merging
+                // Get last row for data range
+                $lastRow = $sheet->getHighestRow();
                 $lastColumn = $sheet->getHighestColumn();
 
-                // Row 1: App Name + Tanggal Export (centered, merged)
-                $appName = config('app.name', 'Aplikasi Laundry');
-                $tanggalExport = now()->format('d-m-Y H:i:s');
-                $headerText = 'Data Transaksi '.$appName."\n".'Tanggal Export: '.$tanggalExport;
+                // Get date range for report
+                $transaksi = $this->collection();
+                $firstDate = $transaksi->min('tanggal_masuk');
+                $lastDate = $transaksi->max('tanggal_masuk');
 
-                $sheet->setCellValue('A1', $headerText);
+                $dateRange = '';
+                if ($firstDate && $lastDate) {
+                    $dateRange = $firstDate->format('d/m/Y').' - '.$lastDate->format('d/m/Y');
+                }
+
+                // Row 1: Title - Laporan Tanggal
+                $sheet->setCellValue('A1', 'Laporan Tanggal '.$dateRange.' Transaksi Aktif Laundry');
                 $sheet->mergeCells('A1:'.$lastColumn.'1');
                 $sheet->getStyle('A1')->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 14,
                         'name' => 'Arial',
-                        'color' => [
-                            'argb' => 'FFFD191A', // Red #FD191A
-                        ],
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
                         'vertical' => Alignment::VERTICAL_CENTER,
-                        'wrapText' => true,
                     ],
                 ]);
 
-                // Get last row for data range
-                $lastRow = $sheet->getHighestRow();
-
-                // Style header row (row 2)
-                $sheet->getStyle('A2:'.$lastColumn.'2')->applyFromArray([
+                // Row 2: Kasir Name
+                $kasirName = auth('web')->user()->name ?? 'Semua Kasir';
+                $sheet->setCellValue('A2', 'Kasir '.$kasirName);
+                $sheet->mergeCells('A2:'.$lastColumn.'2');
+                $sheet->getStyle('A2')->applyFromArray([
                     'font' => [
-                        'name' => 'Arial',
                         'bold' => true,
-                        'size' => 11,
-                        'color' => [
-                            'argb' => 'FFFFFFFF', // White text
-                        ],
+                        'size' => 12,
+                        'name' => 'Arial',
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                // Row 3: Empty row (will be used for merged headers)
+
+                // Merge cells for row 3-4 headers
+                // No
+                $sheet->setCellValue('A3', 'No');
+                $sheet->mergeCells('A3:A4');
+
+                // Nama
+                $sheet->setCellValue('B3', 'Nama');
+                $sheet->mergeCells('B3:B4');
+
+                // Layanan (merged across C-D)
+                $sheet->setCellValue('C3', 'Layanan');
+                $sheet->mergeCells('C3:D3');
+
+                // Detail Layanan (merged across E-F)
+                $sheet->setCellValue('E3', 'Detail Layanan');
+                $sheet->mergeCells('E3:F3');
+
+                // Total
+                $sheet->setCellValue('G3', 'Total');
+                $sheet->mergeCells('G3:G4');
+
+                // Tipe Bayar
+                $sheet->setCellValue('H3', 'Tipe Bayar');
+                $sheet->mergeCells('H3:H4');
+
+                // Status Bayar
+                $sheet->setCellValue('I3', 'Status Bayar');
+                $sheet->mergeCells('I3:I4');
+
+                // Row 4: Sub headers under Layanan and Detail Layanan
+                $sheet->setCellValue('C4', 'Per_Kg');
+                $sheet->setCellValue('D4', 'Per_satuan');
+                $sheet->setCellValue('E4', 'Berat');
+                $sheet->setCellValue('F4', 'Volume');
+
+                // Style for all header rows (3 and 4)
+                $sheet->getStyle('A3:'.$lastColumn.'4')->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'name' => 'Arial',
                     ],
                     'fill' => [
                         'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['argb' => 'FFFD191A'], // Red #FD191A
+                        'startColor' => ['argb' => 'FFB4C7E7'], // Light blue
                     ],
                     'borders' => [
                         'allBorders' => [
                             'borderStyle' => Border::BORDER_THIN,
-                            'color' => ['argb' => 'FF000000'], // Black border
                         ],
                     ],
                     'alignment' => [
                         'horizontal' => Alignment::HORIZONTAL_CENTER,
                         'vertical' => Alignment::VERTICAL_CENTER,
-                        'wrapText' => true,
                     ],
                 ]);
 
-                // Style data rows (row 3 onwards)
-                if ($lastRow > 2) {
-                    $sheet->getStyle('A3:'.$lastColumn.$lastRow)->applyFromArray([
+                // Data rows styling
+                if ($lastRow > 4) {
+                    $sheet->getStyle('A5:'.$lastColumn.$lastRow)->applyFromArray([
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
-                                'color' => ['argb' => 'FF000000'], // Black border
                             ],
                         ],
                         'alignment' => [
@@ -225,6 +260,140 @@ class TransaksiExport implements FromCollection, ShouldAutoSize, WithColumnForma
                         ],
                     ]);
                 }
+
+                // Calculate totals
+                $totalBerat = 0;
+                $totalVolume = 0;
+                $totalRupiah = 0;
+
+                foreach ($this->collection() as $t) {
+                    $totalBerat += $t->total_berat;
+                    $totalVolume += $t->total_item;
+                    $totalRupiah += $t->total;
+                }
+
+                // Add Total Berat row
+                $totalBeratRow = $lastRow + 1;
+                $sheet->setCellValue('E'.$totalBeratRow, 'Total Berat');
+                $sheet->mergeCells('E'.$totalBeratRow.':G'.$totalBeratRow);
+                $sheet->setCellValue('H'.$totalBeratRow, $totalBerat.'kg');
+                $sheet->mergeCells('H'.$totalBeratRow.':I'.$totalBeratRow);
+
+                // Style untuk label (E-G): align left
+                $sheet->getStyle('E'.$totalBeratRow.':G'.$totalBeratRow)->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'name' => 'Arial',
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_LEFT,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                // Style untuk nilai (H-I): align right
+                $sheet->getStyle('H'.$totalBeratRow.':I'.$totalBeratRow)->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'name' => 'Arial',
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                // Add Total Satuan row
+                $totalSatuanRow = $lastRow + 2;
+                $sheet->setCellValue('E'.$totalSatuanRow, 'Total Satuan');
+                $sheet->mergeCells('E'.$totalSatuanRow.':G'.$totalSatuanRow);
+                $sheet->setCellValue('H'.$totalSatuanRow, $totalVolume);
+                $sheet->mergeCells('H'.$totalSatuanRow.':I'.$totalSatuanRow);
+
+                // Style untuk label (E-G): align left
+                $sheet->getStyle('E'.$totalSatuanRow.':G'.$totalSatuanRow)->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'name' => 'Arial',
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_LEFT,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                // Style untuk nilai (H-I): align right
+                $sheet->getStyle('H'.$totalSatuanRow.':I'.$totalSatuanRow)->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'name' => 'Arial',
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                // Add Total Pembayaran row
+                $totalPembayaranRow = $lastRow + 3;
+                $sheet->setCellValue('E'.$totalPembayaranRow, 'Total Pembayaran');
+                $sheet->mergeCells('E'.$totalPembayaranRow.':G'.$totalPembayaranRow);
+                $sheet->setCellValue('H'.$totalPembayaranRow, 'Rp. '.number_format($totalRupiah, 0, ',', '.'));
+                $sheet->mergeCells('H'.$totalPembayaranRow.':I'.$totalPembayaranRow);
+
+                // Style untuk label (E-G): align left
+                $sheet->getStyle('E'.$totalPembayaranRow.':G'.$totalPembayaranRow)->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'name' => 'Arial',
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_LEFT,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
+
+                // Style untuk nilai (H-I): align right
+                $sheet->getStyle('H'.$totalPembayaranRow.':I'.$totalPembayaranRow)->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'name' => 'Arial',
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                ]);
             },
         ];
     }
