@@ -78,6 +78,35 @@
                         <x-input label="Provinsi" wire:model="pelangganBaru.provinsi" placeholder="Sulawesi Tenggara"
                             disabled />
                     </div>
+
+                    <!-- LOKASI SECTION -->
+                        <div class="space-y-4">
+                            <x-input label="Ekstrak Sharelok Pelanggan" wire:model.live="sharelok"
+                                placeholder="Paste URL Google Maps dari pelanggan"
+                                hint="Otomatis mengisi Latitude dan Longitude dari URL Google Maps" icon="o-link"
+                                :disabled="!$isPelangganBaru" />
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <x-input label="Latitude (Opsional)" wire:model="pelangganBaru.latitude" type="number"
+                                    step="any" placeholder="Contoh: -3.9778" hint="Koordinat lintang lokasi pelanggan"
+                                    icon="o-map-pin" :disabled="!$isPelangganBaru" />
+
+                                <x-input label="Longitude (Opsional)" wire:model="pelangganBaru.longitude" type="number"
+                                    step="any" placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan"
+                                    icon="o-map-pin" :disabled="!$isPelangganBaru" />
+                            </div>
+
+                            @if($isPelangganBaru)
+                            <div id="map" wire:ignore class="h-100 rounded-md"></div>
+
+                            <div class="text-sm text-base-content/70">
+                                <p>
+                                    <span class="font-semibold">Petunjuk:</span> Klik pada peta untuk mengubah lokasi
+                                    pelanggan. Koordinat akan otomatis terisi.
+                                </p>
+                            </div>
+                            @endif
+                        </div>
                 </div>
             </x-card>
 
@@ -304,8 +333,62 @@
     @script
     <script>
         $wire.on('open-print-window', (event) => {
-                window.open(event.url, '_blank');
-            });
+            window.open(event.url, '_blank');
+        });
+
+        let mapInstance = null;
+
+        // Function untuk inisialisasi peta
+        function initMap() {
+            const mapElement = document.getElementById('map');
+
+            if (!mapElement) {
+                return;
+            }
+
+            // Jika map sudah ada, destroy dulu
+            if (mapInstance && mapInstance.map) {
+                mapInstance.map.remove();
+                mapInstance = null;
+            }
+
+            // Tunggu sebentar untuk memastikan DOM ready
+            setTimeout(() => {
+                if (window.LeafletUtils && typeof window.LeafletUtils.initLeafletMap === 'function') {
+                    mapInstance = window.LeafletUtils.initLeafletMap('map', {
+                        defaultLat: -3.9778,
+                        defaultLng: 122.5145,
+                        zoom: 15,
+                        wire: $wire,
+                        latitudeProperty: 'pelangganBaru.latitude',
+                        longitudeProperty: 'pelangganBaru.longitude'
+                    });
+                }
+            }, 200);
+        }
+
+        // Watch untuk perubahan isPelangganBaru
+        $wire.$watch('isPelangganBaru', (value) => {
+            if (value) {
+                // Mode pelanggan baru aktif, init map setelah DOM update
+                setTimeout(() => {
+                    initMap();
+                }, 300);
+            } else {
+                // Mode pelanggan baru tidak aktif, destroy map jika ada
+                if (mapInstance && mapInstance.map) {
+                    mapInstance.map.remove();
+                    mapInstance = null;
+                }
+            }
+        });
+
+        // Inisialisasi peta saat pertama kali load jika pelanggan baru aktif
+        if ($wire.isPelangganBaru) {
+            setTimeout(() => {
+                initMap();
+            }, 300);
+        }
     </script>
     @endscript
 </div>

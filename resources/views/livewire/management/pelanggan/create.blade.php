@@ -87,9 +87,9 @@
                         placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan" icon="o-map-pin" />
                 </div>
 
-                <div id="map" wire:ignore style="height: 400px; border-radius: 0.5rem;"></div>
+                <div id="map" wire:ignore class="h-100 rounded-md"></div>
 
-                <div class="text-sm text-gray-600 dark:text-gray-400">
+                <div class="text-sm text-base-content/70">
                     <p>
                         <span class="font-semibold">Petunjuk:</span> Klik pada peta untuk mengubah lokasi pelanggan.
                         Koordinat akan otomatis terisi.

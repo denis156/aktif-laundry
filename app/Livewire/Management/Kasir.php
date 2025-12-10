@@ -91,7 +91,11 @@ class Kasir extends Component
         'kecamatan' => '',
         'kabupaten_kota' => '',
         'provinsi' => '',
+        'latitude' => '',
+        'longitude' => '',
     ];
+
+    public string $sharelok = '';
 
     // Listener untuk event dari component
     protected $listeners = ['multiLayananUpdated'];
@@ -173,7 +177,10 @@ class Kasir extends Component
             'kecamatan' => '',
             'kabupaten_kota' => RegionalLocation::getRegencyName(),
             'provinsi' => RegionalLocation::getProvinceName(),
+            'latitude' => '',
+            'longitude' => '',
         ];
+        $this->sharelok = '';
 
         $this->isPelangganBaru = false;
     }
@@ -216,6 +223,8 @@ class Kasir extends Component
                     ?: RegionalLocation::getRegencyName();
                 $this->pelangganBaru['provinsi'] = $pelanggan->provinsi
                     ?: RegionalLocation::getProvinceName();
+                $this->pelangganBaru['latitude'] = $pelanggan->latitude ? (string) $pelanggan->latitude : '';
+                $this->pelangganBaru['longitude'] = $pelanggan->longitude ? (string) $pelanggan->longitude : '';
             }
         }
     }
@@ -233,7 +242,10 @@ class Kasir extends Component
                 'kecamatan' => '',
                 'kabupaten_kota' => RegionalLocation::getRegencyName(),
                 'provinsi' => RegionalLocation::getProvinceName(),
+                'latitude' => '',
+                'longitude' => '',
             ];
+            $this->sharelok = '';
             // Clear juga pilihan pelanggan
             $this->formData['pelanggan_id'] = '';
             $this->formData['nama_pelanggan'] = '';
@@ -248,7 +260,10 @@ class Kasir extends Component
                 'kecamatan' => '',
                 'kabupaten_kota' => RegionalLocation::getRegencyName(),
                 'provinsi' => RegionalLocation::getProvinceName(),
+                'latitude' => '',
+                'longitude' => '',
             ];
+            $this->sharelok = '';
         }
     }
 
@@ -260,6 +275,59 @@ class Kasir extends Component
     public function updatedFormDataKodeReferral(string $value): void
     {
         $this->applyReferralCode($value);
+    }
+
+    public function updatedSharelok(): void
+    {
+        $this->extractCoordinatesFromUrl();
+    }
+
+    private function extractCoordinatesFromUrl(): void
+    {
+        if (empty($this->sharelok)) {
+            return;
+        }
+
+        // Pattern untuk berbagai format Google Maps URL
+        $patterns = [
+            // Format: @-3.992409,122.517426
+            '/@(-?\d+\.?\d*),(-?\d+\.?\d*)/',
+            // Format: !3d-3.992409!4d122.517426
+            '/!3d(-?\d+\.?\d*)!4d(-?\d+\.?\d*)/',
+            // Format: 3°59'32.7"S 122°31'02.7"E (DMS)
+            '/(\d+)°(\d+)\'([\d.]+)"([NS])\s+(\d+)°(\d+)\'([\d.]+)"([EW])/',
+        ];
+
+        foreach ($patterns as $pattern) {
+            if (preg_match($pattern, $this->sharelok, $matches)) {
+                if (count($matches) === 9) {
+                    // DMS format
+                    $lat = $this->convertDMSToDecimal((int) $matches[1], (int) $matches[2], (float) $matches[3], $matches[4]);
+                    $lon = $this->convertDMSToDecimal((int) $matches[5], (int) $matches[6], (float) $matches[7], $matches[8]);
+                    $this->pelangganBaru['latitude'] = (string) $lat;
+                    $this->pelangganBaru['longitude'] = (string) $lon;
+
+                    return;
+                } elseif (count($matches) === 3) {
+                    // Decimal format
+                    $this->pelangganBaru['latitude'] = $matches[1];
+                    $this->pelangganBaru['longitude'] = $matches[2];
+
+                    return;
+                }
+            }
+        }
+    }
+
+    private function convertDMSToDecimal(int $degrees, int $minutes, float $seconds, string $direction): float
+    {
+        $decimal = $degrees + ($minutes / 60) + ($seconds / 3600);
+
+        if ($direction === 'S' || $direction === 'W') {
+            $decimal *= -1;
+        }
+
+        return round($decimal, 6);
     }
 
     protected function applyReferralCode(string $kode): void
@@ -381,11 +449,11 @@ class Kasir extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;

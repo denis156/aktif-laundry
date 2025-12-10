@@ -30,8 +30,20 @@ export function initLeafletMap(mapElementId, options = {}) {
         return null;
     }
 
-    const lat = wire[latitudeProperty] ? parseFloat(wire[latitudeProperty]) : defaultLat;
-    const lng = wire[longitudeProperty] ? parseFloat(wire[longitudeProperty]) : defaultLng;
+    // Helper untuk mengakses nested property
+    const getNestedProperty = (obj, path) => {
+        return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+    };
+
+    const setNestedProperty = (obj, path, value) => {
+        const parts = path.split('.');
+        const last = parts.pop();
+        const target = parts.reduce((acc, part) => acc[part], obj);
+        target[last] = value;
+    };
+
+    const lat = getNestedProperty(wire, latitudeProperty) ? parseFloat(getNestedProperty(wire, latitudeProperty)) : defaultLat;
+    const lng = getNestedProperty(wire, longitudeProperty) ? parseFloat(getNestedProperty(wire, longitudeProperty)) : defaultLng;
 
     const map = L.map(mapElementId, {
         zoomControl: true,
@@ -88,7 +100,7 @@ export function initLeafletMap(mapElementId, options = {}) {
 
     // Tambahkan marker
     let marker = null;
-    if (wire[latitudeProperty] && wire[longitudeProperty]) {
+    if (getNestedProperty(wire, latitudeProperty) && getNestedProperty(wire, longitudeProperty)) {
         marker = L.marker([lat, lng], {
             draggable: true,
             icon: customIcon
@@ -97,8 +109,8 @@ export function initLeafletMap(mapElementId, options = {}) {
         marker.on('dragend', function() {
             isUpdatingFromMap = true;
             const position = marker.getLatLng();
-            wire[latitudeProperty] = position.lat.toFixed(6);
-            wire[longitudeProperty] = position.lng.toFixed(6);
+            setNestedProperty(wire, latitudeProperty, position.lat.toFixed(6));
+            setNestedProperty(wire, longitudeProperty, position.lng.toFixed(6));
             setTimeout(() => { isUpdatingFromMap = false; }, 100);
         });
     }
@@ -120,22 +132,22 @@ export function initLeafletMap(mapElementId, options = {}) {
             marker.on('dragend', function() {
                 isUpdatingFromMap = true;
                 const position = marker.getLatLng();
-                wire[latitudeProperty] = position.lat.toFixed(6);
-                wire[longitudeProperty] = position.lng.toFixed(6);
+                setNestedProperty(wire, latitudeProperty, position.lat.toFixed(6));
+                setNestedProperty(wire, longitudeProperty, position.lng.toFixed(6));
                 setTimeout(() => { isUpdatingFromMap = false; }, 100);
             });
         }
 
-        wire[latitudeProperty] = clickLat.toFixed(6);
-        wire[longitudeProperty] = clickLng.toFixed(6);
+        setNestedProperty(wire, latitudeProperty, clickLat.toFixed(6));
+        setNestedProperty(wire, longitudeProperty, clickLng.toFixed(6));
         setTimeout(() => { isUpdatingFromMap = false; }, 100);
     });
 
     // Watch untuk perubahan latitude dari input
     wire.$watch(latitudeProperty, (value) => {
-        if (value && wire[longitudeProperty] && !isUpdatingFromMap) {
+        if (value && getNestedProperty(wire, longitudeProperty) && !isUpdatingFromMap) {
             const newLat = parseFloat(value);
-            const newLng = parseFloat(wire[longitudeProperty]);
+            const newLng = parseFloat(getNestedProperty(wire, longitudeProperty));
 
             if (marker) {
                 marker.setLatLng([newLat, newLng]);
@@ -148,8 +160,8 @@ export function initLeafletMap(mapElementId, options = {}) {
                 marker.on('dragend', function() {
                     isUpdatingFromMap = true;
                     const position = marker.getLatLng();
-                    wire[latitudeProperty] = position.lat.toFixed(6);
-                    wire[longitudeProperty] = position.lng.toFixed(6);
+                    setNestedProperty(wire, latitudeProperty, position.lat.toFixed(6));
+                    setNestedProperty(wire, longitudeProperty, position.lng.toFixed(6));
                     setTimeout(() => { isUpdatingFromMap = false; }, 100);
                 });
             }
@@ -164,8 +176,8 @@ export function initLeafletMap(mapElementId, options = {}) {
 
     // Watch untuk perubahan longitude dari input
     wire.$watch(longitudeProperty, (value) => {
-        if (value && wire[latitudeProperty] && !isUpdatingFromMap) {
-            const newLat = parseFloat(wire[latitudeProperty]);
+        if (value && getNestedProperty(wire, latitudeProperty) && !isUpdatingFromMap) {
+            const newLat = parseFloat(getNestedProperty(wire, latitudeProperty));
             const newLng = parseFloat(value);
 
             if (marker) {
@@ -179,8 +191,8 @@ export function initLeafletMap(mapElementId, options = {}) {
                 marker.on('dragend', function() {
                     isUpdatingFromMap = true;
                     const position = marker.getLatLng();
-                    wire[latitudeProperty] = position.lat.toFixed(6);
-                    wire[longitudeProperty] = position.lng.toFixed(6);
+                    setNestedProperty(wire, latitudeProperty, position.lat.toFixed(6));
+                    setNestedProperty(wire, longitudeProperty, position.lng.toFixed(6));
                     setTimeout(() => { isUpdatingFromMap = false; }, 100);
                 });
             }
