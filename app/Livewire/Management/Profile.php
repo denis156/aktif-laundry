@@ -219,7 +219,7 @@ class Profile extends Component
             'email' => 'required|email|unique:users,email,'.Auth::id(),
             'no_hp' => 'required|string|max:20',
             'avatar' => 'nullable|image|max:'.UserHelper::AVATAR_MAX_SIZE_KB,
-            'detail_alamat' => 'required|string|max:500',
+            'detail_alamat' => 'nullable|string|max:500',
             'kelurahan' => 'nullable|string',
             'kecamatan' => 'nullable|string',
             'kabupaten_kota' => 'nullable|string',
@@ -239,7 +239,6 @@ class Profile extends Component
             'no_hp.max' => 'Nomor HP maksimal 20 karakter',
             'avatar.image' => 'File harus berupa gambar',
             'avatar.max' => "Ukuran file maksimal {$avatarMaxSizeMB} MB",
-            'detail_alamat.required' => 'Detail alamat wajib diisi',
             'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
         ];
 
