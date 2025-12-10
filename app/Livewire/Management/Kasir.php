@@ -97,6 +97,15 @@ class Kasir extends Component
 
     public string $sharelok = '';
 
+    // Options untuk regional select
+    public array $provinsiOptions = [];
+
+    public array $kabupatenKotaOptions = [];
+
+    public array $kecamatanOptions = [];
+
+    public array $kelurahanOptions = [];
+
     // Listener untuk event dari component
     protected $listeners = ['multiLayananUpdated'];
 
@@ -126,7 +135,73 @@ class Kasir extends Component
         $this->pelangganBaru['kabupaten_kota'] = RegionalLocation::getRegencyName();
         $this->pelangganBaru['provinsi'] = RegionalLocation::getProvinceName();
 
+        // Load regional options
+        $this->loadRegionalOptions();
+
         $this->search();
+    }
+
+    private function loadRegionalOptions(): void
+    {
+        // Load provinsi options (seluruh Indonesia)
+        $this->provinsiOptions = RegionalLocation::getProvinceOptions();
+
+        // Load kabupaten/kota options berdasarkan provinsi yang dipilih
+        if (! empty($this->pelangganBaru['provinsi'])) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->pelangganBaru['provinsi']);
+        }
+
+        // Load kecamatan options jika kabupaten/kota sudah dipilih
+        if (! empty($this->pelangganBaru['kabupaten_kota'])) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->pelangganBaru['kabupaten_kota']);
+        }
+
+        // Load kelurahan options jika kecamatan sudah dipilih
+        if (! empty($this->pelangganBaru['kecamatan'])) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->pelangganBaru['kecamatan']);
+        }
+    }
+
+    public function updatedPelangganBaruProvinsi(): void
+    {
+        // Reset dependent fields
+        $this->pelangganBaru['kabupaten_kota'] = '';
+        $this->pelangganBaru['kecamatan'] = '';
+        $this->pelangganBaru['kelurahan'] = '';
+        $this->kabupatenKotaOptions = [];
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kabupaten/kota options
+        if (! empty($this->pelangganBaru['provinsi'])) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->pelangganBaru['provinsi']);
+        }
+    }
+
+    public function updatedPelangganBaruKabupatenKota(): void
+    {
+        // Reset dependent fields
+        $this->pelangganBaru['kecamatan'] = '';
+        $this->pelangganBaru['kelurahan'] = '';
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kecamatan options
+        if (! empty($this->pelangganBaru['kabupaten_kota'])) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->pelangganBaru['kabupaten_kota']);
+        }
+    }
+
+    public function updatedPelangganBaruKecamatan(): void
+    {
+        // Reset dependent field
+        $this->pelangganBaru['kelurahan'] = '';
+        $this->kelurahanOptions = [];
+
+        // Load kelurahan options
+        if (! empty($this->pelangganBaru['kecamatan'])) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->pelangganBaru['kecamatan']);
+        }
     }
 
     protected function resetForm(): void
@@ -490,6 +565,20 @@ class Kasir extends Component
 
                 return;
             }
+
+            if (empty($this->pelangganBaru['latitude'])) {
+                Log::warning('Kasir validation failed: latitude pelanggan kosong');
+                $this->error('Latitude wajib diisi!', position: 'toast-bottom');
+
+                return;
+            }
+
+            if (empty($this->pelangganBaru['longitude'])) {
+                Log::warning('Kasir validation failed: longitude pelanggan kosong');
+                $this->error('Longitude wajib diisi!', position: 'toast-bottom');
+
+                return;
+            }
         }
 
         // VALIDASI PELANGGAN EXISTING (jika mode pilih pelanggan)
@@ -840,6 +929,20 @@ class Kasir extends Component
             return;
         }
 
+        if (empty($this->pelangganBaru['latitude'])) {
+            Log::warning('Kasir: savePelangganBaru validation failed - latitude kosong');
+            $this->error('Latitude wajib diisi!', position: 'toast-bottom');
+
+            return;
+        }
+
+        if (empty($this->pelangganBaru['longitude'])) {
+            Log::warning('Kasir: savePelangganBaru validation failed - longitude kosong');
+            $this->error('Longitude wajib diisi!', position: 'toast-bottom');
+
+            return;
+        }
+
         try {
             // Gunakan transaction untuk pembuatan pelanggan baru
             DB::transaction(function () {
@@ -919,52 +1022,6 @@ class Kasir extends Component
         return LayananHelper::getLayananOptions();
     }
 
-    public function getKecamatanOptions(): array
-    {
-        // Get kecamatan di Kota Kendari dari API menggunakan RegionalLocation helper
-        $districts = RegionalLocation::getKendariDistricts();
-
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($districts)->map(fn (array $district) => [
-            'id' => $district['name'] ?? '',
-            'name' => $district['name'] ?? '',
-        ])->toArray();
-    }
-
-    public function getKelurahanOptions(): array
-    {
-        // Kelurahan berdasarkan kecamatan yang dipilih menggunakan RegionalLocation Helper
-        $kecamatanName = $this->pelangganBaru['kecamatan'] ?? '';
-
-        if (empty($kecamatanName)) {
-            return [];
-        }
-
-        // Cari district code berdasarkan nama kecamatan
-        $districts = RegionalLocation::getKendariDistricts();
-        $districtCode = null;
-
-        foreach ($districts as $district) {
-            if (($district['name'] ?? '') === $kecamatanName) {
-                $districtCode = $district['code'] ?? null;
-                break;
-            }
-        }
-
-        if (! $districtCode) {
-            return [];
-        }
-
-        // Get kelurahan/desa berdasarkan district code dari API
-        $villages = RegionalLocation::getVillagesByDistrict($districtCode);
-
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($villages)->map(fn (array $village) => [
-            'id' => $village['name'] ?? '',
-            'name' => $village['name'] ?? '',
-        ])->toArray();
-    }
-
     public function getMetodePembayaranOptions(): array
     {
         // Get metode pembayaran dari TransaksiHelper
@@ -1014,8 +1071,6 @@ class Kasir extends Component
         return view('livewire.management.kasir', [
             'pelangganOptions' => $this->getPelangganOptions(),
             'layananOptions' => $this->getLayananOptions(),
-            'kecamatanOptions' => $this->getKecamatanOptions(),
-            'kelurahanOptions' => $this->getKelurahanOptions(),
             'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
             'tipeBayarOptions' => $this->getTipeBayarOptions(),
             'statusBayarOptions' => $this->getStatusBayarOptions(),

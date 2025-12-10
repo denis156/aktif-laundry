@@ -110,11 +110,13 @@ class Edit extends Component
 
     private function loadRegionalOptions(): void
     {
-        // Load provinsi options (fixed ke Sulawesi Tenggara)
+        // Load provinsi options (seluruh Indonesia)
         $this->provinsiOptions = RegionalLocation::getProvinceOptions();
 
-        // Load kabupaten/kota options (semua kabupaten di Sulawesi Tenggara)
-        $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions();
+        // Load kabupaten/kota options berdasarkan provinsi yang dipilih
+        if (! empty($this->provinsi)) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->provinsi);
+        }
 
         // Load kecamatan options jika kabupaten/kota sudah dipilih
         if (! empty($this->kabupaten_kota)) {
@@ -124,6 +126,22 @@ class Edit extends Component
         // Load kelurahan options jika kecamatan sudah dipilih
         if (! empty($this->kecamatan)) {
             $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
+        }
+    }
+
+    public function updatedProvinsi(): void
+    {
+        // Reset dependent fields
+        $this->kabupaten_kota = '';
+        $this->kecamatan = '';
+        $this->kelurahan = '';
+        $this->kabupatenKotaOptions = [];
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kabupaten/kota options
+        if (! empty($this->provinsi)) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->provinsi);
         }
     }
 
@@ -278,12 +296,12 @@ class Edit extends Component
             'email' => 'nullable|email|max:255|unique:pelanggan,email,'.$this->pelangganId,
             'avatar' => 'nullable|image|max:'.PelangganHelper::AVATAR_MAX_SIZE_KB,
             'detail_alamat' => 'required|string|max:500',
-            'kelurahan' => 'required|string',
-            'kecamatan' => 'required|string',
+            'kelurahan' => 'nullable|string',
+            'kecamatan' => 'nullable|string',
             'kabupaten_kota' => 'nullable|string',
             'provinsi' => 'nullable|string',
-            'latitude' => 'nullable|numeric|between:-90,90',
-            'longitude' => 'nullable|numeric|between:-180,180',
+            'latitude' => 'required|numeric|between:-90,90',
+            'longitude' => 'required|numeric|between:-180,180',
             'tanggal_daftar' => 'required|date',
             'status' => 'required|in:Aktif,Tidak Aktif',
         ];
@@ -313,10 +331,10 @@ class Edit extends Component
             'avatar.max' => "Ukuran file maksimal {$avatarMaxSizeMB} MB",
             'detail_alamat.required' => 'Detail alamat wajib diisi',
             'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
-            'kelurahan.required' => 'Kelurahan wajib dipilih',
-            'kecamatan.required' => 'Kecamatan wajib dipilih',
+            'latitude.required' => 'Latitude wajib diisi',
             'latitude.numeric' => 'Latitude harus berupa angka',
             'latitude.between' => 'Latitude harus antara -90 sampai 90',
+            'longitude.required' => 'Longitude wajib diisi',
             'longitude.numeric' => 'Longitude harus berupa angka',
             'longitude.between' => 'Longitude harus antara -180 sampai 180',
             'tanggal_daftar.required' => 'Tanggal daftar wajib diisi',
@@ -393,8 +411,8 @@ class Edit extends Component
         );
 
         $pelanggan->no_hp = $normalizedPhone;
-        $pelanggan->latitude = ! empty($this->latitude) ? $this->latitude : null;
-        $pelanggan->longitude = ! empty($this->longitude) ? $this->longitude : null;
+        $pelanggan->latitude = $this->latitude;
+        $pelanggan->longitude = $this->longitude;
         $pelanggan->save();
     }
 

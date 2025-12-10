@@ -48,23 +48,28 @@
                 <x-textarea label="Detail Alamat" wire:model="formData.detail_alamat"
                     placeholder="Contoh: Jl. Abunawas No. 123, RT 01/RW 02, Dekat Masjid Al-Ikhlas"
                     hint="Isi dengan: nama jalan, nomor rumah, RT/RW, dan patokan (dekat tempat terkenal/masjid/sekolah)"
-                    rows="2" required />
+                    rows="2" />
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <x-select label="Provinsi" wire:model.live="formData.provinsi" :options="$provinsiOptions"
+                        placeholder="Pilih provinsi" icon="o-map" />
+
+                    <x-select label="Kabupaten/Kota" wire:model.live="formData.kabupaten_kota"
+                        :options="$kabupatenKotaOptions" placeholder="Pilih kabupaten/kota"
+                        hint="{{ empty($formData['provinsi']) ? 'Pilih provinsi dulu' : '' }}"
+                        icon="o-building-office-2" :disabled="empty($formData['provinsi'])" />
+                </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <x-select label="Kecamatan" wire:model.live="formData.kecamatan" :options="$kecamatanOptions"
-                        placeholder="Pilih kecamatan" icon="o-map-pin" required />
+                        placeholder="Pilih kecamatan"
+                        hint="{{ empty($formData['kabupaten_kota']) ? 'Pilih kabupaten/kota dulu' : '' }}"
+                        icon="o-map-pin" :disabled="empty($formData['kabupaten_kota'])" />
 
                     <x-select label="Kelurahan/Desa" wire:model="formData.kelurahan" :options="$kelurahanOptions"
                         placeholder="Pilih kelurahan"
                         hint="{{ empty($formData['kecamatan']) ? 'Pilih kecamatan dulu' : '' }}" icon="o-map"
-                        :disabled="empty($formData['kecamatan'])" required />
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Kabupaten/Kota" wire:model="formData.kabupaten_kota" placeholder="Kota Kendari"
-                        disabled />
-
-                    <x-input label="Provinsi" wire:model="formData.provinsi" placeholder="Sulawesi Tenggara" disabled />
+                        :disabled="empty($formData['kecamatan'])" />
                 </div>
             </x-card>
         </div>

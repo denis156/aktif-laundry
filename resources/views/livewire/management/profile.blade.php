@@ -44,18 +44,20 @@
                     hint="Isi dengan: nama jalan, nomor rumah, RT/RW, dan patokan (dekat tempat terkenal/masjid/sekolah)"
                     rows="3" required />
 
-                <x-select label="Provinsi" wire:model="provinsi" :options="$provinsiOptions" disabled />
+                <x-select label="Provinsi" wire:model.live="provinsi" :options="$provinsiOptions"
+                    placeholder="Pilih provinsi" icon="o-map" />
 
                 <x-select label="Kabupaten/Kota" wire:model.live="kabupaten_kota" :options="$kabupatenKotaOptions"
-                    placeholder="Pilih kabupaten/kota" required />
+                    placeholder="Pilih kabupaten/kota" hint="{{ empty($provinsi) ? 'Pilih provinsi dulu' : '' }}"
+                    icon="o-building-office-2" :disabled="empty($provinsi)" />
 
                 <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
                     placeholder="Pilih kecamatan" :disabled="empty($kabupaten_kota)"
-                    hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota terlebih dahulu' : '' }}" required />
+                    hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota dulu' : '' }}" icon="o-map-pin" />
 
                 <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
                     placeholder="Pilih kelurahan/desa" :disabled="empty($kecamatan)"
-                    hint="{{ empty($kecamatan) ? 'Pilih kecamatan terlebih dahulu' : '' }}" required />
+                    hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}" icon="o-map" />
 
                 <x-textarea label="Alamat Lengkap" wire:model="alamat"
                     hint="Alamat otomatis di-generate dari data di atas" rows="3" disabled />

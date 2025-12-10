@@ -122,11 +122,13 @@ class Profile extends Component
 
     private function loadRegionalOptions()
     {
-        // Load provinsi options (fixed ke Sulawesi Tenggara)
+        // Load provinsi options (seluruh Indonesia)
         $this->provinsiOptions = RegionalLocation::getProvinceOptions();
 
-        // Load kabupaten/kota options (semua kabupaten di Sulawesi Tenggara)
-        $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions();
+        // Load kabupaten/kota options berdasarkan provinsi yang dipilih
+        if (! empty($this->provinsi)) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->provinsi);
+        }
 
         // Load kecamatan options jika kabupaten/kota sudah dipilih
         if (! empty($this->kabupaten_kota)) {
@@ -136,6 +138,22 @@ class Profile extends Component
         // Load kelurahan options jika kecamatan sudah dipilih
         if (! empty($this->kecamatan)) {
             $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
+        }
+    }
+
+    public function updatedProvinsi()
+    {
+        // Reset dependent fields
+        $this->kabupaten_kota = '';
+        $this->kecamatan = '';
+        $this->kelurahan = '';
+        $this->kabupatenKotaOptions = [];
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kabupaten/kota options
+        if (! empty($this->provinsi)) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->provinsi);
         }
     }
 
@@ -202,9 +220,10 @@ class Profile extends Component
             'no_hp' => 'required|string|max:20',
             'avatar' => 'nullable|image|max:'.UserHelper::AVATAR_MAX_SIZE_KB,
             'detail_alamat' => 'required|string|max:500',
-            'kelurahan' => 'required|string',
-            'kecamatan' => 'required|string',
-            'kabupaten_kota' => 'required|string',
+            'kelurahan' => 'nullable|string',
+            'kecamatan' => 'nullable|string',
+            'kabupaten_kota' => 'nullable|string',
+            'provinsi' => 'nullable|string',
         ];
 
         $avatarMaxSizeMB = UserHelper::AVATAR_MAX_SIZE_KB / 1024;
@@ -222,9 +241,6 @@ class Profile extends Component
             'avatar.max' => "Ukuran file maksimal {$avatarMaxSizeMB} MB",
             'detail_alamat.required' => 'Detail alamat wajib diisi',
             'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
-            'kelurahan.required' => 'Kelurahan wajib dipilih',
-            'kecamatan.required' => 'Kecamatan wajib dipilih',
-            'kabupaten_kota.required' => 'Kabupaten/Kota wajib dipilih',
         ];
 
         // Validasi password jika diisi

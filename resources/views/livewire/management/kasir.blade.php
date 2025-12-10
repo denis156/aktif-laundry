@@ -61,22 +61,26 @@
                         required :disabled="!$isPelangganBaru" />
 
                     <div class="grid grid-cols-2 gap-4">
+                        <x-select label="Provinsi" wire:model.live="pelangganBaru.provinsi" :options="$provinsiOptions"
+                            placeholder="Pilih provinsi" icon="o-map" :disabled="!$isPelangganBaru" />
+
+                        <x-select label="Kabupaten/Kota" wire:model.live="pelangganBaru.kabupaten_kota"
+                            :options="$kabupatenKotaOptions" placeholder="Pilih kabupaten/kota"
+                            hint="{{ empty($pelangganBaru['provinsi']) ? 'Pilih provinsi dulu' : '' }}"
+                            icon="o-building-office-2"
+                            :disabled="!$isPelangganBaru || empty($pelangganBaru['provinsi'])" />
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
                         <x-select label="Kecamatan" wire:model.live="pelangganBaru.kecamatan"
-                            :options="$kecamatanOptions" placeholder="Pilih kecamatan" icon="o-map-pin"
-                            :disabled="!$isPelangganBaru" />
+                            :options="$kecamatanOptions" placeholder="Pilih kecamatan"
+                            hint="{{ empty($pelangganBaru['kabupaten_kota']) ? 'Pilih kabupaten/kota dulu' : '' }}"
+                            icon="o-map-pin" :disabled="!$isPelangganBaru || empty($pelangganBaru['kabupaten_kota'])" />
 
                         <x-select label="Kelurahan/Desa" wire:model="pelangganBaru.kelurahan"
                             :options="$kelurahanOptions" placeholder="Pilih kelurahan"
                             hint="{{ empty($pelangganBaru['kecamatan']) ? 'Pilih kecamatan dulu' : '' }}" icon="o-map"
                             :disabled="!$isPelangganBaru || empty($pelangganBaru['kecamatan'])" />
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-4">
-                        <x-input label="Kabupaten/Kota" wire:model="pelangganBaru.kabupaten_kota"
-                            placeholder="Kota Kendari" disabled />
-
-                        <x-input label="Provinsi" wire:model="pelangganBaru.provinsi" placeholder="Sulawesi Tenggara"
-                            disabled />
                     </div>
 
                     <!-- LOKASI SECTION -->
@@ -87,17 +91,17 @@
                                 :disabled="!$isPelangganBaru" />
 
                             <div class="grid grid-cols-2 gap-4">
-                                <x-input label="Latitude (Opsional)" wire:model="pelangganBaru.latitude" type="number"
-                                    step="any" placeholder="Contoh: -3.9778" hint="Koordinat lintang lokasi pelanggan"
-                                    icon="o-map-pin" :disabled="!$isPelangganBaru" />
+                                <x-input label="Latitude" wire:model="pelangganBaru.latitude" type="number" step="any"
+                                    placeholder="Contoh: -3.9778" hint="Koordinat lintang lokasi pelanggan"
+                                    icon="o-map-pin" required :disabled="!$isPelangganBaru" />
 
-                                <x-input label="Longitude (Opsional)" wire:model="pelangganBaru.longitude" type="number"
-                                    step="any" placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan"
-                                    icon="o-map-pin" :disabled="!$isPelangganBaru" />
+                                <x-input label="Longitude" wire:model="pelangganBaru.longitude" type="number" step="any"
+                                    placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan" icon="o-map-pin"
+                                    required :disabled="!$isPelangganBaru" />
                             </div>
 
                             @if($isPelangganBaru)
-                            <div id="map" wire:ignore class="h-100 rounded-md"></div>
+                            <div id="map" wire:ignore class="h-100 z-0 rounded-md"></div>
 
                             <div class="text-sm text-base-content/70">
                                 <p>

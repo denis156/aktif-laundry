@@ -52,18 +52,22 @@
                     rows="2" required />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
-                        placeholder="Pilih kecamatan" icon="o-map-pin" required />
+                    <x-select label="Provinsi" wire:model.live="provinsi" :options="$provinsiOptions"
+                        placeholder="Pilih provinsi" icon="o-map" />
 
-                    <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
-                        placeholder="Pilih kelurahan" hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}"
-                        icon="o-map" :disabled="empty($kecamatan)" required />
+                    <x-select label="Kabupaten/Kota" wire:model.live="kabupaten_kota" :options="$kabupatenKotaOptions"
+                        placeholder="Pilih kabupaten/kota" hint="{{ empty($provinsi) ? 'Pilih provinsi dulu' : '' }}"
+                        icon="o-building-office-2" :disabled="empty($provinsi)" />
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Kabupaten/Kota" wire:model="kabupaten_kota" placeholder="Kota Kendari" disabled />
+                    <x-select label="Kecamatan" wire:model.live="kecamatan" :options="$kecamatanOptions"
+                        placeholder="Pilih kecamatan" hint="{{ empty($kabupaten_kota) ? 'Pilih kabupaten/kota dulu' : '' }}"
+                        icon="o-map-pin" :disabled="empty($kabupaten_kota)" />
 
-                    <x-input label="Provinsi" wire:model="provinsi" placeholder="Sulawesi Tenggara" disabled />
+                    <x-select label="Kelurahan/Desa" wire:model.live="kelurahan" :options="$kelurahanOptions"
+                        placeholder="Pilih kelurahan" hint="{{ empty($kecamatan) ? 'Pilih kecamatan dulu' : '' }}"
+                        icon="o-map" :disabled="empty($kecamatan)" />
                 </div>
             </x-card>
         </div>
@@ -79,14 +83,14 @@
                     hint="Otomatis mengisi Latitude dan Longitude dari URL Google Maps" icon="o-link" />
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <x-input label="Latitude (Opsional)" wire:model="latitude" type="number" step="any"
-                        placeholder="Contoh: -3.9778" hint="Koordinat lintang lokasi pelanggan" icon="o-map-pin" />
+                    <x-input label="Latitude" wire:model="latitude" type="number" step="any"
+                        placeholder="Contoh: -3.9778" hint="Koordinat lintang lokasi pelanggan" icon="o-map-pin" required />
 
-                    <x-input label="Longitude (Opsional)" wire:model="longitude" type="number" step="any"
-                        placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan" icon="o-map-pin" />
+                    <x-input label="Longitude" wire:model="longitude" type="number" step="any"
+                        placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan" icon="o-map-pin" required />
                 </div>
 
-                <div id="map" wire:ignore class="h-100 rounded-md"></div>
+                <div id="map" wire:ignore class="h-100 z-0 rounded-md"></div>
 
                 <div class="text-sm text-base-content/70">
                     <p>

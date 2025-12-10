@@ -281,22 +281,47 @@ class RegionalLocation
     }
 
     // * Get options untuk select provinsi (format untuk Mary UI)
-    // Fixed ke Sulawesi Tenggara saja
+    // Seluruh provinsi di Indonesia
     public static function getProvinceOptions(): array
     {
-        return [
-            [
-                'id' => self::getProvinceName(),
-                'name' => self::getProvinceName(),
-            ],
-        ];
+        $provinces = self::getProvinces();
+        $options = [];
+
+        foreach ($provinces as $province) {
+            $options[] = [
+                'id' => $province['name'] ?? '',
+                'name' => $province['name'] ?? '',
+            ];
+        }
+
+        return $options;
     }
 
-    // * Get options untuk select kabupaten/kota di Sulawesi Tenggara (format untuk Mary UI)
+    // * Get options untuk select kabupaten/kota berdasarkan nama provinsi (format untuk Mary UI)
     public static function getRegencyOptions(?string $provinceName = null): array
     {
-        // Hanya Sulawesi Tenggara yang didukung
-        $regencies = self::getRegenciesByProvince(self::SULAWESI_TENGGARA_CODE);
+        // Jika tidak ada provinsi, return empty
+        if (! $provinceName) {
+            return [];
+        }
+
+        // Cari kode provinsi berdasarkan nama
+        $provinces = self::getProvinces();
+        $provinceCode = null;
+
+        foreach ($provinces as $province) {
+            if (($province['name'] ?? '') === $provinceName) {
+                $provinceCode = $province['code'];
+                break;
+            }
+        }
+
+        if (! $provinceCode) {
+            return [];
+        }
+
+        // Get kabupaten/kota berdasarkan kode provinsi
+        $regencies = self::getRegenciesByProvince($provinceCode);
         $options = [];
 
         foreach ($regencies as $regency) {

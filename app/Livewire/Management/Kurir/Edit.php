@@ -57,10 +57,83 @@ class Edit extends Component
 
     public ?string $currentAvatarUrl = null;
 
+    // Options untuk select regional
+    public array $provinsiOptions = [];
+
+    public array $kabupatenKotaOptions = [];
+
+    public array $kecamatanOptions = [];
+
+    public array $kelurahanOptions = [];
+
     public function mount($id): void
     {
         $this->kurirId = (int) $id;
         $this->loadKurir();
+        $this->loadRegionalOptions();
+    }
+
+    private function loadRegionalOptions(): void
+    {
+        // Load provinsi options (seluruh Indonesia)
+        $this->provinsiOptions = RegionalLocation::getProvinceOptions();
+
+        // Load kabupaten/kota options berdasarkan provinsi yang dipilih
+        if (! empty($this->formData['provinsi'])) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->formData['provinsi']);
+        }
+
+        // Load kecamatan options jika kabupaten/kota sudah dipilih
+        if (! empty($this->formData['kabupaten_kota'])) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->formData['kabupaten_kota']);
+        }
+
+        // Load kelurahan options jika kecamatan sudah dipilih
+        if (! empty($this->formData['kecamatan'])) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->formData['kecamatan']);
+        }
+    }
+
+    public function updatedFormDataProvinsi(): void
+    {
+        // Reset dependent fields
+        $this->formData['kabupaten_kota'] = '';
+        $this->formData['kecamatan'] = '';
+        $this->formData['kelurahan'] = '';
+        $this->kabupatenKotaOptions = [];
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kabupaten/kota options
+        if (! empty($this->formData['provinsi'])) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->formData['provinsi']);
+        }
+    }
+
+    public function updatedFormDataKabupatenKota(): void
+    {
+        // Reset dependent fields
+        $this->formData['kecamatan'] = '';
+        $this->formData['kelurahan'] = '';
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kecamatan options
+        if (! empty($this->formData['kabupaten_kota'])) {
+            $this->kecamatanOptions = RegionalLocation::getDistrictOptions($this->formData['kabupaten_kota']);
+        }
+    }
+
+    public function updatedFormDataKecamatan(): void
+    {
+        // Reset dependent field
+        $this->formData['kelurahan'] = '';
+        $this->kelurahanOptions = [];
+
+        // Load kelurahan options
+        if (! empty($this->formData['kecamatan'])) {
+            $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->formData['kecamatan']);
+        }
     }
 
     protected function loadKurir(): void
@@ -109,9 +182,11 @@ class Edit extends Component
         $rules = [
             'formData.nama' => 'required|string|max:255',
             'formData.no_hp' => 'required|string|max:15|unique:kurir,no_hp,'.$this->kurirId,
-            'formData.detail_alamat' => 'required|string',
-            'formData.kelurahan' => 'required|string|max:100',
-            'formData.kecamatan' => 'required|string|max:100',
+            'formData.detail_alamat' => 'nullable|string',
+            'formData.kelurahan' => 'nullable|string|max:100',
+            'formData.kecamatan' => 'nullable|string|max:100',
+            'formData.kabupaten_kota' => 'nullable|string|max:100',
+            'formData.provinsi' => 'nullable|string|max:100',
             'formData.email' => 'nullable|email|max:255|unique:kurir,email,'.$this->kurirId,
             'formData.jenis_kendaraan' => 'required|in:Motor,Mobil',
             'formData.no_kendaraan' => 'required|string|max:20',
@@ -274,29 +349,6 @@ class Edit extends Component
         }
     }
 
-    public function getKecamatanOptions(): array
-    {
-        // Get kecamatan di Kota Kendari dari API menggunakan RegionalLocation helper
-        $districts = RegionalLocation::getKendariDistricts();
-
-        // Transform ke format yang dibutuhkan oleh x-select component
-        return collect($districts)->map(fn (array $district) => [
-            'id' => $district['name'] ?? '',
-            'name' => $district['name'] ?? '',
-        ])->toArray();
-    }
-
-    public function getKelurahanOptions(): array
-    {
-        $kecamatanName = $this->formData['kecamatan'] ?? '';
-
-        if (empty($kecamatanName)) {
-            return [];
-        }
-
-        return RegionalLocation::getVillageOptions($kecamatanName);
-    }
-
     public function render(): mixed
     {
         $avatarUrl = $this->avatar
@@ -304,8 +356,6 @@ class Edit extends Component
             : AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->formData['nama'] ?? 'Kurir', 256);
 
         return view('livewire.management.kurir.edit', [
-            'kecamatanOptions' => $this->getKecamatanOptions(),
-            'kelurahanOptions' => $this->getKelurahanOptions(),
             'statusOptions' => KurirHelper::getStatusOptions(),
             'jenisKendaraanOptions' => KurirHelper::getJenisKendaraanOptions(),
             'avatarUrl' => $avatarUrl,
