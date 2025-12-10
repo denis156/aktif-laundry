@@ -42,7 +42,7 @@
                 <x-textarea label="Detail Alamat" wire:model.live="detail_alamat"
                     placeholder="Contoh: Jl. Abunawas No. 123, RT 01/RW 02, Dekat Masjid Al-Ikhlas"
                     hint="Isi dengan: nama jalan, nomor rumah, RT/RW, dan patokan (dekat tempat terkenal/masjid/sekolah)"
-                    rows="3" required />
+                    rows="3" />
 
                 <x-select label="Provinsi" wire:model.live="provinsi" :options="$provinsiOptions"
                     placeholder="Pilih provinsi" icon="o-map" />
