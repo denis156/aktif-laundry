@@ -351,11 +351,11 @@ class Edit extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -530,7 +530,7 @@ class Edit extends Component
         }
         // Null or empty
         elseif (empty($data)) {
-            return new Collection();
+            return new Collection;
         }
         // Array
         elseif (is_array($data)) {
@@ -546,7 +546,7 @@ class Edit extends Component
 
         // Fallback: empty Collection
         if (! $collection) {
-            return new Collection();
+            return new Collection;
         }
 
         // Ensure each item has 'uuid' key for Mary UI Image Library
@@ -673,6 +673,17 @@ class Edit extends Component
                 $transaksiData['jumlah_layanan'] = count($this->multiLayananData['items']);
                 $transaksiData['total_berat'] = 0;
                 $transaksiData['total_item'] = 0;
+
+                // Convert empty strings to null for datetime fields
+                if (empty($transaksiData['tanggal_bayar'])) {
+                    $transaksiData['tanggal_bayar'] = null;
+                }
+                if (empty($transaksiData['tanggal_selesai'])) {
+                    $transaksiData['tanggal_selesai'] = null;
+                }
+                if (empty($transaksiData['tanggal_masuk'])) {
+                    $transaksiData['tanggal_masuk'] = null;
+                }
 
                 // Calculate total berat dan total item
                 foreach ($this->multiLayananData['items'] as $item) {
