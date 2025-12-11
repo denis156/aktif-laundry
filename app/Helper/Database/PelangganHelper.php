@@ -153,7 +153,7 @@ class PelangganHelper
                 'kode_pelanggan' => self::generateKodePelanggan(),
                 'nama' => $data['nama'],
                 'no_hp' => $normalizedPhone,
-                'email' => $data['email'] ?? null,
+                'email' => ! empty($data['email']) ? $data['email'] : null,
                 'alamat' => $alamatLengkap,
                 'detail_alamat' => $data['detail_alamat'] ?? null,
                 'kelurahan' => $data['kelurahan'] ?? null,
@@ -168,7 +168,7 @@ class PelangganHelper
                 'member_card' => $data['member_card'] ?? null,
                 'avatar_url' => $data['avatar_url'] ?? null,
                 'direferensikan_oleh' => $data['direferensikan_oleh'] ?? null,
-                'password' => isset($data['password']) ? Hash::make($data['password']) : null,
+                'password' => ! empty($data['password']) ? Hash::make($data['password']) : null,
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to create pelanggan', [
