@@ -674,6 +674,11 @@ class Edit extends Component
                 $transaksiData['total_berat'] = 0;
                 $transaksiData['total_item'] = 0;
 
+                // Auto-fill tanggal_bayar jika status_bayar = "Sudah Bayar" dan tanggal_bayar kosong
+                if ($transaksiData['status_bayar'] === TransaksiHelper::STATUS_SUDAH_BAYAR && empty($transaksiData['tanggal_bayar'])) {
+                    $transaksiData['tanggal_bayar'] = now();
+                }
+
                 // Convert empty strings to null for datetime fields
                 if (empty($transaksiData['tanggal_bayar'])) {
                     $transaksiData['tanggal_bayar'] = null;
