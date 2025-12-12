@@ -1,4 +1,4 @@
-<div wire:poll.10s.visible="refreshStatus">
+<div>
     <x-card class="shadow-lg border border-primary" body-class="overflow-hidden p-0">
         {{-- Header dengan Status Real-time --}}
         <x-slot:title>
@@ -32,119 +32,78 @@
             </div>
         </x-slot:subtitle>
 
-        {{-- Map Container --}}
-        @if ($latitude && $longitude)
-            <div id="map-lokasi-kurir" wire:ignore class="w-full h-[42dvh] rounded z-40"></div>
-        @else
-            <div class="flex items-center justify-center h-[42dvh]">
-                <div class="text-center space-y-3 p-4">
-                    <div class="w-16 h-16 rounded-full bg-base-200 flex items-center justify-center mx-auto">
-                        <x-icon name="iconpark.localpin-o" class="h-8 text-base-content/40 animate-pulse" />
-                    </div>
-                    <div class="space-y-1">
-                        <p class="text-base-content/60 font-medium">Menginisialisasi GPS...</p>
-                        <p class="text-xs text-base-content/40">Pastikan GPS perangkat Anda aktif</p>
-                    </div>
-                </div>
-            </div>
-        @endif
+        {{-- Map Container - Always render for JS to init --}}
+        <div id="map-lokasi-kurir" wire:ignore class="w-full h-[42dvh] rounded z-40"></div>
     </x-card>
 </div>
 
 @script
     <script>
-        let lokasiMap = null;
-        let lokasiMarker = null;
-        let accuracyCircle = null;
-        let watchId = null;
-        let isMapInitialized = false;
+        let mapManager = null;
 
         function initLokasiMap() {
             const mapElement = document.getElementById('map-lokasi-kurir');
-            if (!mapElement || isMapInitialized) return;
+            if (!mapElement || mapManager) return;
 
-            const lat = parseFloat($wire.latitude) || -3.9778;
-            const lng = parseFloat($wire.longitude) || 122.5145;
+            // Wait for LeafletMapManager to be available
+            if (typeof window.LeafletMapManager === 'undefined') {
+                setTimeout(initLokasiMap, 100);
+                return;
+            }
 
-            lokasiMap = L.map('map-lokasi-kurir', {
-                zoomControl: true,
-                attributionControl: false,
-                dragging: true,
-                scrollWheelZoom: true
-            }).setView([lat, lng], 16);
+            const lat = parseFloat($wire.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
+            const lng = parseFloat($wire.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
 
-            const mapLayers = {
-                'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                    maxZoom: 19,
-                    attribution: '&copy; OpenStreetMap'
-                }),
-                'Google Satellite': L.tileLayer('https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-                    maxZoom: 20,
-                    attribution: '&copy; Google'
-                }),
-                'Google Street': L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-                    maxZoom: 20,
-                    attribution: '&copy; Google'
-                }),
-                'Google Hybrid': L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-                    maxZoom: 20,
-                    attribution: '&copy; Google'
-                })
-            };
-
-            mapLayers['Google Street'].addTo(lokasiMap);
-
-            L.control.layers(mapLayers, {}, {
-                position: 'topright',
-                collapsed: true
-            }).addTo(lokasiMap);
-
-            // Hide attribution
-            setTimeout(() => {
-                const attributionElements = document.getElementsByClassName('leaflet-control-attribution');
-                for (let i = 0; i < attributionElements.length; i++) {
-                    attributionElements[i].style.display = 'none';
-                }
-            }, 100);
-
-            const customIcon = L.icon({
-                iconUrl: '/images/marker.png',
-                iconSize: [48, 48],
-                iconAnchor: [24, 48],
-                popupAnchor: [0, -48]
+            // Initialize map using OOP class
+            mapManager = new window.LeafletMapManager('map-lokasi-kurir', {
+                latitude: lat,
+                longitude: lng,
+                zoom: window.LeafletUtils.config.zoom.detail,
+                rotate: true,
+                showLayerControl: false,
             });
 
-            lokasiMarker = L.marker([lat, lng], {
-                icon: customIcon,
-                draggable: false
-            }).addTo(lokasiMap);
+            mapManager.init();
 
-            // Accuracy circle
-            accuracyCircle = L.circle([lat, lng], {
-                radius: 50,
-                color: '#3b82f6',
-                fillColor: '#3b82f6',
-                fillOpacity: 0.15,
-                weight: 2
-            }).addTo(lokasiMap);
+            // Add marker
+            const marker = mapManager.addMarker('kurir-location', lat, lng, {
+                popup: createPopupContent(lat, lng),
+            });
 
-            updatePopupContent(lat, lng);
+            // Add accuracy circle
+            mapManager.updateAccuracyCircle(lat, lng, 50);
 
-            isMapInitialized = true;
+            // Start GPS tracking
+            $wire.call('updateGpsStatus', 'searching');
 
-            // Start GPS tracking dengan wire:stream
-            startGPSTrackingWithStream();
+            mapManager.startGPSTracking(
+                (newLat, newLng, accuracy) => {
+                    // Update Livewire
+                    $wire.call('updateLocation', newLat, newLng, accuracy);
+
+                    // Update marker and accuracy circle
+                    mapManager.updateMarker('kurir-location', newLat, newLng);
+                    mapManager.updateMarkerPopup('kurir-location', createPopupContent(newLat, newLng, accuracy));
+                    mapManager.updateAccuracyCircle(newLat, newLng, accuracy);
+
+                    // Pan to location
+                    mapManager.panTo(newLat, newLng);
+                },
+                (error) => {
+                    console.error('GPS Error:', error.message);
+                    $wire.call('updateGpsStatus', 'error');
+                }
+            );
         }
 
-        function updatePopupContent(lat, lng, accuracy = null) {
-            if (!lokasiMarker) return;
+        function createPopupContent(lat, lng, accuracy = null) {
+            const accuracyText = accuracy
+                ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>`
+                : '';
 
-            const accuracyText = accuracy ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
-
-            const popupContent = `
+            return `
                 <div class="p-2">
                     <div class="flex items-center gap-2 mb-1">
-                        <x-icon name="iconpark.localpin-o" class="w-5 h-5 text-primary" />
                         <strong class="text-base">Lokasi Anda</strong>
                     </div>
                     <div class="text-xs text-secondary font-mono">
@@ -153,97 +112,18 @@
                     ${accuracyText}
                 </div>
             `;
-
-            lokasiMarker.bindPopup(popupContent);
         }
 
-        function startGPSTrackingWithStream() {
-            if (!navigator.geolocation) {
-                console.error('Geolocation tidak didukung');
-                $wire.call('updateGpsStatus', 'error');
-                return;
-            }
-
-            // Update status ke "searching"
-            $wire.call('updateGpsStatus', 'searching');
-
-            watchId = navigator.geolocation.watchPosition(
-                (position) => {
-                    const lat = position.coords.latitude;
-                    const lng = position.coords.longitude;
-                    const accuracy = position.coords.accuracy;
-
-                    // Call Livewire method dengan wire:stream
-                    $wire.call('updateLocation', lat, lng, accuracy);
-
-                    // Update map marker & circle
-                    if (lokasiMarker && lokasiMap) {
-                        lokasiMarker.setLatLng([lat, lng]);
-                        updatePopupContent(lat, lng, accuracy);
-
-                        // Update accuracy circle
-                        if (accuracyCircle) {
-                            accuracyCircle.setLatLng([lat, lng]);
-                            accuracyCircle.setRadius(accuracy);
-
-                            // Change color based on accuracy
-                            const color = accuracy <= 10 ? '#22c55e' : accuracy <= 50 ? '#eab308' : '#ef4444';
-                            accuracyCircle.setStyle({
-                                color: color,
-                                fillColor: color
-                            });
-                        }
-
-                        // Pan map smoothly jika bergerak cukup jauh
-                        const currentCenter = lokasiMap.getCenter();
-                        const distance = Math.sqrt(
-                            Math.pow(currentCenter.lat - lat, 2) +
-                            Math.pow(currentCenter.lng - lng, 2)
-                        );
-
-                        if (distance > 0.0005) { // ~55 meters
-                            lokasiMap.panTo([lat, lng], {
-                                animate: true,
-                                duration: 1,
-                                easeLinearity: 0.5
-                            });
-                        }
-                    }
-                },
-                (error) => {
-                    console.error('GPS Error:', error.message);
-                    $wire.call('updateGpsStatus', 'error');
-
-                    // Retry after 5 seconds
-                    setTimeout(() => {
-                        startGPSTrackingWithStream();
-                    }, 5000);
-                },
-                {
-                    enableHighAccuracy: true,
-                    timeout: 15000,
-                    maximumAge: 0
-                }
-            );
-        }
-
-        // Initialize map setelah DOM ready
+        // Initialize map after DOM ready
         setTimeout(() => {
             initLokasiMap();
         }, 500);
 
-        // Cleanup saat navigasi
+        // Cleanup on navigation
         document.addEventListener('livewire:navigating', () => {
-            if (watchId !== null) {
-                navigator.geolocation.clearWatch(watchId);
-                watchId = null;
-            }
-            if (lokasiMap) {
-                lokasiMap.remove();
-                lokasiMap = null;
-                lokasiMarker = null;
-                accuracyCircle = null;
-                isMapInitialized = false;
+            if (mapManager) {
+                mapManager.destroy();
+                mapManager = null;
             }
         });
     </script>

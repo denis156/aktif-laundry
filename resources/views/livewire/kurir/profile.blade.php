@@ -155,51 +155,112 @@
 
     @script
         <script>
-            let kurirMap = null;
-            let kurirMarker = null;
-            let mapInitialized = false;
+            let map = null;
+            let marker = null;
 
             $wire.$watch('editAlamatModal', (value) => {
-                if (value === true && !mapInitialized) {
+                if (value === true && !map) {
                     setTimeout(() => {
                         initKurirMap();
-                        mapInitialized = true;
                     }, 500);
-                } else if (value === false) {
-                    mapInitialized = false;
+                } else if (value === false && map) {
+                    map.remove();
+                    map = null;
+                    marker = null;
                 }
             });
 
             function initKurirMap() {
-                if (kurirMap) {
-                    kurirMap.remove();
-                    kurirMap = null;
-                    kurirMarker = null;
-                }
-
                 const mapElement = document.getElementById('map-kurir');
                 if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
                     return;
                 }
 
-                const mapData = window.LeafletUtils.initLeafletMap('map-kurir', {
-                    defaultLat: -3.9778,
-                    defaultLng: 122.5145,
-                    zoom: 15,
-                    wire: $wire,
-                    latitudeProperty: 'latitude',
-                    longitudeProperty: 'longitude'
+                // Wait for Leaflet
+                if (typeof L === 'undefined') {
+                    setTimeout(initKurirMap, 100);
+                    return;
+                }
+
+                const lat = parseFloat($wire.latitude) || -3.9778;
+                const lng = parseFloat($wire.longitude) || 122.5145;
+
+                // Initialize map with rotation
+                map = L.map('map-kurir', {
+                    zoomControl: true,
+                    attributionControl: false,
+                    rotate: true,
+                    bearing: 0,
+                    touchRotate: true,
+                }).setView([lat, lng], 15);
+
+                // Add tile layer
+                L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+                    maxZoom: 20,
+                }).addTo(map);
+
+                // Hide attribution
+                setTimeout(() => {
+                    const attrs = document.getElementsByClassName('leaflet-control-attribution');
+                    for (let i = 0; i < attrs.length; i++) attrs[i].style.display = 'none';
+                }, 100);
+
+                // Add marker
+                const icon = L.icon({
+                    iconUrl: '/images/marker.png',
+                    iconSize: [48, 48],
+                    iconAnchor: [24, 48],
+                    popupAnchor: [0, -48],
                 });
 
-                kurirMap = mapData.map;
-                kurirMarker = mapData.marker;
+                if (lat && lng) {
+                    marker = L.marker([lat, lng], {
+                        draggable: true,
+                        icon: icon
+                    }).addTo(map);
 
+                    // Marker drag event
+                    marker.on('dragend', function() {
+                        const pos = marker.getLatLng();
+                        $wire.latitude = pos.lat.toFixed(6);
+                        $wire.longitude = pos.lng.toFixed(6);
+                    });
+                }
+
+                // Map click event
+                map.on('click', function(e) {
+                    const clickLat = e.latlng.lat;
+                    const clickLng = e.latlng.lng;
+
+                    $wire.latitude = clickLat.toFixed(6);
+                    $wire.longitude = clickLng.toFixed(6);
+
+                    if (marker) {
+                        marker.setLatLng([clickLat, clickLng]);
+                    } else {
+                        marker = L.marker([clickLat, clickLng], {
+                            draggable: true,
+                            icon: icon
+                        }).addTo(map);
+
+                        marker.on('dragend', function() {
+                            const pos = marker.getLatLng();
+                            $wire.latitude = pos.lat.toFixed(6);
+                            $wire.longitude = pos.lng.toFixed(6);
+                        });
+                    }
+                });
+
+                // Setup "Ambil Lokasi Saya" button
+                setupGetLocationButton();
+            }
+
+            function setupGetLocationButton() {
                 setTimeout(() => {
                     const getLocationBtn = document.getElementById('getLocationBtn');
-                    if (!getLocationBtn) {
-                        return;
-                    }
+                    if (!getLocationBtn) return;
 
+                    // Clone button to remove old listeners
                     const newBtn = getLocationBtn.cloneNode(true);
                     getLocationBtn.parentNode.replaceChild(newBtn, getLocationBtn);
 
@@ -220,60 +281,55 @@
                                 const lat = position.coords.latitude;
                                 const lng = position.coords.longitude;
 
+                                // Update Livewire properties
                                 $wire.latitude = lat.toFixed(6);
                                 $wire.longitude = lng.toFixed(6);
 
-                                const customIcon = L.icon({
+                                // Update or add marker
+                                const icon = L.icon({
                                     iconUrl: '/images/marker.png',
                                     iconSize: [48, 48],
                                     iconAnchor: [24, 48],
-                                    popupAnchor: [0, -48]
+                                    popupAnchor: [0, -48],
                                 });
 
-                                if (kurirMarker) {
-                                    kurirMarker.setLatLng([lat, lng]);
+                                if (marker) {
+                                    marker.setLatLng([lat, lng]);
                                 } else {
-                                    kurirMarker = L.marker([lat, lng], {
+                                    marker = L.marker([lat, lng], {
                                         draggable: true,
-                                        icon: customIcon
-                                    }).addTo(kurirMap);
+                                        icon: icon
+                                    }).addTo(map);
 
-                                    kurirMarker.on('dragend', function() {
-                                        const position = kurirMarker.getLatLng();
-                                        $wire.latitude = position.lat.toFixed(6);
-                                        $wire.longitude = position.lng.toFixed(6);
+                                    marker.on('dragend', function() {
+                                        const pos = marker.getLatLng();
+                                        $wire.latitude = pos.lat.toFixed(6);
+                                        $wire.longitude = pos.lng.toFixed(6);
                                     });
                                 }
 
-                                kurirMap.setView([lat, lng], 15);
+                                // Center map
+                                map.setView([lat, lng], 15);
 
                                 this.innerHTML = btnText;
                                 this.disabled = false;
                             },
                             (error) => {
-                                let errorMsg = 'Gagal mendapatkan lokasi';
+                                const errorMessages = {
+                                    [error.PERMISSION_DENIED]: 'Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser Anda.',
+                                    [error.POSITION_UNAVAILABLE]: 'Informasi lokasi tidak tersedia.',
+                                    [error.TIMEOUT]: 'Waktu permintaan lokasi habis.'
+                                };
 
-                                switch(error.code) {
-                                    case error.PERMISSION_DENIED:
-                                        errorMsg = 'Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser Anda.';
-                                        break;
-                                    case error.POSITION_UNAVAILABLE:
-                                        errorMsg = 'Informasi lokasi tidak tersedia.';
-                                        break;
-                                    case error.TIMEOUT:
-                                        errorMsg = 'Waktu permintaan lokasi habis.';
-                                        break;
-                                }
-
-                                alert(errorMsg);
+                                alert(errorMessages[error.code] || 'Gagal mendapatkan lokasi');
 
                                 this.innerHTML = btnText;
                                 this.disabled = false;
                             },
                             {
                                 enableHighAccuracy: true,
-                                timeout: 10000,
-                                maximumAge: 0
+                                timeout: 30000,
+                                maximumAge: 5000,
                             }
                         );
                     });

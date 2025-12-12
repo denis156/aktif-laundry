@@ -91,15 +91,6 @@ class LokasiSaya extends Component
         );
     }
 
-    public function refreshStatus(): void
-    {
-        // Method untuk wire:poll sebagai fallback
-        // Hanya update timestamp jika GPS masih aktif
-        if ($this->gpsStatus === 'active') {
-            $this->lastUpdate = now()->locale('id')->diffForHumans();
-        }
-    }
-
     protected function formatCoordinates(): string
     {
         if (! $this->latitude || ! $this->longitude) {

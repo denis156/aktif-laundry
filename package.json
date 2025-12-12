@@ -14,5 +14,10 @@
         "laravel-vite-plugin": "^2.0.1",
         "tailwindcss": "^4.1.17",
         "vite": "^7.2.2"
+    },
+    "dependencies": {
+        "leaflet": "^1.9.4",
+        "leaflet-rotate": "^0.2.8",
+        "leaflet-routing-machine": "^3.2.12"
     }
 }
