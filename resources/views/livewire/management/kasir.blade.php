@@ -340,59 +340,77 @@
             window.open(event.url, '_blank');
         });
 
-        let mapInstance = null;
-
-        // Function untuk inisialisasi peta
-        function initMap() {
-            const mapElement = document.getElementById('map');
-
-            if (!mapElement) {
-                return;
-            }
-
-            // Jika map sudah ada, destroy dulu
-            if (mapInstance && mapInstance.map) {
-                mapInstance.map.remove();
-                mapInstance = null;
-            }
-
-            // Tunggu sebentar untuk memastikan DOM ready
-            setTimeout(() => {
-                if (window.LeafletUtils && typeof window.LeafletUtils.initLeafletMap === 'function') {
-                    mapInstance = window.LeafletUtils.initLeafletMap('map', {
-                        defaultLat: -3.9778,
-                        defaultLng: 122.5145,
-                        zoom: 15,
-                        wire: $wire,
-                        latitudeProperty: 'pelangganBaru.latitude',
-                        longitudeProperty: 'pelangganBaru.longitude'
-                    });
-                }
-            }, 200);
-        }
+        let mapManager = null;
 
         // Watch untuk perubahan isPelangganBaru
         $wire.$watch('isPelangganBaru', (value) => {
-            if (value) {
-                // Mode pelanggan baru aktif, init map setelah DOM update
+            if (value === true && !mapManager) {
                 setTimeout(() => {
-                    initMap();
-                }, 300);
-            } else {
-                // Mode pelanggan baru tidak aktif, destroy map jika ada
-                if (mapInstance && mapInstance.map) {
-                    mapInstance.map.remove();
-                    mapInstance = null;
-                }
+                    initPelangganMap();
+                }, 500);
+            } else if (value === false && mapManager) {
+                mapManager.destroy();
+                mapManager = null;
             }
         });
+
+        function initPelangganMap() {
+            const mapElement = document.getElementById('map');
+            if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
+                return;
+            }
+
+            // Wait for LeafletMapManager
+            if (typeof window.LeafletMapManager === 'undefined') {
+                setTimeout(initPelangganMap, 100);
+                return;
+            }
+
+            const lat = parseFloat($wire.pelangganBaru.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
+            const lng = parseFloat($wire.pelangganBaru.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
+
+            // Initialize map using OOP class
+            mapManager = new window.LeafletMapManager('map', {
+                latitude: lat,
+                longitude: lng,
+                zoom: window.LeafletUtils.config.zoom.default,
+                draggable: true,
+                showLayerControl: false,
+                onMapClick: (clickLat, clickLng) => {
+                    $wire.pelangganBaru.latitude = clickLat.toFixed(6);
+                    $wire.pelangganBaru.longitude = clickLng.toFixed(6);
+                    mapManager.updateMarker('pelanggan-location', clickLat, clickLng);
+                },
+                onLocationUpdate: (dragLat, dragLng) => {
+                    $wire.pelangganBaru.latitude = dragLat.toFixed(6);
+                    $wire.pelangganBaru.longitude = dragLng.toFixed(6);
+                },
+            });
+
+            mapManager.init();
+
+            // Add marker if coordinates exist
+            if (lat && lng) {
+                mapManager.addMarker('pelanggan-location', lat, lng, {
+                    draggable: true,
+                });
+            }
+        }
 
         // Inisialisasi peta saat pertama kali load jika pelanggan baru aktif
         if ($wire.isPelangganBaru) {
             setTimeout(() => {
-                initMap();
-            }, 300);
+                initPelangganMap();
+            }, 500);
         }
+
+        // Cleanup on navigation
+        document.addEventListener('livewire:navigating', () => {
+            if (mapManager) {
+                mapManager.destroy();
+                mapManager = null;
+            }
+        });
     </script>
     @endscript
 </div>

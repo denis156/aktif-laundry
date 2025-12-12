@@ -126,14 +126,62 @@
 
     @script
         <script>
-            // Inisialisasi peta menggunakan utility function
-            window.LeafletUtils.initLeafletMap('map', {
-                defaultLat: -3.9778,
-                defaultLng: 122.5145,
-                zoom: 15,
-                wire: $wire,
-                latitudeProperty: 'latitude',
-                longitudeProperty: 'longitude'
+            let mapManager = null;
+
+            function initPelangganMap() {
+                const mapElement = document.getElementById('map');
+                if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
+                    return;
+                }
+
+                // Wait for LeafletMapManager
+                if (typeof window.LeafletMapManager === 'undefined') {
+                    setTimeout(initPelangganMap, 100);
+                    return;
+                }
+
+                const lat = parseFloat($wire.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
+                const lng = parseFloat($wire.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
+
+                // Initialize map using OOP class
+                mapManager = new window.LeafletMapManager('map', {
+                    latitude: lat,
+                    longitude: lng,
+                    zoom: window.LeafletUtils.config.zoom.default,
+                    draggable: true,
+                    showLayerControl: false,
+                    onMapClick: (clickLat, clickLng) => {
+                        $wire.latitude = clickLat.toFixed(6);
+                        $wire.longitude = clickLng.toFixed(6);
+                        mapManager.updateMarker('pelanggan-location', clickLat, clickLng);
+                    },
+                    onLocationUpdate: (dragLat, dragLng) => {
+                        $wire.latitude = dragLat.toFixed(6);
+                        $wire.longitude = dragLng.toFixed(6);
+                    },
+                });
+
+                mapManager.init();
+
+                // Add marker if coordinates exist
+                if (lat && lng) {
+                    mapManager.addMarker('pelanggan-location', lat, lng, {
+                        draggable: true,
+                    });
+                }
+            }
+
+            // Initialize map after DOM ready
+            setTimeout(() => {
+                initPelangganMap();
+            }, 500);
+
+            // Cleanup on navigation
+            document.addEventListener('livewire:navigating', () => {
+                if (mapManager) {
+                    mapManager.destroy();
+                    mapManager = null;
+                }
             });
         </script>
     @endscript

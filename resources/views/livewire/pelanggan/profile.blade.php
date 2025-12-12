@@ -155,51 +155,71 @@
 
     @script
         <script>
-            let pelangganMap = null;
-            let pelangganMarker = null;
-            let mapInitialized = false;
+            let mapManager = null;
 
             $wire.$watch('editAlamatModal', (value) => {
-                if (value === true && !mapInitialized) {
+                if (value === true && !mapManager) {
                     setTimeout(() => {
                         initPelangganMap();
-                        mapInitialized = true;
                     }, 500);
-                } else if (value === false) {
-                    mapInitialized = false;
+                } else if (value === false && mapManager) {
+                    mapManager.destroy();
+                    mapManager = null;
                 }
             });
 
             function initPelangganMap() {
-                if (pelangganMap) {
-                    pelangganMap.remove();
-                    pelangganMap = null;
-                    pelangganMarker = null;
-                }
-
                 const mapElement = document.getElementById('map-pelanggan');
                 if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
                     return;
                 }
 
-                const mapData = window.LeafletUtils.initLeafletMap('map-pelanggan', {
-                    defaultLat: -3.9778,
-                    defaultLng: 122.5145,
-                    zoom: 15,
-                    wire: $wire,
-                    latitudeProperty: 'latitude',
-                    longitudeProperty: 'longitude'
+                // Wait for LeafletMapManager
+                if (typeof window.LeafletMapManager === 'undefined') {
+                    setTimeout(initPelangganMap, 100);
+                    return;
+                }
+
+                const lat = parseFloat($wire.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
+                const lng = parseFloat($wire.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
+
+                // Initialize map using OOP class
+                mapManager = new window.LeafletMapManager('map-pelanggan', {
+                    latitude: lat,
+                    longitude: lng,
+                    zoom: window.LeafletUtils.config.zoom.default,
+                    draggable: true,
+                    showLayerControl: false,
+                    onMapClick: (clickLat, clickLng) => {
+                        $wire.latitude = clickLat.toFixed(6);
+                        $wire.longitude = clickLng.toFixed(6);
+                        mapManager.updateMarker('pelanggan-location', clickLat, clickLng);
+                    },
+                    onLocationUpdate: (dragLat, dragLng) => {
+                        $wire.latitude = dragLat.toFixed(6);
+                        $wire.longitude = dragLng.toFixed(6);
+                    },
                 });
 
-                pelangganMap = mapData.map;
-                pelangganMarker = mapData.marker;
+                mapManager.init();
 
+                // Add marker if coordinates exist
+                if (lat && lng) {
+                    mapManager.addMarker('pelanggan-location', lat, lng, {
+                        draggable: true,
+                    });
+                }
+
+                // Setup "Ambil Lokasi Saya" button
+                setupGetLocationButton();
+            }
+
+            function setupGetLocationButton() {
                 setTimeout(() => {
                     const getLocationBtn = document.getElementById('getLocationBtn');
-                    if (!getLocationBtn) {
-                        return;
-                    }
+                    if (!getLocationBtn) return;
 
+                    // Clone button to remove old listeners
                     const newBtn = getLocationBtn.cloneNode(true);
                     getLocationBtn.parentNode.replaceChild(newBtn, getLocationBtn);
 
@@ -220,61 +240,38 @@
                                 const lat = position.coords.latitude;
                                 const lng = position.coords.longitude;
 
+                                // Update Livewire properties
                                 $wire.latitude = lat.toFixed(6);
                                 $wire.longitude = lng.toFixed(6);
 
-                                const customIcon = L.icon({
-                                    iconUrl: '/images/marker.png',
-                                    iconSize: [48, 48],
-                                    iconAnchor: [24, 48],
-                                    popupAnchor: [0, -48]
-                                });
-
-                                if (pelangganMarker) {
-                                    pelangganMarker.setLatLng([lat, lng]);
+                                // Update or add marker
+                                if (mapManager.markers['pelanggan-location']) {
+                                    mapManager.updateMarker('pelanggan-location', lat, lng);
                                 } else {
-                                    pelangganMarker = L.marker([lat, lng], {
+                                    mapManager.addMarker('pelanggan-location', lat, lng, {
                                         draggable: true,
-                                        icon: customIcon
-                                    }).addTo(pelangganMap);
-
-                                    pelangganMarker.on('dragend', function() {
-                                        const position = pelangganMarker.getLatLng();
-                                        $wire.latitude = position.lat.toFixed(6);
-                                        $wire.longitude = position.lng.toFixed(6);
                                     });
                                 }
 
-                                pelangganMap.setView([lat, lng], 15);
+                                // Center map
+                                mapManager.setView(lat, lng, window.LeafletUtils.config.zoom.default);
 
                                 this.innerHTML = btnText;
                                 this.disabled = false;
                             },
                             (error) => {
-                                let errorMsg = 'Gagal mendapatkan lokasi';
+                                const errorMessages = {
+                                    [error.PERMISSION_DENIED]: 'Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser Anda.',
+                                    [error.POSITION_UNAVAILABLE]: 'Informasi lokasi tidak tersedia.',
+                                    [error.TIMEOUT]: 'Waktu permintaan lokasi habis.'
+                                };
 
-                                switch(error.code) {
-                                    case error.PERMISSION_DENIED:
-                                        errorMsg = 'Izin lokasi ditolak. Aktifkan izin lokasi di pengaturan browser Anda.';
-                                        break;
-                                    case error.POSITION_UNAVAILABLE:
-                                        errorMsg = 'Informasi lokasi tidak tersedia.';
-                                        break;
-                                    case error.TIMEOUT:
-                                        errorMsg = 'Waktu permintaan lokasi habis.';
-                                        break;
-                                }
-
-                                alert(errorMsg);
+                                alert(errorMessages[error.code] || 'Gagal mendapatkan lokasi');
 
                                 this.innerHTML = btnText;
                                 this.disabled = false;
                             },
-                            {
-                                enableHighAccuracy: true,
-                                timeout: 10000,
-                                maximumAge: 0
-                            }
+                            window.LeafletUtils.config.gpsOptions
                         );
                     });
                 }, 100);
