@@ -15,6 +15,13 @@ export class LeafletMapManager {
         this.isUpdatingFromMap = false;
         this.isInitialized = false;
         this.currentBearing = 0; // Store current bearing for rotation
+        this.compassHeading = null; // Store compass heading from device orientation
+        this.lastPosition = null; // Store last position for bearing calculation
+        this.compassEnabled = false; // Flag to track compass state
+        this.lastCompassUpdate = 0; // Timestamp for throttling
+        this.compassThrottle = 100; // Throttle compass updates (ms)
+        this.targetBearing = 0; // Target bearing for smooth rotation
+        this.rotationAnimationFrame = null; // Animation frame ID
 
         // Merge options dengan default config
         this.options = {
@@ -24,6 +31,8 @@ export class LeafletMapManager {
             draggable: options.draggable !== undefined ? options.draggable : false,
             showLayerControl: options.showLayerControl !== undefined ? options.showLayerControl : true,
             rotate: options.rotate !== undefined ? options.rotate : false, // Enable map rotation
+            enableCompass: options.enableCompass !== undefined ? options.enableCompass : false, // Enable compass tracking
+            smoothCompass: options.smoothCompass !== undefined ? options.smoothCompass : true, // Smooth compass rotation
             onLocationUpdate: options.onLocationUpdate || null,
             onMapClick: options.onMapClick || null,
             wire: options.wire || null,
@@ -423,10 +432,211 @@ export class LeafletMapManager {
     }
 
     /**
+     * Calculate bearing between two coordinates
+     * @param {number} lat1 - Start latitude
+     * @param {number} lng1 - Start longitude
+     * @param {number} lat2 - End latitude
+     * @param {number} lng2 - End longitude
+     * @returns {number} - Bearing in degrees (0-360)
+     */
+    calculateBearing(lat1, lng1, lat2, lng2) {
+        const toRad = (deg) => deg * Math.PI / 180;
+        const toDeg = (rad) => rad * 180 / Math.PI;
+
+        const dLng = toRad(lng2 - lng1);
+        const y = Math.sin(dLng) * Math.cos(toRad(lat2));
+        const x = Math.cos(toRad(lat1)) * Math.sin(toRad(lat2)) -
+                  Math.sin(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.cos(dLng);
+
+        let bearing = toDeg(Math.atan2(y, x));
+        bearing = (bearing + 360) % 360; // Normalize to 0-360
+
+        return bearing;
+    }
+
+    /**
+     * Start compass tracking using Device Orientation API
+     */
+    startCompassTracking() {
+        if (!this.options.enableCompass) {
+            return;
+        }
+
+        // Check if device orientation is supported
+        if (!window.DeviceOrientationEvent) {
+            console.log('Device orientation not supported');
+            return;
+        }
+
+        // Request permission for iOS 13+
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+            DeviceOrientationEvent.requestPermission()
+                .then(permissionState => {
+                    if (permissionState === 'granted') {
+                        this.attachOrientationListener();
+                    } else {
+                        console.log('Device orientation permission denied');
+                    }
+                })
+                .catch(console.error);
+        } else {
+            // Non-iOS or older iOS - no permission needed
+            this.attachOrientationListener();
+        }
+    }
+
+    /**
+     * Attach device orientation listener
+     */
+    attachOrientationListener() {
+        this.handleOrientation = this.handleOrientation.bind(this);
+        window.addEventListener('deviceorientationabsolute', this.handleOrientation, true);
+        window.addEventListener('deviceorientation', this.handleOrientation, true);
+        this.compassEnabled = true;
+    }
+
+    /**
+     * Handle device orientation event
+     * @param {DeviceOrientationEvent} event - Device orientation event
+     */
+    handleOrientation(event) {
+        // Throttle updates untuk smooth rotation
+        const now = Date.now();
+        if (now - this.lastCompassUpdate < this.compassThrottle) {
+            return;
+        }
+        this.lastCompassUpdate = now;
+
+        let heading = null;
+
+        // Use absolute orientation if available (more accurate)
+        if (event.absolute && event.alpha !== null) {
+            heading = event.alpha;
+        } else if (event.webkitCompassHeading !== undefined) {
+            // iOS Safari uses webkitCompassHeading
+            heading = event.webkitCompassHeading;
+        } else if (event.alpha !== null) {
+            // Fallback to alpha (0-360, where 0 is north)
+            heading = 360 - event.alpha;
+        }
+
+        if (heading !== null) {
+            this.compassHeading = heading;
+
+            // Apply smooth rotation if enabled
+            if (this.options.smoothCompass) {
+                this.smoothRotateToCompass(heading);
+            }
+        }
+    }
+
+    /**
+     * Calculate shortest angle difference between two angles
+     * @param {number} from - Current angle (0-360)
+     * @param {number} to - Target angle (0-360)
+     * @returns {number} - Shortest difference (-180 to 180)
+     */
+    getShortestAngleDifference(from, to) {
+        let diff = to - from;
+
+        // Normalize to -180 to 180
+        while (diff > 180) diff -= 360;
+        while (diff < -180) diff += 360;
+
+        return diff;
+    }
+
+    /**
+     * Smooth rotate to compass heading
+     * @param {number} targetHeading - Target compass heading
+     */
+    smoothRotateToCompass(targetHeading) {
+        if (!this.map || !this.options.rotate) return;
+
+        this.targetBearing = targetHeading;
+
+        // Cancel existing animation
+        if (this.rotationAnimationFrame) {
+            cancelAnimationFrame(this.rotationAnimationFrame);
+        }
+
+        // Animate rotation
+        const animate = () => {
+            // Calculate shortest angle difference
+            const diff = this.getShortestAngleDifference(this.currentBearing, this.targetBearing);
+
+            // Smooth interpolation (ease out)
+            const step = diff * 0.20; // 20% of remaining distance
+
+            if (Math.abs(step) > 0.1) {
+                // Update bearing
+                this.currentBearing += step;
+
+                // Normalize to 0-360
+                if (this.currentBearing < 0) this.currentBearing += 360;
+                if (this.currentBearing >= 360) this.currentBearing -= 360;
+
+                // Update map bearing
+                if (this.map.setBearing) {
+                    this.map.setBearing(-this.currentBearing);
+                }
+
+                // Update marker rotation (if exists)
+                if (this.markers['kurir'] && this.markers['kurir'].setRotationAngle) {
+                    this.markers['kurir'].setRotationAngle(this.currentBearing * 2);
+                }
+
+                this.rotationAnimationFrame = requestAnimationFrame(animate);
+            } else {
+                // Snap to final position
+                this.currentBearing = this.targetBearing;
+                if (this.map.setBearing) {
+                    this.map.setBearing(-this.currentBearing);
+                }
+                if (this.markers['kurir'] && this.markers['kurir'].setRotationAngle) {
+                    this.markers['kurir'].setRotationAngle(this.currentBearing * 2);
+                }
+            }
+        };
+
+        animate();
+    }
+
+    /**
+     * Stop compass tracking
+     */
+    stopCompassTracking() {
+        if (this.compassEnabled && this.handleOrientation) {
+            window.removeEventListener('deviceorientationabsolute', this.handleOrientation, true);
+            window.removeEventListener('deviceorientation', this.handleOrientation, true);
+            this.compassEnabled = false;
+            this.compassHeading = null;
+        }
+    }
+
+    /**
+     * Rotate marker to specific angle
+     * @param {string} key - Marker key
+     * @param {number} angle - Rotation angle in degrees
+     */
+    rotateMarker(key, angle) {
+        if (this.markers[key] && this.markers[key].setRotationAngle) {
+            this.markers[key].setRotationAngle(angle);
+        }
+    }
+
+    /**
      * Destroy map and cleanup
      */
     destroy() {
         this.stopGPSTracking();
+        this.stopCompassTracking();
+
+        // Cancel any pending rotation animation
+        if (this.rotationAnimationFrame) {
+            cancelAnimationFrame(this.rotationAnimationFrame);
+            this.rotationAnimationFrame = null;
+        }
 
         if (this.routingControl) {
             this.map.removeControl(this.routingControl);
@@ -442,6 +652,9 @@ export class LeafletMapManager {
         this.accuracyCircle = null;
         this.isInitialized = false;
         this.currentBearing = 0;
+        this.compassHeading = null;
+        this.lastPosition = null;
+        this.targetBearing = 0;
     }
 }
 

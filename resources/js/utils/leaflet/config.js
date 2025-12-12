@@ -75,6 +75,26 @@ export const LeafletConfig = {
     },
 
     /**
+     * Home marker icon (for pelanggan)
+     */
+    homeMarkerIcon: {
+        iconUrl: '/images/home-map-pin.png',
+        iconSize: [48, 48],
+        iconAnchor: [24, 48],
+        popupAnchor: [0, -48],
+    },
+
+    /**
+     * Arrow marker icon (for kurir with direction)
+     */
+    arrowMarkerIcon: {
+        iconUrl: '/images/arrow-up.png',
+        iconSize: [48, 48],
+        iconAnchor: [24, 24], // Center anchor for rotation
+        popupAnchor: [0, -24],
+    },
+
+    /**
      * GPS tracking options
      */
     gpsOptions: {
@@ -181,6 +201,22 @@ export const LeafletConfig = {
      */
     createMarkerIcon() {
         return L.icon(this.markerIcon);
+    },
+
+    /**
+     * Create home marker icon
+     * @returns {L.Icon} - Leaflet icon
+     */
+    createHomeMarkerIcon() {
+        return L.icon(this.homeMarkerIcon);
+    },
+
+    /**
+     * Create arrow marker icon (for direction)
+     * @returns {L.Icon} - Leaflet icon
+     */
+    createArrowMarkerIcon() {
+        return L.icon(this.arrowMarkerIcon);
     },
 };
 

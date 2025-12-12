@@ -155,18 +155,16 @@
 
     @script
         <script>
-            let map = null;
-            let marker = null;
+            let mapManager = null;
 
             $wire.$watch('editAlamatModal', (value) => {
-                if (value === true && !map) {
+                if (value === true && !mapManager) {
                     setTimeout(() => {
                         initKurirMap();
                     }, 500);
-                } else if (value === false && map) {
-                    map.remove();
-                    map = null;
-                    marker = null;
+                } else if (value === false && mapManager) {
+                    mapManager.destroy();
+                    mapManager = null;
                 }
             });
 
@@ -176,80 +174,41 @@
                     return;
                 }
 
-                // Wait for Leaflet
-                if (typeof L === 'undefined') {
+                // Wait for LeafletMapManager
+                if (typeof window.LeafletMapManager === 'undefined') {
                     setTimeout(initKurirMap, 100);
                     return;
                 }
 
-                const lat = parseFloat($wire.latitude) || -3.9778;
-                const lng = parseFloat($wire.longitude) || 122.5145;
+                const lat = parseFloat($wire.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
+                const lng = parseFloat($wire.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
 
-                // Initialize map with rotation
-                map = L.map('map-kurir', {
-                    zoomControl: true,
-                    attributionControl: false,
-                    rotate: true,
-                    bearing: 0,
-                    touchRotate: true,
-                }).setView([lat, lng], 15);
-
-                // Add tile layer
-                L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
-                    maxZoom: 20,
-                }).addTo(map);
-
-                // Hide attribution
-                setTimeout(() => {
-                    const attrs = document.getElementsByClassName('leaflet-control-attribution');
-                    for (let i = 0; i < attrs.length; i++) attrs[i].style.display = 'none';
-                }, 100);
-
-                // Add marker
-                const icon = L.icon({
-                    iconUrl: '/images/marker.png',
-                    iconSize: [48, 48],
-                    iconAnchor: [24, 48],
-                    popupAnchor: [0, -48],
+                // Initialize map using OOP class
+                mapManager = new window.LeafletMapManager('map-kurir', {
+                    latitude: lat,
+                    longitude: lng,
+                    zoom: window.LeafletUtils.config.zoom.default,
+                    draggable: true,
+                    showLayerControl: false,
+                    onMapClick: (clickLat, clickLng) => {
+                        $wire.latitude = clickLat.toFixed(6);
+                        $wire.longitude = clickLng.toFixed(6);
+                        mapManager.updateMarker('kurir-location', clickLat, clickLng);
+                    },
+                    onLocationUpdate: (dragLat, dragLng) => {
+                        $wire.latitude = dragLat.toFixed(6);
+                        $wire.longitude = dragLng.toFixed(6);
+                    },
                 });
 
-                if (lat && lng) {
-                    marker = L.marker([lat, lng], {
-                        draggable: true,
-                        icon: icon
-                    }).addTo(map);
+                mapManager.init();
 
-                    // Marker drag event
-                    marker.on('dragend', function() {
-                        const pos = marker.getLatLng();
-                        $wire.latitude = pos.lat.toFixed(6);
-                        $wire.longitude = pos.lng.toFixed(6);
+                // Add marker if coordinates exist
+                if (lat && lng) {
+                    mapManager.addMarker('kurir-location', lat, lng, {
+                        draggable: true,
                     });
                 }
-
-                // Map click event
-                map.on('click', function(e) {
-                    const clickLat = e.latlng.lat;
-                    const clickLng = e.latlng.lng;
-
-                    $wire.latitude = clickLat.toFixed(6);
-                    $wire.longitude = clickLng.toFixed(6);
-
-                    if (marker) {
-                        marker.setLatLng([clickLat, clickLng]);
-                    } else {
-                        marker = L.marker([clickLat, clickLng], {
-                            draggable: true,
-                            icon: icon
-                        }).addTo(map);
-
-                        marker.on('dragend', function() {
-                            const pos = marker.getLatLng();
-                            $wire.latitude = pos.lat.toFixed(6);
-                            $wire.longitude = pos.lng.toFixed(6);
-                        });
-                    }
-                });
 
                 // Setup "Ambil Lokasi Saya" button
                 setupGetLocationButton();
@@ -286,30 +245,16 @@
                                 $wire.longitude = lng.toFixed(6);
 
                                 // Update or add marker
-                                const icon = L.icon({
-                                    iconUrl: '/images/marker.png',
-                                    iconSize: [48, 48],
-                                    iconAnchor: [24, 48],
-                                    popupAnchor: [0, -48],
-                                });
-
-                                if (marker) {
-                                    marker.setLatLng([lat, lng]);
+                                if (mapManager.markers['kurir-location']) {
+                                    mapManager.updateMarker('kurir-location', lat, lng);
                                 } else {
-                                    marker = L.marker([lat, lng], {
+                                    mapManager.addMarker('kurir-location', lat, lng, {
                                         draggable: true,
-                                        icon: icon
-                                    }).addTo(map);
-
-                                    marker.on('dragend', function() {
-                                        const pos = marker.getLatLng();
-                                        $wire.latitude = pos.lat.toFixed(6);
-                                        $wire.longitude = pos.lng.toFixed(6);
                                     });
                                 }
 
                                 // Center map
-                                map.setView([lat, lng], 15);
+                                mapManager.setView(lat, lng, window.LeafletUtils.config.zoom.default);
 
                                 this.innerHTML = btnText;
                                 this.disabled = false;
@@ -326,11 +271,7 @@
                                 this.innerHTML = btnText;
                                 this.disabled = false;
                             },
-                            {
-                                enableHighAccuracy: true,
-                                timeout: 30000,
-                                maximumAge: 5000,
-                            }
+                            window.LeafletUtils.config.gpsOptions
                         );
                     });
                 }, 100);
