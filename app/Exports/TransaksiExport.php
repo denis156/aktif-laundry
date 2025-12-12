@@ -19,7 +19,7 @@ class TransaksiExport implements WithMultipleSheets
     {
         return [
             new TransaksiSheet($this->selectedIds),
-            new PiutangSheet,
+            new PiutangSheet(),
         ];
     }
 }

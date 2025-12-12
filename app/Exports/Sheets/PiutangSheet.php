@@ -32,9 +32,9 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
      */
     public function collection()
     {
-        // Ambil semua transaksi yang belum dibayar (tanggal_bayar = null)
+        // Ambil semua transaksi yang belum dibayar (status_bayar = 'Belum Bayar')
         return Transaksi::with(['kasir', 'pelanggan', 'transaksiLayanan.layanan'])
-            ->whereNull('tanggal_bayar')
+            ->where('status_bayar', 'Belum Bayar')
             ->orderBy('tanggal_masuk', 'asc')
             ->get();
     }
@@ -90,8 +90,8 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
         $detailBerat = $totalBerat > 0 ? '('.$totalBerat.'Kg)' : '';
         $detailVolume = $totalVolume > 0 ? '('.$totalVolume.')' : '';
 
-        // Tentukan status bayar berdasarkan status_bayar atau status transaksi
-        $statusBayar = $transaksi->status_bayar ?? ($transaksi->status === 'Selesai' ? 'Sudah Bayar' : 'Belum Bayar');
+        // Karena ini sheet piutang, semua transaksi pasti berstatus 'Belum Bayar'
+        $statusBayar = 'Belum Bayar';
 
         // Format tipe bayar - cek semua kemungkinan
         $tipeBayar = '-';
