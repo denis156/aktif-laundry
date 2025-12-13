@@ -90,7 +90,9 @@
                         placeholder="Contoh: 122.5145" hint="Koordinat bujur lokasi pelanggan" icon="o-map-pin" required />
                 </div>
 
-                <div id="map" wire:ignore class="h-100 z-0 rounded-md"></div>
+                {{-- Map Picker Component --}}
+                <livewire:management.component.map-picker :latitude="$latitude" :longitude="$longitude"
+                    marker-id="pelanggan-location" />
 
                 <div class="text-sm text-base-content/70">
                     <p>
@@ -122,72 +124,4 @@
             <x-button label="Simpan Perubahan" type="submit" icon="o-check" class="btn-primary" spinner="save" />
         </x-slot:actions>
     </x-form>
-
-    @script
-        <script>
-            let mapManager = null;
-
-            function initPelangganMap() {
-                const mapElement = document.getElementById('map');
-                if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
-                    return;
-                }
-
-                // Wait for Maps to be available
-                if (typeof window.Maps === 'undefined') {
-                    setTimeout(initPelangganMap, 100);
-                    return;
-                }
-
-                const defaults = window.Maps.getDefaultCoordinates();
-                const zoom = window.Maps.getZoomLevels();
-                const lat = parseFloat($wire.latitude) || defaults.latitude;
-                const lng = parseFloat($wire.longitude) || defaults.longitude;
-
-                // Create map using Leaflet
-                mapManager = window.Maps.createMap('map', {
-                    latitude: lat,
-                    longitude: lng,
-                    zoom: zoom.default,
-                    draggable: true,
-                    showLayerControl: true, // Show layer control for management
-                    onMapClick: (clickLat, clickLng) => {
-                        $wire.latitude = clickLat.toFixed(6);
-                        $wire.longitude = clickLng.toFixed(6);
-                        mapManager.updateMarker('pelanggan-location', clickLat, clickLng);
-                    },
-                    onLocationUpdate: (dragLat, dragLng) => {
-                        $wire.latitude = dragLat.toFixed(6);
-                        $wire.longitude = dragLng.toFixed(6);
-                    },
-                });
-
-                if (!mapManager) {
-                    return;
-                }
-
-                mapManager.init();
-
-                // Add marker if coordinates exist
-                if (lat && lng) {
-                    mapManager.addMarker('pelanggan-location', lat, lng, {
-                        draggable: true,
-                    });
-                }
-            }
-
-            // Initialize map after DOM ready
-            setTimeout(() => {
-                initPelangganMap();
-            }, 500);
-
-            // Cleanup on navigation
-            document.addEventListener('livewire:navigating', () => {
-                if (mapManager) {
-                    mapManager.destroy();
-                    mapManager = null;
-                }
-            });
-        </script>
-    @endscript
 </div>

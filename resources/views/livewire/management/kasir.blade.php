@@ -101,7 +101,9 @@
                             </div>
 
                             @if($isPelangganBaru)
-                            <div id="map" wire:ignore class="h-100 z-0 rounded-md"></div>
+                            {{-- Map Picker Component --}}
+                            <livewire:management.component.map-picker :latitude="$pelangganBaru['latitude']"
+                                :longitude="$pelangganBaru['longitude']" marker-id="kasir-pelanggan-location" />
 
                             <div class="text-sm text-base-content/70">
                                 <p>
@@ -338,84 +340,6 @@
     <script>
         $wire.on('open-print-window', (event) => {
             window.open(event.url, '_blank');
-        });
-
-        let mapManager = null;
-
-        // Watch untuk perubahan isPelangganBaru
-        $wire.$watch('isPelangganBaru', (value) => {
-            if (value === true && !mapManager) {
-                setTimeout(() => {
-                    initPelangganMap();
-                }, 500);
-            } else if (value === false && mapManager) {
-                mapManager.destroy();
-                mapManager = null;
-            }
-        });
-
-        function initPelangganMap() {
-            const mapElement = document.getElementById('map');
-            if (!mapElement || mapElement.offsetWidth === 0 || mapElement.offsetHeight === 0) {
-                return;
-            }
-
-            // Wait for Maps to be available
-            if (typeof window.Maps === 'undefined') {
-                setTimeout(initPelangganMap, 100);
-                return;
-            }
-
-            const defaults = window.Maps.getDefaultCoordinates();
-            const zoom = window.Maps.getZoomLevels();
-            const lat = parseFloat($wire.pelangganBaru.latitude) || defaults.latitude;
-            const lng = parseFloat($wire.pelangganBaru.longitude) || defaults.longitude;
-
-            // Create map using Leaflet
-            mapManager = window.Maps.createMap('map', {
-                latitude: lat,
-                longitude: lng,
-                zoom: zoom.default,
-                draggable: true,
-                showLayerControl: true, // Show layer control for management
-                onMapClick: (clickLat, clickLng) => {
-                    $wire.pelangganBaru.latitude = clickLat.toFixed(6);
-                    $wire.pelangganBaru.longitude = clickLng.toFixed(6);
-                    mapManager.updateMarker('pelanggan-location', clickLat, clickLng);
-                },
-                onLocationUpdate: (dragLat, dragLng) => {
-                    $wire.pelangganBaru.latitude = dragLat.toFixed(6);
-                    $wire.pelangganBaru.longitude = dragLng.toFixed(6);
-                },
-            });
-
-            if (!mapManager) {
-                return;
-            }
-
-            mapManager.init();
-
-            // Add marker if coordinates exist
-            if (lat && lng) {
-                mapManager.addMarker('pelanggan-location', lat, lng, {
-                    draggable: true,
-                });
-            }
-        }
-
-        // Inisialisasi peta saat pertama kali load jika pelanggan baru aktif
-        if ($wire.isPelangganBaru) {
-            setTimeout(() => {
-                initPelangganMap();
-            }, 500);
-        }
-
-        // Cleanup on navigation
-        document.addEventListener('livewire:navigating', () => {
-            if (mapManager) {
-                mapManager.destroy();
-                mapManager = null;
-            }
         });
     </script>
     @endscript

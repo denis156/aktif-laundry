@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -187,6 +188,13 @@ class Edit extends Component
     public function updatedSharelok(): void
     {
         $this->extractCoordinatesFromUrl();
+    }
+
+    #[On('coordinates-updated')]
+    public function onCoordinatesUpdated(array $data): void
+    {
+        $this->latitude = $data['latitude'] ?? '';
+        $this->longitude = $data['longitude'] ?? '';
     }
 
     private function extractCoordinatesFromUrl(): void
