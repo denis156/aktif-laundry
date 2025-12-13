@@ -185,6 +185,42 @@ export const LeafletConfig = {
     },
 
     /**
+     * Compass tracking settings
+     */
+    compass: {
+        // Platform detection
+        platformDetection: true,
+
+        // Throttle settings
+        throttleInterval: 100, // ms between updates
+
+        // Tilt thresholds (degrees) - untuk deteksi device horizontal
+        maxTiltAngle: 45, // Device dianggap horizontal jika tilt < 45°
+
+        // Calibration quality (0-1)
+        minCalibrationQuality: 0.5,
+
+        // Fallback behavior
+        fallbackToGPS: true,
+        gpsMinSpeed: 1.0, // m/s - minimum speed untuk pakai GPS bearing
+        gpsMinAccuracy: 20, // meters - minimum GPS accuracy
+
+        // Screen orientation compensation
+        compensateScreenOrientation: true,
+
+        // Tilt compensation
+        compensateTilt: true,
+
+        // Compass calibration offset (degrees)
+        // Positive = rotate clockwise, Negative = rotate counter-clockwise
+        // Example: If compass shows 320° when facing North (0°), set offset to 40
+        calibrationOffset: 0, // ← Adjust sesuai device kawan
+
+        // Debug mode - log compass values to console
+        debug: false, // Set true untuk debug
+    },
+
+    /**
      * Geocoding & Search settings
      */
     geocoding: {

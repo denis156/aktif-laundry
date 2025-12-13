@@ -97,6 +97,13 @@
                         // Store position for bearing calculation fallback
                         mapManager.lastPosition = { lat, lng };
 
+                        // Update GPS data to CompassTracker for fallback (if compass quality is poor)
+                        if (mapManager.compassTracker) {
+                            // Get speed from position if available (HTML5 Geolocation API)
+                            const speed = 0; // Speed akan di-calculate dari successive GPS readings
+                            mapManager.compassTracker.updateGPSData(lat, lng, speed, accuracy);
+                        }
+
                         // Get current heading for display (compass handled separately)
                         const displayHeading = mapManager.compassHeading || mapManager.currentBearing;
 
