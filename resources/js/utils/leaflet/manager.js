@@ -30,7 +30,7 @@ export class LeafletMapManager {
             zoom: options.zoom || LeafletConfig.zoom.default,
             draggable: options.draggable !== undefined ? options.draggable : false,
             showLayerControl: options.showLayerControl !== undefined ? options.showLayerControl : true,
-            defaultTileLayer: options.defaultTileLayer || LeafletConfig.defaultTileLayer, // Custom default tile layer
+            defaultTileLayer: options.defaultTileLayer || LeafletConfig.defaultTileLayer, // Allow custom default tile layer
             rotate: options.rotate !== undefined ? options.rotate : false, // Enable map rotation
             enableCompass: options.enableCompass !== undefined ? options.enableCompass : false, // Enable compass tracking
             smoothCompass: options.smoothCompass !== undefined ? options.smoothCompass : true, // Smooth compass rotation
@@ -64,15 +64,20 @@ export class LeafletMapManager {
         // Add tile layers
         const mapLayers = LeafletConfig.createMapLayers();
 
-        // Use custom default tile layer if specified
-        const tileLayerKey = this.options.defaultTileLayer;
-        const selectedTileConfig = LeafletConfig.tileLayers[tileLayerKey];
+        // Get default layer key
+        const defaultLayerKey = this.options.defaultTileLayer;
 
-        // Add the selected default layer to map
-        if (selectedTileConfig && mapLayers[selectedTileConfig.name]) {
-            mapLayers[selectedTileConfig.name].addTo(this.map);
-        } else {
-            // Fallback to config default
+        // Find the default layer from mapLayers and add it to the map
+        let defaultLayerAdded = false;
+        Object.entries(LeafletConfig.tileLayers).forEach(([key, config]) => {
+            if (key === defaultLayerKey) {
+                mapLayers[config.name].addTo(this.map);
+                defaultLayerAdded = true;
+            }
+        });
+
+        // Fallback if default layer not found
+        if (!defaultLayerAdded) {
             const defaultConfig = LeafletConfig.tileLayers[LeafletConfig.defaultTileLayer];
             if (defaultConfig && mapLayers[defaultConfig.name]) {
                 mapLayers[defaultConfig.name].addTo(this.map);

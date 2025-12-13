@@ -36,43 +36,38 @@
                     return;
                 }
 
-                // Wait for Maps
-                if (typeof window.Maps === 'undefined') {
+                // Wait for LeafletMapManager
+                if (typeof window.LeafletMapManager === 'undefined') {
                     setTimeout(initRuteMap, 100);
                     return;
                 }
 
-                const zoom = window.Maps.getZoomLevels();
                 const kurirLat = parseFloat($wire.kurirLatitude) || pelangganLat;
                 const kurirLng = parseFloat($wire.kurirLongitude) || pelangganLng;
 
-                // Create map using unified entry point
-                mapManager = window.Maps.createMap('map-rute-detail', {
+                // Initialize map using OOP class
+                mapManager = new window.LeafletMapManager('map-rute-detail', {
                     latitude: pelangganLat,
                     longitude: pelangganLng,
-                    zoom: zoom.city,
+                    zoom: window.LeafletUtils.config.zoom.city,
                     rotate: true,
                     enableCompass: true,
-                    smoothCompass: true,
-                    showLayerControl: false, // No layer control for navigation
+                    smoothCompass: true, // Enable smooth compass rotation
+                    showLayerControl: false, // No layer control for route navigation
+                    defaultTileLayer: 'googleTraffic', // Use Google Traffic as default for route navigation
                 });
 
                 mapManager.init();
 
                 // Add pelanggan marker (home icon)
                 mapManager.addMarker('pelanggan', pelangganLat, pelangganLng, {
-                    icon: window.Maps.createIcon('home'),
-                    popup: `
-                        <div class="p-2">
-                            <strong>${pelangganNama}</strong><br>
-                            <small>${pelangganAlamat}</small>
-                        </div>
-                    `,
+                    icon: window.LeafletUtils.config.createHomeMarkerIcon(),
+                    popup: createPelangganPopup(pelangganLat, pelangganLng),
                 });
 
                 // Add kurir marker (arrow icon)
                 mapManager.addMarker('kurir', kurirLat, kurirLng, {
-                    icon: window.Maps.createIcon('arrow'),
+                    icon: window.LeafletUtils.config.createArrowMarkerIcon(),
                     popup: createKurirPopup(kurirLat, kurirLng),
                 });
 
@@ -82,8 +77,7 @@
                     // Initialize routing
                     mapManager.initRouting(kurirLat, kurirLng, pelangganLat, pelangganLng);
                 } else {
-                    const zoom = window.Maps.getZoomLevels();
-                    mapManager.setView(kurirLat, kurirLng, zoom.detail);
+                    mapManager.setView(kurirLat, kurirLng, window.LeafletUtils.config.zoom.detail);
                 }
 
                 // Start compass tracking
@@ -117,18 +111,24 @@
             }
 
 
+            function createPelangganPopup(lat, lng) {
+                return `
+                    <div class="p-2">
+                        <strong class="text-base">Tujuan</strong>
+                        <div class="text-sm mt-1">${pelangganNama}</div>
+                        <div class="text-xs text-secondary mt-1">${pelangganAlamat}</div>
+                    </div>
+                `;
+            }
+
             function createKurirPopup(lat, lng, accuracy = null, bearing = null) {
                 const accuracyText = accuracy ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
-                const bearingText = bearing !== null ? `<div class="text-xs text-info mt-1">Arah: ${Math.round(bearing)}°</div>` : '';
+                const bearingText = bearing !== null ? `<div class="text-xs text-secondary mt-1">Arah: ${Math.round(bearing)}°</div>` : '';
 
                 return `
                     <div class="p-2">
-                        <div class="flex items-center gap-2 mb-1">
-                            <strong class="text-base">Lokasi Anda (Kurir)</strong>
-                        </div>
-                        <div class="text-xs text-secondary font-mono">
-                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
-                        </div>
+                        <strong class="text-base">Lokasi Anda</strong>
+                        <div class="text-sm mt-1 font-mono">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
                         ${accuracyText}
                         ${bearingText}
                     </div>

@@ -149,7 +149,7 @@
                     longitude: lng,
                     zoom: window.LeafletUtils.config.zoom.default,
                     draggable: true,
-                    showLayerControl: false,
+                    showLayerControl: true,
                     onMapClick: (clickLat, clickLng) => {
                         $wire.latitude = clickLat.toFixed(6);
                         $wire.longitude = clickLng.toFixed(6);
