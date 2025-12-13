@@ -336,7 +336,7 @@ export class LeafletMapManager {
 
         const { serviceUrl, profile } = LeafletConfig.routing.osrm;
         const coordinates = `${startLng},${startLat};${endLng},${endLat}`;
-        const url = `${serviceUrl}/${coordinates}?overview=full&geometries=geojson`;
+        const url = `${serviceUrl}/${profile}/${coordinates}?overview=full&geometries=geojson`;
 
         // Add timeout 10 seconds
         const controller = new AbortController();
@@ -381,17 +381,13 @@ export class LeafletMapManager {
 
         try {
             // Try OSRM first (free)
-            console.log('[Debug] Trying OSRM (free)...');
             const route = await this.fetchOSRMRoute(startLat, startLng, endLat, endLng);
             this.drawRoute(route.geometry);
-            console.log('[Debug] Route rendered using: OSRM');
         } catch (osrmError) {
-            console.log('[Debug] OSRM failed, falling back to Mapbox...', osrmError.message);
             try {
                 // Fallback to Mapbox (paid)
                 const route = await this.fetchMapboxRoute(startLat, startLng, endLat, endLng);
                 this.drawRoute(route.geometry);
-                console.log('[Debug] Route rendered using: Mapbox Directions API (fallback)');
             } catch (mapboxError) {
                 // Both failed - show error
                 console.error('[Error] All routing services failed:', mapboxError.message);
@@ -601,7 +597,6 @@ export class LeafletMapManager {
 
         // Check if device orientation is supported
         if (!window.DeviceOrientationEvent) {
-            console.log('Device orientation not supported');
             return;
         }
 
@@ -611,8 +606,6 @@ export class LeafletMapManager {
                 .then(permissionState => {
                     if (permissionState === 'granted') {
                         this.attachOrientationListener();
-                    } else {
-                        console.log('Device orientation permission denied');
                     }
                 })
                 .catch(console.error);
