@@ -30,6 +30,7 @@ export class LeafletMapManager {
             zoom: options.zoom || LeafletConfig.zoom.default,
             draggable: options.draggable !== undefined ? options.draggable : false,
             showLayerControl: options.showLayerControl !== undefined ? options.showLayerControl : true,
+            defaultTileLayer: options.defaultTileLayer || LeafletConfig.defaultTileLayer, // Allow custom default tile layer
             rotate: options.rotate !== undefined ? options.rotate : false, // Enable map rotation
             enableCompass: options.enableCompass !== undefined ? options.enableCompass : false, // Enable compass tracking
             smoothCompass: options.smoothCompass !== undefined ? options.smoothCompass : true, // Smooth compass rotation
@@ -62,7 +63,26 @@ export class LeafletMapManager {
 
         // Add tile layers
         const mapLayers = LeafletConfig.createMapLayers();
-        LeafletConfig.getDefaultTileLayer().addTo(this.map);
+
+        // Get default layer key
+        const defaultLayerKey = this.options.defaultTileLayer;
+
+        // Find the default layer from mapLayers and add it to the map
+        let defaultLayerAdded = false;
+        Object.entries(LeafletConfig.tileLayers).forEach(([key, config]) => {
+            if (key === defaultLayerKey) {
+                mapLayers[config.name].addTo(this.map);
+                defaultLayerAdded = true;
+            }
+        });
+
+        // Fallback if default layer not found
+        if (!defaultLayerAdded) {
+            const defaultConfig = LeafletConfig.tileLayers[LeafletConfig.defaultTileLayer];
+            if (defaultConfig && mapLayers[defaultConfig.name]) {
+                mapLayers[defaultConfig.name].addTo(this.map);
+            }
+        }
 
         // Add layer control
         if (this.options.showLayerControl) {

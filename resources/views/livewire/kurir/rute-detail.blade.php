@@ -53,7 +53,8 @@
                     rotate: true,
                     enableCompass: true,
                     smoothCompass: true, // Enable smooth compass rotation
-                    showLayerControl: false,
+                    showLayerControl: false, // No layer control for route navigation
+                    defaultTileLayer: 'googleTraffic', // Use Google Traffic as default for route navigation
                 });
 
                 mapManager.init();
@@ -61,12 +62,7 @@
                 // Add pelanggan marker (home icon)
                 mapManager.addMarker('pelanggan', pelangganLat, pelangganLng, {
                     icon: window.LeafletUtils.config.createHomeMarkerIcon(),
-                    popup: `
-                        <div class="p-2">
-                            <strong>${pelangganNama}</strong><br>
-                            <small>${pelangganAlamat}</small>
-                        </div>
-                    `,
+                    popup: createPelangganPopup(pelangganLat, pelangganLng),
                 });
 
                 // Add kurir marker (arrow icon)
@@ -115,18 +111,24 @@
             }
 
 
+            function createPelangganPopup(lat, lng) {
+                return `
+                    <div class="p-2">
+                        <strong class="text-base">Tujuan</strong>
+                        <div class="text-sm mt-1">${pelangganNama}</div>
+                        <div class="text-xs text-secondary mt-1">${pelangganAlamat}</div>
+                    </div>
+                `;
+            }
+
             function createKurirPopup(lat, lng, accuracy = null, bearing = null) {
                 const accuracyText = accuracy ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
-                const bearingText = bearing !== null ? `<div class="text-xs text-info mt-1">Arah: ${Math.round(bearing)}°</div>` : '';
+                const bearingText = bearing !== null ? `<div class="text-xs text-secondary mt-1">Arah: ${Math.round(bearing)}°</div>` : '';
 
                 return `
                     <div class="p-2">
-                        <div class="flex items-center gap-2 mb-1">
-                            <strong class="text-base">Lokasi Anda (Kurir)</strong>
-                        </div>
-                        <div class="text-xs text-secondary font-mono">
-                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
-                        </div>
+                        <strong class="text-base">Lokasi Anda</strong>
+                        <div class="text-sm mt-1 font-mono">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
                         ${accuracyText}
                         ${bearingText}
                     </div>

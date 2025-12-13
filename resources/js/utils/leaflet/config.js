@@ -41,14 +41,6 @@ export const LeafletConfig = {
                 attribution: '&copy; Google',
             },
         },
-        googleStreet: {
-            name: 'Google Street',
-            url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
-            options: {
-                maxZoom: 20,
-                attribution: '&copy; Google',
-            },
-        },
         googleHybrid: {
             name: 'Google Hybrid',
             url: 'https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
@@ -60,6 +52,14 @@ export const LeafletConfig = {
         googleTraffic: {
             name: 'Google Traffic',
             url: 'https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}',
+            options: {
+                maxZoom: 20,
+                attribution: '&copy; Google',
+            },
+        },
+        googleStreet: {
+            name: 'Google Street',
+            url: 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}',
             options: {
                 maxZoom: 20,
                 attribution: '&copy; Google',
