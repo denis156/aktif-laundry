@@ -375,7 +375,7 @@
                 longitude: lng,
                 zoom: window.LeafletUtils.config.zoom.default,
                 draggable: true,
-                showLayerControl: false,
+                showLayerControl: true,
                 onMapClick: (clickLat, clickLng) => {
                     $wire.pelangganBaru.latitude = clickLat.toFixed(6);
                     $wire.pelangganBaru.longitude = clickLng.toFixed(6);

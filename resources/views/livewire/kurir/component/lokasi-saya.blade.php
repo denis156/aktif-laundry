@@ -60,7 +60,7 @@
                 longitude: lng,
                 zoom: window.LeafletUtils.config.zoom.detail,
                 rotate: true,
-                showLayerControl: false,
+                showLayerControl: true,
             });
 
             mapManager.init();

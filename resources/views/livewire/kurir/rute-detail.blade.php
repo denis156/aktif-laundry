@@ -50,6 +50,7 @@
                     latitude: pelangganLat,
                     longitude: pelangganLng,
                     zoom: window.LeafletUtils.config.zoom.city,
+                    defaultTileLayer: 'googleTraffic', // Use Google Traffic as default
                     rotate: true,
                     enableCompass: true,
                     smoothCompass: true, // Enable smooth compass rotation
@@ -63,7 +64,8 @@
                     icon: window.LeafletUtils.config.createHomeMarkerIcon(),
                     popup: `
                         <div class="p-2">
-                            <strong>${pelangganNama}</strong><br>
+                            <strong class="text-base">${pelangganNama}</strong><br>
+                            <small>${pelangganLat.toFixed(6)}, ${pelangganLng.toFixed(6)}</small><br>
                             <small>${pelangganAlamat}</small>
                         </div>
                     `,
@@ -116,17 +118,13 @@
 
 
             function createKurirPopup(lat, lng, accuracy = null, bearing = null) {
-                const accuracyText = accuracy ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
-                const bearingText = bearing !== null ? `<div class="text-xs text-info mt-1">Arah: ${Math.round(bearing)}°</div>` : '';
+                const accuracyText = accuracy ? `<small>Akurasi: ±${accuracy.toFixed(1)}m</small><br>` : '';
+                const bearingText = bearing !== null ? `<small>Arah: ${Math.round(bearing)}°</small>` : '';
 
                 return `
                     <div class="p-2">
-                        <div class="flex items-center gap-2 mb-1">
-                            <strong class="text-base">Lokasi Anda (Kurir)</strong>
-                        </div>
-                        <div class="text-xs text-secondary font-mono">
-                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
-                        </div>
+                        <strong class="text-base">Lokasi Anda (Kurir)</strong><br>
+                        <small>${lat.toFixed(6)}, ${lng.toFixed(6)}</small><br>
                         ${accuracyText}
                         ${bearingText}
                     </div>
