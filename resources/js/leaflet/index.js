@@ -30,7 +30,7 @@ export { MarkerManager } from './core/MarkerManager.js';
 // Export services (for advanced usage)
 export { RoutingService } from './services/RoutingService.js';
 export { GPSTracker } from './services/GPSTracker.js';
-export { CompassTracker } from './services/CompassTracker.js';
+export { CompassTracker } from './services/compass/index.js';
 export { GeocodingService } from './services/GeocodingService.js';
 
 // Import for global access
@@ -40,7 +40,7 @@ import { MapManager } from './core/MapManager.js';
 import { MarkerManager } from './core/MarkerManager.js';
 import { RoutingService } from './services/RoutingService.js';
 import { GPSTracker } from './services/GPSTracker.js';
-import { CompassTracker } from './services/CompassTracker.js';
+import { CompassTracker } from './services/compass/index.js';
 import { GeocodingService } from './services/GeocodingService.js';
 
 // ==========================================

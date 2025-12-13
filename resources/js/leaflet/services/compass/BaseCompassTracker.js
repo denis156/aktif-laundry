@@ -1,10 +1,10 @@
-import { LeafletConfig } from '../config.js';
+import { LeafletConfig } from '../../config.js';
 
 /**
- * Advanced Compass Tracker Service
- * Handles device orientation with full iOS/Android support and tilt compensation
+ * Base Compass Tracker
+ * Shared logic for all compass implementations
  */
-export class CompassTracker {
+export class BaseCompassTracker {
     constructor(map, options = {}) {
         this.map = map;
         this.options = options;
@@ -15,11 +15,6 @@ export class CompassTracker {
         this.targetBearing = 0;
         this.lastCompassUpdate = 0;
         this.compassEnabled = false;
-
-        // Platform detection
-        this.platform = this.detectPlatform();
-        this.isIOS = this.platform === 'ios';
-        this.isAndroid = this.platform === 'android';
 
         // Event handlers
         this.handleOrientation = null;
@@ -52,28 +47,38 @@ export class CompassTracker {
     }
 
     // ==========================================
-    // Platform Detection
+    // Abstract Methods (Must be implemented by subclasses)
     // ==========================================
 
     /**
-     * Detect device platform
-     * @returns {string} - 'ios', 'android', or 'desktop'
+     * Get platform name
+     * @returns {string}
      */
-    detectPlatform() {
-        const ua = navigator.userAgent || navigator.vendor || window.opera;
-
-        // iOS detection
-        if (/iPad|iPhone|iPod/.test(ua) && !window.MSStream) {
-            return 'ios';
-        }
-
-        // Android detection
-        if (/android/i.test(ua)) {
-            return 'android';
-        }
-
-        return 'desktop';
+    getPlatform() {
+        throw new Error('getPlatform() must be implemented by subclass');
     }
+
+    /**
+     * Calculate compass heading from device orientation event
+     * @param {DeviceOrientationEvent} event
+     * @returns {number|null}
+     */
+    calculateCompassHeading(event) {
+        throw new Error('calculateCompassHeading() must be implemented by subclass');
+    }
+
+    /**
+     * Get map bearing value (platform-specific sign)
+     * @param {number} bearing
+     * @returns {number}
+     */
+    getMapBearing(bearing) {
+        throw new Error('getMapBearing() must be implemented by subclass');
+    }
+
+    // ==========================================
+    // Device Orientation Support
+    // ==========================================
 
     /**
      * Check if device supports DeviceOrientation
@@ -145,152 +150,6 @@ export class CompassTracker {
     }
 
     // ==========================================
-    // Compass Calculation
-    // ==========================================
-
-    /**
-     * Calculate true compass heading from device orientation
-     * @param {DeviceOrientationEvent} event
-     * @returns {number|null} - Heading in degrees (0-360) or null
-     */
-    calculateCompassHeading(event) {
-        const { absolute, alpha, beta, gamma, webkitCompassHeading } = event;
-
-        // iOS: Use webkitCompassHeading (most accurate, already compensated)
-        if (this.isIOS && webkitCompassHeading !== undefined) {
-            this.calibrationQuality = 1.0; // iOS compass is always well calibrated
-            return webkitCompassHeading;
-        }
-
-        // Android/Others: Calculate from alpha, beta, gamma
-        if (alpha === null) {
-            return null;
-        }
-
-        // Check if device has magnetometer (absolute: true)
-        if (!absolute) {
-            // No magnetometer - cannot determine true compass
-            this.calibrationQuality = 0;
-            return null;
-        }
-
-        // Check device tilt
-        const tilt = this.calculateDeviceTilt(beta, gamma);
-        const isTooTilted = tilt > LeafletConfig.compass.maxTiltAngle;
-
-        if (isTooTilted && !LeafletConfig.compass.compensateTilt) {
-            // Device too tilted and compensation disabled
-            return null;
-        }
-
-        // Calculate heading - use alpha directly
-        let heading = alpha;
-
-        // Apply compass calibration offset
-        if (LeafletConfig.compass.calibrationOffset) {
-            heading = (heading + LeafletConfig.compass.calibrationOffset) % 360;
-            if (heading < 0) heading += 360;
-        }
-
-        // Estimate calibration quality based on tilt
-        this.calibrationQuality = this.estimateCalibrationQuality(tilt, absolute);
-
-        return heading;
-    }
-
-    /**
-     * Calculate device tilt angle (how far from horizontal)
-     * @param {number} beta - Front-to-back tilt (-180 to 180)
-     * @param {number} gamma - Left-to-right tilt (-90 to 90)
-     * @returns {number} - Tilt angle in degrees (0 = horizontal)
-     */
-    calculateDeviceTilt(beta, gamma) {
-        if (beta === null || gamma === null) {
-            return 0;
-        }
-
-        // Calculate total tilt using pythagorean theorem
-        // Normalize beta to 0-90 range (we only care about absolute tilt)
-        const normalizedBeta = Math.abs(beta) > 90
-            ? 180 - Math.abs(beta)
-            : Math.abs(beta);
-
-        const tilt = Math.sqrt(
-            Math.pow(normalizedBeta, 2) +
-            Math.pow(gamma, 2)
-        );
-
-        return tilt;
-    }
-
-    /**
-     * Compensate compass heading for device tilt
-     * Uses simplified tilt compensation algorithm
-     *
-     * @param {number} alpha - Compass heading (0-360)
-     * @param {number} beta - Front-to-back tilt (-180 to 180)
-     * @param {number} gamma - Left-to-right tilt (-90 to 90)
-     * @returns {number} - Compensated heading (0-360)
-     */
-    compensateTilt(alpha, beta, gamma) {
-        // For small tilts, no compensation needed
-        const tilt = this.calculateDeviceTilt(beta, gamma);
-        if (tilt < 10) {
-            return alpha;
-        }
-
-        // Convert to radians
-        const toRad = (deg) => deg * Math.PI / 180;
-        const toDeg = (rad) => rad * 180 / Math.PI;
-
-        const alphaRad = toRad(alpha);
-        const betaRad = toRad(beta);
-        const gammaRad = toRad(gamma);
-
-        // Simplified tilt compensation using rotation matrix
-        // This approximation works well for tilts up to ~45 degrees
-        const cosAlpha = Math.cos(alphaRad);
-        const sinAlpha = Math.sin(alphaRad);
-        const cosBeta = Math.cos(betaRad);
-        const sinBeta = Math.sin(betaRad);
-        const cosGamma = Math.cos(gammaRad);
-        const sinGamma = Math.sin(gammaRad);
-
-        // Calculate compass heading on horizontal plane
-        const x = cosAlpha * cosBeta + sinAlpha * sinBeta * sinGamma;
-        const y = sinAlpha * cosBeta - cosAlpha * sinBeta * sinGamma;
-
-        let compensatedHeading = toDeg(Math.atan2(y, x));
-
-        // Normalize to 0-360
-        if (compensatedHeading < 0) {
-            compensatedHeading += 360;
-        }
-
-        return compensatedHeading % 360;
-    }
-
-    /**
-     * Estimate calibration quality
-     * @param {number} tilt - Device tilt angle
-     * @param {boolean} absolute - Has magnetometer
-     * @returns {number} - Quality (0-1)
-     */
-    estimateCalibrationQuality(tilt, absolute) {
-        if (!absolute) {
-            return 0; // No magnetometer
-        }
-
-        // Quality decreases with tilt
-        // 0° tilt = 1.0 quality
-        // 45° tilt = 0.5 quality
-        // 90° tilt = 0 quality
-        const tiltFactor = Math.max(0, 1 - (tilt / 90));
-
-        return tiltFactor;
-    }
-
-    // ==========================================
     // GPS Fallback
     // ==========================================
 
@@ -321,7 +180,6 @@ export class CompassTracker {
             return null;
         }
 
-        // Use existing calculateBearing method
         return this.calculateBearing(
             this.gpsData.lastLat,
             this.gpsData.lastLng,
@@ -339,10 +197,6 @@ export class CompassTracker {
             return false;
         }
 
-        // Use GPS if:
-        // 1. Calibration quality too low
-        // 2. Moving fast enough
-        // 3. GPS accuracy good enough
         const lowCalibration = this.calibrationQuality < LeafletConfig.compass.minCalibrationQuality;
         const movingFast = this.gpsData.speed >= LeafletConfig.compass.gpsMinSpeed;
         const goodAccuracy = this.gpsData.accuracy <= LeafletConfig.compass.gpsMinAccuracy;
@@ -418,7 +272,7 @@ export class CompassTracker {
         // Debug mode - log raw values
         if (LeafletConfig.compass.debug) {
             console.log('🧭 Compass Debug:', {
-                platform: this.platform,
+                platform: this.getPlatform(),
                 absolute: event.absolute,
                 alpha: event.alpha,
                 beta: event.beta,
@@ -428,7 +282,7 @@ export class CompassTracker {
             });
         }
 
-        // Calculate compass heading
+        // Calculate compass heading (platform-specific)
         let heading = this.calculateCompassHeading(event);
 
         // Debug calculated heading
@@ -440,8 +294,7 @@ export class CompassTracker {
         // Fallback to GPS bearing if needed
         if (heading === null || this.shouldUseGPSBearing()) {
             if (this.gpsData.lastLat && this.gpsData.lastLng) {
-                // Use last known GPS bearing (would need to be calculated externally)
-                // For now, we just skip if no compass heading available
+                // Use last known GPS bearing
                 return;
             }
         }
@@ -500,7 +353,8 @@ export class CompassTracker {
         this.currentBearing = bearing;
 
         if (this.map.setBearing) {
-            this.map.setBearing(bearing); // No negative - direct bearing
+            const mapBearing = this.getMapBearing(bearing);
+            this.map.setBearing(mapBearing);
         }
 
         // Trigger callback
@@ -541,7 +395,8 @@ export class CompassTracker {
 
                 // Update map bearing
                 if (this.map.setBearing) {
-                    this.map.setBearing(this.currentBearing); // No negative
+                    const mapBearing = this.getMapBearing(this.currentBearing);
+                    this.map.setBearing(mapBearing);
                 }
 
                 // Trigger callback
@@ -554,7 +409,8 @@ export class CompassTracker {
                 // Snap to final position
                 this.currentBearing = this.targetBearing;
                 if (this.map.setBearing) {
-                    this.map.setBearing(this.currentBearing); // No negative
+                    const mapBearing = this.getMapBearing(this.currentBearing);
+                    this.map.setBearing(mapBearing);
                 }
 
                 // Trigger callback
@@ -643,14 +499,6 @@ export class CompassTracker {
      */
     getCalibrationQuality() {
         return this.calibrationQuality;
-    }
-
-    /**
-     * Get platform
-     * @returns {string} - 'ios', 'android', or 'desktop'
-     */
-    getPlatform() {
-        return this.platform;
     }
 
     /**

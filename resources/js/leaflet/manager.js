@@ -2,7 +2,7 @@ import { MapManager } from './core/MapManager.js';
 import { MarkerManager } from './core/MarkerManager.js';
 import { RoutingService } from './services/RoutingService.js';
 import { GPSTracker } from './services/GPSTracker.js';
-import { CompassTracker } from './services/CompassTracker.js';
+import { CompassTracker } from './services/compass/index.js';
 import { GeocodingService } from './services/GeocodingService.js';
 
 /**
