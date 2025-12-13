@@ -185,6 +185,30 @@ export const LeafletConfig = {
     },
 
     /**
+     * Geocoding & Search settings
+     */
+    geocoding: {
+        // Default search options
+        defaultLanguage: 'id', // Bahasa Indonesia
+        defaultCountry: 'id', // Indonesia
+        defaultLimit: 5, // Max results
+
+        // Default proximity (Kendari, Sulawesi Tenggara)
+        defaultProximity: '122.5145,-3.9778', // lng,lat
+
+        // Default types for different use cases
+        types: {
+            all: 'address,poi,place,street,postcode',
+            address: 'address,street',
+            poi: 'poi',
+            place: 'place,district,locality,neighborhood',
+        },
+
+        // Indonesia bounding box (approximate)
+        indonesiaBbox: '95.0,-11.0,141.0,6.0', // minLng,minLat,maxLng,maxLat
+    },
+
+    /**
      * Get accuracy color based on value
      * @param {number} accuracy - Accuracy in meters
      * @returns {string} - Color hex code
