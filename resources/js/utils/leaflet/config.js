@@ -134,7 +134,26 @@ export const LeafletConfig = {
      * Routing configuration
      */
     routing: {
-        serviceUrl: 'https://router.project-osrm.org/route/v1',
+        // OSRM (Primary - Free)
+        osrm: {
+            enabled: true,
+            serviceUrl: 'https://router.project-osrm.org/route/v1',
+            profile: 'driving', // car, bike, foot
+        },
+        // Mapbox Directions API (Fallback - Paid)
+        mapbox: {
+            enabled: true,
+            baseUrl: 'https://api.mapbox.com/directions/v5',
+            profile: 'mapbox/driving-traffic', // driving-traffic, driving, walking, cycling
+            options: {
+                alternatives: false,
+                steps: false,
+                geometries: 'geojson',
+                overview: 'full',
+                annotations: ['distance', 'duration', 'speed'],
+            },
+        },
+        // Visual styling
         routeColor: '#3b82f6',
         routeOpacity: 0.8,
         routeWeight: 5,

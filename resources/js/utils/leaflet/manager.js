@@ -11,6 +11,7 @@ export class LeafletMapManager {
         this.markers = {};
         this.accuracyCircle = null;
         this.routingControl = null;
+        this.routeLayer = null; // Polyline layer for route (Mapbox/OSRM)
         this.watchId = null;
         this.isUpdatingFromMap = false;
         this.isInitialized = false;
@@ -267,47 +268,160 @@ export class LeafletMapManager {
     }
 
     /**
-     * Initialize routing between two points
+     * Get Mapbox access token from meta tag
+     * @returns {string|null}
+     */
+    getMapboxToken() {
+        const metaTag = document.querySelector('meta[name="mapbox-token"]');
+        return metaTag ? metaTag.content : null;
+    }
+
+    /**
+     * Fetch route from Mapbox Directions API
+     * @param {number} startLat - Start latitude
+     * @param {number} startLng - Start longitude
+     * @param {number} endLat - End latitude
+     * @param {number} endLng - End longitude
+     * @returns {Promise<object>} - Route data
+     */
+    async fetchMapboxRoute(startLat, startLng, endLat, endLng) {
+        const token = this.getMapboxToken();
+        if (!token || !LeafletConfig.routing.mapbox.enabled) {
+            throw new Error('Mapbox token not available or Mapbox routing disabled');
+        }
+
+        const { baseUrl, profile, options } = LeafletConfig.routing.mapbox;
+        const coordinates = `${startLng},${startLat};${endLng},${endLat}`;
+
+        // Build query params
+        const params = new URLSearchParams({
+            access_token: token,
+            geometries: options.geometries,
+            overview: options.overview,
+            alternatives: options.alternatives,
+            steps: options.steps,
+        });
+
+        if (options.annotations && options.annotations.length > 0) {
+            params.append('annotations', options.annotations.join(','));
+        }
+
+        const url = `${baseUrl}/${profile}/${coordinates}?${params.toString()}`;
+
+        const response = await fetch(url);
+        if (!response.ok) {
+            throw new Error(`Mapbox API error: ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
+            throw new Error('No route found from Mapbox');
+        }
+
+        return data.routes[0];
+    }
+
+    /**
+     * Fetch route from OSRM with timeout
+     * @param {number} startLat - Start latitude
+     * @param {number} startLng - Start longitude
+     * @param {number} endLat - End latitude
+     * @param {number} endLng - End longitude
+     * @returns {Promise<object>} - Route data
+     */
+    async fetchOSRMRoute(startLat, startLng, endLat, endLng) {
+        if (!LeafletConfig.routing.osrm.enabled) {
+            throw new Error('OSRM routing disabled');
+        }
+
+        const { serviceUrl, profile } = LeafletConfig.routing.osrm;
+        const coordinates = `${startLng},${startLat};${endLng},${endLat}`;
+        const url = `${serviceUrl}/${coordinates}?overview=full&geometries=geojson`;
+
+        // Add timeout 10 seconds
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+
+        try {
+            const response = await fetch(url, { signal: controller.signal });
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`OSRM API error: ${response.status}`);
+            }
+
+            const data = await response.json();
+            if (data.code !== 'Ok' || !data.routes || data.routes.length === 0) {
+                throw new Error('No route found from OSRM');
+            }
+
+            return data.routes[0];
+        } catch (error) {
+            clearTimeout(timeoutId);
+            if (error.name === 'AbortError') {
+                throw new Error('OSRM request timeout (10s)');
+            }
+            throw error;
+        }
+    }
+
+    /**
+     * Initialize routing between two points (OSRM primary, Mapbox fallback)
      * @param {number} startLat - Start latitude
      * @param {number} startLng - Start longitude
      * @param {number} endLat - End latitude
      * @param {number} endLng - End longitude
      */
-    initRouting(startLat, startLng, endLat, endLng) {
+    async initRouting(startLat, startLng, endLat, endLng) {
         // Remove existing routing
         if (this.routingControl) {
             this.map.removeControl(this.routingControl);
+            this.routingControl = null;
         }
 
-        this.routingControl = L.Routing.control({
-            waypoints: [
-                L.latLng(startLat, startLng),
-                L.latLng(endLat, endLng),
-            ],
-            routeWhileDragging: false,
-            addWaypoints: false,
-            draggableWaypoints: false,
-            fitSelectedRoutes: true,
-            showAlternatives: false,
-            lineOptions: {
-                styles: [{
-                    color: LeafletConfig.routing.routeColor,
-                    opacity: LeafletConfig.routing.routeOpacity,
-                    weight: LeafletConfig.routing.routeWeight,
-                }],
-                extendToWaypoints: true,
-                missingRouteTolerance: 0,
-            },
-            createMarker: () => null, // Don't create default markers
-            router: L.Routing.osrmv1({
-                serviceUrl: LeafletConfig.routing.serviceUrl,
-            }),
+        try {
+            // Try OSRM first (free)
+            console.log('[Debug] Trying OSRM (free)...');
+            const route = await this.fetchOSRMRoute(startLat, startLng, endLat, endLng);
+            this.drawRoute(route.geometry);
+            console.log('[Debug] Route rendered using: OSRM');
+        } catch (osrmError) {
+            console.log('[Debug] OSRM failed, falling back to Mapbox...', osrmError.message);
+            try {
+                // Fallback to Mapbox (paid)
+                const route = await this.fetchMapboxRoute(startLat, startLng, endLat, endLng);
+                this.drawRoute(route.geometry);
+                console.log('[Debug] Route rendered using: Mapbox Directions API (fallback)');
+            } catch (mapboxError) {
+                // Both failed - show error
+                console.error('[Error] All routing services failed:', mapboxError.message);
+            }
+        }
+    }
+
+    /**
+     * Draw route on map from GeoJSON geometry
+     * @param {object} geometry - GeoJSON LineString geometry
+     */
+    drawRoute(geometry) {
+        // Remove existing route layer
+        if (this.routeLayer) {
+            this.map.removeLayer(this.routeLayer);
+        }
+
+        // Create polyline from GeoJSON coordinates
+        const latLngs = geometry.coordinates.map(coord => [coord[1], coord[0]]);
+
+        this.routeLayer = L.polyline(latLngs, {
+            color: LeafletConfig.routing.routeColor,
+            opacity: LeafletConfig.routing.routeOpacity,
+            weight: LeafletConfig.routing.routeWeight,
         }).addTo(this.map);
 
-        // Hide routing instructions panel
-        this.hideRoutingInstructions();
-
-        return this.routingControl;
+        // Fit bounds to show full route
+        this.map.fitBounds(this.routeLayer.getBounds(), {
+            padding: [50, 50],
+        });
     }
 
     /**
@@ -318,14 +432,7 @@ export class LeafletMapManager {
      * @param {number} endLng - End longitude
      */
     updateRouting(startLat, startLng, endLat, endLng) {
-        if (this.routingControl) {
-            this.routingControl.setWaypoints([
-                L.latLng(startLat, startLng),
-                L.latLng(endLat, endLng),
-            ]);
-        } else {
-            this.initRouting(startLat, startLng, endLat, endLng);
-        }
+        return this.initRouting(startLat, startLng, endLat, endLng);
     }
 
     /**
@@ -671,6 +778,11 @@ export class LeafletMapManager {
         if (this.routingControl) {
             this.map.removeControl(this.routingControl);
             this.routingControl = null;
+        }
+
+        if (this.routeLayer) {
+            this.map.removeLayer(this.routeLayer);
+            this.routeLayer = null;
         }
 
         if (this.map) {
