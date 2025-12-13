@@ -3,8 +3,8 @@ import { initDarkMode, isDarkMode } from './utils/darkMode';
 import { initPermissions } from './utils/permissions';
 import { setupPWAInstall } from './utils/pwaInstall';
 
-// Import unified maps (includes Mapbox + Leaflet)
-import './utils/maps.js';
+// Import Leaflet maps module
+import './leaflet/index.js';
 
 window.axios = axios;
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
