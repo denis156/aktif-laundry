@@ -57,6 +57,14 @@ export const LeafletConfig = {
                 attribution: '&copy; Google',
             },
         },
+        googleTraffic: {
+            name: 'Google Traffic',
+            url: 'https://mt1.google.com/vt/lyrs=m,traffic&x={x}&y={y}&z={z}',
+            options: {
+                maxZoom: 20,
+                attribution: '&copy; Google',
+            },
+        },
     },
 
     /**
