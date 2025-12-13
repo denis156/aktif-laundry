@@ -5,6 +5,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="mapbox-token" content="{{ config('services.mapbox.token') }}">
     <title>{{ isset($title) ? $title.' - '.config('app.name') : config('app.name') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
 

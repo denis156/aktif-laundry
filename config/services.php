@@ -86,4 +86,32 @@ return [
         'fonnte_token' => env('FONNTE_TOKEN'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Mapbox Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk Mapbox Maps API
+    | Digunakan untuk rendering maps dengan Mapbox GL JS
+    |
+    | Setup:
+    | 1. Daftar akun di: https://www.mapbox.com/
+    | 2. Dapatkan access token dari dashboard Mapbox
+    | 3. Copy token ke .env file sebagai MAPBOX_TOKEN
+    |
+    | Fitur yang tersedia:
+    | - Vector maps dengan performa tinggi
+    | - Custom map styles
+    | - 3D terrain dan buildings
+    | - Realtime tracking dengan smooth animations
+    | - Offline map support
+    |
+    | Fallback: Sistem akan otomatis fallback ke Leaflet jika Mapbox tidak tersedia
+    |
+    */
+
+    'mapbox' => [
+        'token' => env('MAPBOX_TOKEN'),
+    ],
+
 ];

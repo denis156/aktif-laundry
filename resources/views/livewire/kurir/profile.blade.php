@@ -174,22 +174,24 @@
                     return;
                 }
 
-                // Wait for LeafletMapManager
-                if (typeof window.LeafletMapManager === 'undefined') {
+                // Wait for Maps
+                if (typeof window.Maps === 'undefined') {
                     setTimeout(initKurirMap, 100);
                     return;
                 }
 
-                const lat = parseFloat($wire.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
-                const lng = parseFloat($wire.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
+                const defaults = window.Maps.getDefaultCoordinates();
+                const zoom = window.Maps.getZoomLevels();
+                const lat = parseFloat($wire.latitude) || defaults.latitude;
+                const lng = parseFloat($wire.longitude) || defaults.longitude;
 
-                // Initialize map using OOP class
-                mapManager = new window.LeafletMapManager('map-kurir', {
+                // Create map using unified entry point
+                mapManager = window.Maps.createMap('map-kurir', {
                     latitude: lat,
                     longitude: lng,
-                    zoom: window.LeafletUtils.config.zoom.default,
+                    zoom: zoom.default,
                     draggable: true,
-                    showLayerControl: false,
+                    showLayerControl: false, // No layer control for profile map
                     onMapClick: (clickLat, clickLng) => {
                         $wire.latitude = clickLat.toFixed(6);
                         $wire.longitude = clickLng.toFixed(6);
@@ -254,7 +256,8 @@
                                 }
 
                                 // Center map
-                                mapManager.setView(lat, lng, window.LeafletUtils.config.zoom.default);
+                                const zoom = window.Maps.getZoomLevels();
+                                mapManager.setView(lat, lng, zoom.default);
 
                                 this.innerHTML = btnText;
                                 this.disabled = false;
@@ -271,7 +274,7 @@
                                 this.innerHTML = btnText;
                                 this.disabled = false;
                             },
-                            window.LeafletUtils.config.gpsOptions
+                            window.Maps.getGpsOptions()
                         );
                     });
                 }, 100);
