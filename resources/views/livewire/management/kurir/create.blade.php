@@ -30,7 +30,8 @@
                     <x-input label="Email" type="email" wire:model="formData.email"
                         placeholder="Contoh: kurir@email.com" icon="o-envelope" hint="Opsional" />
 
-                    <x-password label="Password" wire:model="formData.password" placeholder="Minimal 8 karakter"
+                    <x-password label="Password" wire:model="formData.password"
+                        placeholder="Minimal {{ $passwordMinLength }} karakter"
                         hint="Password untuk login aplikasi kurir" icon="o-lock-closed" right required />
 
                     <x-password label="Konfirmasi Password" wire:model="formData.password_confirmation"

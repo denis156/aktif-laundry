@@ -33,11 +33,11 @@
 
                     <x-password label="Password Baru" wire:model="formData.password"
                         placeholder="Kosongkan jika tidak ingin mengubah"
-                        hint="Minimal 8 karakter, kosongkan jika tidak ingin mengubah password"
-                        password-icon="o-lock-closed" right clearable />
+                        hint="Minimal {{ $passwordMinLength }} karakter, kosongkan jika tidak ingin mengubah password"
+                        icon="o-lock-closed" right />
 
                     <x-password label="Konfirmasi Password Baru" wire:model="formData.password_confirmation"
-                        placeholder="Ketik ulang password baru" password-icon="o-lock-closed" right clearable />
+                        placeholder="Ketik ulang password baru" icon="o-lock-closed" right />
                 </div>
             </x-card>
         </div>

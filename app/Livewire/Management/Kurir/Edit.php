@@ -359,6 +359,7 @@ class Edit extends Component
             'statusOptions' => KurirHelper::getStatusOptions(),
             'jenisKendaraanOptions' => KurirHelper::getJenisKendaraanOptions(),
             'avatarUrl' => $avatarUrl,
+            'passwordMinLength' => KurirHelper::PASSWORD_MIN_LENGTH,
         ]);
     }
 }
