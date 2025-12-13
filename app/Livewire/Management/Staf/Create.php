@@ -81,11 +81,13 @@ class Create extends Component
 
     private function loadRegionalOptions()
     {
-        // Load provinsi options (fixed ke Sulawesi Tenggara)
+        // Load provinsi options (seluruh Indonesia)
         $this->provinsiOptions = RegionalLocation::getProvinceOptions();
 
-        // Load kabupaten/kota options (semua kabupaten di Sulawesi Tenggara)
-        $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions();
+        // Load kabupaten/kota options berdasarkan provinsi yang dipilih
+        if (! empty($this->provinsi)) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->provinsi);
+        }
 
         // Load kecamatan options jika kabupaten/kota sudah dipilih
         if (! empty($this->kabupaten_kota)) {
@@ -95,6 +97,22 @@ class Create extends Component
         // Load kelurahan options jika kecamatan sudah dipilih
         if (! empty($this->kecamatan)) {
             $this->kelurahanOptions = RegionalLocation::getVillageOptions($this->kecamatan);
+        }
+    }
+
+    public function updatedProvinsi()
+    {
+        // Reset dependent fields
+        $this->kabupaten_kota = '';
+        $this->kecamatan = '';
+        $this->kelurahan = '';
+        $this->kabupatenKotaOptions = [];
+        $this->kecamatanOptions = [];
+        $this->kelurahanOptions = [];
+
+        // Load kabupaten/kota options
+        if (! empty($this->provinsi)) {
+            $this->kabupatenKotaOptions = RegionalLocation::getRegencyOptions($this->provinsi);
         }
     }
 
@@ -203,11 +221,11 @@ class Create extends Component
             'password' => 'required|min:'.UserHelper::PASSWORD_MIN_LENGTH.'|confirmed',
             'avatar' => 'nullable|image|max:'.UserHelper::AVATAR_MAX_SIZE_KB,
             'super_admin' => 'boolean',
-            'detail_alamat' => 'required|string|max:500',
-            'kelurahan' => 'required|string',
-            'kecamatan' => 'required|string',
-            'kabupaten_kota' => 'nullable|string',
-            'provinsi' => 'nullable|string',
+            'detail_alamat' => 'nullable|string|max:500',
+            'kelurahan' => 'nullable|string|max:100',
+            'kecamatan' => 'nullable|string|max:100',
+            'kabupaten_kota' => 'nullable|string|max:100',
+            'provinsi' => 'nullable|string|max:100',
             'jam_masuk' => 'nullable|date_format:H:i',
             'jam_keluar' => 'nullable|date_format:H:i',
             'gaji' => 'nullable|integer|min:0',
@@ -233,10 +251,11 @@ class Create extends Component
             'avatar.image' => 'File harus berupa gambar',
             'avatar.max' => "Ukuran file maksimal {$avatarMaxSizeMB} MB",
             'super_admin.boolean' => 'Role harus berupa pilihan yang valid',
-            'detail_alamat.required' => 'Detail alamat wajib diisi',
             'detail_alamat.max' => 'Detail alamat maksimal 500 karakter',
-            'kelurahan.required' => 'Kelurahan wajib dipilih',
-            'kecamatan.required' => 'Kecamatan wajib dipilih',
+            'kelurahan.max' => 'Kelurahan maksimal 100 karakter',
+            'kecamatan.max' => 'Kecamatan maksimal 100 karakter',
+            'kabupaten_kota.max' => 'Kabupaten/Kota maksimal 100 karakter',
+            'provinsi.max' => 'Provinsi maksimal 100 karakter',
             'jam_masuk.date_format' => 'Format jam masuk tidak valid (HH:MM)',
             'jam_keluar.date_format' => 'Format jam keluar tidak valid (HH:MM)',
             'gaji.integer' => 'Gaji harus berupa angka',
