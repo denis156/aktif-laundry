@@ -1,61 +1,16 @@
 /**
- * Unified Maps Entry Point
- * Automatic provider selection: Mapbox (primary) → Leaflet (fallback)
+ * Maps Entry Point - Leaflet Only
  *
  * Usage:
  *   const map = window.Maps.createMap('map-id', options);
  */
 
-// Import Mapbox first (primary)
-import './mapbox/index.js';
-
-// Import Leaflet as fallback
+// Import Leaflet
 import './leaflet/index.js';
 
 // Helper to safely get configs from global window
-function getMapboxUtils() {
-    return window.MapboxUtils || {};
-}
-
 function getLeafletUtils() {
     return window.LeafletUtils || {};
-}
-
-/**
- * Map Provider Enum
- */
-export const MapProvider = {
-    MAPBOX: 'mapbox',
-    LEAFLET: 'leaflet',
-};
-
-/**
- * Get current map provider
- * @returns {string} 'mapbox' or 'leaflet'
- */
-export function getCurrentProvider() {
-    // Check Mapbox availability
-    const mapboxUtils = getMapboxUtils();
-    if (typeof mapboxgl !== 'undefined' && mapboxUtils.config && mapboxUtils.config.isAvailable && mapboxUtils.config.isAvailable()) {
-        return MapProvider.MAPBOX;
-    }
-
-    // Fallback to Leaflet
-    if (typeof L !== 'undefined') {
-        return MapProvider.LEAFLET;
-    }
-
-    console.error('No map provider available');
-    return null;
-}
-
-/**
- * Check if Mapbox is available
- * @returns {boolean}
- */
-export function isMapboxAvailable() {
-    const mapboxUtils = getMapboxUtils();
-    return typeof mapboxgl !== 'undefined' && mapboxUtils.config && mapboxUtils.config.isAvailable && mapboxUtils.config.isAvailable();
 }
 
 /**
@@ -67,66 +22,46 @@ export function isLeafletAvailable() {
 }
 
 /**
- * Get config for current provider
- * @returns {object} MapboxConfig or LeafletConfig
+ * Get config for Leaflet
+ * @returns {object} LeafletConfig
  */
 export function getConfig() {
-    const provider = getCurrentProvider();
-
-    if (provider === MapProvider.MAPBOX) {
-        const mapboxUtils = getMapboxUtils();
-        return mapboxUtils.config || null;
-    }
-
-    if (provider === MapProvider.LEAFLET) {
-        const leafletUtils = getLeafletUtils();
-        return leafletUtils.config || null;
-    }
-
-    return null;
+    const leafletUtils = getLeafletUtils();
+    return leafletUtils.config || null;
 }
 
 /**
- * Create map manager instance (auto-selects provider)
+ * Create map manager instance using Leaflet
  *
  * @param {string} elementId - Map container element ID
  * @param {object} options - Map options
  * @param {number} options.latitude - Initial latitude
  * @param {number} options.longitude - Initial longitude
  * @param {number} options.zoom - Zoom level
- * @param {string} options.style - Mapbox style (ignored by Leaflet)
+ * @param {string} options.defaultTileLayer - Default tile layer key
  * @param {boolean} options.draggable - Marker draggable
  * @param {boolean} options.rotate - Enable rotation
  * @param {boolean} options.enableCompass - Enable device compass
  * @param {boolean} options.smoothCompass - Smooth compass rotation
- * @param {boolean} options.showLayerControl - Show layer control (Leaflet only)
+ * @param {boolean} options.showLayerControl - Show layer control
  * @param {function} options.onLocationUpdate - Location update callback
  * @param {function} options.onMapClick - Map click callback
  * @param {object} options.wire - Livewire component reference
- * @returns {MapboxMapManager|LeafletMapManager|null}
+ * @returns {LeafletMapManager|null}
  */
 export function createMap(elementId, options = {}) {
-    const provider = getCurrentProvider();
+    const leafletUtils = getLeafletUtils();
 
-    if (provider === MapProvider.MAPBOX) {
-        const mapboxUtils = getMapboxUtils();
-        if (mapboxUtils.MapboxMapManager) {
-            return new mapboxUtils.MapboxMapManager(elementId, options);
-        }
+    if (leafletUtils.LeafletMapManager && isLeafletAvailable()) {
+        return new leafletUtils.LeafletMapManager(elementId, options);
     }
 
-    if (provider === MapProvider.LEAFLET) {
-        const leafletUtils = getLeafletUtils();
-        if (leafletUtils.LeafletMapManager) {
-            return new leafletUtils.LeafletMapManager(elementId, options);
-        }
-    }
-
+    console.error('Leaflet not available');
     return null;
 }
 
 /**
- * Wait for map provider to be ready
+ * Wait for Leaflet to be ready
  * @param {function} callback - Callback when ready
  * @param {number} timeout - Timeout in ms (default: 10000)
  */
@@ -134,13 +69,13 @@ export function waitForMaps(callback, timeout = 10000) {
     const startTime = Date.now();
 
     const check = () => {
-        if (getCurrentProvider()) {
+        if (isLeafletAvailable()) {
             callback();
             return;
         }
 
         if (Date.now() - startTime > timeout) {
-            console.error('Map provider timeout');
+            console.error('Leaflet timeout');
             return;
         }
 
@@ -203,11 +138,8 @@ export function getGpsOptions() {
 // Make everything available globally for backward compatibility
 if (typeof window !== 'undefined') {
     window.Maps = {
-        // Provider info
-        getCurrentProvider,
-        isMapboxAvailable,
+        // Check availability
         isLeafletAvailable,
-        MapProvider,
 
         // Factory
         createMap,
@@ -220,15 +152,9 @@ if (typeof window !== 'undefined') {
         getZoomLevels,
         getGpsOptions,
 
-        // Direct access to utils (for advanced usage)
-        get MapboxConfig() {
-            return getMapboxUtils().config;
-        },
+        // Direct access to Leaflet utils
         get LeafletConfig() {
             return getLeafletUtils().config;
-        },
-        get MapboxMapManager() {
-            return getMapboxUtils().MapboxMapManager;
         },
         get LeafletMapManager() {
             return getLeafletUtils().LeafletMapManager;

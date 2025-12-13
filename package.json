@@ -18,7 +18,6 @@
     "dependencies": {
         "leaflet": "^1.9.4",
         "leaflet-rotate": "^0.2.8",
-        "leaflet-routing-machine": "^3.2.12",
-        "mapbox-gl": "^3.17.0"
+        "leaflet-routing-machine": "^3.2.12"
     }
 }

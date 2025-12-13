@@ -46,13 +46,12 @@
                 const kurirLat = parseFloat($wire.kurirLatitude) || pelangganLat;
                 const kurirLng = parseFloat($wire.kurirLongitude) || pelangganLng;
 
-                // Create map using unified entry point with Mapbox/Leaflet fallback
+                // Create map using Leaflet
                 mapManager = window.Maps.createMap('map-rute-detail', {
                     latitude: pelangganLat,
                     longitude: pelangganLng,
                     zoom: zoom.city,
-                    style: 'navigationDay', // Mapbox: Navigation Day style for routing
-                    defaultTileLayer: 'googleTraffic', // Leaflet: Google Traffic fallback
+                    defaultTileLayer: 'googleTraffic', // Google Traffic for routing
                     rotate: true,
                     enableCompass: true,
                     smoothCompass: true,

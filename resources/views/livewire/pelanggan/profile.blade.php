@@ -185,7 +185,7 @@
                 const lat = parseFloat($wire.latitude) || defaults.latitude;
                 const lng = parseFloat($wire.longitude) || defaults.longitude;
 
-                // Create map using unified entry point with Mapbox/Leaflet fallback
+                // Create map using Leaflet
                 mapManager = window.Maps.createMap('map-pelanggan', {
                     latitude: lat,
                     longitude: lng,
