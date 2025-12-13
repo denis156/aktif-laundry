@@ -9,6 +9,7 @@ export class MapboxMapManager {
         this.elementId = elementId;
         this.map = null;
         this.markers = {};
+        this.markerRotations = {}; // Track which markers should rotate with compass
         this.accuracyCircle = null;
         this.routeSourceId = 'route-source';
         this.routeLayerId = 'route-layer';
@@ -31,11 +32,13 @@ export class MapboxMapManager {
             zoom: options.zoom || MapboxConfig.zoom.default,
             style: options.style || MapboxConfig.defaultStyle,
             draggable: options.draggable !== undefined ? options.draggable : false,
+            showLayerControl: options.showLayerControl !== undefined ? options.showLayerControl : false,
             rotate: options.rotate !== undefined ? options.rotate : false,
             enableCompass: options.enableCompass !== undefined ? options.enableCompass : false,
             smoothCompass: options.smoothCompass !== undefined ? options.smoothCompass : true,
             onLocationUpdate: options.onLocationUpdate || null,
             onMapClick: options.onMapClick || null,
+            onReady: options.onReady || null,
             wire: options.wire || null,
         };
     }
@@ -51,14 +54,12 @@ export class MapboxMapManager {
 
         // Check if Mapbox is available
         if (!MapboxConfig.isAvailable()) {
-            console.warn('⚠️ Mapbox GL JS not available or token missing/invalid - fallback to Leaflet should be used');
             return this;
         }
 
         // Set access token
         const token = MapboxConfig.getAccessToken();
         if (!token || token.trim().length === 0) {
-            console.warn('⚠️ Mapbox token is empty - fallback to Leaflet should be used');
             return this;
         }
 
@@ -78,8 +79,6 @@ export class MapboxMapManager {
                 touchPitch: false,
             });
         } catch (error) {
-            console.error('❌ Failed to create Mapbox map:', error);
-            console.warn('⚠️ Fallback to Leaflet should be used');
             return this;
         }
 
@@ -99,9 +98,6 @@ export class MapboxMapManager {
 
         // Handle map errors (e.g., invalid token, API errors)
         this.map.on('error', (e) => {
-            console.error('❌ Mapbox map error:', e.error);
-            console.warn('⚠️ Token might be invalid or expired - consider using Leaflet fallback');
-
             // Mark as not initialized so fallback can be attempted
             this.isInitialized = false;
         });
@@ -109,11 +105,9 @@ export class MapboxMapManager {
         // Wait for map to load - CRITICAL for Mapbox!
         this.map.on('load', () => {
             this.isInitialized = true;
-            console.log('✅ Mapbox map loaded successfully');
 
             // Add style/layer switcher control if enabled - AFTER map loaded
             if (this.options.showLayerControl === true) {
-                console.log('🎨 Adding Mapbox style switcher control...');
                 this.addStyleSwitcher();
             }
 
@@ -171,6 +165,11 @@ export class MapboxMapManager {
             marker.setPopup(popup);
         }
 
+        // Track if this marker should rotate with compass (e.g., arrow/kurir marker)
+        if (options.rotatable !== false && icon === MapboxConfig.arrowMarkerIcon) {
+            this.markerRotations[key] = 0; // Initialize rotation angle
+        }
+
         this.markers[key] = marker;
         return marker;
     }
@@ -195,6 +194,10 @@ export class MapboxMapManager {
         if (this.markers[key]) {
             this.markers[key].remove();
             delete this.markers[key];
+            // Cleanup rotation tracking
+            if (this.markerRotations[key] !== undefined) {
+                delete this.markerRotations[key];
+            }
         }
     }
 
@@ -619,11 +622,20 @@ export class MapboxMapManager {
         if (heading !== null) {
             this.compassHeading = heading;
 
+            // Rotate map
             if (this.options.smoothCompass) {
                 this.smoothRotateTo(heading);
             } else {
                 this.rotateTo(heading);
             }
+
+            // Rotate all arrow markers to follow compass heading
+            Object.keys(this.markers).forEach(key => {
+                // Only rotate markers that are meant to show direction (like kurir marker)
+                if (this.markerRotations && this.markerRotations[key] !== undefined) {
+                    this.rotateMarker(key, heading);
+                }
+            });
         }
     }
 
@@ -646,7 +658,15 @@ export class MapboxMapManager {
         if (this.markers[key]) {
             const el = this.markers[key].getElement();
             if (el) {
+                // Update rotation tracking
+                if (this.markerRotations[key] !== undefined) {
+                    this.markerRotations[key] = angle;
+                }
+
+                // Apply smooth CSS transform
+                el.style.transition = 'transform 0.3s ease-out';
                 el.style.transform = `rotate(${angle}deg)`;
+                el.style.transformOrigin = 'center center';
             }
         }
     }
@@ -709,18 +729,6 @@ export class MapboxMapManager {
                     font-size: 12px;
                     line-height: 1.5;
                 `;
-
-                // Add title (like Leaflet)
-                const title = document.createElement('div');
-                title.textContent = 'Base Layers';
-                title.style.cssText = `
-                    font-weight: bold;
-                    margin-bottom: 8px;
-                    padding-bottom: 6px;
-                    border-bottom: 1px solid #ddd;
-                    color: #333;
-                `;
-                dropdown.appendChild(title);
 
                 // Add style options as radio buttons (like Leaflet)
                 this.styles.forEach((style, index) => {
@@ -786,7 +794,6 @@ export class MapboxMapManager {
 
         const control = new StyleSwitcherControl(styles, this);
         this.map.addControl(control, 'top-right');
-        console.log('✅ Mapbox style switcher control added to map');
     }
 
     /**
@@ -836,6 +843,7 @@ export class MapboxMapManager {
 
         Object.values(this.markers).forEach(marker => marker.remove());
         this.markers = {};
+        this.markerRotations = {};
 
         if (this.map) {
             this.map.remove();

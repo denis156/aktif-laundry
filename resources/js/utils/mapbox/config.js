@@ -48,7 +48,12 @@ export const MapboxConfig = {
     /**
      * Default map style
      */
-    defaultStyle: 'navigationDay',
+    defaultStyle: 'standard',
+
+    /**
+     * Alias for Leaflet compatibility
+     */
+    defaultTileLayer: 'standard',
 
     /**
      * Custom marker icon configuration

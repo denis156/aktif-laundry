@@ -360,22 +360,24 @@
                 return;
             }
 
-            // Wait for LeafletMapManager
-            if (typeof window.LeafletMapManager === 'undefined') {
+            // Wait for Maps to be available
+            if (typeof window.Maps === 'undefined') {
                 setTimeout(initPelangganMap, 100);
                 return;
             }
 
-            const lat = parseFloat($wire.pelangganBaru.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
-            const lng = parseFloat($wire.pelangganBaru.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
+            const defaults = window.Maps.getDefaultCoordinates();
+            const zoom = window.Maps.getZoomLevels();
+            const lat = parseFloat($wire.pelangganBaru.latitude) || defaults.latitude;
+            const lng = parseFloat($wire.pelangganBaru.longitude) || defaults.longitude;
 
-            // Initialize map using OOP class
-            mapManager = new window.LeafletMapManager('map', {
+            // Create map using unified entry point with Mapbox/Leaflet fallback
+            mapManager = window.Maps.createMap('map', {
                 latitude: lat,
                 longitude: lng,
-                zoom: window.LeafletUtils.config.zoom.default,
+                zoom: zoom.default,
                 draggable: true,
-                showLayerControl: true,
+                showLayerControl: true, // Show layer control for management
                 onMapClick: (clickLat, clickLng) => {
                     $wire.pelangganBaru.latitude = clickLat.toFixed(6);
                     $wire.pelangganBaru.longitude = clickLng.toFixed(6);
@@ -386,6 +388,10 @@
                     $wire.pelangganBaru.longitude = dragLng.toFixed(6);
                 },
             });
+
+            if (!mapManager) {
+                return;
+            }
 
             mapManager.init();
 

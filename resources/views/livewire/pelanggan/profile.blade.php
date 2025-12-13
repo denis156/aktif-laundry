@@ -174,22 +174,24 @@
                     return;
                 }
 
-                // Wait for LeafletMapManager
-                if (typeof window.LeafletMapManager === 'undefined') {
+                // Wait for Maps to be available
+                if (typeof window.Maps === 'undefined') {
                     setTimeout(initPelangganMap, 100);
                     return;
                 }
 
-                const lat = parseFloat($wire.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
-                const lng = parseFloat($wire.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
+                const defaults = window.Maps.getDefaultCoordinates();
+                const zoom = window.Maps.getZoomLevels();
+                const lat = parseFloat($wire.latitude) || defaults.latitude;
+                const lng = parseFloat($wire.longitude) || defaults.longitude;
 
-                // Initialize map using OOP class
-                mapManager = new window.LeafletMapManager('map-pelanggan', {
+                // Create map using unified entry point with Mapbox/Leaflet fallback
+                mapManager = window.Maps.createMap('map-pelanggan', {
                     latitude: lat,
                     longitude: lng,
-                    zoom: window.LeafletUtils.config.zoom.default,
+                    zoom: zoom.default,
                     draggable: true,
-                    showLayerControl: false,
+                    showLayerControl: false, // No layer control for pelanggan profile
                     onMapClick: (clickLat, clickLng) => {
                         $wire.latitude = clickLat.toFixed(6);
                         $wire.longitude = clickLng.toFixed(6);
@@ -200,6 +202,10 @@
                         $wire.longitude = dragLng.toFixed(6);
                     },
                 });
+
+                if (!mapManager) {
+                    return;
+                }
 
                 mapManager.init();
 

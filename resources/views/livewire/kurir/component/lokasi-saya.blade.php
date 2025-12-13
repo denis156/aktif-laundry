@@ -45,23 +45,29 @@
             const mapElement = document.getElementById('map-lokasi-kurir');
             if (!mapElement || mapManager) return;
 
-            // Wait for LeafletMapManager to be available
-            if (typeof window.LeafletMapManager === 'undefined') {
+            // Wait for Maps to be available
+            if (typeof window.Maps === 'undefined') {
                 setTimeout(initLokasiMap, 100);
                 return;
             }
 
-            const lat = parseFloat($wire.latitude) || window.LeafletUtils.config.defaultCoordinates.latitude;
-            const lng = parseFloat($wire.longitude) || window.LeafletUtils.config.defaultCoordinates.longitude;
+            const defaults = window.Maps.getDefaultCoordinates();
+            const zoom = window.Maps.getZoomLevels();
+            const lat = parseFloat($wire.latitude) || defaults.latitude;
+            const lng = parseFloat($wire.longitude) || defaults.longitude;
 
-            // Initialize map using OOP class
-            mapManager = new window.LeafletMapManager('map-lokasi-kurir', {
+            // Create map using unified entry point with Mapbox/Leaflet fallback
+            mapManager = window.Maps.createMap('map-lokasi-kurir', {
                 latitude: lat,
                 longitude: lng,
-                zoom: window.LeafletUtils.config.zoom.detail,
+                zoom: zoom.detail,
                 rotate: true,
                 showLayerControl: true,
             });
+
+            if (!mapManager) {
+                return;
+            }
 
             mapManager.init();
 

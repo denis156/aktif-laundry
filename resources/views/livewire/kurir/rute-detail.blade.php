@@ -36,38 +36,44 @@
                     return;
                 }
 
-                // Wait for LeafletMapManager
-                if (typeof window.LeafletMapManager === 'undefined') {
+                // Wait for Maps to be available
+                if (typeof window.Maps === 'undefined') {
                     setTimeout(initRuteMap, 100);
                     return;
                 }
 
+                const zoom = window.Maps.getZoomLevels();
                 const kurirLat = parseFloat($wire.kurirLatitude) || pelangganLat;
                 const kurirLng = parseFloat($wire.kurirLongitude) || pelangganLng;
 
-                // Initialize map using OOP class
-                mapManager = new window.LeafletMapManager('map-rute-detail', {
+                // Create map using unified entry point with Mapbox/Leaflet fallback
+                mapManager = window.Maps.createMap('map-rute-detail', {
                     latitude: pelangganLat,
                     longitude: pelangganLng,
-                    zoom: window.LeafletUtils.config.zoom.city,
+                    zoom: zoom.city,
+                    style: 'navigationDay', // Mapbox: Navigation Day style for routing
+                    defaultTileLayer: 'googleTraffic', // Leaflet: Google Traffic fallback
                     rotate: true,
                     enableCompass: true,
-                    smoothCompass: true, // Enable smooth compass rotation
-                    showLayerControl: false, // No layer control for route navigation
-                    defaultTileLayer: 'googleTraffic', // Use Google Traffic as default for route navigation
+                    smoothCompass: true,
+                    showLayerControl: false, // No layer control for navigation
                 });
+
+                if (!mapManager) {
+                    return;
+                }
 
                 mapManager.init();
 
                 // Add pelanggan marker (home icon)
                 mapManager.addMarker('pelanggan', pelangganLat, pelangganLng, {
-                    icon: window.LeafletUtils.config.createHomeMarkerIcon(),
+                    icon: window.Maps.createIcon('home'),
                     popup: createPelangganPopup(pelangganLat, pelangganLng),
                 });
 
                 // Add kurir marker (arrow icon)
                 mapManager.addMarker('kurir', kurirLat, kurirLng, {
-                    icon: window.LeafletUtils.config.createArrowMarkerIcon(),
+                    icon: window.Maps.createIcon('arrow'),
                     popup: createKurirPopup(kurirLat, kurirLng),
                 });
 
@@ -77,7 +83,8 @@
                     // Initialize routing
                     mapManager.initRouting(kurirLat, kurirLng, pelangganLat, pelangganLng);
                 } else {
-                    mapManager.setView(kurirLat, kurirLng, window.LeafletUtils.config.zoom.detail);
+                    const zoom = window.Maps.getZoomLevels();
+                    mapManager.setView(kurirLat, kurirLng, zoom.detail);
                 }
 
                 // Start compass tracking

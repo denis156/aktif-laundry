@@ -36,6 +36,7 @@ export class LeafletMapManager {
             smoothCompass: options.smoothCompass !== undefined ? options.smoothCompass : true, // Smooth compass rotation
             onLocationUpdate: options.onLocationUpdate || null,
             onMapClick: options.onMapClick || null,
+            onReady: options.onReady || null,
             wire: options.wire || null,
         };
     }
@@ -103,6 +104,15 @@ export class LeafletMapManager {
         }
 
         this.isInitialized = true;
+
+        // Trigger ready callback if provided
+        if (this.options.onReady) {
+            // Use setTimeout to ensure map is fully initialized
+            setTimeout(() => {
+                this.options.onReady(this);
+            }, 100);
+        }
+
         return this;
     }
 

@@ -111,7 +111,6 @@ export function createMap(elementId, options = {}) {
     if (provider === MapProvider.MAPBOX) {
         const mapboxUtils = getMapboxUtils();
         if (mapboxUtils.MapboxMapManager) {
-            console.log(`🗺️ Using Mapbox GL JS for #${elementId}`);
             return new mapboxUtils.MapboxMapManager(elementId, options);
         }
     }
@@ -119,12 +118,10 @@ export function createMap(elementId, options = {}) {
     if (provider === MapProvider.LEAFLET) {
         const leafletUtils = getLeafletUtils();
         if (leafletUtils.LeafletMapManager) {
-            console.log(`🗺️ Using Leaflet (fallback) for #${elementId}`);
             return new leafletUtils.LeafletMapManager(elementId, options);
         }
     }
 
-    console.error('❌ No map provider available');
     return null;
 }
 
