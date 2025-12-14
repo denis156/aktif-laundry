@@ -9,6 +9,8 @@ use App\Livewire\Kurir\Auth\Login as KurirLogin;
 use App\Livewire\Kurir\Auth\ResetPassword as KurirResetPassword;
 use App\Livewire\Kurir\Auth\VerifyEmail as KurirVerifyEmail;
 use App\Livewire\Kurir\Beranda;
+use App\Livewire\Kurir\Chat\Index as KurirChatIndex;
+use App\Livewire\Kurir\Chat\Room as KurirChatRoom;
 use App\Livewire\Kurir\DetailAktifitas;
 use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
 use App\Livewire\Kurir\Profile as KurirProfile;
@@ -122,6 +124,8 @@ Route::middleware(['auth:kurir', 'verified.kurir'])->prefix('kurir')->group(func
     Route::get('/aktifitas/{id}', DetailAktifitas::class)->name('detail-aktifitas.kurir');
     Route::get('/rute', Rute::class)->name('rute.kurir');
     Route::get('/rute/{id}', RuteDetail::class)->name('rute-detail.kurir');
+    Route::get('/chat', KurirChatIndex::class)->name('chat.kurir');
+    Route::get('/chat/{conversation}', KurirChatRoom::class)->name('chat-room.kurir');
     Route::get('/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
     Route::get('/profile', KurirProfile::class)->name('profile.kurir');
 });

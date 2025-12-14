@@ -1,6 +1,6 @@
 <nav class="navbar bg-primary text-primary-content sticky top-0 z-50">
     <div class="navbar-start">
-        <x-button icon="iconpark.setting-o" class="btn-circle" link="{{ route('pengaturan.kurir') }}" />
+        <x-button icon="iconpark.message-o" class="btn-circle" link="{{ route('chat.kurir') }}" />
     </div>
     <div class="navbar-center">
         <span class="text-md font-extrabold uppercase">kurir {{ config('app.name') }}</span>
