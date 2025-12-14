@@ -131,14 +131,16 @@
         <x-slot:actions separator>
             {{-- Hidden File Input --}}
             <input type="file" wire:model="fileUpload" id="file-upload" class="hidden"
-                accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx" />
+                accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx"
+                x-on:livewire-upload-error="$dispatch('upload-error')" />
 
             <form wire:submit="sendMessage" class="w-full">
-                <x-input wire:model="message" placeholder="Tulis pesanmu disini..." class="input-primary">
+                <x-input wire:model="message" placeholder="Tulis pesanmu disini..." class="input-primary" hint="Format file: jpg, jpeg, png, gif, pdf, doc, docx | Max 5MB">
                     {{-- File Upload Button --}}
                     <x-slot:prepend>
                         <x-button icon="o-paper-clip" class="join-item btn-secondary" type="button"
-                            onclick="document.getElementById('file-upload').click()" />
+                            onclick="document.getElementById('file-upload').click()"
+                            title="Upload file (max 5MB, format: jpg, jpeg, png, gif, pdf, doc, docx)" />
                     </x-slot:prepend>
 
                     {{-- Send Message Button --}}
@@ -147,9 +149,6 @@
                             class="join-item btn-primary" spinner />
                     </x-slot:append>
                 </x-input>
-
-                @error('message') <span class="text-error text-xs block mt-1">{{ $message }}</span> @enderror
-                @error('file') <span class="text-error text-xs block mt-1">{{ $message }}</span> @enderror
             </form>
         </x-slot:actions>
     </x-card>
@@ -202,9 +201,6 @@
                 <x-input wire:model="fileMessage"
                     label="Pesan (Opsional)"
                     placeholder="Tulis pesan untuk file ini..." />
-
-                @error('fileMessage') <span class="text-error text-xs">{{ $message }}</span> @enderror
-                @error('fileUpload') <span class="text-error text-xs">{{ $message }}</span> @enderror
             </div>
 
             <x-slot:actions>

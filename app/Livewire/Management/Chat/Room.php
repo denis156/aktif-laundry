@@ -9,14 +9,17 @@ use App\Models\Conversation;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\On;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Mary\Traits\Toast;
 
 #[Title('Room Chat')]
 #[Layout('layouts.management.app')]
 class Room extends Component
 {
+    use Toast;
     use WithFileUploads;
 
     public int $conversationId;
@@ -59,11 +62,34 @@ class Room extends Component
         $this->lastMessageCount = $this->messages->count();
     }
 
+    #[On('upload-error')]
+    public function handleUploadError(): void
+    {
+        $this->error('File gagal diupload. Silakan coba lagi.', position: 'toast-bottom');
+    }
+
     public function updatedFileUpload(): void
     {
-        // When file is selected, show preview modal
-        if ($this->fileUpload) {
+        // Validate file immediately
+        try {
+            $this->validate([
+                'fileUpload' => 'required|file|max:5120|mimes:jpg,jpeg,png,gif,pdf,doc,docx',
+            ], [
+                'fileUpload.required' => 'File harus dipilih.',
+                'fileUpload.max' => 'Ukuran file maksimal 5MB.',
+                'fileUpload.mimes' => 'Format file harus jpg, jpeg, png, gif, pdf, doc, atau docx.',
+                'fileUpload.file' => 'File tidak valid.',
+            ]);
+
+            // When file is selected and valid, show preview modal
             $this->filePreviewModal = true;
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Reset file upload
+            $this->reset(['fileUpload']);
+
+            // Get first error message and show as toast
+            $errorMessage = collect($e->errors())->flatten()->first();
+            $this->error($errorMessage, position: 'toast-bottom');
         }
     }
 
@@ -122,78 +148,92 @@ class Room extends Component
 
     public function sendMessage(): void
     {
-        $this->validate([
-            'message' => 'required|string|max:5000',
-        ], [
-            'message.required' => 'Pesan harus diisi.',
-        ]);
+        try {
+            $this->validate([
+                'message' => 'required|string|max:5000',
+            ], [
+                'message.required' => 'Pesan harus diisi.',
+                'message.max' => 'Pesan maksimal 5000 karakter.',
+            ]);
 
-        if (! $this->conversation) {
-            return;
+            if (! $this->conversation) {
+                return;
+            }
+
+            // Create message without file
+            $this->conversation->messages()->create([
+                'sender_type' => User::class,
+                'sender_id' => Auth::id(),
+                'message' => $this->message,
+                'file_path' => null,
+                'file_name' => null,
+                'file_type' => null,
+                'file_size' => null,
+            ]);
+
+            // Update last_message_at
+            $this->conversation->update([
+                'last_message_at' => now(),
+            ]);
+
+            $this->reset(['message']);
+
+            // Dispatch event untuk trigger scroll ke bawah
+            $this->dispatch('message-sent');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Get first error message and show as toast
+            $errorMessage = collect($e->errors())->flatten()->first();
+            $this->error($errorMessage, position: 'toast-bottom');
         }
-
-        // Create message without file
-        $this->conversation->messages()->create([
-            'sender_type' => User::class,
-            'sender_id' => Auth::id(),
-            'message' => $this->message,
-            'file_path' => null,
-            'file_name' => null,
-            'file_type' => null,
-            'file_size' => null,
-        ]);
-
-        // Update last_message_at
-        $this->conversation->update([
-            'last_message_at' => now(),
-        ]);
-
-        $this->reset(['message']);
-
-        // Dispatch event untuk trigger scroll ke bawah
-        $this->dispatch('message-sent');
     }
 
     public function sendFileMessage(): void
     {
-        $this->validate([
-            'fileMessage' => 'nullable|string|max:5000',
-            'fileUpload' => 'required|file|max:5120|mimes:jpg,jpeg,png,gif,pdf,doc,docx',
-        ], [
-            'fileUpload.required' => 'File harus dipilih.',
-            'fileUpload.max' => 'Ukuran file maksimal 5MB.',
-            'fileUpload.mimes' => 'Format file harus jpg, jpeg, png, gif, pdf, doc, atau docx.',
-        ]);
+        try {
+            $this->validate([
+                'fileMessage' => 'nullable|string|max:5000',
+                'fileUpload' => 'required|file|max:5120|mimes:jpg,jpeg,png,gif,pdf,doc,docx',
+            ], [
+                'fileMessage.max' => 'Pesan maksimal 5000 karakter.',
+                'fileUpload.required' => 'File harus dipilih.',
+                'fileUpload.max' => 'Ukuran file maksimal 5MB.',
+                'fileUpload.mimes' => 'Format file harus jpg, jpeg, png, gif, pdf, doc, atau docx.',
+            ]);
 
-        if (! $this->conversation) {
-            return;
+            if (! $this->conversation) {
+                return;
+            }
+
+            // Store file
+            $path = $this->fileUpload->store('chat-attachments', 'public');
+            $fileName = $this->fileUpload->getClientOriginalName();
+
+            // Create message with file
+            $this->conversation->messages()->create([
+                'sender_type' => User::class,
+                'sender_id' => Auth::id(),
+                'message' => $this->fileMessage ?: $fileName,
+                'file_path' => $path,
+                'file_name' => $fileName,
+                'file_type' => $this->fileUpload->getMimeType(),
+                'file_size' => $this->fileUpload->getSize(),
+            ]);
+
+            // Update last_message_at
+            $this->conversation->update([
+                'last_message_at' => now(),
+            ]);
+
+            $this->reset(['fileMessage', 'fileUpload']);
+            $this->filePreviewModal = false;
+
+            // Dispatch event untuk trigger scroll ke bawah
+            $this->dispatch('message-sent');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Get first error message and show as toast
+            $errorMessage = collect($e->errors())->flatten()->first();
+            $this->error($errorMessage, position: 'toast-bottom');
         }
-
-        // Store file
-        $path = $this->fileUpload->store('chat-attachments', 'public');
-        $fileName = $this->fileUpload->getClientOriginalName();
-
-        // Create message with file
-        $this->conversation->messages()->create([
-            'sender_type' => User::class,
-            'sender_id' => Auth::id(),
-            'message' => $this->fileMessage ?: $fileName,
-            'file_path' => $path,
-            'file_name' => $fileName,
-            'file_type' => $this->fileUpload->getMimeType(),
-            'file_size' => $this->fileUpload->getSize(),
-        ]);
-
-        // Update last_message_at
-        $this->conversation->update([
-            'last_message_at' => now(),
-        ]);
-
-        $this->reset(['fileMessage', 'fileUpload']);
-        $this->filePreviewModal = false;
-
-        // Dispatch event untuk trigger scroll ke bawah
-        $this->dispatch('message-sent');
     }
 
     public function cancelFileUpload(): void
@@ -229,7 +269,7 @@ class Room extends Component
         // Hapus conversation (observer akan handle file deletion dan messages)
         $this->conversation->delete();
 
-        return $this->redirect(route('chat.index'), navigate: true);
+        $this->success('Chat berhasil dihapus!', redirectTo: route('chat.index'), position: 'toast-bottom');
     }
 
     public function render()

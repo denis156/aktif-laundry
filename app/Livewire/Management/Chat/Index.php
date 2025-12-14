@@ -12,11 +12,14 @@ use Illuminate\Support\Facades\Auth;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Mary\Traits\Toast;
 
 #[Title('Daftar Chat')]
 #[Layout('layouts.management.app')]
 class Index extends Component
 {
+    use Toast;
+
     public string $search = '';
 
     public bool $drawer = false;
@@ -225,11 +228,15 @@ class Index extends Component
             ->firstWhere('id', $this->conversationToDelete);
 
         if ($conversation) {
+            $participantName = $this->conversationToDeleteName;
+
             // Hapus conversation (observer akan handle file deletion dan messages)
             $conversation->delete();
 
             $this->deleteModal = false;
             $this->reset(['conversationToDelete', 'conversationToDeleteName']);
+
+            $this->success("Chat dengan {$participantName} berhasil dihapus!", position: 'toast-bottom');
         }
     }
 

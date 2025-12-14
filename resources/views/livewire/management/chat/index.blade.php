@@ -111,7 +111,8 @@
             <x-choices-offline label="Pilih Participant" wire:model="participantId" icon="o-user"
                 :options="$this->participants" option-value="id" option-label="name" placeholder="Cari participant..."
                 single searchable clearable :disabled="empty($participantTypes)"
-                hint="{{ empty($participantTypes) ? 'Pilih tipe participant terlebih dahulu' : '' }}">
+                hint="{{ empty($participantTypes) ? 'Pilih tipe participant terlebih dahulu' : '' }}"
+                height="max-h-44">
 
                 {{-- Item slot --}}
                 @scope('item', $participant)
