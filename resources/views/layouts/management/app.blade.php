@@ -122,7 +122,7 @@
                 <x-menu-sub title="Pengaturan" icon="o-cog-6-tooth">
                     <x-menu-item title="Staf" icon="o-user-group" link="{{ route('staf.index') }}"
                         wire:navigate.hover />
-                    <x-menu-item title="Fonnte WhatsApp" icon="o-chat-bubble-left-right" link="{{ route('fonnte.index') }}"
+                    <x-menu-item title="Fonnte WhatsApp" icon="o-chat-bubble-bottom-center-text" link="{{ route('fonnte.index') }}"
                         wire:navigate.hover />
                     <x-menu-item title="Konfigurasi" icon="o-adjustments-horizontal" link="{{ route('pengaturan') }}"
                         wire:navigate.hover />
@@ -130,9 +130,13 @@
                 <x-menu-separator />
                 @endif
 
-                {{-- Profil --}}
-                <x-menu-item title="Profil Saya" icon="o-user-circle" link="{{ route('profile') }}"
-                    wire:navigate.hover />
+                {{-- Akun --}}
+                <x-menu-sub title="Akun" icon="o-user-circle">
+                    <x-menu-item title="Profil Saya" icon="o-user" link="{{ route('profile') }}"
+                        wire:navigate.hover />
+                    <x-menu-item title="Chat" icon="o-chat-bubble-left-right" link="{{ route('chat.index') }}"
+                        wire:navigate.hover />
+                </x-menu-sub>
 
                 <x-menu-separator />
 

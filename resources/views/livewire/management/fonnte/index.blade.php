@@ -1,7 +1,7 @@
 <div>
     <!-- HEADER -->
-    <x-header title="Fonnte WhatsApp" icon="o-chat-bubble-left-right"
-        icon-classes="bg-success text-success-content rounded-full p-1 w-8 h-8"
+    <x-header title="Fonnte WhatsApp" icon="o-chat-bubble-bottom-center-text"
+        icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Kelola Device WhatsApp via Fonnte" separator progress-indicator>
         <x-slot:actions>
             <x-button label="Tambah Device" link="{{ route('fonnte.create') }}" wire:navigate.hover responsive icon="o-plus"
