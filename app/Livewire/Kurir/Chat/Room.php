@@ -65,7 +65,7 @@ class Room extends Component
     #[On('upload-error')]
     public function handleUploadError(): void
     {
-        $this->error('File gagal diupload. Silakan coba lagi.', position: 'toast-bottom');
+        $this->error('File gagal diupload. Silakan coba lagi.', position: 'toast-top');
     }
 
     public function updatedFileUpload(): void
@@ -89,7 +89,7 @@ class Room extends Component
 
             // Get first error message and show as toast
             $errorMessage = collect($e->errors())->flatten()->first();
-            $this->error($errorMessage, position: 'toast-bottom');
+            $this->error($errorMessage, position: 'toast-top');
         }
     }
 
@@ -185,7 +185,7 @@ class Room extends Component
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Get first error message and show as toast
             $errorMessage = collect($e->errors())->flatten()->first();
-            $this->error($errorMessage, position: 'toast-bottom');
+            $this->error($errorMessage, position: 'toast-top');
         }
     }
 
@@ -234,7 +234,7 @@ class Room extends Component
         } catch (\Illuminate\Validation\ValidationException $e) {
             // Get first error message and show as toast
             $errorMessage = collect($e->errors())->flatten()->first();
-            $this->error($errorMessage, position: 'toast-bottom');
+            $this->error($errorMessage, position: 'toast-top');
         }
     }
 
@@ -271,7 +271,7 @@ class Room extends Component
         // Hapus conversation (observer akan handle file deletion dan messages)
         $this->conversation->delete();
 
-        $this->success('Chat berhasil dihapus!', redirectTo: route('chat.kurir'), position: 'toast-bottom');
+        $this->success('Chat berhasil dihapus!', redirectTo: route('chat.kurir'), position: 'toast-top');
     }
 
     public function render()
