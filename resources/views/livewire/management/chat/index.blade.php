@@ -1,4 +1,4 @@
-<div>
+<div wire:poll.visible.10s>
     <!-- HEADER -->
     <x-header title="Chat" icon="o-chat-bubble-left-right"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"

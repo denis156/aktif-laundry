@@ -1,4 +1,4 @@
-<div>
+<div wire:ignore.self>
     @php
         $otherParticipant = $this->otherParticipant;
         $participantName = $otherParticipant?->nama ?? $otherParticipant?->name ?? 'Unknown';
@@ -10,7 +10,7 @@
     @endphp
 
     <!-- HEADER -->
-    <x-header title="Chat Room" subtitle="Percakapan Langsung" separator progress-indicator>
+    <x-header title="Chat Room" subtitle="Percakapan Langsung" separator progress-indicator="sendMessage,sendFileMessage">
         <x-slot:actions>
             <x-button label="Kembali" link="{{ route('chat.index') }}" wire:navigate responsive icon="o-arrow-uturn-left" class="btn-secondary" />
             <x-button label="Hapus Chat" wire:click="confirmDelete" responsive icon="o-trash" class="btn-error" />
@@ -18,8 +18,40 @@
     </x-header>
 
     <!-- CONTENT -->
-    <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-4 h-[60dvh] overflow-y-auto no-scrollbar"
-        title="{{ $participantName }}" subtitle="Chat terakhir • {{ $lastMessageTime }}">
+    <x-card class="shadow-sm"
+        body-class="border-t-2 border-accent border-dashed p-4 h-[60dvh] overflow-y-auto no-scrollbar"
+        title="{{ $participantName }}" subtitle="Chat terakhir • {{ $lastMessageTime }}"
+        x-data="{
+            isNearBottom: true,
+            scrollToBottom() {
+                const container = this.$el.querySelector('.overflow-y-auto');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            },
+            checkScrollPosition() {
+                const container = this.$el.querySelector('.overflow-y-auto');
+                if (container) {
+                    const threshold = 100; // 100px dari bawah
+                    this.isNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < threshold;
+                }
+            }
+        }"
+        x-init="
+            $nextTick(() => scrollToBottom());
+            const container = this.$el.querySelector('.overflow-y-auto');
+            if (container) {
+                container.addEventListener('scroll', () => checkScrollPosition());
+            }
+            Livewire.hook('morph.updated', () => {
+                if (this.isNearBottom) {
+                    $nextTick(() => scrollToBottom());
+                }
+            });
+        "
+        @message-sent.window="$nextTick(() => scrollToBottom())"
+        @new-message-received.window="$nextTick(() => { isNearBottom = true; scrollToBottom(); })"
+        wire:key="chat-card">
         <x-slot:menu>
             <div class="avatar">
                 <div class="w-14 rounded-full">
@@ -29,7 +61,7 @@
         </x-slot:menu>
 
         <!-- Messages -->
-        <div class="space-y-4 min-h-full" id="messages-container">
+        <div class="{{ $this->messages->isEmpty() ? 'h-full flex items-center justify-center' : 'space-y-4' }}" id="messages-container" wire:poll.visible>
             @forelse($this->messages as $msg)
                 @php
                     $isMyMessage = $msg->sender_type === \App\Models\User::class && $msg->sender_id === Auth::id();
@@ -90,7 +122,7 @@
                     </div>
                 </div>
             @empty
-                <div class="flex h-full flex-col items-center justify-center gap-2 p-8">
+                <div class="flex flex-col items-center justify-center gap-2">
                     <x-icon name="o-chat-bubble-left-right" class="w-12 h-12 text-base-content/40" />
                     <p class="text-sm text-base-content/60">Belum ada pesan. Mulai percakapan!</p>
                 </div>

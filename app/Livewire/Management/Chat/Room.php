@@ -27,6 +27,8 @@ class Room extends Component
 
     public $fileUpload;
 
+    public int $lastMessageCount = 0;
+
     public string $fileMessage = '';
 
     public bool $deleteModal = false;
@@ -52,6 +54,9 @@ class Room extends Component
                 Auth::id()
             );
         }
+
+        // Set initial message count
+        $this->lastMessageCount = $this->messages->count();
     }
 
     public function updatedFileUpload(): void
@@ -90,7 +95,29 @@ class Room extends Component
             return collect();
         }
 
-        return ChatHelper::getMessages($this->conversation, 50);
+        $messages = ChatHelper::getMessages($this->conversation, 50);
+
+        // Cek apakah ada pesan baru masuk
+        $currentCount = $messages->count();
+        $hasNewMessage = $currentCount > $this->lastMessageCount;
+
+        if ($hasNewMessage) {
+            // Mark messages as read SEBELUM dispatch event
+            ChatHelper::markAllMessagesAsRead(
+                $this->conversation,
+                User::class,
+                Auth::id()
+            );
+
+            // Reload messages untuk dapat status terbaru
+            $messages = ChatHelper::getMessages($this->conversation, 50);
+
+            // Dispatch event untuk auto-scroll
+            $this->dispatch('new-message-received');
+            $this->lastMessageCount = $currentCount;
+        }
+
+        return $messages;
     }
 
     public function sendMessage(): void
@@ -122,6 +149,9 @@ class Room extends Component
         ]);
 
         $this->reset(['message']);
+
+        // Dispatch event untuk trigger scroll ke bawah
+        $this->dispatch('message-sent');
     }
 
     public function sendFileMessage(): void
@@ -161,6 +191,9 @@ class Room extends Component
 
         $this->reset(['fileMessage', 'fileUpload']);
         $this->filePreviewModal = false;
+
+        // Dispatch event untuk trigger scroll ke bawah
+        $this->dispatch('message-sent');
     }
 
     public function cancelFileUpload(): void
