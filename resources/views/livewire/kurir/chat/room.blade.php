@@ -21,7 +21,7 @@
     </x-header>
 
     <!-- CHAT MESSAGES -->
-    <x-card class="shadow-lg border border-primary w-full" body-class="h-[60dvh] overflow-y-auto no-scrollbar" x-data="{
+    <x-card class="shadow-lg border border-primary w-full mb-24" body-class="h-[50dvh] overflow-y-auto no-scrollbar" x-data="{
             isNearBottom: true,
             scrollToBottom() {
                 const container = this.$el.querySelector('.overflow-y-auto');
