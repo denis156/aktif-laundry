@@ -10,7 +10,7 @@
     @endphp
 
     <!-- HEADER -->
-    <x-header title="Chat Room" subtitle="Percakapan Langsung" separator progress-indicator="sendMessage,sendFileMessage">
+    <x-header title="Chat Room" subtitle="Chat Langsung" separator progress-indicator="sendMessage,sendFileMessage">
         <x-slot:actions>
             <x-button label="Kembali" link="{{ route('chat.index') }}" wire:navigate responsive icon="o-arrow-uturn-left" class="btn-secondary" />
             <x-button label="Hapus Chat" wire:click="confirmDelete" responsive icon="o-trash" class="btn-error" />
@@ -124,7 +124,7 @@
             @empty
                 <div class="flex flex-col items-center justify-center gap-2">
                     <x-icon name="o-chat-bubble-left-right" class="w-12 h-12 text-base-content/40" />
-                    <p class="text-sm text-base-content/60">Belum ada pesan. Mulai percakapan!</p>
+                    <p class="text-sm text-base-content/60">Belum ada pesan. Mulai Chat!</p>
                 </div>
             @endforelse
         </div>
@@ -164,7 +164,7 @@
             <div>
                 <h3 class="text-lg font-bold text-error">Konfirmasi Hapus!</h3>
                 <p class="text-sm text-base-content mt-2">Data yang sudah dihapus tidak dapat dikembalikan.</p>
-                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus percakapan dengan <span
+                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus Chat dengan <span
                         class="font-bold">{{ $participantName }}</span> ?</p>
             </div>
         </div>

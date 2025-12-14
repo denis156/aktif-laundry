@@ -2,9 +2,9 @@
     <!-- HEADER -->
     <x-header title="Chat" icon="o-chat-bubble-left-right"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
-        subtitle="Percakapan dengan Pelanggan, Kurir & Staf" separator progress-indicator>
+        subtitle="Chat dengan Pelanggan, Kurir & Staf" separator progress-indicator>
         <x-slot:middle class="justify-end">
-            <x-input placeholder="Cari percakapan..." wire:model.live.debounce="search" clearable
+            <x-input placeholder="Cari chat..." wire:model.live.debounce="search" clearable
                 icon="o-magnifying-glass" />
         </x-slot:middle>
         <x-slot:actions>
@@ -154,7 +154,7 @@
 
         <x-slot:actions>
             <x-button label="Batal" @click="$wire.createModal = false" class="btn-ghost" />
-            <x-button label="Buat Percakapan" wire:click="createConversation" spinner class="btn-success"
+            <x-button label="Buat Chat" wire:click="createConversation" spinner class="btn-success"
                 icon="o-chat-bubble-left-right" />
         </x-slot:actions>
     </x-modal>
@@ -169,7 +169,7 @@
             <div>
                 <h3 class="text-lg font-bold text-error">Konfirmasi Hapus!</h3>
                 <p class="text-sm text-base-content mt-2">Data yang sudah dihapus tidak dapat dikembalikan.</p>
-                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus percakapan dengan <span
+                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus chat dengan <span
                         class="font-bold">{{ $conversationToDeleteName }}</span> ?</p>
             </div>
         </div>
