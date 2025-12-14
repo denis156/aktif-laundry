@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Collection;
 
 // ! Helper untuk mengelola Chat/Conversation
 //
@@ -330,6 +331,44 @@ class ChatHelper
             ]);
 
             return 0;
+        }
+    }
+
+    /**
+     * Get available participants yang belum punya conversation dengan current participant
+     * Berguna untuk menghindari duplikasi conversation
+     */
+    public static function getAvailableParticipants(
+        string $currentParticipantType,
+        int $currentParticipantId,
+        string $targetParticipantType
+    ): Collection {
+        try {
+            // Get existing conversations
+            $existingConversations = self::getConversationsFor($currentParticipantType, $currentParticipantId);
+
+            // Get all participants of target type
+            $allParticipants = match ($targetParticipantType) {
+                self::PARTICIPANT_USER => User::all(),
+                self::PARTICIPANT_KURIR => Kurir::all(),
+                self::PARTICIPANT_PELANGGAN => Pelanggan::all(),
+                default => collect(),
+            };
+
+            // Filter out participants yang sudah ada conversation
+            return $allParticipants->filter(function ($participant) use ($existingConversations, $targetParticipantType) {
+                return ! $existingConversations->contains(function ($conversation) use ($participant, $targetParticipantType) {
+                    return ($conversation->participant_one_type === $targetParticipantType && $conversation->participant_one_id === $participant->id)
+                        || ($conversation->participant_two_type === $targetParticipantType && $conversation->participant_two_id === $participant->id);
+                });
+            });
+        } catch (Exception $e) {
+            Log::error('ChatHelper: Failed to get available participants', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return collect();
         }
     }
 

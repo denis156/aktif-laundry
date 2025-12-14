@@ -1,0 +1,216 @@
+<div>
+    @php
+        $otherParticipant = $this->otherParticipant;
+        $participantName = $otherParticipant?->nama ?? $otherParticipant?->name ?? 'Unknown';
+        $participantAvatar = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder(
+            $otherParticipant?->avatar_url ?? null,
+            $participantName
+        );
+        $lastMessageTime = $this->conversation?->last_message_at?->diffForHumans() ?? 'Baru saja';
+    @endphp
+
+    <!-- HEADER -->
+    <x-header title="Chat Room" subtitle="Percakapan Langsung" separator progress-indicator>
+        <x-slot:actions>
+            <x-button label="Kembali" link="{{ route('chat.index') }}" wire:navigate responsive icon="o-arrow-uturn-left" class="btn-secondary" />
+            <x-button label="Hapus Chat" wire:click="confirmDelete" responsive icon="o-trash" class="btn-error" />
+        </x-slot:actions>
+    </x-header>
+
+    <!-- CONTENT -->
+    <x-card class="shadow-sm" body-class="border-t-2 border-accent border-dashed p-4 h-[60dvh] overflow-y-auto no-scrollbar"
+        title="{{ $participantName }}" subtitle="Chat terakhir • {{ $lastMessageTime }}">
+        <x-slot:menu>
+            <div class="avatar">
+                <div class="w-14 rounded-full">
+                    <img src="{{ $participantAvatar }}" alt="{{ $participantName }}" />
+                </div>
+            </div>
+        </x-slot:menu>
+
+        <!-- Messages -->
+        <div class="space-y-4 min-h-full" id="messages-container">
+            @forelse($this->messages as $msg)
+                @php
+                    $isMyMessage = $msg->sender_type === \App\Models\User::class && $msg->sender_id === Auth::id();
+                    $sender = $msg->sender;
+                    $senderName = $sender?->nama ?? $sender?->name ?? 'Unknown';
+                    $senderAvatar = \App\Helper\AvatarPlaceholder::getAvatarOrPlaceholder(
+                        $sender?->avatar_url ?? null,
+                        $senderName
+                    );
+                @endphp
+
+                <div class="chat {{ $isMyMessage ? 'chat-end' : 'chat-start' }}">
+                    <div class="chat-image avatar">
+                        <div class="w-10 rounded-full">
+                            <img src="{{ $senderAvatar }}" alt="{{ $senderName }}" />
+                        </div>
+                    </div>
+                    <div class="chat-header">
+                        {{ $senderName }}
+                        <time class="text-xs opacity-50">{{ $msg->created_at->format('H:i') }}</time>
+                    </div>
+                    <div class="chat-bubble {{ $isMyMessage ? 'chat-bubble-primary' : '' }}">
+                        @if($msg->message && $msg->message !== '-' && (!$msg->hasAttachment() || $msg->message !== $msg->file_name))
+                            <div class="{{ $msg->hasAttachment() ? 'mb-2' : '' }}">
+                                {{ $msg->message }}
+                            </div>
+                        @endif
+
+                        @if($msg->hasAttachment())
+                            @php
+                                $isImage = str_starts_with($msg->file_type ?? '', 'image/');
+                            @endphp
+
+                            <div>
+                                @if($isImage)
+                                    {{-- Image Preview --}}
+                                    <button type="button"
+                                        wire:click="viewImage('{{ $msg->file_path }}', '{{ $msg->file_name }}')"
+                                        class="block cursor-pointer w-full">
+                                        <img src="{{ Storage::url($msg->file_path) }}"
+                                            alt="{{ $msg->file_name }}"
+                                            class="w-full max-w-xs sm:max-w-sm md:max-w-md rounded-lg" />
+                                    </button>
+                                    <p class="text-xs opacity-75 mt-1">{{ $msg->file_name }} ({{ $msg->getFileSizeFormatted() }})</p>
+                                @else
+                                    {{-- Non-Image File Download Link --}}
+                                    <a href="{{ Storage::url($msg->file_path) }}" target="_blank"
+                                        class="flex items-center gap-2 text-xs underline">
+                                        <x-icon name="o-paper-clip" class="w-4 h-4" />
+                                        {{ $msg->file_name }} ({{ $msg->getFileSizeFormatted() }})
+                                    </a>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+                    <div class="chat-footer opacity-50">
+                        {{ $msg->isRead() ? 'Dibaca' : 'Terkirim' }}
+                    </div>
+                </div>
+            @empty
+                <div class="flex h-full flex-col items-center justify-center gap-2 p-8">
+                    <x-icon name="o-chat-bubble-left-right" class="w-12 h-12 text-base-content/40" />
+                    <p class="text-sm text-base-content/60">Belum ada pesan. Mulai percakapan!</p>
+                </div>
+            @endforelse
+        </div>
+        <x-slot:actions separator>
+            {{-- Hidden File Input --}}
+            <input type="file" wire:model="fileUpload" id="file-upload" class="hidden"
+                accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx" />
+
+            <form wire:submit="sendMessage" class="w-full">
+                <x-input wire:model="message" placeholder="Tulis pesanmu disini..." class="input-primary">
+                    {{-- File Upload Button --}}
+                    <x-slot:prepend>
+                        <x-button icon="o-paper-clip" class="join-item btn-secondary" type="button"
+                            onclick="document.getElementById('file-upload').click()" />
+                    </x-slot:prepend>
+
+                    {{-- Send Message Button --}}
+                    <x-slot:append>
+                        <x-button label="Kirim" icon="o-paper-airplane" type="submit"
+                            class="join-item btn-primary" spinner />
+                    </x-slot:append>
+                </x-input>
+
+                @error('message') <span class="text-error text-xs block mt-1">{{ $message }}</span> @enderror
+                @error('file') <span class="text-error text-xs block mt-1">{{ $message }}</span> @enderror
+            </form>
+        </x-slot:actions>
+    </x-card>
+
+    <!-- DELETE CONFIRMATION MODAL -->
+    <x-modal wire:model="deleteModal" box-class="max-w-md" class="modal-bottom sm:modal-middle backdrop-blur-md">
+        <div class="text-center space-y-2">
+            <div class="flex justify-center">
+                <x-icon name="o-exclamation-triangle" class="w-18 h-18 p-4 bg-error rounded-full text-error-content" />
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-error">Konfirmasi Hapus!</h3>
+                <p class="text-sm text-base-content mt-2">Data yang sudah dihapus tidak dapat dikembalikan.</p>
+                <p class="text-sm text-base-content mt-2">Apakah Anda yakin ingin menghapus percakapan dengan <span
+                        class="font-bold">{{ $participantName }}</span> ?</p>
+            </div>
+        </div>
+
+        <x-slot:actions>
+            <x-button label="Hapus" wire:click="deleteConversation" spinner class="btn-error btn-block" icon="o-trash" />
+        </x-slot:actions>
+    </x-modal>
+
+    <!-- FILE PREVIEW MODAL -->
+    <x-modal wire:model="filePreviewModal" box-class="max-w-2xl" class="modal-bottom sm:modal-middle backdrop-blur-md" persistent>
+        @if($fileUpload)
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <x-icon name="o-paper-clip" class="w-5 h-5" />
+                    Preview File
+                </h3>
+
+                {{-- File Preview --}}
+                <div class="rounded-lg flex items-center justify-center min-h-48">
+                    @if(str_starts_with($fileUpload->getMimeType(), 'image/'))
+                        <img src="{{ $fileUpload->temporaryUrl() }}"
+                            alt="Preview"
+                            class="max-w-full max-h-96 rounded-lg shadow-lg" />
+                    @else
+                        <div class="text-center space-y-2">
+                            <x-icon name="o-document" class="w-16 h-16 mx-auto text-base-content/40" />
+                            <p class="text-sm font-medium">{{ $fileUpload->getClientOriginalName() }}</p>
+                            <p class="text-xs text-base-content/60">{{ number_format($fileUpload->getSize() / 1024, 2) }} KB</p>
+                        </div>
+                    @endif
+                </div>
+
+                {{-- Message Input --}}
+                <x-input wire:model="fileMessage"
+                    label="Pesan (Opsional)"
+                    placeholder="Tulis pesan untuk file ini..." />
+
+                @error('fileMessage') <span class="text-error text-xs">{{ $message }}</span> @enderror
+                @error('fileUpload') <span class="text-error text-xs">{{ $message }}</span> @enderror
+            </div>
+
+            <x-slot:actions>
+                <div class="flex gap-2 w-full">
+                    <x-button label="Batal" wire:click="cancelFileUpload" class="btn-secondary flex-1" />
+                    <x-button label="Kirim" wire:click="sendFileMessage" spinner class="btn-primary flex-1" icon="o-paper-airplane" />
+                </div>
+            </x-slot:actions>
+        @endif
+    </x-modal>
+
+    <!-- IMAGE VIEWER MODAL -->
+    <x-modal wire:model="imageViewerModal" box-class="max-w-7xl" class="modal-bottom sm:modal-middle backdrop-blur-md" persistent>
+        @if($selectedImageUrl)
+            <div class="space-y-4">
+                <h3 class="text-lg font-bold flex items-center gap-2">
+                    <x-icon name="o-photo" class="w-5 h-5" />
+                    {{ $selectedImageName }}
+                </h3>
+
+                {{-- Full Size Image --}}
+                <div class="rounded-lg flex items-center justify-center max-h-[70vh] overflow-auto">
+                    <img src="{{ Storage::url($selectedImageUrl) }}"
+                        alt="{{ $selectedImageName }}"
+                        class="w-full h-auto rounded-lg" />
+                </div>
+            </div>
+
+            <x-slot:actions>
+                <div class="flex gap-2 w-full">
+                    <x-button label="Tutup" wire:click="closeImageViewer" class="btn-ghost flex-1" icon="o-x-mark" />
+                    <a href="{{ Storage::url($selectedImageUrl) }}" download="{{ $selectedImageName }}"
+                        class="btn btn-primary flex-1 gap-2">
+                        <x-icon name="o-arrow-down-tray" class="w-4 h-4" />
+                        Download
+                    </a>
+                </div>
+            </x-slot:actions>
+        @endif
+    </x-modal>
+</div>

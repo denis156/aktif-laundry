@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\Conversation;
 use App\Models\Kurir;
 use App\Models\Pelanggan;
 use App\Models\Transaksi;
 use App\Models\TransaksiPromo;
 use App\Models\User;
+use App\Observers\ConversationObserver;
 use App\Observers\KurirObserver;
 use App\Observers\PelangganObserver;
 use App\Observers\TransaksiObserver;
@@ -39,5 +41,6 @@ class AppServiceProvider extends ServiceProvider
         Kurir::observe(KurirObserver::class);
         Transaksi::observe(TransaksiObserver::class);
         TransaksiPromo::observe(TransaksiPromoObserver::class);
+        Conversation::observe(ConversationObserver::class);
     }
 }

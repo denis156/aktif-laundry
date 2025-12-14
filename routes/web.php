@@ -18,6 +18,8 @@ use App\Livewire\Management\Auth\ForgotPassword;
 use App\Livewire\Management\Auth\Login;
 use App\Livewire\Management\Auth\ResetPassword;
 use App\Livewire\Management\Auth\VerifyEmail;
+use App\Livewire\Management\Chat\Index as ChatIndex;
+use App\Livewire\Management\Chat\Room as ChatRoom;
 use App\Livewire\Management\Component\Receipt;
 use App\Livewire\Management\Dashboard;
 use App\Livewire\Management\Fonnte\Create as FonnteCreate;
@@ -223,6 +225,10 @@ Route::middleware(['auth', 'verified'])->prefix('management')->group(function ()
     Route::get('/referral', ReferralIndex::class)->name('referral.index');
     Route::get('/referral/pengaturan', ReferralPengaturan::class)->name('referral.pengaturan');
     Route::get('/referral/edit/{id}', ReferralEdit::class)->name('referral.edit');
+
+    // Chat Routes di /management/chat
+    Route::get('/chat', ChatIndex::class)->name('chat.index');
+    Route::get('/chat/{conversation}', ChatRoom::class)->name('chat.room');
 
     // Profile Route di /management/profile
     Route::get('/profile', Profile::class)->name('profile');
