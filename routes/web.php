@@ -243,7 +243,7 @@ Route::middleware(['auth', 'verified'])->prefix('management')->group(function ()
     Route::get('/receipt/print/{id}', function (int $id) {
         $receiptData = Receipt::generateReceiptData($id);
 
-        return view('livewire.management.component.receipt', $receiptData);
+        return view('livewire.management.components.receipt', $receiptData);
     })->name('receipt.print');
 
 }); // End of auth middleware dan prefix management group
