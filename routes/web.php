@@ -83,8 +83,8 @@ use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'pages.landingpage')->name('landing-page');
 
-Route::get('/manifest-kurir.json', fn() => response()->json(ManifestHelper::kurirManifest()))->name('manifest.kurir');
-Route::get('/manifest-pelanggan.json', fn() => response()->json(ManifestHelper::pelangganManifest()))->name('manifest.pelanggan');
+Route::get('/manifest-kurir.json', fn () => response()->json(ManifestHelper::kurirManifest()))->name('manifest.kurir');
+Route::get('/manifest-pelanggan.json', fn () => response()->json(ManifestHelper::pelangganManifest()))->name('manifest.pelanggan');
 
 /*
 |--------------------------------------------------------------------------
