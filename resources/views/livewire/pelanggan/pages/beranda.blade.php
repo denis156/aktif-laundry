@@ -32,13 +32,13 @@
         </x-card>
 
         {{-- list layanan --}}
-        <livewire:pelanggan.component.list-layanan>
+        <livewire:pelanggan.components.list-layanan>
 
         {{-- list promo --}}
-        <livewire:pelanggan.component.list-promo>
+        <livewire:pelanggan.components.list-promo>
 
         {{-- card referral --}}
-        <livewire:pelanggan.component.card-referral>
+        <livewire:pelanggan.components.card-referral>
 
         <div class="w-full space-y-2">
             <div class="flex justify-between items-center">

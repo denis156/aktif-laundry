@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages\Promo;
 
 use App\Helper\Database\PromoHelper;
 use App\Models\Promo;
@@ -15,7 +15,7 @@ use Mary\Traits\Toast;
 
 #[Title('Detail Promo')]
 #[Layout('layouts.pelanggan.app')]
-class DetailPromo extends Component
+class Detail extends Component
 {
     use Toast;
 
@@ -241,6 +241,6 @@ class DetailPromo extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.detail-promo');
+        return view('livewire.pelanggan.pages.promo.detail');
     }
 }

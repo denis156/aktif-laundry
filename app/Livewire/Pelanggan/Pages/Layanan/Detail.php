@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages\Layanan;
 
 use App\Helper\Database\LayananHelper;
 use App\Models\Layanan;
@@ -13,7 +13,7 @@ use Mary\Traits\Toast;
 
 #[Title('Detail Layanan')]
 #[Layout('layouts.pelanggan.app')]
-class DetailLayanan extends Component
+class Detail extends Component
 {
     use Toast;
 
@@ -76,6 +76,6 @@ class DetailLayanan extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.detail-layanan');
+        return view('livewire.pelanggan.pages.layanan.detail');
     }
 }

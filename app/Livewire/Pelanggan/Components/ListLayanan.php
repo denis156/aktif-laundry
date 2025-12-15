@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Component;
+namespace App\Livewire\Pelanggan\Components;
 
 use App\Models\Layanan;
 use Livewire\Component;
@@ -47,7 +47,7 @@ class ListLayanan extends Component
             ->orderBy('nama_layanan')
             ->get();
 
-        return view('livewire.pelanggan.component.list-layanan', [
+        return view('livewire.pelanggan.components.list-layanan', [
             'layananList' => $layananList,
         ]);
     }

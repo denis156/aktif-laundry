@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages\Layanan;
 
 use App\Models\Layanan;
 use Exception;
@@ -15,7 +15,7 @@ use Mary\Traits\Toast;
 
 #[Title('Pilih Layanan')]
 #[Layout('layouts.pelanggan.app')]
-class PilihLayanan extends Component
+class Index extends Component
 {
     use Toast;
 
@@ -186,6 +186,6 @@ class PilihLayanan extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.pilih-layanan');
+        return view('livewire.pelanggan.pages.layanan.index');
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Auth;
+namespace App\Livewire\Pelanggan\Pages\Auth;
 
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -89,6 +89,6 @@ class Login extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.auth.login');
+        return view('livewire.pelanggan.pages.auth.login');
     }
 }

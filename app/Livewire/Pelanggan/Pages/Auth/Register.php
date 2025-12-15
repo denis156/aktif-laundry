@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Auth;
+namespace App\Livewire\Pelanggan\Pages\Auth;
 
 use App\Helper\PhoneNumber;
 use App\Models\Pelanggan;
@@ -139,6 +139,6 @@ class Register extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.auth.register');
+        return view('livewire.pelanggan.pages.auth.register');
     }
 }

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Component;
+namespace App\Livewire\Pelanggan\Components;
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -108,7 +108,7 @@ class BottomNav extends Component
 
     public function render()
     {
-        return view('livewire.pelanggan.component.bottom-nav', [
+        return view('livewire.pelanggan.components.bottom-nav', [
             'navigationItems' => $this->navigationItems,
         ]);
     }

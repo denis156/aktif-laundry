@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Chat;
+namespace App\Livewire\Pelanggan\Pages\Chat;
 
 use App\Helper\Database\ChatHelper;
 use App\Models\Pelanggan;
@@ -77,6 +77,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.pelanggan.chat.index');
+        return view('livewire.pelanggan.pages.chat.index');
     }
 }

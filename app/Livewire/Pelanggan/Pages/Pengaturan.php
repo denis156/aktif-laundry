@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages;
 
 use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\PelangganHelper;
@@ -163,7 +163,7 @@ class Pengaturan extends Component
     {
         $avatarUrl = AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->nama, 256);
 
-        return view('livewire.pelanggan.pengaturan', [
+        return view('livewire.pelanggan.pages.pengaturan', [
             'avatarUrl' => $avatarUrl,
             'passwordMinLength' => PelangganHelper::PASSWORD_MIN_LENGTH,
         ]);

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Component;
+namespace App\Livewire\Pelanggan\Components;
 
 use App\Helper\Database\PengaturanHelper;
 use App\Models\Promo;
@@ -139,6 +139,6 @@ class CardReferral extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.component.card-referral');
+        return view('livewire.pelanggan.components.card-referral');
     }
 }

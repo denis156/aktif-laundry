@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages\Pesanan;
 
 use App\Helper\AvatarPlaceholder;
 use App\Models\Transaksi;
@@ -15,7 +15,7 @@ use Livewire\Component;
 
 #[Title('Riwayat Transaksi')]
 #[Layout('layouts.pelanggan.app')]
-class Riwayat extends Component
+class Index extends Component
 {
     public int $limit = 10;
 
@@ -177,6 +177,6 @@ class Riwayat extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.riwayat');
+        return view('livewire.pelanggan.pages.pesanan.index');
     }
 }

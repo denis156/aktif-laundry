@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages;
 
 use App\Helper\AvatarPlaceholder;
 use App\Models\Transaksi;
@@ -90,7 +90,7 @@ class Beranda extends Component
 
     public function render()
     {
-        return view('livewire.pelanggan.beranda', [
+        return view('livewire.pelanggan.pages.beranda', [
             'totalTransaksi' => $this->totalTransaksi(),
             'transaksiSelesai' => $this->transaksiSelesai(),
             'transaksiProses' => $this->transaksiProses(),

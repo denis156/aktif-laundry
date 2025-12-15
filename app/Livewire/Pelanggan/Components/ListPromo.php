@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Component;
+namespace App\Livewire\Pelanggan\Components;
 
 use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\PromoHelper;
@@ -85,7 +85,7 @@ class ListPromo extends Component
                 return true;
             });
 
-        return view('livewire.pelanggan.component.list-promo', [
+        return view('livewire.pelanggan.components.list-promo', [
             'promoList' => $promoList,
         ]);
     }

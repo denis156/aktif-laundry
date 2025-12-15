@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Component;
+namespace App\Livewire\Pelanggan\Components;
 
 use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\ChatHelper;
@@ -51,6 +51,6 @@ class TopNav extends Component
 
     public function render()
     {
-        return view('livewire.pelanggan.component.top-nav');
+        return view('livewire.pelanggan.components.top-nav');
     }
 }

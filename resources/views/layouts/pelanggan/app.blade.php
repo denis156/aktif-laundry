@@ -36,13 +36,13 @@
 
 <body class="min-h-dvh min-w-dvw font-sans antialiased bg-base-200">
 
-    <livewire:pelanggan.component.top-nav />
+    <livewire:pelanggan.components.top-nav />
 
     <main class="h-full w-full p-4">
         {{ $slot }}
     </main>
 
-    <livewire:pelanggan.component.bottom-nav />
+    <livewire:pelanggan.components.bottom-nav />
 
     {{-- TOAST area --}}
     <x-toast />

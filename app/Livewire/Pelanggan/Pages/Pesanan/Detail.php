@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages\Pesanan;
 
 use App\Helper\QrisConvert;
 use App\Models\Transaksi;
@@ -17,7 +17,7 @@ use Livewire\WithFileUploads;
 
 #[Title('Detail Pesanan')]
 #[Layout('layouts.pelanggan.app')]
-class DetailPesanan extends Component
+class Detail extends Component
 {
     use WithFileUploads;
 
@@ -241,6 +241,6 @@ class DetailPesanan extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.detail-pesanan');
+        return view('livewire.pelanggan.pages.pesanan.detail');
     }
 }

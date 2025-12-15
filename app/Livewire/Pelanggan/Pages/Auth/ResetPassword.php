@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Auth;
+namespace App\Livewire\Pelanggan\Pages\Auth;
 
 use Exception;
 use Illuminate\Auth\Events\PasswordReset;
@@ -114,6 +114,6 @@ class ResetPassword extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.auth.reset-password');
+        return view('livewire.pelanggan.pages.auth.reset-password');
     }
 }

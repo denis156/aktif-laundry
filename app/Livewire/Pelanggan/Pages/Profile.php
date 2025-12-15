@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages;
 
 use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\PelangganHelper;
@@ -366,7 +366,7 @@ class Profile extends Component
             ? $this->avatar->temporaryUrl()
             : AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->nama, 256);
 
-        return view('livewire.pelanggan.profile', [
+        return view('livewire.pelanggan.pages.profile', [
             'avatarUrl' => $avatarUrl,
             'avatarMaxSizeMB' => PelangganHelper::AVATAR_MAX_SIZE_KB / 1024,
         ]);

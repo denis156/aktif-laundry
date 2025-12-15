@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan\Chat;
+namespace App\Livewire\Pelanggan\Pages\Chat;
 
 use App\Helper\Database\ChatHelper;
 use App\Models\Conversation;
@@ -276,6 +276,6 @@ class Room extends Component
 
     public function render()
     {
-        return view('livewire.pelanggan.chat.room');
+        return view('livewire.pelanggan.pages.chat.room');
     }
 }

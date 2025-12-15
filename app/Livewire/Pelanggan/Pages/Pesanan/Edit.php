@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Pelanggan;
+namespace App\Livewire\Pelanggan\Pages\Pesanan;
 
 use App\Helper\Database\PromoHelper;
 use App\Helper\Database\TransaksiHelper;
@@ -19,7 +19,7 @@ use Mary\Traits\Toast;
 
 #[Title('Edit Pesanan')]
 #[Layout('layouts.pelanggan.app')]
-class EditPesanan extends Component
+class Edit extends Component
 {
     use Toast;
 
@@ -582,7 +582,7 @@ class EditPesanan extends Component
 
     public function render(): mixed
     {
-        return view('livewire.pelanggan.edit-pesanan', [
+        return view('livewire.pelanggan.pages.pesanan.edit', [
             'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
             'tipeBayarOptions' => $this->getTipeBayarOptions(),
         ]);
