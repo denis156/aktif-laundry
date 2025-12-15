@@ -1,6 +1,10 @@
-<nav class="navbar bg-primary text-primary-content sticky top-0 z-50">
+<nav class="navbar bg-primary text-primary-content sticky top-0 z-50" wire:poll.30s>
     <div class="navbar-start">
-        <x-button icon="iconpark.setting-o" class="btn-circle" link="{{ route('pengaturan.pelanggan') }}" />
+        <x-button class="indicator btn-circle" icon="iconpark.message-o" link="{{ route('chat.pelanggan') }}">
+            @if($this->unreadMessagesCount > 0)
+                <x-badge value="{{ $this->unreadMessagesCount }}" class="badge-success badge-xs indicator-item" />
+            @endif
+        </x-button>
     </div>
     <div class="navbar-center">
         <span class="text-md font-extrabold uppercase">{{ config('app.name') }}</span>

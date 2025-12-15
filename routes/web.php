@@ -61,6 +61,8 @@ use App\Livewire\Pelanggan\Auth\ResetPassword as PelangganResetPassword;
 use App\Livewire\Pelanggan\Auth\VerifyEmail as PelangganVerifyEmail;
 use App\Livewire\Pelanggan\Beranda as PelangganBeranda;
 use App\Livewire\Pelanggan\BuatPesanan as PelangganBuatPesanan;
+use App\Livewire\Pelanggan\Chat\Index as PelangganChatIndex;
+use App\Livewire\Pelanggan\Chat\Room as PelangganChatRoom;
 use App\Livewire\Pelanggan\DetailLayanan as PelangganDetailLayanan;
 use App\Livewire\Pelanggan\DetailPesanan as PelangganDetailPesanan;
 use App\Livewire\Pelanggan\DetailPromo as PelangganDetailPromo;
@@ -297,6 +299,8 @@ Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')
     Route::get('/layanan/{id}', PelangganDetailLayanan::class)->name('detail-layanan.pelanggan');
     Route::get('/riwayat', PelangganRiwayat::class)->name('riwayat.pelanggan');
     Route::get('/riwayat/{id}', PelangganDetailPesanan::class)->name('detail-pesanan.pelanggan');
+    Route::get('/chat', PelangganChatIndex::class)->name('chat.pelanggan');
+    Route::get('/chat/{conversation}', PelangganChatRoom::class)->name('chat-room.pelanggan');
     Route::get('/pengaturan', PelangganPengaturan::class)->name('pengaturan.pelanggan');
     Route::get('/pengaturan/profile', PelangganProfile::class)->name('profile.pelanggan');
 });
