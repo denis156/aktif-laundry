@@ -116,7 +116,7 @@
 
                 <livewire:landing-page.pesan />
 
-                <livewire:component.fab-landing-page>
+                <livewire:components.fab-landing-page>
             </main>
 
             <!-- Footer Content -->

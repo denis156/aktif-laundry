@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Component;
+namespace App\Livewire\Components;
 
 use App\Helper\Database\PengaturanHelper;
 use Livewire\Component;
@@ -58,6 +58,6 @@ class FabLandingPage extends Component
 
     public function render()
     {
-        return view('livewire.component.fab-landing-page');
+        return view('livewire.components.fab-landing-page');
     }
 }

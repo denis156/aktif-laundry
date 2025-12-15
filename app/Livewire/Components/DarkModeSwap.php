@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Livewire\Component;
+namespace App\Livewire\Components;
 
 use Livewire\Component;
 
@@ -32,6 +32,6 @@ class DarkModeSwap extends Component
 
     public function render()
     {
-        return view('livewire.component.dark-mode-swap');
+        return view('livewire.components.dark-mode-swap');
     }
 }

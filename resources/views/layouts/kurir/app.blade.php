@@ -48,10 +48,10 @@
     <x-toast />
 
     {{-- LOADING INDICATOR --}}
-    <livewire:component.loading />
+    <livewire:components.loading />
 
     {{-- FAB DOWNLOAD --}}
-    <livewire:component.fab-kurir />
+    <livewire:components.fab-kurir />
 
     {{-- Livewire Script --}}
     @livewireScripts

@@ -17,7 +17,7 @@
             <x-card class="shadow-lg border border-primary">
                 <div class="flex justify-between items-center">
                     <span class="text-md font-medium">Mode Gelap</span>
-                    <livewire:component.dark-mode-toggle toggle-class="toggle-success toggle-xl" :right="true" />
+                    <livewire:components.dark-mode-toggle toggle-class="toggle-success toggle-xl" :right="true" />
                 </div>
                 <div class="divider"></div>
                 <p class="text-sm text-base-content/60">Aktifkan mode gelap untuk mengurangi ketegangan mata dan

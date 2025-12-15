@@ -48,10 +48,10 @@
     <x-toast />
 
     {{-- LOADING INDICATOR --}}
-    <livewire:component.loading />
+    <livewire:components.loading />
 
     {{-- FAB DOWNLOAD --}}
-    <livewire:component.fab-pelanggan />
+    <livewire:components.fab-pelanggan />
 
     {{-- Livewire Script --}}
     @livewireScripts

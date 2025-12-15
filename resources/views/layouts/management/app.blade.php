@@ -73,7 +73,7 @@
                             class="w-11 h-11 rounded-full object-cover avatar-online" />
                     </x-slot:avatar>
                     <x-slot:actions>
-                        <livewire:component.dark-mode-swap swap-class="swap-rotate" icon-size="h-6 w-6" />
+                        <livewire:components.dark-mode-swap swap-class="swap-rotate" icon-size="h-6 w-6" />
                     </x-slot:actions>
                 </x-list-item>
 

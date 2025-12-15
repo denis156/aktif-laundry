@@ -45,7 +45,7 @@
     <x-toast />
 
     {{-- FAB DOWNLOAD --}}
-    <livewire:component.fab-kurir />
+    <livewire:components.fab-kurir />
 
     {{-- Livewire Script --}}
     @livewireScripts

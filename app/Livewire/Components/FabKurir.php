@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Component;
+namespace App\Livewire\Components;
 
 use Livewire\Component;
 use Mary\Traits\Toast;
@@ -79,6 +79,6 @@ class FabKurir extends Component
 
     public function render()
     {
-        return view('livewire.component.fab-kurir');
+        return view('livewire.components.fab-kurir');
     }
 }

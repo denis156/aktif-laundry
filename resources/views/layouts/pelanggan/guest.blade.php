@@ -45,7 +45,7 @@
     <x-toast />
 
     {{-- FAB DOWNLOAD --}}
-    <livewire:component.fab-pelanggan />
+    <livewire:components.fab-pelanggan />
 
     {{-- Livewire Script --}}
     @livewireScripts
