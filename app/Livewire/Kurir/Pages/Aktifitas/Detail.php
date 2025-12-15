@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir;
+namespace App\Livewire\Kurir\Pages\Aktifitas;
 
 use App\Helper\QrisConvert;
 use App\Models\Transaksi;
@@ -18,7 +18,7 @@ use Mary\Traits\Toast;
 
 #[Title('Detail Aktifitas')]
 #[Layout('layouts.kurir.app')]
-class DetailAktifitas extends Component
+class Detail extends Component
 {
     use Toast;
     use WithFileUploads;
@@ -461,6 +461,6 @@ class DetailAktifitas extends Component
 
     public function render(): mixed
     {
-        return view('livewire.kurir.detail-aktifitas');
+        return view('livewire.kurir.pages.aktifitas.detail');
     }
 }

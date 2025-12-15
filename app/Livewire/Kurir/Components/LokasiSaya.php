@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir\Component;
+namespace App\Livewire\Kurir\Components;
 
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -152,6 +152,6 @@ class LokasiSaya extends Component
 
     public function render(): View
     {
-        return view('livewire.kurir.component.lokasi-saya');
+        return view('livewire.kurir.components.lokasi-saya');
     }
 }

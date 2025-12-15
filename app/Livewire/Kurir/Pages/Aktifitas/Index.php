@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir;
+namespace App\Livewire\Kurir\Pages\Aktifitas;
 
 use App\Helper\AvatarPlaceholder;
 use App\Models\Transaksi;
@@ -15,7 +15,7 @@ use Livewire\Component;
 
 #[Title('Aktifitas Kurir')]
 #[Layout('layouts.kurir.app')]
-class Aktifitas extends Component
+class Index extends Component
 {
     public int $limit = 10;
 
@@ -170,6 +170,6 @@ class Aktifitas extends Component
 
     public function render(): mixed
     {
-        return view('livewire.kurir.aktifitas');
+        return view('livewire.kurir.pages.aktifitas.index');
     }
 }

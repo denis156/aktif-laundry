@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir\Chat;
+namespace App\Livewire\Kurir\Pages\Chat;
 
 use App\Helper\Database\ChatHelper;
 use App\Models\Kurir;
@@ -181,6 +181,6 @@ class Index extends Component
 
     public function render()
     {
-        return view('livewire.kurir.chat.index');
+        return view('livewire.kurir.pages.chat.index');
     }
 }

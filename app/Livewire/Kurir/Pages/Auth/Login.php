@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir\Auth;
+namespace App\Livewire\Kurir\Pages\Auth;
 
 use Exception;
 use Illuminate\Support\Facades\Auth;
@@ -89,6 +89,6 @@ class Login extends Component
 
     public function render(): mixed
     {
-        return view('livewire.kurir.auth.login');
+        return view('livewire.kurir.pages.auth.login');
     }
 }

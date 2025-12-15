@@ -4,7 +4,7 @@
 
     <div class="space-y-4 mb-24">
         {{-- Maps Lokasi --}}
-        <livewire:kurir.component.lokasi-saya />
+        <livewire:kurir.components.lokasi-saya />
 
         @if ($this->transaksiRute->isEmpty())
             {{-- Info Tidak Ada Pesanan --}}

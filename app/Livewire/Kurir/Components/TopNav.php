@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir\Component;
+namespace App\Livewire\Kurir\Components;
 
 use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\ChatHelper;
@@ -51,6 +51,6 @@ class TopNav extends Component
 
     public function render()
     {
-        return view('livewire.kurir.component.top-nav');
+        return view('livewire.kurir.components.top-nav');
     }
 }

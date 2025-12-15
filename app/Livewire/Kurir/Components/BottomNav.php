@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir\Component;
+namespace App\Livewire\Kurir\Components;
 
 use Illuminate\Support\Facades\Route;
 use Livewire\Component;
@@ -109,7 +109,7 @@ class BottomNav extends Component
 
     public function render()
     {
-        return view('livewire.kurir.component.bottom-nav', [
+        return view('livewire.kurir.components.bottom-nav', [
             'navigationItems' => $this->navigationItems,
         ]);
     }

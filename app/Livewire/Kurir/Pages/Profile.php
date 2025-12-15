@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir;
+namespace App\Livewire\Kurir\Pages;
 
 use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\KurirHelper;
@@ -340,7 +340,7 @@ class Profile extends Component
             ? $this->avatar->temporaryUrl()
             : AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->nama, 256);
 
-        return view('livewire.kurir.profile', [
+        return view('livewire.kurir.pages.profile', [
             'avatarUrl' => $avatarUrl,
             'avatarMaxSizeMB' => KurirHelper::AVATAR_MAX_SIZE_KB / 1024,
         ]);

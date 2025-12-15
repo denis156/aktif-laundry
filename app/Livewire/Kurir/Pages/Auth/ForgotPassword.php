@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir\Auth;
+namespace App\Livewire\Kurir\Pages\Auth;
 
 use Exception;
 use Illuminate\Support\Facades\Log;
@@ -80,6 +80,6 @@ class ForgotPassword extends Component
 
     public function render(): mixed
     {
-        return view('livewire.kurir.auth.forgot-password');
+        return view('livewire.kurir.pages.auth.forgot-password');
     }
 }

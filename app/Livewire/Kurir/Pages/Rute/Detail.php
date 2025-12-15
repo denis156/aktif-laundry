@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir;
+namespace App\Livewire\Kurir\Pages\Rute;
 
 use App\Models\Transaksi;
 use Illuminate\Contracts\View\View;
@@ -13,7 +13,7 @@ use Livewire\Component;
 
 #[Title('Rute Detail')]
 #[Layout('layouts.kurir.app')]
-class RuteDetail extends Component
+class Detail extends Component
 {
     public ?Transaksi $transaksi = null;
 
@@ -108,6 +108,6 @@ class RuteDetail extends Component
 
     public function render(): View
     {
-        return view('livewire.kurir.rute-detail');
+        return view('livewire.kurir.pages.rute.detail');
     }
 }

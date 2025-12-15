@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir;
+namespace App\Livewire\Kurir\Pages;
 
 use App\Helper\AvatarPlaceholder;
 use App\Models\Transaksi;
@@ -159,6 +159,6 @@ class Beranda extends Component
 
     public function render(): mixed
     {
-        return view('livewire.kurir.beranda');
+        return view('livewire.kurir.pages.beranda');
     }
 }

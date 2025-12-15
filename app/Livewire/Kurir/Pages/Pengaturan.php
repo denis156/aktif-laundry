@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir;
+namespace App\Livewire\Kurir\Pages;
 
 use App\Helper\AvatarPlaceholder;
 use App\Helper\Database\KurirHelper;
@@ -123,7 +123,7 @@ class Pengaturan extends Component
     {
         $avatarUrl = AvatarPlaceholder::getAvatarOrPlaceholder($this->currentAvatarUrl, $this->nama, 256);
 
-        return view('livewire.kurir.pengaturan', [
+        return view('livewire.kurir.pages.pengaturan', [
             'avatarUrl' => $avatarUrl,
             'passwordMinLength' => KurirHelper::PASSWORD_MIN_LENGTH,
         ]);

@@ -36,13 +36,13 @@
 
 <body class="min-h-dvh min-w-dvw font-sans antialiased bg-base-200">
 
-    <livewire:kurir.component.top-nav />
+    <livewire:kurir.components.top-nav />
 
     <main class="h-full w-full p-4">
         {{ $slot }}
     </main>
 
-    <livewire:kurir.component.bottom-nav />
+    <livewire:kurir.components.bottom-nav />
 
     {{-- TOAST area --}}
     <x-toast />

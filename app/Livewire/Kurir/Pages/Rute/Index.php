@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Livewire\Kurir;
+namespace App\Livewire\Kurir\Pages\Rute;
 
 use App\Helper\AvatarPlaceholder;
 use App\Models\Transaksi;
@@ -15,7 +15,7 @@ use Livewire\Component;
 
 #[Title('Rute Kurir')]
 #[Layout('layouts.kurir.app')]
-class Rute extends Component
+class Index extends Component
 {
     #[Computed]
     public function transaksiRute(): Collection
@@ -64,6 +64,6 @@ class Rute extends Component
 
     public function render(): View
     {
-        return view('livewire.kurir.rute');
+        return view('livewire.kurir.pages.rute.index');
     }
 }

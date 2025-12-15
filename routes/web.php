@@ -3,19 +3,19 @@
 declare(strict_types=1);
 
 use App\Helper\ManifestHelper;
-use App\Livewire\Kurir\Aktifitas;
-use App\Livewire\Kurir\Auth\ForgotPassword as KurirForgotPassword;
-use App\Livewire\Kurir\Auth\Login as KurirLogin;
-use App\Livewire\Kurir\Auth\ResetPassword as KurirResetPassword;
-use App\Livewire\Kurir\Auth\VerifyEmail as KurirVerifyEmail;
-use App\Livewire\Kurir\Beranda;
-use App\Livewire\Kurir\Chat\Index as KurirChatIndex;
-use App\Livewire\Kurir\Chat\Room as KurirChatRoom;
-use App\Livewire\Kurir\DetailAktifitas;
-use App\Livewire\Kurir\Pengaturan as PengaturanKurir;
-use App\Livewire\Kurir\Profile as KurirProfile;
-use App\Livewire\Kurir\Rute;
-use App\Livewire\Kurir\RuteDetail;
+use App\Livewire\Kurir\Pages\Aktifitas\Index as KurirAktifitas;
+use App\Livewire\Kurir\Pages\Auth\ForgotPassword as KurirForgotPassword;
+use App\Livewire\Kurir\Pages\Auth\Login as KurirLogin;
+use App\Livewire\Kurir\Pages\Auth\ResetPassword as KurirResetPassword;
+use App\Livewire\Kurir\Pages\Auth\VerifyEmail as KurirVerifyEmail;
+use App\Livewire\Kurir\Pages\Beranda as KurirBeranda;
+use App\Livewire\Kurir\Pages\Chat\Index as KurirChatIndex;
+use App\Livewire\Kurir\Pages\Chat\Room as KurirChatRoom;
+use App\Livewire\Kurir\Pages\Aktifitas\Detail as KurirDetailAktifitas;
+use App\Livewire\Kurir\Pages\Pengaturan as PengaturanKurir;
+use App\Livewire\Kurir\Pages\Profile as KurirProfile;
+use App\Livewire\Kurir\Pages\Rute\Index as KurirRute;
+use App\Livewire\Kurir\Pages\Rute\Detail as KurirRuteDetail;
 use App\Livewire\Management\Pages\Auth\ForgotPassword;
 use App\Livewire\Management\Pages\Auth\Login;
 use App\Livewire\Management\Pages\Auth\ResetPassword;
@@ -121,11 +121,11 @@ Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
 
 // Protected Kurir Routes
 Route::middleware(['auth:kurir', 'verified.kurir'])->prefix('kurir')->group(function () {
-    Route::get('/', Beranda::class)->name('beranda.kurir');
-    Route::get('/aktifitas', Aktifitas::class)->name('aktifitas.kurir');
-    Route::get('/aktifitas/{id}', DetailAktifitas::class)->name('detail-aktifitas.kurir');
-    Route::get('/rute', Rute::class)->name('rute.kurir');
-    Route::get('/rute/{id}', RuteDetail::class)->name('rute-detail.kurir');
+    Route::get('/', KurirBeranda::class)->name('beranda.kurir');
+    Route::get('/aktifitas', KurirAktifitas::class)->name('aktifitas.kurir');
+    Route::get('/aktifitas/{id}', KurirDetailAktifitas::class)->name('detail-aktifitas.kurir');
+    Route::get('/rute', KurirRute::class)->name('rute.kurir');
+    Route::get('/rute/{id}', KurirRuteDetail::class)->name('rute-detail.kurir');
     Route::get('/chat', KurirChatIndex::class)->name('chat.kurir');
     Route::get('/chat/{conversation}', KurirChatRoom::class)->name('chat-room.kurir');
     Route::get('/pengaturan', PengaturanKurir::class)->name('pengaturan.kurir');
