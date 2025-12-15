@@ -2,6 +2,7 @@ import axios from 'axios';
 import { initDarkMode, isDarkMode } from './utils/darkMode';
 import { initPermissions } from './utils/permissions';
 import { setupPWAInstall } from './utils/pwaInstall';
+import { chatRoomData, ChatRoomManager } from './utils/chatRoomManager';
 
 // Import Leaflet maps module
 import './leaflet/index.js';
@@ -18,5 +19,7 @@ initPermissions();
 // Setup PWA install handler
 setupPWAInstall();
 
-// Expose isDarkMode globally for Alpine.js
+// Expose utilities globally for Alpine.js
 window.isDarkMode = isDarkMode;
+window.chatRoomData = chatRoomData;
+window.ChatRoomManager = ChatRoomManager;

@@ -21,34 +21,11 @@
     </x-header>
 
     <!-- CHAT MESSAGES -->
-    <x-card class="shadow-lg border border-primary w-full mb-24" body-class="h-[50dvh] overflow-y-auto no-scrollbar" x-data="{
-            isNearBottom: true,
-            scrollToBottom() {
-                const container = this.$el.querySelector('.overflow-y-auto');
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
-                }
-            },
-            checkScrollPosition() {
-                const container = this.$el.querySelector('.overflow-y-auto');
-                if (container) {
-                    const threshold = 100;
-                    this.isNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < threshold;
-                }
-            }
-        }" x-init="
-            $nextTick(() => scrollToBottom());
-            const container = this.$el.querySelector('.overflow-y-auto');
-            if (container) {
-                container.addEventListener('scroll', () => checkScrollPosition());
-            }
-            Livewire.hook('morph.updated', () => {
-                if (this.isNearBottom) {
-                    $nextTick(() => scrollToBottom());
-                }
-            });
-        " @message-sent.window="$nextTick(() => scrollToBottom())"
-        @new-message-received.window="$nextTick(() => { isNearBottom = true; scrollToBottom(); })" wire:key="chat-card">
+    <x-card class="shadow-lg border border-primary w-full mb-24" body-class="h-[50dvh] overflow-y-auto no-scrollbar"
+        x-data="chatRoomData()"
+        @message-sent.window="handleMessageSent()"
+        @new-message-received.window="handleNewMessageReceived()"
+        wire:key="chat-card">
 
         <!-- Messages -->
         <div class="{{ $this->messages->isEmpty() ? 'h-full flex items-center justify-center' : 'space-y-4' }}"

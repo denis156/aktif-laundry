@@ -21,36 +21,9 @@
     <x-card class="shadow-sm"
         body-class="border-t-2 border-accent border-dashed p-4 h-[60dvh] overflow-y-auto no-scrollbar"
         title="{{ $participantName }}" subtitle="Chat terakhir • {{ $lastMessageTime }}"
-        x-data="{
-            isNearBottom: true,
-            scrollToBottom() {
-                const container = this.$el.querySelector('.overflow-y-auto');
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
-                }
-            },
-            checkScrollPosition() {
-                const container = this.$el.querySelector('.overflow-y-auto');
-                if (container) {
-                    const threshold = 100; // 100px dari bawah
-                    this.isNearBottom = (container.scrollHeight - container.scrollTop - container.clientHeight) < threshold;
-                }
-            }
-        }"
-        x-init="
-            $nextTick(() => scrollToBottom());
-            const container = this.$el.querySelector('.overflow-y-auto');
-            if (container) {
-                container.addEventListener('scroll', () => checkScrollPosition());
-            }
-            Livewire.hook('morph.updated', () => {
-                if (this.isNearBottom) {
-                    $nextTick(() => scrollToBottom());
-                }
-            });
-        "
-        @message-sent.window="$nextTick(() => scrollToBottom())"
-        @new-message-received.window="$nextTick(() => { isNearBottom = true; scrollToBottom(); })"
+        x-data="chatRoomData()"
+        @message-sent.window="handleMessageSent()"
+        @new-message-received.window="handleNewMessageReceived()"
         wire:key="chat-card">
         <x-slot:menu>
             <div class="avatar">
