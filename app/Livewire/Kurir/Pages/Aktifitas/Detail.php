@@ -239,41 +239,15 @@ class Detail extends Component
     }
 
     /**
-     * Check apakah kurir sedang punya tugas aktif jemput (status Proses)
-     */
-    protected function hasActiveTugasJemput(): bool
-    {
-        $kurir = auth('kurir')->user();
-
-        return Transaksi::where('kurir_jemput_id', $kurir->id)
-            ->where('status', 'Proses')
-            ->exists();
-    }
-
-    /**
-     * Check apakah kurir sedang punya tugas aktif antar (status Selesai dengan kurir_antar)
-     */
-    protected function hasActiveTugasAntar(): bool
-    {
-        $kurir = auth('kurir')->user();
-
-        return Transaksi::where('kurir_antar_id', $kurir->id)
-            ->where('status', 'Selesai')
-            ->exists();
-    }
-
-    /**
      * Check apakah bisa menampilkan tombol jemput
      */
     public function showJemputButton(): bool
     {
         // Tampilkan tombol jemput hanya jika:
-        // 1. Belum ada kurir yang jemput transaksi ini
+        // 1. Belum ada kurir jemput
         // 2. Status masih Menunggu
-        // 3. Kurir TIDAK sedang punya tugas aktif antar (boleh punya tugas jemput aktif)
-        return empty($this->transaksi->kurir_jemput_id) &&
-               $this->transaksi->status === 'Menunggu' &&
-               ! $this->hasActiveTugasAntar();
+        return $this->transaksi->status === 'Menunggu' &&
+               empty($this->transaksi->kurir_jemput_id);
     }
 
     /**
@@ -284,10 +258,8 @@ class Detail extends Component
         // Tampilkan tombol antar hanya jika:
         // 1. Status sudah Selesai
         // 2. Belum ada kurir antar
-        // 3. Kurir TIDAK sedang punya tugas aktif jemput (boleh punya tugas antar aktif)
         return $this->transaksi->status === 'Selesai' &&
-               empty($this->transaksi->kurir_antar_id) &&
-               ! $this->hasActiveTugasJemput();
+               empty($this->transaksi->kurir_antar_id);
     }
 
     /**
