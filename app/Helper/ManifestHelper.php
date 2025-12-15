@@ -21,7 +21,7 @@ class ManifestHelper
     {
         return [
             'name' => 'Kurir '.config('app.name'),
-            'short_name' => 'Aktifin',
+            'short_name' => 'SiAktif',
             'description' => 'Aplikasi kurir untuk Aktif Laundry - kelola pengiriman laundry dengan mudah',
             'start_url' => '/kurir/',
             'scope' => '/kurir/',
