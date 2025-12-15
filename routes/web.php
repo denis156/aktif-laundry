@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use App\Helper\ManifestHelper;
+use App\Livewire\Kurir\Pages\Aktifitas\Detail as KurirDetailAktifitas;
 use App\Livewire\Kurir\Pages\Aktifitas\Index as KurirAktifitas;
 use App\Livewire\Kurir\Pages\Auth\ForgotPassword as KurirForgotPassword;
 use App\Livewire\Kurir\Pages\Auth\Login as KurirLogin;
@@ -11,18 +12,17 @@ use App\Livewire\Kurir\Pages\Auth\VerifyEmail as KurirVerifyEmail;
 use App\Livewire\Kurir\Pages\Beranda as KurirBeranda;
 use App\Livewire\Kurir\Pages\Chat\Index as KurirChatIndex;
 use App\Livewire\Kurir\Pages\Chat\Room as KurirChatRoom;
-use App\Livewire\Kurir\Pages\Aktifitas\Detail as KurirDetailAktifitas;
 use App\Livewire\Kurir\Pages\Pengaturan as PengaturanKurir;
 use App\Livewire\Kurir\Pages\Profile as KurirProfile;
-use App\Livewire\Kurir\Pages\Rute\Index as KurirRute;
 use App\Livewire\Kurir\Pages\Rute\Detail as KurirRuteDetail;
+use App\Livewire\Kurir\Pages\Rute\Index as KurirRute;
+use App\Livewire\Management\Components\Receipt;
 use App\Livewire\Management\Pages\Auth\ForgotPassword;
 use App\Livewire\Management\Pages\Auth\Login;
 use App\Livewire\Management\Pages\Auth\ResetPassword;
 use App\Livewire\Management\Pages\Auth\VerifyEmail;
 use App\Livewire\Management\Pages\Chat\Index as ChatIndex;
 use App\Livewire\Management\Pages\Chat\Room as ChatRoom;
-use App\Livewire\Management\Components\Receipt;
 use App\Livewire\Management\Pages\Dashboard;
 use App\Livewire\Management\Pages\Fonnte\Create as FonnteCreate;
 use App\Livewire\Management\Pages\Fonnte\Edit as FonnteEdit;
@@ -64,38 +64,44 @@ use App\Livewire\Pelanggan\Pages\Chat\Index as PelangganChatIndex;
 use App\Livewire\Pelanggan\Pages\Chat\Room as PelangganChatRoom;
 use App\Livewire\Pelanggan\Pages\Layanan\Detail as PelangganDetailLayanan;
 use App\Livewire\Pelanggan\Pages\Layanan\Index as PelangganPilihLayanan;
+use App\Livewire\Pelanggan\Pages\Pengaturan as PelangganPengaturan;
 use App\Livewire\Pelanggan\Pages\Pesanan\Create as PelangganBuatPesanan;
 use App\Livewire\Pelanggan\Pages\Pesanan\Detail as PelangganDetailPesanan;
 use App\Livewire\Pelanggan\Pages\Pesanan\Edit as PelangganEditPesanan;
 use App\Livewire\Pelanggan\Pages\Pesanan\Index as PelangganRiwayat;
-use App\Livewire\Pelanggan\Pages\Pengaturan as PelangganPengaturan;
 use App\Livewire\Pelanggan\Pages\Profile as PelangganProfile;
 use App\Livewire\Pelanggan\Pages\Promo\Detail as PelangganDetailPromo;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Landing Page Route - Public
+/*
+|--------------------------------------------------------------------------
+| Public Routes
+|--------------------------------------------------------------------------
+*/
+
 Route::view('/', 'pages.landingpage')->name('landing-page');
 
-// Dynamic Manifest for PWA - Using ManifestHelper
-Route::get('/manifest-kurir.json', fn () => response()->json(ManifestHelper::kurirManifest()))->name('manifest.kurir');
-Route::get('/manifest-pelanggan.json', fn () => response()->json(ManifestHelper::pelangganManifest()))->name('manifest.pelanggan');
+Route::get('/manifest-kurir.json', fn() => response()->json(ManifestHelper::kurirManifest()))->name('manifest.kurir');
+Route::get('/manifest-pelanggan.json', fn() => response()->json(ManifestHelper::pelangganManifest()))->name('manifest.pelanggan');
 
-// Kurir Auth Routes - Guest (tanpa auth)
+/*
+|--------------------------------------------------------------------------
+| Kurir Routes
+|--------------------------------------------------------------------------
+*/
+
+// Guest Routes
 Route::middleware(['guest:kurir'])->prefix('kurir')->group(function () {
-    // Login Route di /kurir/login
     Route::get('/login', KurirLogin::class)->name('login.kurir');
-
-    // Forgot Password Route di /kurir/forgot-password
     Route::get('/forgot-password', KurirForgotPassword::class)->name('kurir.password.request');
-
-    // Reset Password Route di /kurir/reset-password/{token}
     Route::get('/reset-password/{token}', KurirResetPassword::class)->name('kurir.password.reset');
 });
 
-// Kurir Logout Route (authenticated)
+// Authenticated Routes
 Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
+    // Logout
     Route::get('/logout', function () {
         Auth::guard('kurir')->logout();
         request()->session()->invalidate();
@@ -103,15 +109,9 @@ Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
 
         return redirect()->route('login.kurir');
     })->name('kurir.logout');
-});
 
-// Kurir Email Verification Routes (authenticated)
-Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
-    // Email Verification Notice Page
-    Route::get('/verify-email', KurirVerifyEmail::class)
-        ->name('kurir.verification.notice');
-
-    // Email Verification Handler (Laravel built-in)
+    // Email Verification
+    Route::get('/verify-email', KurirVerifyEmail::class)->name('kurir.verification.notice');
     Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
 
@@ -119,7 +119,7 @@ Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
     })->middleware(['signed'])->name('kurir.verification.verify');
 });
 
-// Protected Kurir Routes
+// Protected Routes
 Route::middleware(['auth:kurir', 'verified.kurir'])->prefix('kurir')->group(function () {
     Route::get('/', KurirBeranda::class)->name('beranda.kurir');
     Route::get('/aktifitas', KurirAktifitas::class)->name('aktifitas.kurir');
@@ -132,20 +132,22 @@ Route::middleware(['auth:kurir', 'verified.kurir'])->prefix('kurir')->group(func
     Route::get('/profile', KurirProfile::class)->name('profile.kurir');
 });
 
-// Management Auth Routes - Guest (tanpa auth)
+/*
+|--------------------------------------------------------------------------
+| Management Routes
+|--------------------------------------------------------------------------
+*/
+
+// Guest Routes
 Route::middleware(['guest:web'])->prefix('management')->group(function () {
-    // Login Route di /management/login
     Route::get('/login', Login::class)->name('login');
-
-    // Forgot Password Route di /management/forgot-password
     Route::get('/forgot-password', ForgotPassword::class)->name('password.request');
-
-    // Reset Password Route di /management/reset-password/{token}
     Route::get('/reset-password/{token}', ResetPassword::class)->name('password.reset');
 });
 
-// Management Logout Route (authenticated)
+// Authenticated Routes
 Route::middleware('auth')->prefix('management')->group(function () {
+    // Logout
     Route::get('/logout', function () {
         Auth::logout();
         request()->session()->invalidate();
@@ -153,15 +155,9 @@ Route::middleware('auth')->prefix('management')->group(function () {
 
         return redirect()->route('login');
     })->name('logout');
-});
 
-// Email Verification Routes (authenticated)
-Route::middleware('auth')->prefix('management')->group(function () {
-    // Email Verification Notice Page
-    Route::get('/verify-email', VerifyEmail::class)
-        ->name('verification.notice');
-
-    // Email Verification Handler (Laravel built-in)
+    // Email Verification
+    Route::get('/verify-email', VerifyEmail::class)->name('verification.notice');
     Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
 
@@ -169,103 +165,91 @@ Route::middleware('auth')->prefix('management')->group(function () {
     })->middleware(['signed'])->name('verification.verify');
 });
 
-// Protected Routes dengan prefix /management
+// Protected Routes
 Route::middleware(['auth', 'verified'])->prefix('management')->group(function () {
-
-    // Dashboard di /management
     Route::get('/', Dashboard::class)->name('dashboard');
-
-    // Kasir Route di /management/kasir
     Route::get('/kasir', Kasir::class)->name('kasir');
 
-    // Layanan Routes di /management/layanan
+    // Layanan
     Route::get('/layanan', LayananIndex::class)->name('layanan.index');
     Route::get('/layanan/create', LayananCreate::class)->name('layanan.create');
     Route::get('/layanan/edit/{id}', LayananEdit::class)->name('layanan.edit');
 
-    // Pelanggan Routes di /management/pelanggan
+    // Pelanggan
     Route::get('/pelanggan', PelangganIndex::class)->name('pelanggan.index');
     Route::get('/pelanggan/create', PelangganCreate::class)->name('pelanggan.create');
     Route::get('/pelanggan/edit/{id}', PelangganEdit::class)->name('pelanggan.edit');
 
-    // Jenis Pakaian Routes di /management/jenis-pakaian
+    // Jenis Pakaian
     Route::get('/jenis-pakaian', JenisPakaianIndex::class)->name('jenis-pakaian.index');
     Route::get('/jenis-pakaian/create', JenisPakaianCreate::class)->name('jenis-pakaian.create');
     Route::get('/jenis-pakaian/edit/{id}', JenisPakaianEdit::class)->name('jenis-pakaian.edit');
 
-    // Transaksi Routes di /management/transaksi
+    // Transaksi
     Route::get('/transaksi', TransaksiIndex::class)->name('transaksi.index');
     Route::get('/transaksi/create', TransaksiCreate::class)->name('transaksi.create');
     Route::get('/transaksi/edit/{id}', TransaksiEdit::class)->name('transaksi.edit');
 
-    // Pengaturan Route di /management/pengaturan (Super Admin Only)
-    Route::middleware('super_admin')->group(function () {
-        Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
-    });
-
-    // Staf Routes di /management/staf (Super Admin Only)
-    Route::middleware('super_admin')->group(function () {
-        Route::get('/staf', StafIndex::class)->name('staf.index');
-        Route::get('/staf/create', StafCreate::class)->name('staf.create');
-        Route::get('/staf/edit/{id}', StafEdit::class)->name('staf.edit');
-    });
-
-    // Fonnte Routes di /management/fonnte (Super Admin Only)
-    Route::middleware('super_admin')->group(function () {
-        Route::get('/fonnte', FonnteIndex::class)->name('fonnte.index');
-        Route::get('/fonnte/create', FonnteCreate::class)->name('fonnte.create');
-        Route::get('/fonnte/edit/{token}', FonnteEdit::class)->name('fonnte.edit');
-    });
-
-    // Kurir Routes di /management/kurir
+    // Kurir
     Route::get('/kurir', KurirIndex::class)->name('kurir.index');
     Route::get('/kurir/create', KurirCreate::class)->name('kurir.create');
     Route::get('/kurir/edit/{id}', KurirEdit::class)->name('kurir.edit');
 
-    // Promo Routes di /management/promo
+    // Promo
     Route::get('/promo', PromoIndex::class)->name('promo.index');
     Route::get('/promo/create', PromoCreate::class)->name('promo.create');
     Route::get('/promo/edit/{id}', PromoEdit::class)->name('promo.edit');
 
-    // Referral Routes di /management/referral
+    // Referral
     Route::get('/referral', ReferralIndex::class)->name('referral.index');
     Route::get('/referral/pengaturan', ReferralPengaturan::class)->name('referral.pengaturan');
     Route::get('/referral/edit/{id}', ReferralEdit::class)->name('referral.edit');
 
-    // Chat Routes di /management/chat
+    // Chat
     Route::get('/chat', ChatIndex::class)->name('chat.index');
     Route::get('/chat/{conversation}', ChatRoom::class)->name('chat.room');
 
-    // Profile Route di /management/profile
+    // Profile
     Route::get('/profile', Profile::class)->name('profile');
 
-    // Receipt Print Route di /management/receipt/print
+    // Receipt
     Route::get('/receipt/print/{id}', function (int $id) {
         $receiptData = Receipt::generateReceiptData($id);
 
         return view('livewire.management.components.receipt', $receiptData);
     })->name('receipt.print');
 
-}); // End of auth middleware dan prefix management group
+    // Super Admin Only Routes
+    Route::middleware('super_admin')->group(function () {
+        Route::get('/pengaturan', Pengaturan::class)->name('pengaturan');
 
-// Pelanggan Auth Routes - Guest (tanpa auth)
-Route::middleware(['guest:pelanggan'])->prefix('pelanggan')->group(function () {
-    // Login Route di /pelanggan/login
-    Route::get('/login', PelangganLogin::class)->name('login.pelanggan');
+        Route::get('/staf', StafIndex::class)->name('staf.index');
+        Route::get('/staf/create', StafCreate::class)->name('staf.create');
+        Route::get('/staf/edit/{id}', StafEdit::class)->name('staf.edit');
 
-    // Register Route di /pelanggan/register
-    Route::get('/register', PelangganRegister::class)->name('register.pelanggan');
-
-    // Forgot Password Route di /pelanggan/forgot-password
-    Route::get('/forgot-password', PelangganForgotPassword::class)->name('pelanggan.password.request');
-
-    // Reset Password Route di /pelanggan/reset-password/{token}
-    Route::get('/reset-password/{token}', PelangganResetPassword::class)->name('pelanggan.password.reset');
-
+        Route::get('/fonnte', FonnteIndex::class)->name('fonnte.index');
+        Route::get('/fonnte/create', FonnteCreate::class)->name('fonnte.create');
+        Route::get('/fonnte/edit/{token}', FonnteEdit::class)->name('fonnte.edit');
+    });
 });
 
-// Pelanggan Logout Route (authenticated)
+/*
+|--------------------------------------------------------------------------
+| Pelanggan Routes
+|--------------------------------------------------------------------------
+*/
+
+// Guest Routes
+Route::middleware(['guest:pelanggan'])->prefix('pelanggan')->group(function () {
+    Route::get('/login', PelangganLogin::class)->name('login.pelanggan');
+    Route::get('/register', PelangganRegister::class)->name('register.pelanggan');
+    Route::get('/forgot-password', PelangganForgotPassword::class)->name('pelanggan.password.request');
+    Route::get('/reset-password/{token}', PelangganResetPassword::class)->name('pelanggan.password.reset');
+});
+
+// Authenticated Routes
 Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
+    // Logout
     Route::get('/logout', function () {
         Auth::guard('pelanggan')->logout();
         request()->session()->invalidate();
@@ -273,15 +257,9 @@ Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
 
         return redirect()->route('login.pelanggan');
     })->name('pelanggan.logout');
-});
 
-// Pelanggan Email Verification Routes (authenticated)
-Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
-    // Email Verification Notice Page
-    Route::get('/verify-email', PelangganVerifyEmail::class)
-        ->name('pelanggan.verification.notice');
-
-    // Email Verification Handler (Laravel built-in)
+    // Email Verification
+    Route::get('/verify-email', PelangganVerifyEmail::class)->name('pelanggan.verification.notice');
     Route::get('/verify-email/{id}/{hash}', function (EmailVerificationRequest $request) {
         $request->fulfill();
 
@@ -289,18 +267,28 @@ Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
     })->middleware(['signed'])->name('pelanggan.verification.verify');
 });
 
-// Protected Pelanggan Routes
+// Protected Routes
 Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')->group(function () {
     Route::get('/', PelangganBeranda::class)->name('beranda.pelanggan');
+
+    // Pesanan
     Route::get('/pesan', PelangganPilihLayanan::class)->name('pesanan.pelanggan');
     Route::get('/pesan/form', PelangganBuatPesanan::class)->name('pesanan-form.pelanggan');
     Route::get('/pesan/{id}/edit', PelangganEditPesanan::class)->name('edit-pesanan.pelanggan');
+
+    // Promo & Layanan
     Route::get('/promo/{id}', PelangganDetailPromo::class)->name('detail-promo.pelanggan');
     Route::get('/layanan/{id}', PelangganDetailLayanan::class)->name('detail-layanan.pelanggan');
+
+    // Riwayat
     Route::get('/riwayat', PelangganRiwayat::class)->name('riwayat.pelanggan');
     Route::get('/riwayat/{id}', PelangganDetailPesanan::class)->name('detail-pesanan.pelanggan');
+
+    // Chat
     Route::get('/chat', PelangganChatIndex::class)->name('chat.pelanggan');
     Route::get('/chat/{conversation}', PelangganChatRoom::class)->name('chat-room.pelanggan');
+
+    // Pengaturan & Profile
     Route::get('/pengaturan', PelangganPengaturan::class)->name('pengaturan.pelanggan');
     Route::get('/pengaturan/profile', PelangganProfile::class)->name('profile.pelanggan');
 });
