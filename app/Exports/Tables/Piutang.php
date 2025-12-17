@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Exports\Sheets;
+namespace App\Exports\Tables;
 
 use App\Helper\Database\TransaksiLayananHelper;
 use App\Models\Transaksi;
@@ -20,7 +20,7 @@ use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 
-class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
+class Piutang implements FromCollection, ShouldAutoSize, WithColumnFormatting, WithEvents, WithHeadings, WithMapping, WithStyles, WithTitle
 {
     public function title(): string
     {
