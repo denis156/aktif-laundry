@@ -489,7 +489,7 @@ class TransaksiSheet implements FromCollection, ShouldAutoSize, WithColumnFormat
                     $currentRow++;
 
                     // Penjelasan singkatan Tipe Bayar
-                    $sheet->setCellValue('A'.$currentRow, '- TN = Tunai, NT = Non-Tunai');
+                    $sheet->setCellValue('A'.$currentRow, '- TN = Tunai, NT = Non-Tunai/QRIS');
                     $sheet->mergeCells('A'.$currentRow.':'.$lastColumn.$currentRow);
                     $sheet->getStyle('A'.$currentRow)->applyFromArray([
                         'font' => [
