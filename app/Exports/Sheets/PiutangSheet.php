@@ -31,16 +31,25 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
 
     protected $statusBayarRows = [];
 
+    protected $transaksiByDate = [];
+
     /**
      * @return \Illuminate\Support\Collection
      */
     public function collection()
     {
         // Ambil semua transaksi yang belum dibayar (status_bayar = 'Belum Bayar')
-        return Transaksi::with(['kasir', 'pelanggan', 'transaksiLayanan.layanan'])
+        $allTransaksi = Transaksi::with(['kasir', 'pelanggan', 'transaksiLayanan.layanan'])
             ->where('status_bayar', 'Belum Bayar')
             ->orderBy('tanggal_masuk', 'asc')
             ->get();
+
+        // Kelompokkan transaksi berdasarkan tanggal
+        $this->transaksiByDate = $allTransaksi->groupBy(function ($transaksi) {
+            return $transaksi->tanggal_masuk->format('Y-m-d');
+        });
+
+        return $allTransaksi;
     }
 
     /**
@@ -48,17 +57,8 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
      */
     public function headings(): array
     {
-        return [
-            'No',
-            'Nama',
-            'Layanan',
-            '',
-            'Detail Layanan',
-            '',
-            '',
-            'Tipe Bayar',
-            'Status Bayar',
-        ];
+        // Tidak digunakan karena kita membuat header sendiri di registerEvents
+        return [];
     }
 
     /**
@@ -66,73 +66,8 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
      */
     public function map($transaksi): array
     {
-        static $rowNumber = 1;
-        $currentNumber = $rowNumber;
-        $rowNumber++;
-
-        // Pisahkan layanan per kg dan per satuan menggunakan kode layanan
-        $layananPerKg = [];
-        $layananPerSatuan = [];
-        $beratList = [];
-        $volumeList = [];
-        $totalBerat = 0;
-        $totalVolume = 0;
-
-        foreach ($transaksi->transaksiLayanan as $tl) {
-            $kodeLayanan = $tl->layanan->kode_layanan ?? 'N/A';
-
-            // Simpan kode dan nama layanan untuk keterangan
-            if (! isset($this->layananKodes[$kodeLayanan])) {
-                $this->layananKodes[$kodeLayanan] = $tl->layanan->nama_layanan ?? $tl->nama_layanan;
-            }
-
-            if (TransaksiLayananHelper::isPerKg($tl)) {
-                $layananPerKg[] = $kodeLayanan;
-                $beratList[] = $tl->berat_kg;
-                $totalBerat += $tl->berat_kg;
-            } else {
-                $layananPerSatuan[] = $kodeLayanan;
-                $volumeList[] = $tl->jumlah_satuan;
-                $totalVolume += $tl->jumlah_satuan;
-            }
-        }
-
-        // Format layanan dengan kode - pakai kurung per item (item1)(item2)
-        $perKgText = ! empty($layananPerKg) ? implode('', array_map(fn ($item) => '('.$item.')', $layananPerKg)) : '';
-        $perSatuanText = ! empty($layananPerSatuan) ? implode('', array_map(fn ($item) => '('.$item.')', $layananPerSatuan)) : '';
-
-        // Format detail layanan (berat dan volume) - pakai kurung per item (item1)(item2)
-        $detailBerat = ! empty($beratList) ? implode('', array_map(fn ($item) => '('.$item.')', $beratList)) : '';
-        $detailVolume = ! empty($volumeList) ? implode('', array_map(fn ($item) => '('.$item.')', $volumeList)) : '';
-
-        // Karena ini sheet piutang, semua transaksi pasti berstatus 'Belum Bayar'
-        $statusBayar = 'BB'; // BB = Belum Bayar
-
-        // Format tipe bayar - ubah menjadi singkatan
-        $tipeBayar = '-';
-        if (! empty($transaksi->tipe_bayar)) {
-            $tipeBayar = match ($transaksi->tipe_bayar) {
-                'Tunai' => 'TN',
-                'Non-Tunai' => 'NT',
-                default => $transaksi->tipe_bayar,
-            };
-        }
-
-        // Simpan row number untuk status bayar (untuk pewarnaan nanti)
-        // Row 5 adalah data pertama (setelah header di row 3-4 dan title di row 1-2)
-        $this->statusBayarRows[$currentNumber + 4] = $statusBayar;
-
-        return [
-            $currentNumber,
-            $transaksi->nama_pelanggan,
-            $perKgText,
-            $perSatuanText,
-            $detailBerat,
-            $detailVolume,
-            'Rp. '.number_format($transaksi->total, 0, ',', '.'),
-            $tipeBayar,
-            $statusBayar,
-        ];
+        // Tidak digunakan karena kita membuat data sendiri di registerEvents
+        return [];
     }
 
     /**
@@ -161,13 +96,10 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
         return [
             AfterSheet::class => function (AfterSheet $event) {
                 $sheet = $event->sheet->getDelegate();
+                $lastColumn = 'I';
 
-                // Insert rows at the top for report header (2 rows for title + kasir, 1 row for double header)
-                $sheet->insertNewRowBefore(1, 3);
-
-                // Get last row for data range
-                $lastRow = $sheet->getHighestRow();
-                $lastColumn = $sheet->getHighestColumn();
+                // Hapus semua data yang ada (karena kita akan membuat struktur baru)
+                $sheet->removeRow(1, $sheet->getHighestRow());
 
                 // Get date range for report
                 $transaksi = $this->collection();
@@ -179,10 +111,12 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                     $dateRange = $firstDate->format('d/m/Y').' - '.$lastDate->format('d/m/Y');
                 }
 
+                $currentRow = 1;
+
                 // Row 1: Title - Laporan Piutang
-                $sheet->setCellValue('A1', 'Laporan Piutang '.$dateRange.' Aktif Laundry');
-                $sheet->mergeCells('A1:'.$lastColumn.'1');
-                $sheet->getStyle('A1')->applyFromArray([
+                $sheet->setCellValue('A'.$currentRow, 'Laporan Piutang '.$dateRange.' Aktif Laundry');
+                $sheet->mergeCells('A'.$currentRow.':'.$lastColumn.$currentRow);
+                $sheet->getStyle('A'.$currentRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 14,
@@ -193,11 +127,13 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                         'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
+                $currentRow++;
 
-                // Row 2: Subtitle
-                $sheet->setCellValue('A2', 'Transaksi Yang Belum Dibayar');
-                $sheet->mergeCells('A2:'.$lastColumn.'2');
-                $sheet->getStyle('A2')->applyFromArray([
+                // Row 2: Kasir Name
+                $kasirName = auth('web')->user()->name ?? 'Semua Kasir';
+                $sheet->setCellValue('A'.$currentRow, 'Kasir '.$kasirName);
+                $sheet->mergeCells('A'.$currentRow.':'.$lastColumn.$currentRow);
+                $sheet->getStyle('A'.$currentRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'size' => 12,
@@ -208,119 +144,368 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                         'vertical' => Alignment::VERTICAL_CENTER,
                     ],
                 ]);
+                $currentRow++;
 
-                // Row 3: Empty row (will be used for merged headers)
+                // Kosongkan 1 row
+                $currentRow++;
 
-                // Merge cells for row 3-4 headers
-                // No
-                $sheet->setCellValue('A3', 'No');
-                $sheet->mergeCells('A3:A4');
+                $totalBeratGlobal = 0;
+                $totalVolumeGlobal = 0;
+                $totalPiutangGlobal = 0;
 
-                // Nama
-                $sheet->setCellValue('B3', 'Nama');
-                $sheet->mergeCells('B3:B4');
-
-                // Layanan (merged across C-D)
-                $sheet->setCellValue('C3', 'Layanan');
-                $sheet->mergeCells('C3:D3');
-
-                // Detail Layanan (merged across E-F)
-                $sheet->setCellValue('E3', 'Detail Layanan');
-                $sheet->mergeCells('E3:F3');
-
-                // Total
-                $sheet->setCellValue('G3', 'Total');
-                $sheet->mergeCells('G3:G4');
-
-                // Tipe Bayar
-                $sheet->setCellValue('H3', 'Tipe Bayar');
-                $sheet->mergeCells('H3:H4');
-
-                // Status Bayar
-                $sheet->setCellValue('I3', 'Status Bayar');
-                $sheet->mergeCells('I3:I4');
-
-                // Row 4: Sub headers under Layanan and Detail Layanan
-                $sheet->setCellValue('C4', 'Per_Kg');
-                $sheet->setCellValue('D4', 'Per_satuan');
-                $sheet->setCellValue('E4', 'Berat (Kg)');
-                $sheet->setCellValue('F4', 'Volume');
-
-                // Style for all header rows (3 and 4)
-                $sheet->getStyle('A3:'.$lastColumn.'4')->applyFromArray([
-                    'font' => [
-                        'bold' => true,
-                        'name' => 'Arial',
-                    ],
-                    'fill' => [
-                        'fillType' => Fill::FILL_SOLID,
-                        'startColor' => ['argb' => 'FFFFC7CE'], // Light red/pink untuk piutang
-                    ],
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => Border::BORDER_THIN,
+                // Loop untuk setiap tanggal
+                foreach ($this->transaksiByDate as $date => $transaksiList) {
+                    // Title untuk tabel tanggal ini
+                    $dateFormatted = \Carbon\Carbon::parse($date)->format('d/m/Y');
+                    $sheet->setCellValue('A'.$currentRow, 'Laporan Piutang '.$dateFormatted.' Aktif Laundry');
+                    $sheet->mergeCells('A'.$currentRow.':'.$lastColumn.$currentRow);
+                    $sheet->getStyle('A'.$currentRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'size' => 14,
+                            'name' => 'Arial',
                         ],
-                    ],
-                    'alignment' => [
-                        'horizontal' => Alignment::HORIZONTAL_CENTER,
-                        'vertical' => Alignment::VERTICAL_CENTER,
-                    ],
-                ]);
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+                    $currentRow++;
 
-                // Data rows styling
-                if ($lastRow > 4) {
-                    $sheet->getStyle('A5:'.$lastColumn.$lastRow)->applyFromArray([
+                    // Header tabel untuk tanggal ini
+                    $headerRow = $currentRow;
+
+                    // Merge cells for row header (2 rows)
+                    // No
+                    $sheet->setCellValue('A'.$currentRow, 'No');
+                    $sheet->mergeCells('A'.$currentRow.':A'.($currentRow + 1));
+
+                    // Nama
+                    $sheet->setCellValue('B'.$currentRow, 'Nama');
+                    $sheet->mergeCells('B'.$currentRow.':B'.($currentRow + 1));
+
+                    // Layanan (merged across C-D)
+                    $sheet->setCellValue('C'.$currentRow, 'Layanan');
+                    $sheet->mergeCells('C'.$currentRow.':D'.$currentRow);
+
+                    // Detail Layanan (merged across E-F)
+                    $sheet->setCellValue('E'.$currentRow, 'Detail Layanan');
+                    $sheet->mergeCells('E'.$currentRow.':F'.$currentRow);
+
+                    // Total
+                    $sheet->setCellValue('G'.$currentRow, 'Total');
+                    $sheet->mergeCells('G'.$currentRow.':G'.($currentRow + 1));
+
+                    // Tipe Bayar
+                    $sheet->setCellValue('H'.$currentRow, 'Tipe Bayar');
+                    $sheet->mergeCells('H'.$currentRow.':H'.($currentRow + 1));
+
+                    // Status Bayar
+                    $sheet->setCellValue('I'.$currentRow, 'Status Bayar');
+                    $sheet->mergeCells('I'.$currentRow.':I'.($currentRow + 1));
+
+                    $currentRow++;
+
+                    // Sub headers under Layanan and Detail Layanan
+                    $sheet->setCellValue('C'.$currentRow, 'Per_Kg');
+                    $sheet->setCellValue('D'.$currentRow, 'Per_satuan');
+                    $sheet->setCellValue('E'.$currentRow, 'Berat (Kg)');
+                    $sheet->setCellValue('F'.$currentRow, 'Volume');
+
+                    // Style for header rows
+                    $sheet->getStyle('A'.$headerRow.':'.$lastColumn.$currentRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'name' => 'Arial',
+                        ],
+                        'fill' => [
+                            'fillType' => Fill::FILL_SOLID,
+                            'startColor' => ['argb' => 'FFFFC7CE'], // Light red/pink untuk piutang
+                        ],
                         'borders' => [
                             'allBorders' => [
                                 'borderStyle' => Border::BORDER_THIN,
                             ],
                         ],
                         'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
                             'vertical' => Alignment::VERTICAL_CENTER,
-                            'wrapText' => true,
                         ],
                     ]);
 
-                    // Tambahkan warna di kolom I (Status Bayar) sesuai status
-                    foreach ($this->statusBayarRows as $rowNum => $status) {
-                        $colorConfig = match ($status) {
-                            'SB' => 'FFC6EFCE', // Hijau untuk Sudah Bayar
-                            'MV' => 'FFFFFFCC', // Kuning untuk Menunggu Verifikasi
-                            'BB', 'DT' => 'FFFFC7CE', // Merah untuk Belum Bayar & Ditolak
-                            default => null,
-                        };
+                    $currentRow++;
 
-                        if ($colorConfig) {
-                            $sheet->getStyle('I'.$rowNum)->applyFromArray([
-                                'fill' => [
-                                    'fillType' => Fill::FILL_SOLID,
-                                    'startColor' => ['argb' => $colorConfig],
-                                ],
-                            ]);
+                    // Data rows untuk tanggal ini
+                    $no = 1;
+                    $totalBerat = 0;
+                    $totalVolume = 0;
+                    $totalRupiah = 0;
+
+                    foreach ($transaksiList as $transaksi) {
+                        // Pisahkan layanan per kg dan per satuan menggunakan kode layanan
+                        $layananPerKg = [];
+                        $layananPerSatuan = [];
+                        $beratList = [];
+                        $volumeList = [];
+
+                        foreach ($transaksi->transaksiLayanan as $tl) {
+                            $kodeLayanan = $tl->layanan->kode_layanan ?? 'N/A';
+
+                            // Simpan kode dan nama layanan untuk keterangan
+                            if (! isset($this->layananKodes[$kodeLayanan])) {
+                                $this->layananKodes[$kodeLayanan] = $tl->layanan->nama_layanan ?? $tl->nama_layanan;
+                            }
+
+                            if (TransaksiLayananHelper::isPerKg($tl)) {
+                                $layananPerKg[] = $kodeLayanan;
+                                $beratList[] = $tl->berat_kg;
+                                $totalBerat += $tl->berat_kg;
+                            } else {
+                                $layananPerSatuan[] = $kodeLayanan;
+                                $volumeList[] = $tl->jumlah_satuan;
+                                $totalVolume += $tl->jumlah_satuan;
+                            }
                         }
+
+                        // Format layanan dengan kode - pakai kurung per item (item1)(item2)
+                        $perKgText = ! empty($layananPerKg) ? implode('', array_map(fn ($item) => '('.$item.')', $layananPerKg)) : '';
+                        $perSatuanText = ! empty($layananPerSatuan) ? implode('', array_map(fn ($item) => '('.$item.')', $layananPerSatuan)) : '';
+
+                        // Format detail layanan (berat dan volume) - pakai kurung per item (item1)(item2)
+                        $detailBerat = ! empty($beratList) ? implode('', array_map(fn ($item) => '('.$item.')', $beratList)) : '';
+                        $detailVolume = ! empty($volumeList) ? implode('', array_map(fn ($item) => '('.$item.')', $volumeList)) : '';
+
+                        $statusBayar = 'BB'; // BB = Belum Bayar
+
+                        // Format tipe bayar - ubah menjadi singkatan
+                        $tipeBayar = '-';
+                        if (! empty($transaksi->tipe_bayar)) {
+                            $tipeBayar = match ($transaksi->tipe_bayar) {
+                                'Tunai' => 'TN',
+                                'Non-Tunai' => 'NT',
+                                default => $transaksi->tipe_bayar,
+                            };
+                        }
+
+                        $totalRupiah += $transaksi->total;
+
+                        // Isi data
+                        $sheet->setCellValue('A'.$currentRow, $no);
+                        $sheet->setCellValue('B'.$currentRow, $transaksi->nama_pelanggan);
+                        $sheet->setCellValue('C'.$currentRow, $perKgText);
+                        $sheet->setCellValue('D'.$currentRow, $perSatuanText);
+                        $sheet->setCellValue('E'.$currentRow, $detailBerat);
+                        $sheet->setCellValue('F'.$currentRow, $detailVolume);
+                        $sheet->setCellValue('G'.$currentRow, 'Rp. '.number_format($transaksi->total, 0, ',', '.'));
+                        $sheet->setCellValue('H'.$currentRow, $tipeBayar);
+                        $sheet->setCellValue('I'.$currentRow, $statusBayar);
+
+                        // Style untuk data row
+                        $sheet->getStyle('A'.$currentRow.':'.$lastColumn.$currentRow)->applyFromArray([
+                            'borders' => [
+                                'allBorders' => [
+                                    'borderStyle' => Border::BORDER_THIN,
+                                ],
+                            ],
+                            'alignment' => [
+                                'vertical' => Alignment::VERTICAL_CENTER,
+                                'wrapText' => true,
+                            ],
+                        ]);
+
+                        // Align center untuk kolom No
+                        $sheet->getStyle('A'.$currentRow)->applyFromArray([
+                            'alignment' => [
+                                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                                'vertical' => Alignment::VERTICAL_CENTER,
+                            ],
+                        ]);
+
+                        // Warna untuk status bayar
+                        $sheet->getStyle('I'.$currentRow)->applyFromArray([
+                            'fill' => [
+                                'fillType' => Fill::FILL_SOLID,
+                                'startColor' => ['argb' => 'FFFFC7CE'], // Merah untuk Belum Bayar
+                            ],
+                        ]);
+
+                        $currentRow++;
+                        $no++;
                     }
+
+                    // Update total global
+                    $totalBeratGlobal += $totalBerat;
+                    $totalVolumeGlobal += $totalVolume;
+                    $totalPiutangGlobal += $totalRupiah;
+
+                    // Total untuk tanggal ini
+                    // Add Total Berat row
+                    $totalBeratRow = $currentRow;
+                    $sheet->setCellValue('E'.$totalBeratRow, 'Total Berat (Kg)');
+                    $sheet->mergeCells('E'.$totalBeratRow.':G'.$totalBeratRow);
+                    $sheet->setCellValue('H'.$totalBeratRow, $totalBerat);
+                    $sheet->mergeCells('H'.$totalBeratRow.':I'.$totalBeratRow);
+
+                    // Style untuk label (E-G): align left
+                    $sheet->getStyle('E'.$totalBeratRow.':G'.$totalBeratRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'name' => 'Arial',
+                        ],
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                            ],
+                        ],
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_LEFT,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
+                    // Style untuk nilai (H-I): align right
+                    $sheet->getStyle('H'.$totalBeratRow.':I'.$totalBeratRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'name' => 'Arial',
+                        ],
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                            ],
+                        ],
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
+                    $currentRow++;
+
+                    // Add Total Satuan row
+                    $totalSatuanRow = $currentRow;
+                    $sheet->setCellValue('E'.$totalSatuanRow, 'Total Satuan');
+                    $sheet->mergeCells('E'.$totalSatuanRow.':G'.$totalSatuanRow);
+                    $sheet->setCellValue('H'.$totalSatuanRow, $totalVolume);
+                    $sheet->mergeCells('H'.$totalSatuanRow.':I'.$totalSatuanRow);
+
+                    // Style untuk label (E-G): align left
+                    $sheet->getStyle('E'.$totalSatuanRow.':G'.$totalSatuanRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'name' => 'Arial',
+                        ],
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                            ],
+                        ],
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_LEFT,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
+                    // Style untuk nilai (H-I): align right
+                    $sheet->getStyle('H'.$totalSatuanRow.':I'.$totalSatuanRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'name' => 'Arial',
+                        ],
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                            ],
+                        ],
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
+                    $currentRow++;
+
+                    // Add Total Piutang row
+                    $totalPiutangRow = $currentRow;
+                    $sheet->setCellValue('E'.$totalPiutangRow, 'Total Piutang');
+                    $sheet->mergeCells('E'.$totalPiutangRow.':G'.$totalPiutangRow);
+                    $sheet->setCellValue('H'.$totalPiutangRow, 'Rp. '.number_format($totalRupiah, 0, ',', '.'));
+                    $sheet->mergeCells('H'.$totalPiutangRow.':I'.$totalPiutangRow);
+
+                    // Style untuk label (E-G): align left
+                    $sheet->getStyle('E'.$totalPiutangRow.':G'.$totalPiutangRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'name' => 'Arial',
+                        ],
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                            ],
+                        ],
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_LEFT,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
+                    // Style untuk nilai (H-I): align right
+                    $sheet->getStyle('H'.$totalPiutangRow.':I'.$totalPiutangRow)->applyFromArray([
+                        'font' => [
+                            'bold' => true,
+                            'name' => 'Arial',
+                        ],
+                        'borders' => [
+                            'allBorders' => [
+                                'borderStyle' => Border::BORDER_THIN,
+                            ],
+                        ],
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_RIGHT,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
+                    $currentRow++;
+
+                    // Kosongkan 2 row sebelum tabel berikutnya
+                    $currentRow += 2;
                 }
 
-                // Calculate totals
-                $totalBerat = 0;
-                $totalVolume = 0;
-                $totalRupiah = 0;
+                // Total keseluruhan
+                $currentRow++;
+                $sheet->setCellValue('F'.$currentRow, 'TOTAL KESELURUHAN');
+                $sheet->mergeCells('F'.$currentRow.':I'.$currentRow);
+                $sheet->getStyle('F'.$currentRow.':I'.$currentRow)->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'size' => 12,
+                        'name' => 'Arial',
+                    ],
+                    'alignment' => [
+                        'horizontal' => Alignment::HORIZONTAL_CENTER,
+                        'vertical' => Alignment::VERTICAL_CENTER,
+                    ],
+                    'fill' => [
+                        'fillType' => Fill::FILL_SOLID,
+                        'startColor' => ['argb' => 'FFFFC7CE'],
+                    ],
+                    'borders' => [
+                        'allBorders' => [
+                            'borderStyle' => Border::BORDER_THIN,
+                        ],
+                    ],
+                ]);
+                $currentRow++;
 
-                foreach ($this->collection() as $t) {
-                    $totalBerat += $t->total_berat;
-                    $totalVolume += $t->total_item;
-                    $totalRupiah += $t->total;
-                }
-
-                // Add Total Berat row
-                $totalBeratRow = $lastRow + 1;
-                $sheet->setCellValue('E'.$totalBeratRow, 'Total Berat (Kg)');
-                $sheet->mergeCells('E'.$totalBeratRow.':G'.$totalBeratRow);
-                $sheet->setCellValue('H'.$totalBeratRow, $totalBerat);
+                // Add Total Berat Global
+                $totalBeratRow = $currentRow;
+                $sheet->setCellValue('F'.$totalBeratRow, 'Total Berat (Kg)');
+                $sheet->mergeCells('F'.$totalBeratRow.':G'.$totalBeratRow);
+                $sheet->setCellValue('H'.$totalBeratRow, $totalBeratGlobal);
                 $sheet->mergeCells('H'.$totalBeratRow.':I'.$totalBeratRow);
 
-                // Style untuk label (E-G): align left
-                $sheet->getStyle('E'.$totalBeratRow.':G'.$totalBeratRow)->applyFromArray([
+                $sheet->getStyle('F'.$totalBeratRow.':G'.$totalBeratRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'name' => 'Arial',
@@ -336,7 +521,6 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                     ],
                 ]);
 
-                // Style untuk nilai (H-I): align right
                 $sheet->getStyle('H'.$totalBeratRow.':I'.$totalBeratRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
@@ -353,15 +537,16 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                     ],
                 ]);
 
-                // Add Total Satuan row
-                $totalSatuanRow = $lastRow + 2;
-                $sheet->setCellValue('E'.$totalSatuanRow, 'Total Satuan');
-                $sheet->mergeCells('E'.$totalSatuanRow.':G'.$totalSatuanRow);
-                $sheet->setCellValue('H'.$totalSatuanRow, $totalVolume);
+                $currentRow++;
+
+                // Add Total Satuan Global
+                $totalSatuanRow = $currentRow;
+                $sheet->setCellValue('F'.$totalSatuanRow, 'Total Satuan');
+                $sheet->mergeCells('F'.$totalSatuanRow.':G'.$totalSatuanRow);
+                $sheet->setCellValue('H'.$totalSatuanRow, $totalVolumeGlobal);
                 $sheet->mergeCells('H'.$totalSatuanRow.':I'.$totalSatuanRow);
 
-                // Style untuk label (E-G): align left
-                $sheet->getStyle('E'.$totalSatuanRow.':G'.$totalSatuanRow)->applyFromArray([
+                $sheet->getStyle('F'.$totalSatuanRow.':G'.$totalSatuanRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'name' => 'Arial',
@@ -377,7 +562,6 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                     ],
                 ]);
 
-                // Style untuk nilai (H-I): align right
                 $sheet->getStyle('H'.$totalSatuanRow.':I'.$totalSatuanRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
@@ -394,15 +578,16 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                     ],
                 ]);
 
-                // Add Total Piutang row
-                $totalPiutangRow = $lastRow + 3;
-                $sheet->setCellValue('E'.$totalPiutangRow, 'Total Piutang');
-                $sheet->mergeCells('E'.$totalPiutangRow.':G'.$totalPiutangRow);
-                $sheet->setCellValue('H'.$totalPiutangRow, 'Rp. '.number_format($totalRupiah, 0, ',', '.'));
+                $currentRow++;
+
+                // Add Total Piutang Global
+                $totalPiutangRow = $currentRow;
+                $sheet->setCellValue('F'.$totalPiutangRow, 'Total Piutang');
+                $sheet->mergeCells('F'.$totalPiutangRow.':G'.$totalPiutangRow);
+                $sheet->setCellValue('H'.$totalPiutangRow, 'Rp. '.number_format($totalPiutangGlobal, 0, ',', '.'));
                 $sheet->mergeCells('H'.$totalPiutangRow.':I'.$totalPiutangRow);
 
-                // Style untuk label (E-G): align left
-                $sheet->getStyle('E'.$totalPiutangRow.':G'.$totalPiutangRow)->applyFromArray([
+                $sheet->getStyle('F'.$totalPiutangRow.':G'.$totalPiutangRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
                         'name' => 'Arial',
@@ -418,7 +603,6 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                     ],
                 ]);
 
-                // Style untuk nilai (H-I): align right
                 $sheet->getStyle('H'.$totalPiutangRow.':I'.$totalPiutangRow)->applyFromArray([
                     'font' => [
                         'bold' => true,
@@ -435,9 +619,22 @@ class PiutangSheet implements FromCollection, ShouldAutoSize, WithColumnFormatti
                     ],
                 ]);
 
+                $currentRow++;
+
+                // Set manual width untuk setiap kolom (karena kita buat data manual)
+                $sheet->getColumnDimension('A')->setWidth(5);   // No
+                $sheet->getColumnDimension('B')->setWidth(25);  // Nama
+                $sheet->getColumnDimension('C')->setWidth(20);  // Layanan Per_Kg
+                $sheet->getColumnDimension('D')->setWidth(20);  // Layanan Per_satuan
+                $sheet->getColumnDimension('E')->setWidth(15);  // Detail Berat
+                $sheet->getColumnDimension('F')->setWidth(15);  // Detail Volume
+                $sheet->getColumnDimension('G')->setWidth(15);  // Total
+                $sheet->getColumnDimension('H')->setWidth(15);  // Tipe Bayar
+                $sheet->getColumnDimension('I')->setWidth(15);  // Status Bayar
+
                 // Tambahkan keterangan kode layanan di bawah tabel
                 if (! empty($this->layananKodes)) {
-                    $keteranganStartRow = $totalPiutangRow + 2;
+                    $keteranganStartRow = $currentRow + 2;
 
                     // Header keterangan
                     $sheet->setCellValue('A'.$keteranganStartRow, 'Keterangan:');

@@ -298,6 +298,14 @@ class TransaksiSheet implements FromCollection, ShouldAutoSize, WithColumnFormat
                         ],
                     ]);
 
+                    // Align center untuk kolom No
+                    $sheet->getStyle('A5:A'.$lastRow)->applyFromArray([
+                        'alignment' => [
+                            'horizontal' => Alignment::HORIZONTAL_CENTER,
+                            'vertical' => Alignment::VERTICAL_CENTER,
+                        ],
+                    ]);
+
                     // Tambahkan warna di kolom I (Status Bayar) sesuai status
                     foreach ($this->statusBayarRows as $rowNum => $status) {
                         $colorConfig = match ($status) {
@@ -537,6 +545,17 @@ class TransaksiSheet implements FromCollection, ShouldAutoSize, WithColumnFormat
                         $currentRow++;
                     }
                 }
+
+                // Set manual width untuk setiap kolom
+                $sheet->getColumnDimension('A')->setWidth(5);   // No
+                $sheet->getColumnDimension('B')->setWidth(25);  // Nama
+                $sheet->getColumnDimension('C')->setWidth(25);  // Layanan Per_Kg
+                $sheet->getColumnDimension('D')->setWidth(25);  // Layanan Per_satuan
+                $sheet->getColumnDimension('E')->setWidth(15);  // Detail Berat
+                $sheet->getColumnDimension('F')->setWidth(15);  // Detail Volume
+                $sheet->getColumnDimension('G')->setWidth(20);  // Total
+                $sheet->getColumnDimension('H')->setWidth(15);  // Tipe Bayar
+                $sheet->getColumnDimension('I')->setWidth(15);  // Status Bayar
             },
         ];
     }
