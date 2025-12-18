@@ -119,7 +119,7 @@
                     {{-- Send Message Button --}}
                     <x-slot:append>
                         <x-button label="Kirim" icon="o-paper-airplane" type="submit"
-                            class="join-item btn-primary" spinner />
+                            class="join-item btn-primary" spinner="sendMessage,sendFileMessage" />
                     </x-slot:append>
                 </x-input>
             </form>
