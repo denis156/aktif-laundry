@@ -1,7 +1,7 @@
-// Service Worker untuk Aplikasi Kurir - Aktif Laundry
+// Service Worker untuk Aplikasi Kurir - SiAktif
 // Cache Strategy: Assets only (CSS, JS, images) - Data tetap online
 
-const CACHE_NAME = 'aktif-laundry-kurir';
+const CACHE_NAME = 'kurir';
 const KURIR_SCOPE = '/kurir/';
 
 // Install Event - Skip waiting untuk activate immediately
@@ -19,7 +19,7 @@ self.addEventListener('activate', (event) => {
                     cacheNames
                         .filter((cacheName) => {
                             // Hapus cache lama yang bukan cache saat ini
-                            return cacheName.startsWith('aktif-laundry-kurir-') &&
+                            return cacheName.startsWith('siaktif-kurir-') &&
                                    cacheName !== CACHE_NAME;
                         })
                         .map((cacheName) => caches.delete(cacheName))

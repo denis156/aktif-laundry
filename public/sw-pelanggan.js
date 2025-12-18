@@ -1,7 +1,7 @@
 // Service Worker untuk Aplikasi Pelanggan - Aktif Laundry
 // Cache Strategy: Assets only (CSS, JS, images) - Data tetap online
 
-const CACHE_NAME = 'aktif-laundry-pelanggan'; 
+const CACHE_NAME = 'pelanggan';
 const PELANGGAN_SCOPE = '/pelanggan/';
 
 // Install Event - Skip waiting untuk activate immediately

@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Aktif Laundry">
-    <link rel="apple-touch-icon" href="{{ asset('icon512_rounded.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
 
     <!-- SEO Meta Tags -->
     <title>{{ config('app.name') }} - Jasa Laundry Profesional Kendari | Cuci Setrika Rp 5.000/kg | Antar Jemput Gratis</title>

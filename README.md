@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/icon512_rounded.png" alt="Aktif Laundry" width="150" height="150">
+  <img src="public/icon.png" alt="Aktif Laundry" width="150" height="150">
 
   # Aktif Laundry Management System
 

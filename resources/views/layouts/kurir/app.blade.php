@@ -15,8 +15,8 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
-    <meta name="apple-mobile-web-app-title" content="Kurir Aktif">
-    <link rel="apple-touch-icon" href="{{ asset('icon512_rounded.png') }}">
+    <meta name="apple-mobile-web-app-title" content="SiAktif">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
 
     {{-- iOS Splash Screens --}}
     <link rel="apple-touch-startup-image" href="{{ asset('640x1136.png') }}" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)">
