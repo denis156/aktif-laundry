@@ -54,7 +54,7 @@ class Detail extends Component
             return asset('storage/'.$this->promo->banner_image);
         }
 
-        return asset('images/Logo.png');
+        return asset('icon.png');
     }
 
     public function getNilaiDiskonFormatted(): string

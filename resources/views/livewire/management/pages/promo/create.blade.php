@@ -14,7 +14,7 @@
             <x-card class="col-span-3">
                 <x-file label="Banner Promo (Opsional)" wire:model="bannerImage"
                     accept="image/png, image/jpeg, image/jpg" hint="Ukuran maksimal 2MB. Format: JPG, PNG">
-                    <img src="{{ asset('images/Logo.png') }}" class="h-32 rounded-lg" />
+                    <img src="{{ asset('icon.png') }}" class="h-32 rounded-lg" />
                 </x-file>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

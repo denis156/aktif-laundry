@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="../public/icon.png" alt="SiAktif Logo" width="120" height="120">
+  <img src="../public/icon.png" alt="SiAktif Logo" height="120">
 
   # SiAktif - Courier Application
 

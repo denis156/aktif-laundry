@@ -47,7 +47,7 @@
                         <div class="border-b-2 border-dashed border-info aspect-3/2 w-full bg-base-200">
                             <img src="{{ $this->getBannerUrl($promo) }}" alt="{{ $promo->nama_promo }}"
                                 class="w-full h-full object-cover"
-                                onerror="this.onerror=null; this.src='{{ asset('images/Logo.png') }}';" />
+                                onerror="this.onerror=null; this.src='{{ asset('icon.png') }}';" />
                         </div>
                     </x-slot:figure>
 

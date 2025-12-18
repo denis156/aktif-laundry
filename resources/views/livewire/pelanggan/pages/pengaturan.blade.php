@@ -65,7 +65,7 @@
                                             // Show test notification
                                             const notification = new Notification('Notifikasi Aktif!', {
                                                 body: 'Anda akan menerima notifikasi untuk pesanan laundry Anda',
-                                                icon: '{{ asset('images/Logo.png') }}'
+                                                icon: '{{ asset('icon.png') }}'
                                             });
                                         } else {
                                             // Permission denied - keep toggle off

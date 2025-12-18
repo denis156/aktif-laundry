@@ -27,7 +27,7 @@
             <img src="{{ Storage::url($item->banner_image) }}" alt="Banner {{ $item->nama_promo }}"
                 class="w-full aspect-square object-contain rounded-lg bg-base-200 p-1" />
             @else
-            <img src="{{ asset('images/Logo.png') }}" alt="Default Banner"
+            <img src="{{ asset('icon.png') }}" alt="Default Banner"
                 class="w-full aspect-square object-contain rounded-lg bg-base-200 p-1" />
             @endif
             @endscope

@@ -17,7 +17,7 @@
                     @if ($currentBannerUrl)
                     <img src="{{ $currentBannerUrl }}" class="h-32 rounded-lg" />
                     @else
-                    <img src="{{ asset('images/Logo.png') }}" class="h-32 rounded-lg" />
+                    <img src="{{ asset('icon.png') }}" class="h-32 rounded-lg" />
                     @endif
                 </x-file>
 
