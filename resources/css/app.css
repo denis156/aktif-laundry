@@ -12,6 +12,7 @@
 }
 
 @plugin "daisyui" {
+    exclude: properties;
     themes: light --default, dark --prefersdark;
 }
 
