@@ -91,6 +91,8 @@
                     <x-menu-item title="Kasir" icon="o-calculator" link="{{ route('kasir') }}" wire:navigate.hover />
                     <x-menu-item title="Transaksi" icon="o-clipboard-document-list"
                         link="{{ route('transaksi.index') }}" wire:navigate.hover />
+                    <x-menu-item title="Lacak Kurir" icon="o-map-pin" link="{{ route('tracking.index') }}"
+                        wire:navigate.hover />
                 </x-menu-sub>
 
                 <x-menu-separator />

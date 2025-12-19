@@ -15,53 +15,47 @@ use Livewire\Component;
 #[Layout('layouts.management.app')]
 class Index extends Component
 {
-    public function getKurirLocationsProperty(): array
-    {
-        // Get all active kurir
-        $kurirList = Kurir::query()
-            ->where('status', 'Aktif')
-            ->select([
-                'id',
-                'nama',
-                'jenis_kendaraan',
-                'no_hp',
-                'avatar_url',
-            ])
-            ->get();
+    public array $activeKurir = [];
 
+    public int $activeKurirCount = 0;
+
+    public function mount(): void
+    {
+        $this->updateActiveKurir();
+    }
+
+    /**
+     * Update active courier data and dispatch to frontend
+     */
+    public function updateActiveKurir(): void
+    {
         $activeKurir = [];
 
-        foreach ($kurirList as $kurir) {
-            // Check cache for real-time location
-            $realtimeCacheKey = 'kurir_realtime_location_'.$kurir->id;
-            $cachedData = Cache::get($realtimeCacheKey);
+        // Get all kurir IDs from database
+        $kurirIds = Kurir::query()->pluck('id');
 
-            // Only include kurir yang ada di cache (sedang aktif tracking)
-            if ($cachedData) {
-                $activeKurir[] = [
-                    'id' => $kurir->id,
-                    'nama' => $cachedData['nama'] ?? $kurir->nama,
-                    'jenis_kendaraan' => $cachedData['jenis_kendaraan'] ?? $kurir->jenis_kendaraan,
-                    'latitude' => $cachedData['latitude'],
-                    'longitude' => $cachedData['longitude'],
-                    'bearing' => $cachedData['bearing'] ?? null,
-                    'speed' => $cachedData['speed'] ?? null,
-                    'accuracy' => $cachedData['accuracy'] ?? null,
-                    'no_hp' => $cachedData['no_hp'] ?? $kurir->no_hp,
-                    'avatar_url' => $cachedData['avatar_url'] ?? $kurir->avatar_url,
-                    'is_realtime' => true,
-                    'updated_at' => $cachedData['updated_at'] ?? null,
-                ];
+        foreach ($kurirIds as $kurirId) {
+            $cacheKey = 'kurir_tracking_'.$kurirId;
+            $trackingData = Cache::get($cacheKey);
+
+            if ($trackingData) {
+                // Only include if updated within last 2 minutes (lebih ketat dari cache expiry)
+                $updatedAt = \Carbon\Carbon::parse($trackingData['updated_at']);
+                if ($updatedAt->diffInMinutes(now()) <= 2) {
+                    $activeKurir[] = $trackingData;
+                }
             }
         }
 
-        return $activeKurir;
+        $this->activeKurir = $activeKurir;
+        $this->activeKurirCount = count($activeKurir);
+
+        // Dispatch event to JavaScript with active kurir data
+        $this->dispatch('kurir-locations-updated', activeKurir: $activeKurir);
     }
 
     public function render(): View
     {
-        return view('livewire.management.pages.tracking.index', [
-            'totalKurir' => count($this->kurirLocations),
-        ]);
+        return view('livewire.management.pages.tracking.index');
     }
 }

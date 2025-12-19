@@ -85,7 +85,7 @@ class Detail extends Component
         }
     }
 
-    public function updateKurirLocation(float $latitude, float $longitude, float $accuracy, ?float $speed = null): void
+    public function updateKurirLocation(float $latitude, float $longitude, float $accuracy, ?float $speed = null, ?float $bearing = null): void
     {
         $this->kurirLatitude = $latitude;
         $this->kurirLongitude = $longitude;
@@ -93,9 +93,33 @@ class Detail extends Component
         $this->kurirSpeed = $speed;
         $this->gpsStatus = 'active';
 
+        $kurir = auth('kurir')->user();
+
+        // Cache lokasi real-time untuk tracking (selalu update)
+        if ($kurir) {
+            $trackingCacheKey = 'kurir_tracking_'.$kurir->id;
+
+            Cache::put($trackingCacheKey, [
+                'kurir_id' => $kurir->id,
+                'nama' => $kurir->nama,
+                'no_hp' => $kurir->no_hp,
+                'jenis_kendaraan' => $kurir->jenis_kendaraan,
+                'latitude' => $latitude,
+                'longitude' => $longitude,
+                'accuracy' => $accuracy,
+                'speed' => $speed,
+                'bearing' => $bearing,
+                'transaksi_id' => $this->transaksi?->id,
+                'pelanggan_nama' => $this->pelangganNama,
+                'pelanggan_alamat' => $this->pelangganAlamat,
+                'pelanggan_latitude' => $this->pelangganLatitude,
+                'pelanggan_longitude' => $this->pelangganLongitude,
+                'updated_at' => now()->toIso8601String(),
+            ], now()->addMinutes(5)); // Cache 5 menit, akan expired jika kurir stop tracking
+        }
+
         // Cache lokasi awal untuk route ini (pertama kali saja)
         if (! $this->hasInitialLocation) {
-            $kurir = auth('kurir')->user();
             $cacheKey = 'kurir_route_start_'.$kurir?->id.'_'.$this->transaksi?->id;
 
             Cache::put($cacheKey, [

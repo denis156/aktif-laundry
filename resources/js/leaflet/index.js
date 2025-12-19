@@ -10,6 +10,9 @@ import 'leaflet/dist/leaflet.css';
 // Import Leaflet Rotate (extends L.Map with rotation support)
 import 'leaflet-rotate';
 
+// Import Leaflet Rotated Marker (extends L.Marker with rotation support)
+import 'leaflet-rotatedmarker';
+
 // Import Leaflet Routing Machine
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';

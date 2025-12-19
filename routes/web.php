@@ -51,6 +51,7 @@ use App\Livewire\Management\Pages\Referral\Pengaturan as ReferralPengaturan;
 use App\Livewire\Management\Pages\Staf\Create as StafCreate;
 use App\Livewire\Management\Pages\Staf\Edit as StafEdit;
 use App\Livewire\Management\Pages\Staf\Index as StafIndex;
+use App\Livewire\Management\Pages\Tracking\Index as TrackingIndex;
 use App\Livewire\Management\Pages\Transaksi\Create as TransaksiCreate;
 use App\Livewire\Management\Pages\Transaksi\Edit as TransaksiEdit;
 use App\Livewire\Management\Pages\Transaksi\Index as TransaksiIndex;
@@ -194,6 +195,9 @@ Route::middleware(['auth', 'verified'])->prefix('management')->group(function ()
     Route::get('/kurir', KurirIndex::class)->name('kurir.index');
     Route::get('/kurir/create', KurirCreate::class)->name('kurir.create');
     Route::get('/kurir/edit/{id}', KurirEdit::class)->name('kurir.edit');
+
+    // Tracking
+    Route::get('/tracking', TrackingIndex::class)->name('tracking.index');
 
     // Promo
     Route::get('/promo', PromoIndex::class)->name('promo.index');

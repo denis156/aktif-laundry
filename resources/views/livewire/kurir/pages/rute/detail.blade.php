@@ -156,8 +156,8 @@
                         // Get current heading for display (compass handled separately)
                         const displayHeading = mapManager.compassHeading || mapManager.currentBearing;
 
-                        // Update Livewire with speed
-                        $wire.call('updateKurirLocation', lat, lng, accuracy, speedKmh);
+                        // Update Livewire with location, speed, and bearing
+                        $wire.call('updateKurirLocation', lat, lng, accuracy, speedKmh, displayHeading);
 
                         // Update kurir marker position
                         mapManager.updateMarker('kurir', lat, lng);
