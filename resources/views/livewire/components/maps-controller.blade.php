@@ -21,6 +21,7 @@
         @if ($showZoom)
             <div class="bg-base-100 rounded-lg shadow-lg overflow-hidden">
                 <button
+                    type="button"
                     @click="window.dispatchEvent(new CustomEvent('maps:zoom-in', { detail: { mapId } }))"
                     class="flex items-center justify-center w-10 h-10 hover:bg-base-200 active:bg-base-300 transition-colors border-b border-base-300"
                     title="Zoom In"
@@ -28,6 +29,7 @@
                     <x-icon name="iconpark.plus-o" class="h-5 text-base-content" />
                 </button>
                 <button
+                    type="button"
                     @click="window.dispatchEvent(new CustomEvent('maps:zoom-out', { detail: { mapId } }))"
                     class="flex items-center justify-center w-10 h-10 hover:bg-base-200 active:bg-base-300 transition-colors"
                     title="Zoom Out"
@@ -41,6 +43,7 @@
         @if ($showLayers)
             <div class="relative">
                 <button
+                    type="button"
                     @click="layerMenuOpen = !layerMenuOpen"
                     class="flex items-center justify-center w-10 h-10 bg-base-100 rounded-lg shadow-lg hover:bg-base-200 active:bg-base-300 transition-colors"
                     title="Change Layer"
@@ -62,6 +65,7 @@
                 >
                     <template x-for="(label, key) in availableLayers" :key="key">
                         <button
+                            type="button"
                             @click="
                                 currentLayer = key;
                                 layerMenuOpen = false;
@@ -79,6 +83,7 @@
         {{-- Center to Kurir --}}
         @if ($showCenter)
             <button
+                type="button"
                 @click="window.dispatchEvent(new CustomEvent('maps:center-kurir', { detail: { mapId } }))"
                 class="flex items-center justify-center w-10 h-10 bg-base-100 rounded-lg shadow-lg hover:bg-base-200 active:bg-base-300 transition-colors"
                 title="Center to Kurir"
@@ -90,6 +95,7 @@
         {{-- Center Route --}}
         @if ($showCompass)
             <button
+                type="button"
                 @click="window.dispatchEvent(new CustomEvent('maps:center-route', { detail: { mapId } }))"
                 class="flex items-center justify-center w-10 h-10 bg-base-100 rounded-lg shadow-lg hover:bg-base-200 active:bg-base-300 transition-colors"
                 title="Center Route"
