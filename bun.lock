@@ -6,16 +6,17 @@
       "dependencies": {
         "leaflet": "^1.9.4",
         "leaflet-rotate": "^0.2.8",
+        "leaflet-rotatedmarker": "^0.2.0",
         "leaflet-routing-machine": "^3.2.12",
       },
       "devDependencies": {
         "@tailwindcss/vite": "^4.1.18",
         "axios": "^1.13.2",
         "concurrently": "^9.2.1",
-        "daisyui": "^5.5.13",
+        "daisyui": "^5.5.14",
         "laravel-vite-plugin": "^2.0.1",
         "tailwindcss": "^4.1.18",
-        "vite": "^7.2.7",
+        "vite": "^7.3.0",
       },
     },
   },
@@ -245,6 +246,8 @@
     "leaflet": ["leaflet@1.9.4", "", {}, "sha512-nxS1ynzJOmOlHp+iL3FyWqK89GtNL8U8rvlMOsQdTTssxZwCXh8N2NB3GDQOL+YR3XnWyZAxwQixURb+FA74PA=="],
 
     "leaflet-rotate": ["leaflet-rotate@0.2.8", "", { "peerDependencies": { "leaflet": "^1.9.3" } }, "sha512-BHtkn35DuJ377yBNn/7XVuV0oIfwJtmqv/wFQ0Lvh7QuVCAD2wfCK0/m9oA3k/LVOnJG8VEGyf3Duf/wTVzeKQ=="],
+
+    "leaflet-rotatedmarker": ["leaflet-rotatedmarker@0.2.0", "", {}, "sha512-yc97gxLXwbZa+Gk9VCcqI0CkvIBC9oNTTjFsHqq4EQvANrvaboib4UdeQLyTnEqDpaXHCqzwwVIDHtvz2mUiDg=="],
 
     "leaflet-routing-machine": ["leaflet-routing-machine@3.2.12", "", { "dependencies": { "@mapbox/corslite": "0.0.7", "@mapbox/polyline": "^0.2.0", "osrm-text-instructions": "^0.13.2" } }, "sha512-HLde58G1YtD9xSIzZavJ6BPABZaV1hHeGst8ouhzuxmSC3s32NVtADT+njbIUMW1maHRCrsgTk/E4hz5QH7FrA=="],
 
