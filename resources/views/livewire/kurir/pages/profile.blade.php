@@ -135,7 +135,33 @@
             {{-- Lokasi di Peta --}}
             <div class="space-y-2">
                 <label class="text-sm font-medium">Lokasi di Peta</label>
-                <div id="map-kurir" wire:ignore style="height: 300px; border-radius: 0.5rem;"></div>
+                <div class="relative overflow-hidden rounded-lg h-78">
+                    <div id="map-kurir" wire:ignore class="w-full h-full z-40"></div>
+
+                    {{-- Zoom Controller - KIRI --}}
+                    <div class="absolute top-2 left-2 z-48">
+                        <livewire:components.maps-controller
+                            :map-id="'map-kurir'"
+                            position="top-left"
+                            :show-zoom="true"
+                            :show-layers="false"
+                            :show-center="false"
+                            :show-compass="false"
+                        />
+                    </div>
+
+                    {{-- Layer Controller - KANAN --}}
+                    <div class="absolute top-2 right-2 z-48">
+                        <livewire:components.maps-controller
+                            :map-id="'map-kurir'"
+                            position="top-right"
+                            :show-zoom="false"
+                            :show-layers="true"
+                            :show-center="false"
+                            :show-compass="false"
+                        />
+                    </div>
+                </div>
                 <button type="button" id="getLocationBtn" class="btn btn-success btn-sm btn-block mt-2">
                     <x-icon name="iconpark.localpin-o" />
                     Ambil Lokasi Saya
@@ -191,7 +217,8 @@
                     longitude: lng,
                     zoom: zoom.default,
                     draggable: true,
-                    showLayerControl: false, // No layer control for profile map
+                    showLayerControl: false, // Disable default layer control - using MapsController
+                    showZoomControl: false, // Disable default zoom control - using MapsController
                     onMapClick: (clickLat, clickLng) => {
                         $wire.latitude = clickLat.toFixed(6);
                         $wire.longitude = clickLng.toFixed(6);

@@ -33,7 +33,33 @@
         </x-slot:subtitle>
 
         {{-- Map Container - Always render for JS to init --}}
-        <div id="map-lokasi-kurir" wire:ignore class="w-full h-[42dvh] rounded z-40"></div>
+        <div class="relative overflow-hidden rounded">
+            <div id="map-lokasi-kurir" wire:ignore class="w-full h-[42dvh] rounded z-40"></div>
+
+            {{-- Zoom Controller - KIRI --}}
+            <div class="absolute top-2 left-2 z-48">
+                <livewire:components.maps-controller
+                    :map-id="'map-lokasi-kurir'"
+                    position="top-left"
+                    :show-zoom="true"
+                    :show-layers="false"
+                    :show-center="false"
+                    :show-compass="false"
+                />
+            </div>
+
+            {{-- Layer Controller - KANAN --}}
+            <div class="absolute top-2 right-2 z-48">
+                <livewire:components.maps-controller
+                    :map-id="'map-lokasi-kurir'"
+                    position="top-right"
+                    :show-zoom="false"
+                    :show-layers="true"
+                    :show-center="false"
+                    :show-compass="false"
+                />
+            </div>
+        </div>
     </x-card>
 </div>
 
@@ -62,7 +88,8 @@
                 longitude: lng,
                 zoom: zoom.detail,
                 rotate: true,
-                showLayerControl: true,
+                showLayerControl: false, // Disable default layer control
+                showZoomControl: false, // Disable default zoom control - using MapsController
             });
 
             if (!mapManager) {

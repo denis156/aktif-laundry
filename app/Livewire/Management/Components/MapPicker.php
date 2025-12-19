@@ -30,7 +30,7 @@ class MapPicker extends Component
 
     public bool $draggable = true;
 
-    public bool $showLayerControl = true;
+    public bool $showLayerControl = false;
 
     public string $mapHeight = 'h-100';
 

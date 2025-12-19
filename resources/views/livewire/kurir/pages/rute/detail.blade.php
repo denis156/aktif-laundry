@@ -4,14 +4,16 @@
             <div id="map-rute-detail" wire:ignore class="w-full h-full z-40"></div>
 
             {{-- Zoom Controls - KIRI ATAS --}}
-            <livewire:components.maps-controller
-                :map-id="'map-rute-detail'"
-                position="top-left"
-                :show-zoom="true"
-                :show-layers="false"
-                :show-center="false"
-                :show-compass="false"
-            />
+            <div class="fixed top-20 left-4 z-48">
+                <livewire:components.maps-controller
+                    :map-id="'map-rute-detail'"
+                    position="top-left"
+                    :show-zoom="true"
+                    :show-layers="false"
+                    :show-center="false"
+                    :show-compass="false"
+                />
+            </div>
 
             {{-- Speed Indicator - TENGAH ATAS --}}
             <div class="fixed top-20 left-1/2 -translate-x-1/2 z-48">
@@ -30,15 +32,17 @@
             </div>
 
             {{-- Other Controls - KANAN ATAS --}}
-            <livewire:components.maps-controller
-                :map-id="'map-rute-detail'"
-                position="top-right"
-                :show-zoom="false"
-                :show-layers="true"
-                :show-center="true"
-                :show-compass="true"
-                :current-layer="'googleTraffic'"
-            />
+            <div class="fixed top-20 right-4 z-48">
+                <livewire:components.maps-controller
+                    :map-id="'map-rute-detail'"
+                    position="top-right"
+                    :show-zoom="false"
+                    :show-layers="true"
+                    :show-center="true"
+                    :show-compass="true"
+                    :current-layer="'googleTraffic'"
+                />
+            </div>
         </div>
     @else
         <div class="flex items-center justify-center h-screen bg-base-200">

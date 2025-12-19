@@ -14,7 +14,7 @@
             }
         }"
         @click.away="layerMenuOpen = false"
-        class="fixed {{ $this->getPositionClasses() }} z-48 flex flex-col gap-2"
+        class="flex flex-col gap-2"
         wire:ignore
     >
         {{-- Zoom Controls --}}

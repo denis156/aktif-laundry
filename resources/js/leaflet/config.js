@@ -76,7 +76,7 @@ export const LeafletConfig = {
      * Custom marker icon configuration
      */
     markerIcon: {
-        iconUrl: '/images/marker.png',
+        iconUrl: '/images/marker/marker-default.png',
         iconSize: [48, 48],
         iconAnchor: [24, 48],
         popupAnchor: [0, -48],
