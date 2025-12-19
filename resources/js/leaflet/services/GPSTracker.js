@@ -12,7 +12,7 @@ export class GPSTracker {
 
     /**
      * Start GPS tracking
-     * @param {function} onSuccess - Callback on position update (lat, lng, accuracy)
+     * @param {function} onSuccess - Callback on position update (lat, lng, accuracy, speed)
      * @param {function} onError - Callback on error
      */
     start(onSuccess, onError) {
@@ -31,9 +31,13 @@ export class GPSTracker {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 const accuracy = position.coords.accuracy;
+                // Speed in m/s (null if not available)
+                const speedMs = position.coords.speed;
+                // Convert to km/h (null if speed not available)
+                const speedKmh = speedMs !== null ? speedMs * 3.6 : null;
 
                 if (onSuccess) {
-                    onSuccess(lat, lng, accuracy);
+                    onSuccess(lat, lng, accuracy, speedKmh);
                 }
             },
             (error) => {

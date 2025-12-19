@@ -39,6 +39,7 @@ export class LeafletMapManager {
             longitude: this.options.longitude,
             zoom: this.options.zoom,
             showLayerControl: this.options.showLayerControl,
+            showZoomControl: this.options.showZoomControl,
             defaultTileLayer: this.options.defaultTileLayer,
             rotate: this.options.rotate,
             onMapClick: this.options.onMapClick,
@@ -79,7 +80,110 @@ export class LeafletMapManager {
         // Initialize geocoding service
         this.geocodingService = new GeocodingService();
 
+        // Setup event listeners for MapsController
+        this.setupControllerEventListeners();
+
         return this;
+    }
+
+    // ==========================================
+    // MapsController Event Listeners
+    // ==========================================
+
+    setupControllerEventListeners() {
+        // Zoom In
+        window.addEventListener('maps:zoom-in', (e) => {
+            if (e.detail.mapId === this.elementId && this.map) {
+                this.map.zoomIn();
+            }
+        });
+
+        // Zoom Out
+        window.addEventListener('maps:zoom-out', (e) => {
+            if (e.detail.mapId === this.elementId && this.map) {
+                this.map.zoomOut();
+            }
+        });
+
+        // Change Layer
+        window.addEventListener('maps:change-layer', (e) => {
+            if (e.detail.mapId === this.elementId && this.map) {
+                this.changeLayer(e.detail.layer);
+            }
+        });
+
+        // Center to Kurir
+        window.addEventListener('maps:center-kurir', (e) => {
+            if (e.detail.mapId === this.elementId) {
+                this.centerToKurir();
+            }
+        });
+
+        // Center Route (fit bounds between kurir and pelanggan)
+        window.addEventListener('maps:center-route', (e) => {
+            if (e.detail.mapId === this.elementId) {
+                this.centerRoute();
+            }
+        });
+
+        // Toggle Traffic
+        window.addEventListener('maps:toggle-traffic', (e) => {
+            if (e.detail.mapId === this.elementId) {
+                this.toggleTraffic();
+            }
+        });
+    }
+
+    changeLayer(layerKey) {
+        if (!this.map) return;
+
+        // Remove all existing tile layers
+        this.map.eachLayer((layer) => {
+            if (layer instanceof L.TileLayer) {
+                this.map.removeLayer(layer);
+            }
+        });
+
+        // Add new layer
+        const config = window.LeafletConfig?.tileLayers[layerKey];
+        if (config) {
+            L.tileLayer(config.url, config.options).addTo(this.map);
+        }
+    }
+
+    centerToKurir() {
+        if (!this.markerManager) return;
+
+        const kurirMarker = this.markerManager.get('kurir');
+        if (kurirMarker) {
+            const pos = kurirMarker.getLatLng();
+            const zoom = window.LeafletConfig?.zoom?.detail || 16;
+            this.setView(pos.lat, pos.lng, zoom);
+        }
+    }
+
+    centerRoute() {
+        if (!this.markerManager) return;
+
+        // Get both markers
+        const kurirMarker = this.markerManager.get('kurir');
+        const pelangganMarker = this.markerManager.get('pelanggan');
+
+        if (kurirMarker && pelangganMarker) {
+            // Fit bounds to show both markers
+            this.fitBounds();
+            // Reset map rotation
+            this.resetRotation();
+            // Allow next route update to fit bounds again
+            if (this.routingService) {
+                this.routingService.hasInitialFitBounds = false;
+            }
+        }
+    }
+
+    toggleTraffic() {
+        // This can be extended to toggle traffic overlay
+        console.log('Toggle traffic layer');
     }
 
     // ==========================================

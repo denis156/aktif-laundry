@@ -39,6 +39,8 @@ class Detail extends Component
 
     public ?string $jenisKendaraan = null;
 
+    public ?float $kurirSpeed = null;
+
     public function mount(int $id): void
     {
         // Load transaksi dengan relasi pelanggan
@@ -83,11 +85,12 @@ class Detail extends Component
         }
     }
 
-    public function updateKurirLocation(float $latitude, float $longitude, float $accuracy): void
+    public function updateKurirLocation(float $latitude, float $longitude, float $accuracy, ?float $speed = null): void
     {
         $this->kurirLatitude = $latitude;
         $this->kurirLongitude = $longitude;
         $this->kurirAccuracy = $accuracy;
+        $this->kurirSpeed = $speed;
         $this->gpsStatus = 'active';
 
         // Cache lokasi awal untuk route ini (pertama kali saja)

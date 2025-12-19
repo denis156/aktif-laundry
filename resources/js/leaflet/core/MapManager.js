@@ -17,6 +17,7 @@ export class MapManager {
             longitude: options.longitude || LeafletConfig.defaultCoordinates.longitude,
             zoom: options.zoom || LeafletConfig.zoom.default,
             showLayerControl: options.showLayerControl !== undefined ? options.showLayerControl : true,
+            showZoomControl: options.showZoomControl !== undefined ? options.showZoomControl : false,
             defaultTileLayer: options.defaultTileLayer || LeafletConfig.defaultTileLayer,
             rotate: options.rotate !== undefined ? options.rotate : false,
             onMapClick: options.onMapClick || null,
@@ -36,7 +37,7 @@ export class MapManager {
 
         // Create map with rotation support
         this.map = L.map(this.elementId, {
-            zoomControl: true,
+            zoomControl: this.options.showZoomControl,
             attributionControl: false,
             dragging: true,
             scrollWheelZoom: true,
