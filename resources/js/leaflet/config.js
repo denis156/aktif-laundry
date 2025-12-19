@@ -93,10 +93,20 @@ export const LeafletConfig = {
     },
 
     /**
-     * Arrow marker icon (for kurir with direction)
+     * Motor marker icon (for kurir with motorcycle)
      */
-    arrowMarkerIcon: {
-        iconUrl: '/images/arrow-up.png',
+    motorMarkerIcon: {
+        iconUrl: '/images/marker/motor-marker.svg',
+        iconSize: [48, 48],
+        iconAnchor: [24, 24], // Center anchor for rotation
+        popupAnchor: [0, -24],
+    },
+
+    /**
+     * Mobil marker icon (for kurir with car)
+     */
+    mobilMarkerIcon: {
+        iconUrl: '/images/marker/mobil-marker.svg',
         iconSize: [48, 48],
         iconAnchor: [24, 24], // Center anchor for rotation
         popupAnchor: [0, -24],
@@ -299,11 +309,19 @@ export const LeafletConfig = {
     },
 
     /**
-     * Create arrow marker icon (for direction)
+     * Create motor marker icon (for kurir with motorcycle)
      * @returns {L.Icon} - Leaflet icon
      */
-    createArrowMarkerIcon() {
-        return L.icon(this.arrowMarkerIcon);
+    createMotorMarkerIcon() {
+        return L.icon(this.motorMarkerIcon);
+    },
+
+    /**
+     * Create mobil marker icon (for kurir with car)
+     * @returns {L.Icon} - Leaflet icon
+     */
+    createMobilMarkerIcon() {
+        return L.icon(this.mobilMarkerIcon);
     },
 };
 

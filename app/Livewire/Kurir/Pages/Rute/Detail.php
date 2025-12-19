@@ -37,6 +37,8 @@ class Detail extends Component
 
     public bool $hasInitialLocation = false;
 
+    public ?string $jenisKendaraan = null;
+
     public function mount(int $id): void
     {
         // Load transaksi dengan relasi pelanggan
@@ -62,6 +64,7 @@ class Detail extends Component
         if ($kurir) {
             $this->kurirLatitude = $kurir->latitude ? (float) $kurir->latitude : null;
             $this->kurirLongitude = $kurir->longitude ? (float) $kurir->longitude : null;
+            $this->jenisKendaraan = $kurir->jenis_kendaraan;
 
             // Cek apakah sudah pernah ada lokasi tersimpan
             if ($this->kurirLatitude && $this->kurirLongitude) {

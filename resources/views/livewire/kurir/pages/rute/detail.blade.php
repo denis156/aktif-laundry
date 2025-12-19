@@ -26,6 +26,7 @@
             const pelangganLng = parseFloat(@js($pelangganLongitude));
             const pelangganNama = @js($pelangganNama);
             const pelangganAlamat = @js($pelangganAlamat);
+            const jenisKendaraan = @js($jenisKendaraan);
 
             function initRuteMap() {
                 const mapElement = document.getElementById('map-rute-detail');
@@ -70,9 +71,15 @@
                     popup: createPelangganPopup(pelangganLat, pelangganLng),
                 });
 
-                // Add kurir marker (arrow icon)
+                // Determine vehicle icon type based on jenis_kendaraan
+                let vehicleIconType = 'motor'; // default to motor
+                if (jenisKendaraan === 'Mobil') {
+                    vehicleIconType = 'mobil';
+                }
+
+                // Add kurir marker (vehicle icon based on jenis_kendaraan)
                 mapManager.addMarker('kurir', kurirLat, kurirLng, {
-                    icon: window.Maps.createIcon('arrow'),
+                    icon: window.Maps.createIcon(vehicleIconType),
                     popup: createKurirPopup(kurirLat, kurirLng),
                 });
 
