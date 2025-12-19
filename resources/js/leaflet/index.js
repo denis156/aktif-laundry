@@ -118,15 +118,17 @@ export function waitForMaps(callback, timeout = 10000) {
 
 /**
  * Create marker icon based on type
- * @param {string} type - Icon type: 'default', 'home', 'arrow'
+ * @param {string} type - Icon type: 'default', 'home', 'motor', 'mobil'
  * @returns {object} Icon config
  */
 export function createIcon(type = 'default') {
     switch (type) {
         case 'home':
             return LeafletConfig.createHomeMarkerIcon ? LeafletConfig.createHomeMarkerIcon() : LeafletConfig.homeMarkerIcon;
-        case 'arrow':
-            return LeafletConfig.createArrowMarkerIcon ? LeafletConfig.createArrowMarkerIcon() : LeafletConfig.arrowMarkerIcon;
+        case 'motor':
+            return LeafletConfig.createMotorMarkerIcon ? LeafletConfig.createMotorMarkerIcon() : LeafletConfig.motorMarkerIcon;
+        case 'mobil':
+            return LeafletConfig.createMobilMarkerIcon ? LeafletConfig.createMobilMarkerIcon() : LeafletConfig.mobilMarkerIcon;
         default:
             return LeafletConfig.createMarkerIcon ? LeafletConfig.createMarkerIcon() : LeafletConfig.markerIcon;
     }

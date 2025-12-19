@@ -116,7 +116,7 @@
                     {{-- Send Message Button --}}
                     <x-slot:append>
                         <x-button label="Kirim" icon="iconpark.send-o" type="submit" class="join-item btn-primary"
-                            spinner />
+                            spinner="sendMessage,sendFileMessage" />
                     </x-slot:append>
                 </x-input>
             </form>

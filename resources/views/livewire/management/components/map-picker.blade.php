@@ -5,8 +5,32 @@
 
 <div>
     {{-- Map Container with Search Overlay --}}
-    <div class="relative">
-        <div id="map-{{ $markerId }}" wire:ignore class="{{ $mapHeight }} z-0 rounded-md"></div>
+    <div class="relative overflow-hidden rounded-md">
+        <div id="map-{{ $markerId }}" wire:ignore class="{{ $mapHeight }} z-0"></div>
+
+        {{-- Zoom Controller - KIRI --}}
+        <div class="absolute top-2 left-2 z-1">
+            <livewire:components.maps-controller
+                :map-id="'map-' . $markerId"
+                position="top-left"
+                :show-zoom="true"
+                :show-layers="false"
+                :show-center="false"
+                :show-compass="false"
+            />
+        </div>
+
+        {{-- Layer Controller - KANAN --}}
+        <div class="absolute top-2 right-2 z-1">
+            <livewire:components.maps-controller
+                :map-id="'map-' . $markerId"
+                position="top-right"
+                :show-zoom="false"
+                :show-layers="true"
+                :show-center="false"
+                :show-compass="false"
+            />
+        </div>
 
         {{-- Search Box Overlay --}}
         <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-1 w-full max-w-2xl px-2">
@@ -45,7 +69,8 @@
                     longitude: lng,
                     zoom: {{ $defaultZoom }},
                     draggable: {{ $draggable ? 'true' : 'false' }},
-                    showLayerControl: {{ $showLayerControl ? 'true' : 'false' }},
+                    showLayerControl: false, // Disable default layer control - using MapsController
+                    showZoomControl: false, // Disable default zoom control - using MapsController
                     onMapClick: (clickLat, clickLng) => {
                         const latStr = clickLat.toFixed(6);
                         const lngStr = clickLng.toFixed(6);

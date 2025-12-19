@@ -8,6 +8,7 @@ export class RoutingService {
     constructor(map) {
         this.map = map;
         this.routeLayer = null;
+        this.hasInitialFitBounds = false; // Track if we've done initial fit bounds
     }
 
     /**
@@ -116,15 +117,25 @@ export class RoutingService {
      * @param {number} endLng - End longitude
      */
     async initRouting(startLat, startLng, endLat, endLng) {
+        const shouldFitBounds = !this.hasInitialFitBounds;
+
         try {
             // Try OSRM first (free)
             const route = await this.fetchOSRMRoute(startLat, startLng, endLat, endLng);
-            this.drawRoute(route.geometry);
+            this.drawRoute(route.geometry, shouldFitBounds);
+
+            if (shouldFitBounds) {
+                this.hasInitialFitBounds = true;
+            }
         } catch (osrmError) {
             try {
                 // Fallback to Mapbox (paid)
                 const route = await this.fetchMapboxRoute(startLat, startLng, endLat, endLng);
-                this.drawRoute(route.geometry);
+                this.drawRoute(route.geometry, shouldFitBounds);
+
+                if (shouldFitBounds) {
+                    this.hasInitialFitBounds = true;
+                }
             } catch (mapboxError) {
                 // Both failed - show error
                 console.error('[Error] All routing services failed:', mapboxError.message);
@@ -146,8 +157,9 @@ export class RoutingService {
     /**
      * Draw route on map from GeoJSON geometry
      * @param {object} geometry - GeoJSON LineString geometry
+     * @param {boolean} fitBounds - Whether to fit bounds to route (default: false)
      */
-    drawRoute(geometry) {
+    drawRoute(geometry, fitBounds = false) {
         // Remove existing route layer
         if (this.routeLayer) {
             this.map.removeLayer(this.routeLayer);
@@ -162,10 +174,12 @@ export class RoutingService {
             weight: LeafletConfig.routing.routeWeight,
         }).addTo(this.map);
 
-        // Fit bounds to show full route
-        this.map.fitBounds(this.routeLayer.getBounds(), {
-            padding: [50, 50],
-        });
+        // Only fit bounds on initial route draw
+        if (fitBounds) {
+            this.map.fitBounds(this.routeLayer.getBounds(), {
+                padding: [50, 50],
+            });
+        }
     }
 
     /**

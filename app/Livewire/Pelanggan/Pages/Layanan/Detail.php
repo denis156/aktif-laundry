@@ -46,7 +46,7 @@ class Detail extends Component
             return asset('storage/'.$this->layanan->icon_path);
         }
 
-        return asset('images/Logo.png');
+        return asset('icon.png');
     }
 
     public function getHargaFormatted(): string

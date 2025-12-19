@@ -1,7 +1,48 @@
 <div>
     @if ($pelangganLatitude && $pelangganLongitude)
-        <div class="h-dvh fixed inset-0 mt-16 z-40">
-            <div id="map-rute-detail" wire:ignore class="w-full h-full"></div>
+        <div class="h-dvh fixed inset-0 mt-16">
+            <div id="map-rute-detail" wire:ignore class="w-full h-full z-40"></div>
+
+            {{-- Zoom Controls - KIRI ATAS --}}
+            <div class="fixed top-20 left-4 z-48">
+                <livewire:components.maps-controller
+                    :map-id="'map-rute-detail'"
+                    position="top-left"
+                    :show-zoom="true"
+                    :show-layers="false"
+                    :show-center="false"
+                    :show-compass="false"
+                />
+            </div>
+
+            {{-- Speed Indicator - TENGAH ATAS --}}
+            <div class="fixed top-20 left-1/2 -translate-x-1/2 z-48">
+                <div class="bg-base-100 rounded-lg shadow-lg px-4 py-2">
+                    <div class="flex items-center gap-2">
+                        <div class="text-lg font-mono font-semibold" wire:poll.visible>
+                            @if ($kurirSpeed !== null)
+                                {{ number_format($kurirSpeed, 1) }}
+                            @else
+                                0.0
+                            @endif
+                            <span class="text-sm text-base-content/60">km/h</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Other Controls - KANAN ATAS --}}
+            <div class="fixed top-20 right-4 z-48">
+                <livewire:components.maps-controller
+                    :map-id="'map-rute-detail'"
+                    position="top-right"
+                    :show-zoom="false"
+                    :show-layers="true"
+                    :show-center="true"
+                    :show-compass="true"
+                    :current-layer="'googleTraffic'"
+                />
+            </div>
         </div>
     @else
         <div class="flex items-center justify-center h-screen bg-base-200">
@@ -26,6 +67,7 @@
             const pelangganLng = parseFloat(@js($pelangganLongitude));
             const pelangganNama = @js($pelangganNama);
             const pelangganAlamat = @js($pelangganAlamat);
+            const jenisKendaraan = @js($jenisKendaraan);
 
             function initRuteMap() {
                 const mapElement = document.getElementById('map-rute-detail');
@@ -55,7 +97,8 @@
                     rotate: true,
                     enableCompass: true,
                     smoothCompass: true,
-                    showLayerControl: false, // No layer control for navigation
+                    showLayerControl: false, // Disabled - using MapsController component
+                    showZoomControl: false, // Disabled - using MapsController component
                 });
 
                 if (!mapManager) {
@@ -70,9 +113,15 @@
                     popup: createPelangganPopup(pelangganLat, pelangganLng),
                 });
 
-                // Add kurir marker (arrow icon)
+                // Determine vehicle icon type based on jenis_kendaraan
+                let vehicleIconType = 'motor'; // default to motor
+                if (jenisKendaraan === 'Mobil') {
+                    vehicleIconType = 'mobil';
+                }
+
+                // Add kurir marker (vehicle icon based on jenis_kendaraan)
                 mapManager.addMarker('kurir', kurirLat, kurirLng, {
-                    icon: window.Maps.createIcon('arrow'),
+                    icon: window.Maps.createIcon(vehicleIconType),
                     popup: createKurirPopup(kurirLat, kurirLng),
                 });
 
@@ -93,26 +142,26 @@
                 $wire.call('updateGpsStatus', 'searching');
 
                 mapManager.startGPSTracking(
-                    (lat, lng, accuracy) => {
+                    (lat, lng, accuracy, speedKmh) => {
                         // Store position for bearing calculation fallback
                         mapManager.lastPosition = { lat, lng };
 
                         // Update GPS data to CompassTracker for fallback (if compass quality is poor)
                         if (mapManager.compassTracker) {
-                            // Get speed from position if available (HTML5 Geolocation API)
-                            const speed = 0; // Speed akan di-calculate dari successive GPS readings
-                            mapManager.compassTracker.updateGPSData(lat, lng, speed, accuracy);
+                            // Pass speed to compass tracker (if available)
+                            const speedMs = speedKmh !== null ? speedKmh / 3.6 : 0;
+                            mapManager.compassTracker.updateGPSData(lat, lng, speedMs, accuracy);
                         }
 
                         // Get current heading for display (compass handled separately)
                         const displayHeading = mapManager.compassHeading || mapManager.currentBearing;
 
-                        // Update Livewire
-                        $wire.call('updateKurirLocation', lat, lng, accuracy);
+                        // Update Livewire with speed
+                        $wire.call('updateKurirLocation', lat, lng, accuracy, speedKmh);
 
                         // Update kurir marker position
                         mapManager.updateMarker('kurir', lat, lng);
-                        mapManager.updateMarkerPopup('kurir', createKurirPopup(lat, lng, accuracy, displayHeading));
+                        mapManager.updateMarkerPopup('kurir', createKurirPopup(lat, lng, accuracy, displayHeading, speedKmh));
 
                         // Update routing
                         mapManager.updateRouting(lat, lng, pelangganLat, pelangganLng);
@@ -134,9 +183,10 @@
                 `;
             }
 
-            function createKurirPopup(lat, lng, accuracy = null, bearing = null) {
+            function createKurirPopup(lat, lng, accuracy = null, bearing = null, speedKmh = null) {
                 const accuracyText = accuracy ? `<div class="text-xs text-secondary mt-1">Akurasi: ±${accuracy.toFixed(1)}m</div>` : '';
                 const bearingText = bearing !== null ? `<div class="text-xs text-secondary mt-1">Arah: ${Math.round(bearing)}°</div>` : '';
+                const speedText = speedKmh !== null ? `<div class="text-xs text-secondary mt-1">Kecepatan: ${speedKmh.toFixed(1)} km/h</div>` : '';
 
                 return `
                     <div class="p-2">
@@ -144,6 +194,7 @@
                         <div class="text-sm mt-1 font-mono">${lat.toFixed(6)}, ${lng.toFixed(6)}</div>
                         ${accuracyText}
                         ${bearingText}
+                        ${speedText}
                     </div>
                 `;
             }

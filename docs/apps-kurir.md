@@ -1,7 +1,7 @@
 <div align="center">
-  <img src="../public/icon512_rounded.png" alt="Aktif Laundry Logo" width="120" height="120">
+  <img src="../public/icon.png" alt="SiAktif Logo" height="120">
 
-  # Aktif Laundry - Courier Application
+  # SiAktif - Courier Application
 
   [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
   [![Livewire](https://img.shields.io/badge/Livewire-3-4E56A6?style=for-the-badge&logo=livewire&logoColor=white)](https://livewire.laravel.com)
@@ -443,7 +443,7 @@ Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik
 
 <div align="center">
 
-  **Aktif Laundry Courier App** © 2025 - PT. Aktif Global Vision
+  **SiAktif Courier App** © 2025 - PT. Aktif Global Vision
 
   [![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)](https://github.com/denis156/aktif-laundry)
   [![PWA Ready](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://github.com/denis156/aktif-laundry)

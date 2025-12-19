@@ -89,11 +89,11 @@
     <x-modal wire:model="showInstallModal" title="Install Aplikasi" class="modal-bottom w-full backdrop-blur" persistent>
         <div class="space-y-4">
             <div class="flex justify-center">
-                <img src="{{ asset('icon512_rounded.png') }}" alt="App Icon" class="w-24 h-24 rounded-2xl shadow-lg" />
+                <img src="{{ asset('icon.png') }}" alt="App Icon" class="w-24 h-24 rounded-2xl shadow-lg" />
             </div>
 
             <div class="text-center space-y-2">
-                <h3 class="font-bold text-lg">Kurir {{ config('app.name') }}</h3>
+                <h3 class="font-bold text-lg">SiAktif</h3>
                 <p class="text-sm text-base-content/70">Aplikasi kurir untuk kelola pengiriman laundry dengan mudah</p>
             </div>
 

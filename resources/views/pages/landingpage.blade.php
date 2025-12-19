@@ -13,7 +13,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
     <meta name="apple-mobile-web-app-title" content="Aktif Laundry">
-    <link rel="apple-touch-icon" href="{{ asset('icon512_rounded.png') }}">
+    <link rel="apple-touch-icon" href="{{ asset('icons/icon-192x192.png') }}">
 
     <!-- SEO Meta Tags -->
     <title>{{ config('app.name') }} - Jasa Laundry Profesional Kendari | Cuci Setrika Rp 5.000/kg | Antar Jemput Gratis</title>
@@ -27,7 +27,7 @@
     <meta property="og:title" content="{{ config('app.name') }} - Jasa Laundry Profesional Kendari | Gratis Antar Jemput">
     <meta property="og:description"
         content="Laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg. Hemat waktu dan energi dengan layanan laundry antar jemput gratis. WhatsApp sekarang!">
-    <meta property="og:image" content="{{ asset('images/Logo.png') }}">
+    <meta property="og:image" content="{{ asset('icon.png') }}">
     <meta property="og:url" content="{{ url('/') }}">
 
     <!-- Twitter Card -->
@@ -35,14 +35,14 @@
     <meta name="twitter:title" content="{{ config('app.name') }} - Jasa Laundry Profesional Kendari">
     <meta name="twitter:description"
         content="Laundry profesional di Kendari, Sulawesi Tenggara. Cuci + lipat mulai Rp 5.000/kg. Gratis antar jemput untuk mahasiswa dan pekerja sibuk.">
-    <meta name="twitter:image" content="{{ asset('images/Logo.png') }}">
+    <meta name="twitter:image" content="{{ asset('icon.png') }}">
 
     <!-- Additional SEO -->
     <meta name="author" content="{{ config('app.name') }}">
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
     <meta name="language" content="id">
     <meta name="geo.region" content="ID">
-    <link rel="icon" type="image/png" href="{{ asset('images/Logo.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('icon.png') }}">
 
     <!-- Canonical URL -->
     <link rel="canonical" href="{{ url('/') }}">
@@ -57,7 +57,7 @@
     <meta name="rating" content="General">
 
     <!-- Logo for SEO -->
-    <link rel="image_src" href="{{ asset('images/Logo.png') }}">
+    <link rel="image_src" href="{{ asset('icon.png') }}">
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
@@ -93,7 +93,7 @@
                 </div>
                 <div class="flex-1 px-2">
                     <div class="flex items-center gap-4">
-                        <img src="{{ asset('images/Logo.png') }}" alt="{{ config('app.name') }}"
+                        <img src="{{ asset('icon.png') }}" alt="{{ config('app.name') }}"
                             class="h-12 w-auto ml-auto md:ml-0">
                         <span class="font-bold text-lg text-primary hidden md:block">Tetap Aktif, Tetap Bersih</span>
                     </div>
@@ -167,7 +167,7 @@
             <ul class="menu bg-base-200 min-h-dvh w-[64dvw] p-4">
                 <!-- Sidebar header dengan logo -->
                 <div class="flex flex-col items-center p-4 mb-4 space-y-2">
-                    <img src="{{ asset('images/Logo.png') }}" alt="{{ config('app.name') }}" class="h-14 w-auto">
+                    <img src="{{ asset('icon.png') }}" alt="{{ config('app.name') }}" class="h-14 w-auto">
                     <span class="font-bold text-sm text-primary text-center">Tetap Aktif, Tetap Bersih</span>
                 </div>
                 <div class="space-y-2">

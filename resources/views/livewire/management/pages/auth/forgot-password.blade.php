@@ -2,7 +2,7 @@
     <x-card class="shadow-xl bg-base-100" body-class="border-t border-dashed">
 
         <x-slot:figure>
-            <img src="{{ asset('images/Logo.png') }}" alt="Logo" class="w-auto h-34 mt-6" />
+            <img src="{{ asset('icon.png') }}" alt="Logo" class="w-auto h-34 mt-6" />
         </x-slot:figure>
 
         <!-- Header -->

@@ -34,7 +34,7 @@ class ListPromo extends Component
             return asset('storage/'.$promo->banner_image);
         }
 
-        return asset('images/Logo.png');
+        return asset('icon.png');
     }
 
     public function usePromo(int $promoId): void
