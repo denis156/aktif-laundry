@@ -10,7 +10,7 @@
 
   **Sistem Manajemen Laundry Terintegrasi dengan PWA & GPS Tracking**
 
-  Dikembangkan untuk **PT. Aktif Global Vision**
+  Dikembangkan untuk **PT. Aktif Gapura Internasional**
 
   ---
 
@@ -25,7 +25,7 @@
 
 ## 📖 Tentang Proyek
 
-**Aktif Laundry** adalah sistem manajemen laundry modern yang dikembangkan khusus untuk mengoptimalkan operasional bisnis laundry **PT. Aktif Global Vision**. Sistem ini terdiri dari 3 aplikasi terintegrasi yang dirancang untuk memudahkan pengelolaan transaksi, pelacakan pesanan, dan koordinasi antara admin, pelanggan, dan kurir.
+**Aktif Laundry** adalah sistem manajemen laundry modern yang dikembangkan khusus untuk mengoptimalkan operasional bisnis laundry **PT. Aktif Gapura Internasional**. Sistem ini terdiri dari 3 aplikasi terintegrasi yang dirancang untuk memudahkan pengelolaan transaksi, pelacakan pesanan, dan koordinasi antara admin, pelanggan, dan kurir.
 
 ### 🎯 Tujuan Bisnis
 
@@ -57,8 +57,9 @@ Sistem ini terdiri dari **3 aplikasi** yang terintegrasi:
 - **Backend**: Laravel 12, PHP 8.4, Livewire 3, MySQL 8
 - **Frontend**: Tailwind CSS 4, Alpine.js, Mary UI, DaisyUI
 - **PWA**: Service Worker, Web App Manifest, iOS Splash Screens
-- **Maps & GPS**: Leaflet.js, Geolocation API
+- **Maps & GPS**: Leaflet.js, Mapbox Search Box API, Geolocation API
 - **Integration**: WhatsApp (Fonnte API), Google Maps/Waze
+- **Real-time**: Cache-based GPS Tracking, Live Chat System
 
 ---
 
@@ -69,36 +70,44 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 ### 📱 Dokumentasi Aplikasi
 
 1. **[Management Application](docs/apps-management.md)**
-   - Dashboard admin dengan analytics & charts
+   - Dashboard admin dengan analytics & charts (Chart.js)
    - Manajemen master data (pelanggan, kurir, staf, layanan, promo)
    - Point of Sale (POS) / Kasir
    - Sistem referral & loyalty
-   - Integrasi WhatsApp
+   - Integrasi WhatsApp (Fonnte API)
+   - **Chat System**: Multi-participant dengan file sharing
+   - **Live Tracking**: Track semua kurir aktif real-time
+   - **Mapbox Integration**: Search Box API untuk location picker
    - Non-PWA (Web-based)
 
 2. **[Customer Application](docs/apps-pelanggan.md)**
    - Progressive Web App untuk pelanggan
    - Browse layanan & promo
    - Pemesanan online dengan maps integration
-   - Tracking pesanan real-time
+   - **Track Courier**: Live tracking posisi kurir untuk pesanan
+   - **Chat with Admin**: Real-time messaging dengan file sharing
    - Loyalty points & referral system
+   - **Smart Profile**: Auto-validation data lengkap
    - Installable di smartphone
 
 3. **[Courier Application](docs/apps-kurir.md)**
    - Progressive Web App untuk kurir
-   - GPS tracking real-time
+   - **GPS Tracking**: Real-time dengan speed, bearing, accuracy
+   - **Dual Chat**: Komunikasi dengan Admin & Pelanggan
    - Route optimization dengan maps
    - Multi-destination delivery
    - Upload bukti delivery
+   - **Cache-based Tracking**: 5 menit TTL untuk live updates
    - Navigation integration (Google Maps/Waze)
 
 ### 🗄️ Dokumentasi Database
 
 4. **[Database Schema](docs/database-diagram.md)**
    - Entity Relationship Diagram (ERD)
-   - 23 tables dengan 190+ fields
+   - 25 tables dengan 210+ fields
    - Detail setiap tabel dan relationship
    - Business logic & indexing strategy
+   - Chat system dengan polymorphic relationships
 
 ---
 
@@ -106,10 +115,14 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 
 ### 💼 Management Dashboard
 - 📊 Real-time analytics & statistics
-- 📈 Dynamic charts (line, area, bar, donut)
+- 📈 Dynamic charts (line, area, bar, donut) dengan Chart.js
 - 🧾 Multi-service & multi-promo transaction
 - 🎁 Referral & loyalty management
 - 📱 WhatsApp notification integration
+- 💬 **Chat System**: Multi-participant chat dengan Kurir & Pelanggan
+- 📍 **Live Tracking**: Track semua kurir aktif di satu map real-time
+- 🗺️ **Mapbox Integration**: Search Box API untuk location picker
+- 📋 **Regional Address**: Cascading dropdown Indonesia (Provinsi → Kelurahan)
 
 ### 📱 Customer PWA
 - 🏠 Dashboard dengan statistik pesanan
@@ -118,20 +131,77 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 - 🎁 Promo & referral code system
 - 💳 Member card & loyalty points
 - 📲 Installable seperti native app
+- 💬 **Chat with Admin**: Real-time messaging dengan file sharing
+- 📍 **Track Courier**: Live tracking posisi kurir untuk pesanan aktif
+- 👤 **Smart Profile**: Auto-detect data belum lengkap dengan validation
+- 📋 **Regional Address**: Form alamat lengkap dengan GPS coordinates
 
 ### 🚚 Courier PWA + GPS
-- 📍 Real-time GPS tracking
+- 📍 **Real-time GPS Tracking**: Speed, bearing, accuracy metrics
 - 🗺️ Interactive maps dengan multi-marker
 - 🧭 Route optimization & navigation
 - 📦 Multi-destination pickup/delivery
 - 📸 Upload foto bukti delivery
 - ⚡ Performance tracking & statistics
+- 💬 **Dual Chat**: Chat dengan Admin/Staf & Pelanggan
+- 📤 **File Sharing**: Kirim foto & dokumen (max 5MB)
+- 🔄 **Cache-based Tracking**: 5 menit TTL untuk real-time updates
+- 📋 **Regional Profile**: Alamat lengkap dengan cascading dropdowns
+
+---
+
+## 🚀 Fitur Advanced
+
+### 💬 Chat System
+Sistem chat terintegrasi untuk komunikasi real-time antar semua pengguna:
+
+- **Multi-Participant**: User (Admin/Staf), Kurir, Pelanggan
+- **File Sharing**: Support images (jpg, jpeg, png, gif) & documents (pdf, doc, docx)
+- **Max File Size**: 5MB per file
+- **Max Message**: 5000 karakter
+- **Read Receipts**: Tracking status baca pesan
+- **Search & Filter**: Cari percakapan dan pesan
+- **Unread Counter**: Badge untuk pesan belum dibaca
+- **Auto-delete**: Files terhapus otomatis saat conversation dihapus
+- **Storage**: `storage/app/public/chat-attachments/`
+
+**Use Cases:**
+- 🔹 Kurir ↔ Admin/Staf: Koordinasi pengiriman
+- 🔹 Kurir ↔ Pelanggan: Konfirmasi lokasi pickup/delivery
+- 🔹 Pelanggan ↔ Admin/Staf: Customer support & inquiries
+
+### 📍 GPS Tracking System
+Sistem pelacakan GPS real-time dengan data metrics lengkap:
+
+- **Speed Tracking**: Kecepatan kurir dalam km/h
+- **Bearing**: Arah kompas (0-360°) untuk rotasi marker
+- **Accuracy**: Radius akurasi GPS dalam meter
+- **Cache-based**: Data disimpan di cache dengan 5 menit TTL
+- **Live Updates**: Streaming real-time ke Management & Customer app
+- **Multi-Courier**: Management bisa track semua kurir aktif sekaligus
+- **Customer Tracking**: Pelanggan track kurir untuk pesanan mereka
+- **Active Filter**: Hanya tampilkan kurir yang update < 2 menit
+
+**Technical Stack:**
+- Frontend: Leaflet.js (Kurir & Pelanggan), Mapbox (Management)
+- Cache: Laravel Cache dengan key `kurir_tracking_{id}`
+- TTL: 5 menit dari last update
+- Maps: OpenStreetMap tiles
+
+### 🗺️ Regional Address System
+Form alamat Indonesia-specific dengan cascading selection:
+
+- **4-Level Cascade**: Provinsi → Kabupaten/Kota → Kecamatan → Kelurahan
+- **Auto-format**: Generate full address display otomatis
+- **GPS Coordinates**: Optional latitude/longitude
+- **Smart Validation**: Deteksi data belum lengkap
+- **All Apps**: Tersedia di Management, Customer, dan Courier apps
 
 ---
 
 ## 🔒 Catatan Penting
 
-> **⚠️ PRIVATE PROJECT**: Proyek ini adalah sistem proprietary yang dikembangkan khusus untuk PT. Aktif Global Vision dan **BUKAN proyek open source**. Semua hak cipta dilindungi.
+> **⚠️ PRIVATE PROJECT**: Proyek ini adalah sistem proprietary yang dikembangkan khusus untuk PT. Aktif Gapura Internasional dan **BUKAN proyek open source**. Semua hak cipta dilindungi.
 
 ### 🚫 Tidak untuk:
 - ❌ Redistribusi
@@ -140,7 +210,7 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 - ❌ Public contribution
 
 ### ✅ Hanya untuk:
-- ✅ Penggunaan internal PT. Aktif Global Vision
+- ✅ Penggunaan internal PT. Aktif Gapura Internasional
 - ✅ Development & maintenance oleh authorized team
 - ✅ Documentation & reference purposes
 
@@ -149,16 +219,16 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 ## 👥 Tim Development
 
 **Tech Lead**: Denis Djodian Ardika
-**Company**: PT. Aktif Global Vision
+**Company**: PT. Aktif Gapura Internasional
 **Repository**: Private (Internal Use Only)
 
 ---
 
 ## 📄 License
 
-**Proprietary Software** - © 2025 PT. Aktif Global Vision. All Rights Reserved.
+**Proprietary Software** - © 2025 PT. Aktif Gapura Internasional. All Rights Reserved.
 
-Sistem ini dilindungi oleh hak cipta dan merupakan properti eksklusif PT. Aktif Global Vision. Penggunaan, modifikasi, atau distribusi tanpa izin tertulis dilarang keras.
+Sistem ini dilindungi oleh hak cipta dan merupakan properti eksklusif PT. Aktif Gapura Internasional. Penggunaan, modifikasi, atau distribusi tanpa izin tertulis dilarang keras.
 
 ---
 
@@ -166,7 +236,7 @@ Sistem ini dilindungi oleh hak cipta dan merupakan properti eksklusif PT. Aktif 
 
   **Aktif Laundry Management System** © 2025
 
-  Dikembangkan dengan ❤️ untuk PT. Aktif Global Vision
+  Dikembangkan dengan ❤️ untuk PT. Aktif Gapura Internasional
 
   [![Laravel](https://img.shields.io/badge/Powered_by-Laravel_12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://laravel.com)
 

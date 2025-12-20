@@ -11,7 +11,7 @@
 
   **Progressive Web App untuk Pelanggan Laundry**
 
-  Dibuat oleh [Denis Djodian Ardika](https://github.com/denis156) - Tech Lead at PT. Aktif Global Vision
+  Dibuat oleh [Denis Djodian Ardika](https://github.com/denis156) - Tech Lead at PT. Aktif Gapura Internasional
 
   [![GitHub](https://img.shields.io/badge/GitHub-denis156/aktif--laundry-181717?style=for-the-badge&logo=github)](https://github.com/denis156/aktif-laundry)
 </div>
@@ -31,9 +31,17 @@
 
 ## 📱 Tentang Aplikasi
 
-Aplikasi Customer adalah **Progressive Web App (PWA)** yang memungkinkan pelanggan untuk memesan layanan laundry, melacak pesanan, mendapatkan promo, dan menggunakan kode referral. Aplikasi ini dapat diinstall di smartphone seperti aplikasi native dengan pengalaman yang cepat dan responsif.
+Aplikasi Customer adalah **Progressive Web App (PWA)** yang memungkinkan pelanggan untuk memesan layanan laundry, melacak pesanan, mendapatkan promo, dan menggunakan kode referral. Aplikasi ini dapat diinstall di smartphone seperti aplikasi native dengan pengalaman yang cepat dan responsif. Dilengkapi dengan **real-time chat**, **courier tracking**, dan **interactive maps**.
 
 > **PWA Enabled**: Aplikasi ini dapat diinstall di perangkat mobile (Android & iOS) dan bekerja offline dengan service worker.
+
+### ✨ What's New in This Documentation
+- 💬 **Chat System**: Dokumentasi lengkap chat dengan admin/staf
+- 📍 **Courier Tracking**: Live tracking kurir untuk transaksi Anda
+- 👤 **Profile Management Deep Dive**: Regional address system dengan validation
+- 🗺️ **Maps Integration**: Pilih lokasi dengan drag & drop marker
+- 🎨 **PWA Features**: Detailed splash screens dan installation guide
+- 🔐 **Security Features**: Multi-guard auth dan data privacy
 
 ### 📸 Screenshots
 
@@ -93,12 +101,41 @@ Aplikasi Customer adalah **Progressive Web App (PWA)** yang memungkinkan pelangg
 - **Loyalty Points**: Kumpulkan poin setiap transaksi
 - **Member Card**: Nomor kartu member digital
 
+### 💬 Chat & Communication
+![Chat](https://img.shields.io/badge/Module-Chat-cyan?style=flat-square)
+
+- **Real-time Messaging**: Chat langsung dengan Admin/Staf
+- **File Sharing**: Kirim foto, dokumen (PDF, DOC, DOCX) max 5MB
+- **Message Status**: Read/unread indicator untuk setiap pesan
+- **Image Preview**: Preview gambar sebelum kirim & full screen viewer
+- **Auto Scroll**: Scroll otomatis ke pesan terbaru
+- **Search**: Cari percakapan berdasarkan nama atau pesan
+- **Conversation List**: Lihat semua percakapan dengan unread count
+
+### 📍 Courier Tracking
+![Tracking](https://img.shields.io/badge/Module-Tracking-FF6B35?style=flat-square&logo=google-maps&logoColor=white)
+
+- **Real-time Position**: Track posisi kurir real-time di map
+- **GPS Metrics**: Speed, bearing, accuracy dari kurir
+- **Customer Location**: Lihat lokasi penjemputan/pengiriman Anda
+- **Route Visualization**: Marker kurir dan marker customer
+- **Vehicle Info**: Jenis kendaraan kurir (motor/mobil)
+- **Auto Refresh**: Update tracking data otomatis (wire:poll)
+- **Cache-based**: Data dari cache kurir app (updated < 5 menit)
+
 ### 👤 Profile & Pengaturan
 ![Profile](https://img.shields.io/badge/Module-Profile-gray?style=flat-square)
 
 - **Profile Management**: Update profil, foto, dan data diri
-- **Alamat Lengkap**: Simpan alamat dengan koordinat GPS
-- **Change Password**: Ubah password akun
+- **Avatar Upload**: Upload foto profil max 5MB
+- **Contact Info**: Edit nama, no HP, dan email
+- **Address Management**: Update alamat lengkap dengan regional selector
+- **GPS Coordinates**: Simpan latitude/longitude lokasi
+- **Regional Selection**: Pilih Provinsi, Kabupaten/Kota, Kecamatan, Kelurahan
+- **Address Preview**: Preview alamat lengkap auto-generated
+- **Modal Editing**: Setiap field edit via modal terpisah
+- **Validation**: Phone number validation dan unique email check
+- **Change Password**: Ubah password akun (via pengaturan)
 - **App Settings**: Pengaturan notifikasi dan preferensi
 - **Logout**: Keluar dari akun
 
@@ -130,6 +167,7 @@ Aplikasi Customer adalah **Progressive Web App (PWA)** yang memungkinkan pelangg
 📁 /pelanggan/
   ├── 🏠 beranda                  # Dashboard dengan statistik & quick access
   ├── 📋 riwayat                  # Riwayat semua pesanan
+  ├── 💬 chat                     # Chat dengan admin/staf
   ├── 👤 profile                  # Profile management
   └── ⚙️ pengaturan               # App settings
 ```
@@ -148,6 +186,19 @@ Aplikasi Customer adalah **Progressive Web App (PWA)** yang memungkinkan pelangg
 ```
 📁 /pelanggan/promo/
   └── 📄 detail-promo/{id}        # Detail promo dengan syarat & ketentuan
+```
+
+### Chat Module
+```
+📁 /pelanggan/chat/
+  ├── 💬 chat                     # List semua percakapan
+  └── 💭 chat-room/{conversation} # Chat room untuk percakapan tertentu
+```
+
+### Tracking Module
+```
+📁 /pelanggan/riwayat/
+  └── 📍 {id}/kurir               # Track posisi kurir untuk transaksi tertentu
 ```
 
 ---
@@ -225,11 +276,174 @@ Aplikasi Customer dilengkapi dengan komponen-komponen custom untuk pengalaman mo
 ![PWA](https://img.shields.io/badge/PWA-Service_Worker-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
 ![Leaflet](https://img.shields.io/badge/Leaflet.js-Maps-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 
+### Communication
+![Chat](https://img.shields.io/badge/Real--time_Chat-Livewire_Polling-4E56A6?style=for-the-badge)
+![File Upload](https://img.shields.io/badge/File_Upload-5MB_Max-FF2D20?style=for-the-badge)
+
 ### Tools
 ![Laravel Herd](https://img.shields.io/badge/Laravel_Herd-Development-FF2D20?style=for-the-badge)
 ![Bun](https://img.shields.io/badge/Bun-Asset_Build-000000?style=for-the-badge&logo=bun&logoColor=white)
 
 </div>
+
+### Key Technologies Breakdown
+
+#### Laravel 12 Features Used
+- 🔐 **Multi-guard Authentication**: Separate guard `pelanggan` untuk customer
+- ✅ **Email Verification**: Optional verification dengan `verified.pelanggan` middleware
+- 📁 **File Storage**: Public disk untuk avatar dan chat attachments
+- 💾 **Cache System**: Cache tracking data dari kurir app
+- 🗄️ **Eloquent ORM**: Relationships dan query optimization
+- 🔄 **Observers**: Auto cleanup files on conversation delete
+- 📧 **Notifications**: Toast notifications untuk user feedback
+- 🌐 **Localization**: Carbon locale Indonesia untuk dates
+
+#### Livewire 3 Features Used
+- 🔄 **Wire:navigate**: SPA-like navigation tanpa reload
+- 📊 **Computed Properties**: Efficient data caching untuk dashboard
+- 🎯 **Wire:poll**: Auto-refresh tracking data dan chat
+- 📡 **Event Dispatch**: JavaScript events untuk map & scroll
+- 📁 **File Uploads**: WithFileUploads trait untuk avatar dan chat
+- 💬 **Toast**: Mary UI toast untuk user feedback
+- 🔔 **Listeners**: Event listeners untuk real-time updates
+- 🎨 **Wire:loading**: Loading states untuk semua actions
+
+#### PWA Technologies
+- 📱 **Service Worker**: Offline caching dan background sync
+- 🎨 **Web App Manifest**: Installation prompt dan app icons
+- 🖼️ **iOS Splash Screens**: Device-specific splash screens
+- 📍 **Geolocation API**: Browser native GPS untuk maps
+- 💾 **LocalStorage**: Offline data persistence
+- 🔔 **Push Notifications**: (Future) Real-time order updates
+
+---
+
+## 💬 Chat System Deep Dive
+
+### Real-time Messaging Features
+```javascript
+// Chat Capabilities untuk Pelanggan:
+✅ Chat dengan Admin/Staf
+✅ File upload: images (jpg, jpeg, png, gif), documents (pdf, doc, docx)
+✅ Max file size: 5MB per file
+✅ Message validation: max 5000 characters
+✅ Auto-scroll to new messages
+✅ Unread message counter per conversation
+✅ Mark messages as read automatically
+✅ Image preview modal sebelum kirim
+✅ Full-screen image viewer untuk received images
+✅ Search conversations by name atau message content
+✅ Last message preview in conversation list
+✅ Participant info: nama, tipe (Admin), avatar
+✅ Simple & clean mobile-first UI
+```
+
+### Chat Storage & Performance
+- 📁 **File Storage**: Chat attachments di `storage/app/public/chat-attachments/`
+- 💾 **Auto Cleanup**: Files deleted saat conversation deleted (via Observer)
+- 🔄 **Message Limit**: Load last 50 messages per conversation
+- 📊 **Efficient Queries**: ChatHelper dengan optimized queries
+- 🔍 **Search Index**: Search by participant name atau message content
+- 🎭 **Participant Type**: Hanya chat dengan User (Admin/Staf)
+- 📱 **Mobile Optimized**: Touch-friendly interface
+
+---
+
+## 📍 Courier Tracking Deep Dive
+
+### Real-time Position Tracking
+```javascript
+// Tracking Features untuk Pelanggan:
+✅ Track posisi kurir untuk transaksi tertentu
+✅ Real-time GPS updates (wire:poll)
+✅ Cache-based tracking (5 menit TTL dari kurir app)
+✅ GPS metrics: latitude, longitude, accuracy, speed, bearing
+✅ Customer location marker (pickup/delivery address)
+✅ Courier location marker dengan icon
+✅ Vehicle info: jenis kendaraan (motor/mobil)
+✅ Status indicator: active/inactive/searching
+✅ Auto-refresh setiap polling cycle
+✅ Route visualization dengan dual markers
+```
+
+### Tracking Data Source
+- 📡 **Cache-based**: Data dari `kurir_tracking_{id}` cache key
+- ⏱️ **5 Menit TTL**: Cache expire jika kurir tidak update
+- 🔍 **Priority Logic**: Prioritas kurirAntar > kurirJemput
+- 🚗 **Vehicle Info**: Nama kurir, jenis kendaraan
+- 📍 **Dual Markers**: Customer location + courier position
+- 📊 **GPS Metrics**: Speed (km/h), bearing (compass), accuracy (meters)
+- 🗺️ **Map Integration**: Leaflet.js dengan OpenStreetMap tiles
+- 🎯 **Status Display**: Searching / Active / Inactive tracking state
+
+### Tracking Access
+- 🔐 **Transaction-based**: Hanya track kurir untuk transaksi sendiri
+- 🔗 **Direct URL**: `/pelanggan/riwayat/{id}/kurir`
+- 📱 **Mobile Optimized**: Full-screen map dengan controls
+- 🔄 **Real-time Updates**: Auto-refresh dengan wire:poll
+
+---
+
+## 👤 Profile Management Deep Dive
+
+### Personal Information
+- **Kode Pelanggan**: Auto-generated unique code (read-only)
+- **Nama**: Editable via modal dengan validation (max 255 chars)
+- **No HP**: Phone number dengan auto-format validation
+  - Format support: +62, 62, 08, 8
+  - Auto normalize ke format +62xxxxx
+  - Display format: 08xx-xxxx-xxxx (local)
+- **Email**: Optional, unique validation
+- **Avatar**: Upload max 5MB, auto-resize dengan placeholder fallback
+
+### Address Management System
+```javascript
+// Address Features:
+✅ Detail alamat (max 500 characters)
+✅ Regional selector: Provinsi → Kabupaten/Kota → Kecamatan → Kelurahan
+✅ Cascading dropdowns dengan Indonesia data
+✅ Auto-format alamat lengkap untuk display
+✅ GPS coordinates (latitude/longitude) optional
+✅ Address preview real-time saat input
+✅ Validation: required kelurahan, kecamatan, detail alamat
+✅ Save via transaction untuk data consistency
+```
+
+### Regional Location Hierarchy
+1. **Provinsi**: Select dari daftar provinsi Indonesia
+2. **Kabupaten/Kota**: Auto-load based on provinsi
+3. **Kecamatan**: Auto-load based on kabupaten/kota
+4. **Kelurahan**: Auto-load based on kecamatan
+5. **Detail Alamat**: Free text untuk detail spesifik
+6. **GPS Coordinates**: Optional lat/lng untuk maps
+
+### Profile Edit Flow
+- 🔄 **Modal-based Editing**: Setiap field punya modal terpisah
+- ✅ **Validation**: Real-time validation sebelum save
+- 💾 **Transaction Safety**: DB transaction untuk consistency
+- 🔔 **Toast Feedback**: Success/error notification
+- 📱 **Mobile Friendly**: Touch-optimized modal forms
+- ⚡ **Auto-reload**: Data refresh after save
+
+### Smart Validation
+- **Phone Number**:
+  - Normalize format otomatis
+  - Support multiple input formats
+  - Display format lokal Indonesia
+- **Email**:
+  - Unique check across pelanggan table
+  - Nullable (optional)
+  - Email format validation
+- **Coordinates**:
+  - Latitude: -90 to 90
+  - Longitude: -180 to 180
+  - Optional untuk flexibility
+
+### Profile Completion Check
+- 🚨 **Auto-detect**: Check data lengkap saat dari halaman pesanan
+- 🔔 **Warning Toast**: Notifikasi jika data belum lengkap
+- 🎯 **Auto-open Modal**: Open relevant modal untuk complete data
+- 📋 **Required Fields**: No HP, detail alamat, kelurahan, kecamatan, coordinates
 
 ---
 
@@ -272,13 +486,18 @@ Aplikasi Customer dilengkapi dengan komponen-komponen custom untuk pengalaman mo
 
 ## 🔐 Security Features
 
-- 🔒 **Authentication**: Laravel Sanctum untuk session management
-- 🛡️ **Data Privacy**: Data pelanggan terenkripsi
+- 🔒 **Authentication**: Multi-guard authentication (`auth:pelanggan`)
+- 🛡️ **Data Privacy**: Data pelanggan terenkripsi dan protected
 - ✅ **CSRF Protection**: Built-in Laravel CSRF protection
 - 🔑 **Password Hashing**: Bcrypt password hashing
-- 📧 **Email Verification**: Optional email verification
+- 📧 **Email Verification**: Optional email verification dengan `verified.pelanggan` middleware
 - 🚫 **Account Protection**: Rate limiting untuk login attempts
 - 📝 **Transaction History**: Audit trail untuk semua transaksi
+- 🔐 **Guard Isolation**: Separate guard untuk isolasi session pelanggan
+- 📁 **File Upload Validation**: Strict validation untuk avatar dan chat files (max 5MB)
+- 🚨 **Error Handling**: User-friendly error messages tanpa expose internal details
+- 🔄 **Session Regeneration**: Session regeneration pada login/logout
+- 📍 **Location Privacy**: GPS coordinates hanya untuk operational purposes
 
 ---
 
@@ -286,24 +505,41 @@ Aplikasi Customer dilengkapi dengan komponen-komponen custom untuk pengalaman mo
 
 ### 1️⃣ Registration
 ```
-Unduh PWA → Register → (Opsional) Input Referral Code → Verifikasi Email → Login
+Unduh PWA → Register → (Opsional) Input Referral Code → Verifikasi Email →
+Login → Complete Profile (No HP & Alamat)
 ```
 
 ### 2️⃣ First Order
 ```
-Browse Layanan → Pilih Layanan → Lihat Detail → Buat Pesanan → Pilih Lokasi di Map →
-Set Jadwal → Apply Promo → Konfirmasi Pesanan → Selesai
+Browse Layanan → Pilih Layanan → Lihat Detail → Buat Pesanan →
+(Jika data belum lengkap: Complete Profile di Modal) →
+Pilih Lokasi di Map → Set Jadwal → Apply Promo → Konfirmasi Pesanan → Selesai
 ```
 
 ### 3️⃣ Track Order
 ```
-Lihat Riwayat → Pilih Pesanan → Lihat Status Real-time → Terima Notifikasi Update
+Lihat Riwayat → Pilih Pesanan → Lihat Status Real-time →
+(Optional) Track Kurir Position → Lihat GPS Metrics Real-time →
+Terima Notifikasi Update
 ```
 
-### 4️⃣ Referral
+### 4️⃣ Communication
+```
+Buka Chat → Lihat Conversation List dengan Admin →
+Pilih Conversation → Kirim Pesan / Upload File → Real-time messaging
+```
+
+### 5️⃣ Referral
 ```
 Buka Card Referral → Copy Kode → Share ke Teman → Teman Register dengan Kode →
 Dapat Reward Promo
+```
+
+### 6️⃣ Profile Management
+```
+Buka Profile → Edit via Modal (Nama/No HP/Email/Alamat) →
+Upload Avatar (Optional) → Pilih Regional (Provinsi/Kab/Kec/Kel) →
+Set GPS Coordinates → Save
 ```
 
 ---
@@ -351,14 +587,14 @@ Dapat Reward Promo
 
 **Developer**: Denis Djodian Ardika
 **Position**: Tech Lead
-**Company**: PT. Aktif Global Vision
+**Company**: PT. Aktif Gapura Internasional
 **Repository**: [github.com/denis156/aktif-laundry](https://github.com/denis156/aktif-laundry)
 
 ---
 
 <div align="center">
 
-  **Aktif Laundry Customer App** © 2025 - PT. Aktif Global Vision
+  **Aktif Laundry Customer App** © 2025 - PT. Aktif Gapura Internasional
 
   [![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)](https://github.com/denis156/aktif-laundry)
   [![PWA Ready](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://github.com/denis156/aktif-laundry)

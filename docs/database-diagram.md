@@ -10,7 +10,7 @@
 
   **Database Schema & Entity Relationship Diagram**
 
-  Dibuat oleh [Denis Djodian Ardika](https://github.com/denis156) - Tech Lead at PT. Aktif Global Vision
+  Dibuat oleh [Denis Djodian Ardika](https://github.com/denis156) - Tech Lead at PT. Aktif Gapura Internasional
 
   [![GitHub](https://img.shields.io/badge/GitHub-denis156/aktif--laundry-181717?style=for-the-badge&logo=github)](https://github.com/denis156/aktif-laundry)
 </div>
@@ -339,6 +339,34 @@ erDiagram
         timestamp updated_at
     }
 
+    conversations ||--o{ chat_messages : "contains"
+    conversations {
+        bigint id PK
+        string participant_one_type
+        bigint participant_one_id
+        string participant_two_type
+        bigint participant_two_id
+        timestamp last_message_at
+        timestamp created_at
+        timestamp updated_at
+    }
+
+    chat_messages {
+        bigint id PK
+        bigint conversation_id FK
+        string sender_type
+        bigint sender_id
+        text message
+        string file_path
+        string file_name
+        string file_type
+        integer file_size
+        timestamp read_at
+        timestamp created_at
+        timestamp updated_at
+        timestamp deleted_at
+    }
+
     password_reset_tokens {
         string email PK
         string token
@@ -646,6 +674,43 @@ Tabel untuk menyimpan log/queue pesan WhatsApp (integrasi dengan Fonnte).
   - `location`: Data lokasi
   - `followup`: Data follow-up
 
+#### 14. conversations
+Tabel untuk menyimpan percakapan chat multi-participant (polymorphic relationship).
+- **Primary Key**: `id`
+- **Polymorphic Relations**:
+  - `participant_one_type` + `participant_one_id`: Participant pertama (User/Kurir/Pelanggan)
+  - `participant_two_type` + `participant_two_id`: Participant kedua (User/Kurir/Pelanggan)
+- **Notable Fields**:
+  - `last_message_at`: Timestamp pesan terakhir untuk sorting
+  - Support 3 tipe participant: User (Admin/Staf), Kurir, Pelanggan
+- **Use Cases**:
+  - Chat Kurir ↔ Admin/Staf
+  - Chat Kurir ↔ Pelanggan
+  - Chat Pelanggan ↔ Admin/Staf
+- **Indexes**: `participant_one`, `participant_two` composite indexes untuk optimasi query
+
+#### 15. chat_messages
+Tabel untuk menyimpan pesan chat dengan dukungan file attachment.
+- **Primary Key**: `id`
+- **Foreign Keys**:
+  - `conversation_id` -> `conversations.id` (cascade on delete)
+- **Polymorphic Relations**:
+  - `sender_type` + `sender_id`: Pengirim pesan (User/Kurir/Pelanggan)
+- **Notable Fields**:
+  - `message`: Isi pesan (max 5000 karakter)
+  - `file_path`: Path file attachment di storage
+  - `file_name`: Nama asli file yang diupload
+  - `file_type`: Tipe file (image/jpeg, application/pdf, dll)
+  - `file_size`: Ukuran file dalam bytes (max 5MB)
+  - `read_at`: Timestamp kapan pesan dibaca (untuk read receipt)
+- **File Support**:
+  - Images: jpg, jpeg, png, gif
+  - Documents: pdf, doc, docx
+  - Storage: `storage/app/public/chat-attachments/`
+  - Auto-delete via Observer saat conversation dihapus
+- **Soft Deletes**: Ya
+- **Indexes**: `conversation_id`, `sender`, `read_at` untuk optimasi query
+
 ---
 
 ### ⚙️ Laravel System Tables
@@ -654,22 +719,22 @@ Tabel untuk menyimpan log/queue pesan WhatsApp (integrasi dengan Fonnte).
 ![Cache](https://img.shields.io/badge/System-Cache-gray?style=flat-square)
 ![Queue](https://img.shields.io/badge/System-Queue-yellow?style=flat-square)
 
-#### 14. password_reset_tokens
+#### 16. password_reset_tokens
 Tabel untuk token reset password users.
 
-#### 15. kurir_password_reset_tokens
+#### 17. kurir_password_reset_tokens
 Tabel untuk token reset password kurir.
 
-#### 16. pelanggan_password_reset_tokens
+#### 18. pelanggan_password_reset_tokens
 Tabel untuk token reset password pelanggan.
 
-#### 17. sessions
+#### 19. sessions
 Tabel untuk menyimpan session pengguna.
 
-#### 18. cache & cache_locks
+#### 20. cache & cache_locks
 Tabel untuk cache aplikasi.
 
-#### 19. jobs, job_batches, failed_jobs
+#### 21. jobs, job_batches, failed_jobs
 Tabel untuk queue system Laravel.
 
 ---
@@ -695,6 +760,8 @@ Tabel untuk queue system Laravel.
 11. **promo → transaksi_promo**: One-to-Many (satu promo bisa digunakan di banyak transaksi)
 12. **promo → referral**: One-to-Many (satu promo bisa digunakan di banyak referral)
 13. **referral → pelanggan**: Many-to-One (banyak referral dimiliki satu pelanggan)
+14. **conversations → chat_messages**: One-to-Many (satu conversation bisa punya banyak messages)
+15. **users/kurir/pelanggan ↔ conversations**: Polymorphic Many-to-Many (multi-participant chat system)
 
 ---
 
@@ -780,6 +847,18 @@ Tabel untuk queue system Laravel.
    - Tabel `messages` untuk integrasi WhatsApp via Fonnte API
    - Mendukung scheduling, typing simulation, media files
 
+### 13. Chat System
+![Chat](https://img.shields.io/badge/Feature-Chat_System-cyan?style=flat-square)
+   - Multi-participant chat dengan polymorphic relationship
+   - Support 3 tipe participant: User (Admin/Staf), Kurir, Pelanggan
+   - File attachment support: images (jpg, jpeg, png, gif) & documents (pdf, doc, docx)
+   - Max file size: 5MB per file
+   - Max message length: 5000 karakter
+   - Read receipt tracking dengan `read_at` timestamp
+   - Auto-delete files via Observer saat conversation dihapus
+   - Storage path: `storage/app/public/chat-attachments/`
+   - Cache-based untuk real-time messaging performance
+
 ---
 
 ## 📑 Indexes
@@ -811,6 +890,10 @@ Indexes telah dibuat untuk optimasi query pada setiap tabel:
 - **sessions**: `user_id`, `last_activity`
 - **jobs**: `queue`
 
+### Chat Indexes
+- **conversations**: `participant_one_type`, `participant_one_id`, `participant_two_type`, `participant_two_id`, `last_message_at`, composite index `(participant_one_type, participant_one_id)`, composite index `(participant_two_type, participant_two_id)`
+- **chat_messages**: `conversation_id`, `sender_type`, `sender_id`, `read_at`, `created_at`, composite index `(sender_type, sender_id)`
+
 ---
 
 ## 📊 Database Statistics
@@ -819,19 +902,20 @@ Indexes telah dibuat untuk optimasi query pada setiap tabel:
 
 | Category | Tables | Total Fields | Relationships |
 |----------|--------|--------------|---------------|
-| **Core Business** | 13 | 150+ | 13 |
+| **Core Business** | 15 | 170+ | 15 |
 | **Laravel System** | 10 | 40+ | 2 |
-| **Total** | **23** | **190+** | **15** |
+| **Total** | **25** | **210+** | **17** |
 
 </div>
 
 ### Key Metrics
-- ✅ **Soft Deletes**: 9 tables untuk data recovery
+- ✅ **Soft Deletes**: 10 tables untuk data recovery
 - ✅ **JSON Fields**: 8 kolom untuk flexible data
 - ✅ **GPS Tracking**: 7 tables dengan lat/long
-- ✅ **Composite Indexes**: 25+ untuk query optimization
-- ✅ **Foreign Keys**: 20+ dengan proper constraints
+- ✅ **Composite Indexes**: 30+ untuk query optimization
+- ✅ **Foreign Keys**: 22+ dengan proper constraints
 - ✅ **Timestamps**: Semua tables dengan created_at & updated_at
+- ✅ **Polymorphic Relations**: Chat system dengan multi-participant support
 
 ---
 
@@ -839,14 +923,14 @@ Indexes telah dibuat untuk optimasi query pada setiap tabel:
 
 **Developer**: Denis Djodian Ardika
 **Position**: Tech Lead
-**Company**: PT. Aktif Global Vision
+**Company**: PT. Aktif Gapura Internasional
 **Repository**: [github.com/denis156/aktif-laundry](https://github.com/denis156/aktif-laundry)
 
 ---
 
 <div align="center">
 
-  **Aktif Laundry Database** © 2025 - PT. Aktif Global Vision
+  **Aktif Laundry Database** © 2025 - PT. Aktif Gapura Internasional
 
   [![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)](https://github.com/denis156/aktif-laundry)
   [![Laravel](https://img.shields.io/badge/Laravel-12-FF2D20?style=for-the-badge&logo=laravel&logoColor=white)](https://github.com/denis156/aktif-laundry)

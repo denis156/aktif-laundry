@@ -11,7 +11,7 @@
 
   **Progressive Web App untuk Kurir Laundry dengan GPS Tracking**
 
-  Dibuat oleh [Denis Djodian Ardika](https://github.com/denis156) - Tech Lead at PT. Aktif Global Vision
+  Dibuat oleh [Denis Djodian Ardika](https://github.com/denis156) - Tech Lead at PT. Aktif Gapura Internasional
 
   [![GitHub](https://img.shields.io/badge/GitHub-denis156/aktif--laundry-181717?style=for-the-badge&logo=github)](https://github.com/denis156/aktif-laundry)
 </div>
@@ -32,9 +32,18 @@
 
 ## 📱 Tentang Aplikasi
 
-Aplikasi Courier adalah **Progressive Web App (PWA)** yang dirancang khusus untuk kurir laundry dalam mengelola pengiriman dan penjemputan. Dilengkapi dengan **GPS tracking real-time**, **route optimization**, dan **maps integration** menggunakan Leaflet.js untuk memudahkan navigasi ke lokasi customer.
+Aplikasi Courier adalah **Progressive Web App (PWA)** yang dirancang khusus untuk kurir laundry dalam mengelola pengiriman dan penjemputan. Dilengkapi dengan **GPS tracking real-time** (dengan speed & bearing), **route optimization**, **real-time chat system**, dan **maps integration** menggunakan Leaflet.js untuk memudahkan navigasi ke lokasi customer.
 
-> **PWA + GPS Enabled**: Aplikasi dapat diinstall di smartphone dan menggunakan GPS untuk tracking lokasi real-time serta menampilkan rute pengiriman di peta interaktif.
+> **PWA + GPS + Chat Enabled**: Aplikasi dapat diinstall di smartphone dan menggunakan GPS untuk tracking lokasi real-time serta menampilkan rute pengiriman di peta interaktif. Dilengkapi dengan sistem chat real-time untuk komunikasi dengan admin dan pelanggan, termasuk file sharing untuk bukti delivery.
+
+### ✨ What's New in This Documentation
+- 💬 **Chat System**: Dokumentasi lengkap fitur chat dengan admin dan pelanggan
+- 🗺️ **Enhanced GPS Tracking**: Speed, bearing, dan accuracy monitoring
+- 📍 **Location Caching**: Public tracking API untuk pelanggan
+- 👤 **Profile Management**: Regional address system dengan cascading dropdown
+- 📊 **Detailed Stats**: Penjelasan lengkap metrics dan status management
+- 🎨 **UI/UX Details**: Modal system, avatar handling, stream updates
+- 🔐 **Security Features**: Multi-guard auth dan file validation
 
 ### 📸 Screenshots
 
@@ -101,14 +110,32 @@ Aplikasi Courier adalah **Progressive Web App (PWA)** yang dirancang khusus untu
 - **Earnings Tracking**: Track pendapatan dari pengiriman
 - **Performance Stats**: Statistik performa kurir
 
+### 💬 Chat & Communication
+![Chat](https://img.shields.io/badge/Module-Chat-cyan?style=flat-square)
+
+- **Real-time Messaging**: Chat langsung dengan admin dan pelanggan
+- **Conversation List**: Daftar percakapan aktif dengan unread count
+- **Multi-participant**: Chat dengan Admin (User) dan Pelanggan
+- **File Sharing**: Kirim foto, dokumen (PDF, DOC, DOCX) max 5MB
+- **Image Preview**: Preview gambar sebelum kirim & full screen viewer
+- **Message Status**: Read/unread indicator untuk setiap pesan
+- **Auto Scroll**: Scroll otomatis ke pesan terbaru
+- **Search**: Cari percakapan berdasarkan nama atau pesan
+- **Delete Conversation**: Hapus percakapan beserta file attachment
+- **Participant Info**: Info nama, tipe (Admin/Pelanggan), avatar
+- **New Conversation**: Buat percakapan baru dengan pilih participant
+
 ### 👤 Profile & Pengaturan
 ![Profile](https://img.shields.io/badge/Module-Profile-gray?style=flat-square)
 
 - **Profile Management**: Update profil, foto, dan data diri
-- **Vehicle Info**: Data kendaraan (no polisi, jenis)
-- **Bank Account**: Informasi rekening untuk gaji/bonus
-- **Emergency Contact**: Kontak darurat untuk keamanan
-- **Change Password**: Ubah password akun
+- **Avatar Upload**: Upload foto profil max 5MB
+- **Contact Info**: Edit nama, no HP, dan email
+- **Address Management**: Update alamat lengkap dengan regional selector
+- **GPS Coordinates**: Simpan latitude/longitude lokasi kurir
+- **Regional Selection**: Pilih Provinsi, Kabupaten/Kota, Kecamatan, Kelurahan
+- **Address Preview**: Preview alamat lengkap auto-generated
+- **Change Password**: Ubah password akun (via pengaturan)
 - **App Settings**: Pengaturan notifikasi dan GPS
 - **Logout**: Keluar dari akun
 
@@ -140,6 +167,7 @@ Aplikasi Courier adalah **Progressive Web App (PWA)** yang dirancang khusus untu
   ├── 🏠 beranda                  # Dashboard dengan statistik pengiriman
   ├── 🗺️ rute                     # Maps dengan list pesanan aktif (GPS tracking)
   ├── 📋 aktifitas                # Riwayat semua pengiriman
+  ├── 💬 chat                     # Chat dengan admin dan pelanggan
   ├── 👤 profile                  # Profile management
   └── ⚙️ pengaturan               # App settings
 ```
@@ -158,6 +186,13 @@ Aplikasi Courier adalah **Progressive Web App (PWA)** yang dirancang khusus untu
   └── 👁️ detail-aktifitas/{id}    # Detail pengiriman history
 ```
 
+### Chat Module
+```
+📁 /kurir/chat/
+  ├── 💬 chat                     # List semua percakapan
+  └── 💭 chat-room/{conversation} # Chat room untuk percakapan tertentu
+```
+
 ---
 
 ## 🧩 Komponen
@@ -165,15 +200,20 @@ Aplikasi Courier adalah **Progressive Web App (PWA)** yang dirancang khusus untu
 Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operations:
 
 ### Navigation Components
-| Komponen | Deskripsi | Lokasi |
-|----------|-----------|--------|
-| **Top Nav** | Header navigasi dengan logo dan kurir info | `kurir/component/top-nav` |
-| **Bottom Nav** | Bottom navigation bar untuk menu utama | `kurir/component/bottom-nav` |
+| Komponen | Deskripsi | Fitur | Lokasi |
+|----------|-----------|-------|--------|
+| **Top Nav** | Header navigasi dengan logo dan kurir info | Logo, nama kurir, notifikasi | `kurir/components/top-nav` |
+| **Bottom Nav** | Bottom navigation bar untuk menu utama | 4 menu: Beranda, Aktifitas, Rute, Pengaturan dengan active state | `kurir/components/bottom-nav` |
 
-### Maps Components
-| Komponen | Deskripsi | Lokasi |
-|----------|-----------|--------|
-| **Lokasi Saya** | Interactive map dengan GPS tracking dan markers | `kurir/component/lokasi-saya` |
+### Maps & GPS Components
+| Komponen | Deskripsi | Fitur | Lokasi |
+|----------|-----------|-------|--------|
+| **Lokasi Saya** | Interactive map dengan GPS tracking real-time | GPS status badge, koordinat live, akurasi, update counter, stream data real-time | `kurir/components/lokasi-saya` |
+
+### FAB (Floating Action Button)
+| Komponen | Deskripsi | Fitur | Lokasi |
+|----------|-----------|-------|--------|
+| **FAB Kurir** | Floating button untuk quick access ke rute | Quick link ke halaman rute dengan icon maps | `components/fab-kurir` |
 
 ---
 
@@ -183,12 +223,16 @@ Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operati
 ![GPS](https://img.shields.io/badge/GPS-Real--time_Tracking-FF6B35?style=for-the-badge&logo=google-maps&logoColor=white)
 
 #### Location Features
-- 📍 **Current Location**: Track lokasi kurir real-time
+- 📍 **Current Location**: Track lokasi kurir real-time dengan latitude/longitude
 - 🎯 **Auto Center**: Auto-center peta ke lokasi kurir
 - 📌 **Customer Markers**: Pin untuk setiap lokasi customer
-- 🔄 **Live Updates**: GPS position update otomatis
+- 🔄 **Live Updates**: GPS position update otomatis setiap detik
 - 📏 **Distance Calculation**: Hitung jarak ke setiap lokasi
-- 🧭 **Compass Direction**: Arah ke lokasi customer
+- 🧭 **Bearing Support**: Track arah pergerakan kurir (compass bearing)
+- 🚗 **Speed Tracking**: Monitor kecepatan kurir saat bergerak (km/h)
+- ✨ **Accuracy Indicator**: Akurasi GPS dalam meter (±10m = excellent, ±50m = good)
+- 💾 **Cache Location**: Cache lokasi untuk tracking history (5 menit)
+- 📊 **Real-time Stream**: Stream koordinat dan status ke UI tanpa refresh
 
 #### Map Interaction
 - 🗺️ **Leaflet.js Maps**: Interactive maps dengan OpenStreetMap
@@ -204,12 +248,16 @@ Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operati
 - 🧭 **Route Planning**: Optimize route untuk multiple destinations
 - 📱 **Deep Links**: Direct link ke aplikasi maps
 
-### Location Tracking
-- ✅ **Continuous Tracking**: GPS tracking selama delivery
-- 💾 **Track History**: Simpan tracking history untuk audit
-- 📊 **Distance Traveled**: Total jarak tempuh
+### Location Tracking & Caching
+- ✅ **Continuous Tracking**: GPS tracking selama delivery dengan update otomatis
+- 💾 **Tracking Cache**: Cache lokasi kurir real-time untuk public tracking (5 menit TTL)
+- 📍 **Route Start Cache**: Simpan lokasi awal rute (24 jam TTL)
+- 🗺️ **Track History**: History tracking dengan speed, bearing, dan accuracy
+- 📊 **Distance Traveled**: Total jarak tempuh dari titik awal
 - ⏱️ **Time Tracking**: Waktu mulai dan selesai delivery
 - 🔋 **Battery Optimized**: Efficient GPS usage untuk hemat baterai
+- 🎯 **Initial Location**: Load lokasi terakhir dari database untuk map initialization
+- 📡 **Public Tracking API**: Pelanggan bisa track posisi kurir real-time via cache
 
 ---
 
@@ -270,11 +318,45 @@ Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operati
 ![Leaflet](https://img.shields.io/badge/Leaflet.js-Maps-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 ![GPS](https://img.shields.io/badge/Geolocation_API-GPS-FF6B35?style=for-the-badge)
 
+### Communication
+![Chat](https://img.shields.io/badge/Real--time_Chat-Livewire_Polling-4E56A6?style=for-the-badge)
+![File Upload](https://img.shields.io/badge/File_Upload-Livewire-FF2D20?style=for-the-badge)
+
 ### Tools
 ![Laravel Herd](https://img.shields.io/badge/Laravel_Herd-Development-FF2D20?style=for-the-badge)
 ![Bun](https://img.shields.io/badge/Bun-Asset_Build-000000?style=for-the-badge&logo=bun&logoColor=white)
 
 </div>
+
+### Key Technologies Breakdown
+
+#### Laravel 12 Features Used
+- 🔐 **Multi-guard Authentication**: Separate auth untuk kurir dengan `auth:kurir`
+- ✅ **Email Verification**: Optional verification dengan `verified.kurir` middleware
+- 📁 **File Storage**: Public disk untuk avatar dan chat attachments
+- 💾 **Cache System**: Cache location tracking dengan TTL
+- 🗄️ **Eloquent ORM**: Relationships dan query optimization
+- 🔄 **Observers**: Auto cleanup files on conversation delete
+- 📧 **Notifications**: Email dan toast notifications
+- 🌐 **Localization**: Carbon locale Indonesia untuk dates
+
+#### Livewire 3 Features Used
+- 🔄 **Wire:navigate**: SPA-like navigation tanpa reload
+- 📊 **Computed Properties**: Efficient data caching
+- 🎯 **Wire:poll**: Auto-refresh dashboard setiap 10 detik
+- 📡 **Stream API**: Real-time coordinate updates
+- 📁 **File Uploads**: WithFileUploads trait untuk avatar dan chat files
+- 🎭 **Events**: Custom events untuk scroll dan notifications
+- 💬 **Toast**: Mary UI toast untuk user feedback
+- 🔔 **On Listener**: Event listeners untuk new messages
+
+#### GPS & Maps Technology
+- 🌍 **Leaflet.js**: Open-source interactive maps
+- 🗺️ **OpenStreetMap**: Free map tiles
+- 📍 **Geolocation API**: Browser native GPS
+- 🚗 **Speed & Bearing**: GPS velocity dan direction tracking
+- 💾 **Location Cache**: Redis cache untuk real-time tracking
+- 📊 **Accuracy Metrics**: GPS precision monitoring
 
 ---
 
@@ -291,16 +373,20 @@ Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operati
 ![Dark Mode](https://img.shields.io/badge/Dark_Mode-✓-black?style=flat-square)
 
 ### User Experience
-- ⚡ **SPA Experience**: No page reload dengan Livewire
-- 🔄 **Real-time Updates**: Auto-refresh pesanan aktif
+- ⚡ **SPA Experience**: No page reload dengan Livewire wire:navigate
+- 🔄 **Real-time Updates**: Auto-refresh pesanan aktif setiap 10 detik
 - ✨ **Smooth Animations**: Transisi smooth dan natural
 - 👆 **Touch Gestures**: Swipe, tap optimized untuk maps
 - 🚀 **Quick Actions**: FAB untuk akses rute cepat
-- 💬 **Toast Notifications**: Feedback untuk setiap aksi
+- 💬 **Toast Notifications**: Feedback untuk setiap aksi dengan position control
 - 📍 **Full Screen Maps**: Peta full screen dengan controls
-- 🎯 **Bottom Navigation**: Easy thumb reach
+- 🎯 **Bottom Navigation**: Easy thumb reach dengan 4 menu utama
 - 📞 **Quick Contact**: Tombol cepat hubungi customer
 - 🧭 **Navigation Shortcuts**: Quick open Google Maps/Waze
+- 🗨️ **Chat Badge**: Unread message count di conversation list
+- 📱 **Modal System**: Clean modal untuk edit profile, chat preview, image viewer
+- 🎨 **Avatar System**: Avatar dengan fallback ke placeholder dengan initial
+- 📊 **Stream Updates**: Real-time data stream tanpa full page refresh
 
 ---
 
@@ -308,26 +394,36 @@ Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operati
 
 ### 1️⃣ Login & Start Day
 ```
-Login → Lihat Dashboard → Check Pesanan Aktif di Rute
+Login → Lihat Dashboard → Check Pesanan Aktif di Rute → Check Chat untuk pesan baru
 ```
 
 ### 2️⃣ Pickup Flow
 ```
 Buka Rute → Lihat Maps & Marker Customer → Pilih Pesanan Jemput →
-Klik Navigasi → Perjalanan ke Lokasi → Update Status "Dalam Perjalanan" →
+Klik Navigasi → GPS Tracking Aktif (Speed & Bearing monitored) →
+Perjalanan ke Lokasi → Update Status "Dalam Perjalanan" →
 Sampai Lokasi → Jemput Cucian → Upload Foto Bukti → Update "Selesai"
 ```
 
 ### 3️⃣ Delivery Flow
 ```
 Buka Rute → Lihat Maps & Marker Customer → Pilih Pesanan Antar →
-Klik Navigasi → Perjalanan ke Lokasi → Update Status "Dalam Perjalanan" →
+Klik Navigasi → GPS Tracking Aktif (Location cached untuk pelanggan) →
+Perjalanan ke Lokasi → Update Status "Dalam Perjalanan" →
 Sampai Lokasi → Antar Cucian → Upload Foto Bukti → Update "Selesai"
 ```
 
-### 4️⃣ End of Day
+### 4️⃣ Communication Flow
 ```
-Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik
+Buka Chat → Lihat Conversation List → Pilih Chat (Admin/Pelanggan) →
+Kirim Pesan / Upload File → Real-time messaging →
+Atau: Buat Conversation Baru → Pilih Participant → Start Chat
+```
+
+### 5️⃣ End of Day
+```
+Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik →
+Reply Chat yang pending → Update Profile/Settings jika perlu
 ```
 
 ---
@@ -335,34 +431,40 @@ Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik
 ## 📊 Courier Features
 
 ### Dashboard Metrics
-- 📦 **Total Pengiriman**: Total semua pengiriman kurir
-- ✅ **Pesanan Selesai**: Pesanan yang sudah diselesaikan
-- 🚚 **Total Antar**: Jumlah delivery
-- 📥 **Total Jemput**: Jumlah pickup
+- 📦 **Total Pengiriman**: Total semua pengiriman kurir (jemput + antar)
+- ✅ **Pesanan Selesai**: Pesanan dengan status "Diambil"
+- 🚚 **Total Antar**: Delivery dengan status "Selesai" atau "Diambil"
+- 📥 **Total Jemput**: Pickup dengan status "Proses", "Selesai", atau "Diambil"
 - 📈 **Performance Stats**: Statistik performa harian/bulanan
+- 🔄 **Auto Refresh**: Dashboard auto-refresh setiap 10 detik
+- 📋 **Pengantaran Aktif**: List 3 pesanan aktif terbaru
+- 📜 **Transaksi Terbaru**: 3 transaksi terbaru termasuk yang menunggu assignment
 
 ### Route Optimization
-- 🗺️ **Visual Route**: Lihat semua lokasi di peta
+- 🗺️ **Visual Route**: Lihat semua lokasi di peta dengan Leaflet.js
 - 📏 **Distance Info**: Jarak dari lokasi kurir ke customer
 - 🎯 **Nearest First**: Urutkan pesanan berdasarkan jarak terdekat
 - 🔄 **Dynamic Updates**: Update route saat ada pesanan baru
 - 📍 **Multi-Stop**: Handle multiple pickup/delivery dalam satu trip
+- 🚗 **Jenis Kendaraan**: Info jenis kendaraan kurir (motor/mobil)
 
 ### Status Management
-- 🟡 **Dijadwalkan**: Pesanan yang dijadwalkan untuk hari ini
-- 🔵 **Dalam Perjalanan**: Status saat kurir sedang on the way
-- 🟢 **Selesai**: Pesanan yang sudah diselesaikan
+- 🟡 **Menunggu**: Pesanan yang belum assigned kurir
+- 🟠 **Proses**: Pesanan dijemput, menunggu diproses
+- 🔵 **Selesai**: Pesanan selesai diproses, siap diantar
+- 🟢 **Diambil**: Pesanan sudah diambil pelanggan (completed)
 - 🔴 **Batal**: Pesanan yang dibatalkan
 
 ### Evidence Upload
-- 📸 **Photo Upload**: Upload foto bukti delivery
+- 📸 **Photo Upload**: Upload foto bukti delivery via chat
 - 💾 **Auto Save**: Simpan otomatis ke server
 - 🖼️ **Image Preview**: Preview sebelum upload
 - 📱 **Camera Access**: Akses kamera langsung dari app
+- 📁 **File Support**: Support multiple file types (images, PDF, DOC)
 
 ---
 
-## 🔔 Notifications
+## 🔔 Notifications & Communication
 
 ### Real-time Alerts
 - 📬 **New Assignment**: Notifikasi pesanan baru assigned
@@ -370,19 +472,58 @@ Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik
 - ✅ **Status Update**: Konfirmasi setiap status update
 - 💰 **Payment Received**: Notifikasi pembayaran dari customer
 - ⏰ **Schedule Reminder**: Reminder jadwal pickup/delivery
+- 💬 **New Message**: Notifikasi pesan baru dari chat
+- 🔴 **Unread Count**: Badge unread message count di conversation list
 
 ---
 
 ## 🔐 Security Features
 
-- 🔒 **Authentication**: Laravel Sanctum untuk session management
-- 🛡️ **Courier Verification**: Hanya kurir terverifikasi yang bisa akses
+- 🔒 **Authentication**: Multi-guard authentication (`auth:kurir`)
+- 🛡️ **Courier Verification**: Hanya kurir terverifikasi yang bisa akses (`verified.kurir` middleware)
 - ✅ **CSRF Protection**: Built-in Laravel CSRF protection
 - 🔑 **Password Hashing**: Bcrypt password hashing
-- 📧 **Email Verification**: Optional email verification
+- 📧 **Email Verification**: Optional email verification dengan signed URLs
 - 📝 **Activity Logging**: Audit trail untuk semua aktifitas
 - 🚫 **Session Timeout**: Auto logout untuk keamanan
 - 📍 **Location Privacy**: GPS data hanya untuk operational purposes
+- 🔐 **Route Protection**: Guest dan authenticated route separation
+- 📁 **File Upload Validation**: Strict validation untuk file types dan size
+- 🚨 **Error Handling**: Proper error handling dengan user-friendly messages
+- 🔄 **Session Regeneration**: Session regeneration pada login/logout
+
+---
+
+## 💬 Chat System Deep Dive
+
+### Real-time Messaging Features
+```javascript
+// Chat Capabilities:
+✅ Multi-participant chat (Admin & Pelanggan)
+✅ Real-time message delivery dengan Livewire polling
+✅ File upload: images (jpg, jpeg, png, gif), documents (pdf, doc, docx)
+✅ Max file size: 5MB per file
+✅ Message validation: max 5000 characters
+✅ Auto-scroll to new messages
+✅ Unread message counter per conversation
+✅ Mark messages as read automatically
+✅ Image preview modal before sending
+✅ Full-screen image viewer for received images
+✅ Delete conversation with cascade file deletion
+✅ Search conversations by name or message content
+✅ Last message preview in conversation list
+✅ Participant type indicator (Admin/Pelanggan)
+✅ Avatar support for participants
+✅ Timestamp with relative time (diffForHumans)
+```
+
+### Chat Storage & Performance
+- 📁 **File Storage**: Chat attachments stored in `storage/app/public/chat-attachments/`
+- 💾 **Auto Cleanup**: Files deleted when conversation deleted (via Observer)
+- 🔄 **Message Limit**: Load last 50 messages per conversation
+- 📊 **Efficient Queries**: ChatHelper with optimized queries
+- 🔍 **Search Index**: Search by participant name or message content
+- 📱 **Mobile Optimized**: Touch-friendly chat UI
 
 ---
 
@@ -391,14 +532,16 @@ Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik
 ### Leaflet.js Implementation
 ```javascript
 // Features Implemented:
-✅ Real-time GPS tracking
+✅ Real-time GPS tracking with speed & bearing
 ✅ Multiple custom markers (kurir & customers)
 ✅ Auto-center to current location
 ✅ Polyline untuk route visualization
 ✅ Popup info untuk setiap marker
-✅ Distance calculation
+✅ Distance calculation with accuracy
 ✅ Touch-optimized controls
 ✅ Responsive map tiles
+✅ Location caching untuk public tracking
+✅ Stream updates untuk real-time koordinat display
 ```
 
 ### Marker Types
@@ -417,16 +560,45 @@ Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik
 
 ## 💼 Courier Management
 
+### Profile Management Deep Dive
+- 👤 **Personal Info**: Kode kurir (auto-generated), nama, no HP, email
+- 🖼️ **Avatar Upload**: Upload avatar dengan validation (max 5MB)
+- 📍 **Address System**:
+  - Detail alamat (max 500 characters)
+  - Regional selector: Provinsi → Kabupaten/Kota → Kecamatan → Kelurahan
+  - Cascading dropdown dengan data Indonesia
+  - Auto-format alamat lengkap
+  - GPS koordinat (latitude/longitude) optional
+- 📞 **Phone Validation**: Format nomor HP otomatis (+62, 62, 08, 8)
+- ✉️ **Email Unique**: Validasi email unique di database
+- 🔄 **Modal Editing**: Setiap field edit via modal terpisah
+- 💾 **Transaction Safety**: DB transaction untuk data consistency
+- ✅ **Validation Feedback**: Toast notification untuk success/error
+- 🗺️ **Location Integration**: Simpan koordinat untuk maps initialization
+
 ### Performance Tracking
-- 📊 **Daily Stats**: Statistik harian pengiriman
-- 📈 **Weekly/Monthly Reports**: Laporan performa bulanan
+- 📊 **Dashboard Stats**:
+  - Total pengiriman (jemput + antar)
+  - Pesanan selesai (status Diambil)
+  - Total antar (status Selesai atau Diambil)
+  - Total jemput (status Proses, Selesai, atau Diambil)
+- 📈 **Activity Grouping**: Group by Hari Ini, Minggu Ini, Bulan Ini, Lebih Lama
+- 📅 **Monthly Tracking**: Track performa per bulan dengan nama bulan Indonesia (locale)
 - ⭐ **Rating**: Customer rating untuk kurir
 - 💰 **Earnings**: Track pendapatan dari delivery fee
 - 🏆 **Achievements**: Badge untuk milestone tertentu
+- 📋 **Pagination**: Load more aktifitas dengan lazy loading (10 per page)
+
+### Communication Features
+- 💬 **Chat Integration**: Direct chat dengan admin dan pelanggan
+- 📞 **Quick Contact**: Tombol hubungi customer via WA/Telp
+- 📧 **Email Support**: Email untuk komunikasi formal
+- 📱 **File Sharing**: Kirim foto bukti delivery via chat
+- 🔔 **Push Notifications**: Real-time notification untuk pesan baru
 
 ### Emergency Features
 - 🆘 **Emergency Contact**: Quick dial kontak darurat
-- 📞 **Support Hotline**: Hubungi support jika ada masalah
+- 📞 **Support Hotline**: Hubungi support jika ada masalah via chat
 - ⚠️ **Report Issue**: Laporkan kendala pengiriman
 - 🚨 **SOS Button**: (Future) Emergency panic button
 
@@ -436,14 +608,14 @@ Lihat Aktifitas → Review Semua Pengiriman Hari Ini → Check Statistik
 
 **Developer**: Denis Djodian Ardika
 **Position**: Tech Lead
-**Company**: PT. Aktif Global Vision
+**Company**: PT. Aktif Gapura Internasional
 **Repository**: [github.com/denis156/aktif-laundry](https://github.com/denis156/aktif-laundry)
 
 ---
 
 <div align="center">
 
-  **SiAktif Courier App** © 2025 - PT. Aktif Global Vision
+  **SiAktif Courier App** © 2025 - PT. Aktif Gapura Internasional
 
   [![Made with ❤️](https://img.shields.io/badge/Made%20with-❤️-red?style=for-the-badge)](https://github.com/denis156/aktif-laundry)
   [![PWA Ready](https://img.shields.io/badge/PWA-Ready-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)](https://github.com/denis156/aktif-laundry)
