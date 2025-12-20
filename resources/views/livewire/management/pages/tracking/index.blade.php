@@ -177,22 +177,10 @@
                         <strong class="font-extrabold">Alamat:</strong> <span class="text-[9px]">${alamatTruncated}</span>
                     </div>
                 </div>
-                <button
-                    class="btn btn-primary btn-xs w-full"
-                    onclick="handleKurirAction(${kurir.kurir_id})"
-                >
-                    Detail
-                </button>
+                <x-button label="Detail" link="/management/tracking/${kurir.kurir_id}" class="btn-primary btn-xs btn-block" />
             </div>
         `;
     }
-
-    // Handle kurir action button (placeholder for future functionality)
-    window.handleKurirAction = function(kurirId) {
-        console.log('Kurir action clicked for ID:', kurirId);
-        // TODO: Implement action (redirect to detail, show modal, etc.)
-        // Example: window.location.href = `/management/kurir/${kurirId}`;
-    };
 
     // Initialize map after DOM ready
     setTimeout(() => {

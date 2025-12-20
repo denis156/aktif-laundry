@@ -69,10 +69,8 @@ export class LeafletMapManager {
             this.compassTracker = new CompassTracker(map, {
                 smoothRotation: this.options.smoothCompass,
                 onRotationUpdate: (bearing) => {
-                    // Update marker rotation if exists
-                    if (this.markerManager) {
-                        this.markerManager.rotate('kurir', bearing * 2);
-                    }
+                    // Compass rotates the map only, markers stay pointing north
+                    // No need to rotate markers here
                 },
             });
         }
