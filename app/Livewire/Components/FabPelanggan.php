@@ -19,16 +19,54 @@ class FabPelanggan extends Component
     {
         // Check if redirected from landing page with flag to open install modal
         if (session()->has('open_install_modal') && session('open_install_modal') === true) {
-            $this->showInstallModal = true;
-
-            // Clear the session flag after using it
+            // Clear the session flag first
             session()->forget('open_install_modal');
+
+            // Then check if in-app browser and handle accordingly
+            $this->js(<<<'JS'
+                const detection = window.browserHelper.detect();
+
+                if (detection.isInApp) {
+                    // Android: Langsung redirect ke Chrome
+                    if (detection.platform === 'android') {
+                        window.browserHelper.redirectToExternal();
+                    }
+                    // iOS: Langsung tampilkan instruksi manual
+                    else {
+                        $wire.handleInstallUnavailable();
+                    }
+                } else {
+                    // Normal browser: tampilkan modal install PWA
+                    $wire.showInstallModal = true;
+                }
+            JS);
         }
     }
 
     public function openInstallModal(): void
     {
-        $this->showInstallModal = true;
+        // Check dulu apakah in-app browser
+        $this->js(<<<'JS'
+            const detection = window.browserHelper.detect();
+
+            if (detection.isInApp) {
+                // Android: Langsung redirect ke Chrome
+                if (detection.platform === 'android') {
+                    const redirected = window.browserHelper.redirectToExternal();
+                    // Jika gagal redirect (unlikely), fallback ke manual
+                    if (!redirected) {
+                        $wire.handleInstallUnavailable();
+                    }
+                }
+                // iOS: Langsung tampilkan instruksi manual
+                else {
+                    $wire.handleInstallUnavailable();
+                }
+            } else {
+                // Normal browser: tampilkan modal install PWA
+                $wire.showInstallModal = true;
+            }
+        JS);
     }
 
     public function installPWA(): void

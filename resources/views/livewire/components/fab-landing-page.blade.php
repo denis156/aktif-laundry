@@ -1,5 +1,6 @@
 <div x-data="{
     isPwaInstalled: false,
+    isWebView: false,
     checkPwaInstalled() {
         // Check if running in standalone mode (installed PWA)
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
@@ -11,11 +12,15 @@
         if (localStorage.getItem('pwa-installed') === 'true') {
             this.isPwaInstalled = true;
         }
+    },
+    checkWebView() {
+        const detection = window.browserHelper.detect();
+        this.isWebView = detection.isWebView;
     }
-}" x-init="checkPwaInstalled()">
+}" x-init="checkPwaInstalled(); checkWebView()">
 
-    {{-- FAB: Always visible on landing page --}}
-    <div class="fab mb-6 mr-4">
+    {{-- FAB: Hide if in WebView --}}
+    <div class="fab mb-6 mr-4" x-show="!isWebView">
         <div tabindex="0" role="button" data-tip="Klik Aku"
             class="btn btn-xl btn-circle btn-secondary text-sm tooltip tooltip-secondary tooltip-open animate-bounce">
             <x-icon name="iconpark.press-o" />

@@ -1,5 +1,6 @@
 <div x-data="{
     isPwaInstalled: false,
+    isWebView: false,
     checkPwaInstalled() {
         if (window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone) {
             this.isPwaInstalled = true;
@@ -8,12 +9,16 @@
         if (localStorage.getItem('pwa-installed-pelanggan') === 'true') {
             this.isPwaInstalled = true;
         }
+    },
+    checkWebView() {
+        const detection = window.browserHelper.detect();
+        this.isWebView = detection.isWebView;
     }
-}" x-init="checkPwaInstalled()"
+}" x-init="checkPwaInstalled(); checkWebView()"
     x-on:pwa-installed-pelanggan.window="isPwaInstalled = true; localStorage.setItem('pwa-installed-pelanggan', 'true')">
 
-    {{-- FAB: Hide after PWA installed --}}
-    <div class="fab mb-6 mr-4" x-show="!isPwaInstalled">
+    {{-- FAB: Hide after PWA installed OR if in WebView --}}
+    <div class="fab mb-6 mr-4" x-show="!isPwaInstalled && !isWebView">
         <div tabindex="0" role="button" data-tip="Klik Aku"
             class="btn btn-xl btn-circle btn-secondary text-sm tooltip tooltip-secondary tooltip-open animate-bounce">
             <x-icon name="iconpark.press-o" />

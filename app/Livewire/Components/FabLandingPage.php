@@ -21,6 +21,28 @@ class FabLandingPage extends Component
 
     public function redirectToPelanggan(): void
     {
+        // Check dulu apakah in-app browser
+        $this->js(<<<'JS'
+            const detection = window.browserHelper.detect();
+
+            if (detection.isInApp) {
+                // Android: Langsung redirect ke Chrome
+                if (detection.platform === 'android') {
+                    window.browserHelper.redirectToExternal();
+                }
+                // iOS: Redirect ke halaman pelanggan, nanti di mount akan tampilkan instruksi
+                else {
+                    $wire.proceedToPelanggan();
+                }
+            } else {
+                // Normal browser: redirect dan tampilkan modal install PWA
+                $wire.proceedToPelanggan();
+            }
+        JS);
+    }
+
+    public function proceedToPelanggan(): void
+    {
         // Store flag in session to open install modal
         session(['open_install_modal' => true]);
 
@@ -29,9 +51,31 @@ class FabLandingPage extends Component
 
     public function openInstalledApp(): void
     {
-        // Redirect to pelanggan WITHOUT opening install modal
-        // This is for users who already have PWA installed
-        $this->redirect('/pelanggan', navigate: true);
+        // Try to open PWA using Intent URL (Android)
+        // If not Android or failed, fallback to normal redirect
+        $this->js(<<<'JS'
+            const detection = window.browserHelper.detect();
+            const pelangganUrl = window.location.origin + '/pelanggan';
+
+            // Android: Try Intent URL to open installed PWA
+            if (detection.platform === 'android') {
+                try {
+                    // Generate Intent URL for pelanggan page
+                    const intentUrl = window.browserHelper.generateChromeIntent(pelangganUrl);
+
+                    console.log('[FAB] Opening installed PWA via Intent URL:', intentUrl);
+                    window.location.href = intentUrl;
+                } catch (error) {
+                    console.error('[FAB] Failed to open PWA via Intent, using fallback:', error);
+                    // Fallback: normal redirect
+                    window.location.href = pelangganUrl;
+                }
+            } else {
+                // iOS or other: normal redirect will open PWA if installed
+                console.log('[FAB] Opening installed PWA via normal redirect');
+                window.location.href = pelangganUrl;
+            }
+        JS);
     }
 
     /**

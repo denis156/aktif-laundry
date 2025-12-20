@@ -3,6 +3,7 @@ import { initDarkMode, isDarkMode } from './utils/darkMode';
 import { initPermissions } from './utils/permissions';
 import { setupPWAInstall } from './utils/pwaInstall';
 import { chatRoomData, ChatRoomManager } from './utils/chatRoomManager';
+import './utils/browserHelper';
 
 // Import Leaflet maps module
 import './leaflet/index.js';

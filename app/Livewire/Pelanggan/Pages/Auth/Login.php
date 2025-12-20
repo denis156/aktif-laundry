@@ -24,6 +24,29 @@ class Login extends Component
 
     public bool $remember = false;
 
+    public bool $showInAppBrowserModal = false;
+
+    public function mount(): void
+    {
+        // Check if in-app browser on page load
+        $this->js(<<<'JS'
+            const detection = window.browserHelper.detect();
+
+            if (detection.isInApp) {
+                // Android: Langsung redirect ke Chrome
+                if (detection.platform === 'android') {
+                    console.log('[Login] In-app browser detected on Android, redirecting to Chrome...');
+                    window.browserHelper.redirectToExternal();
+                }
+                // iOS: Tampilkan modal instruksi
+                else if (detection.platform === 'ios') {
+                    console.log('[Login] In-app browser detected on iOS, showing instructions...');
+                    $wire.showInAppBrowserModal = true;
+                }
+            }
+        JS);
+    }
+
     public function login(): void
     {
         // Validasi
