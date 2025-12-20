@@ -3,9 +3,26 @@
     <x-header title="Lacak Kurir" icon="o-map-pin"
         icon-classes="bg-primary text-primary-content rounded-full p-1 w-8 h-8"
         subtitle="Pantau lokasi dan aktivitas kurir secara real-time" separator progress-indicator>
-        <x-slot:actions>
-            {{-- Additional actions can be added here in the future --}}
-        </x-slot:actions>
+        <x-slot:middle class="justify-end!">
+            <x-select
+                icon="o-magnifying-glass"
+                placeholder="Pilih Kurir..."
+                class="w-48!"
+                wire:model.live="selectedKurirId"
+                :options="$this->kurirOptions"
+                placeholder-value="0">
+                @if($selectedKurirId > 0)
+                    <x-slot:append>
+                        <x-button
+                            icon="o-arrow-path"
+                            wire:click="resetSelection"
+                            class="join-item btn-secondary"
+                            label="Reset"
+                            responsive />
+                    </x-slot:append>
+                @endif
+            </x-select>
+        </x-slot:middle>
     </x-header>
 
     {{-- MAIN CONTENT --}}
@@ -82,6 +99,52 @@
         Livewire.on('kurir-locations-updated', (event) => {
             updateKurirLocations(event.activeKurir);
         });
+
+        // Listen to zoom event when kurir is selected
+        Livewire.on('zoom-to-kurir', (event) => {
+            zoomToKurir(event.kurirData);
+        });
+
+        // Listen to reset zoom event
+        Livewire.on('reset-zoom', () => {
+            resetZoom();
+        });
+    }
+
+    function zoomToKurir(kurirData) {
+        if (!mapManager || !kurirData) return;
+
+        const lat = parseFloat(kurirData.latitude);
+        const lng = parseFloat(kurirData.longitude);
+
+        if (isNaN(lat) || isNaN(lng)) return;
+
+        // Get zoom levels
+        const zoom = window.Maps.getZoomLevels();
+
+        // Zoom to kurir location with detail zoom level
+        mapManager.setView(lat, lng, zoom.detail);
+
+        // Open popup for the selected kurir
+        const kurirId = `kurir_${kurirData.kurir_id}`;
+        const marker = mapManager.markerManager?.get(kurirId);
+        if (marker) {
+            marker.openPopup();
+        }
+    }
+
+    function resetZoom() {
+        if (!mapManager) return;
+
+        // Get default coordinates from config
+        const defaultCoordinates = window.Maps.getDefaultCoordinates();
+        const zoom = window.Maps.getZoomLevels();
+
+        // Reset zoom to default coordinates and city zoom level
+        mapManager.setView(defaultCoordinates.latitude, defaultCoordinates.longitude, zoom.city);
+
+        // Close all popups
+        mapManager.map?.closePopup();
     }
 
     function updateKurirLocations(activeKurir) {
@@ -177,7 +240,7 @@
                         <strong class="font-extrabold">Alamat:</strong> <span class="text-[9px]">${alamatTruncated}</span>
                     </div>
                 </div>
-                <x-button label="Detail" link="/management/tracking/${kurir.kurir_id}" class="btn-primary btn-xs btn-block" />
+                <x-button label="Detail" link="/management/tracking/${kurir.kurir_id}" class="btn-primary btn-xs btn-block text-primary-content!" />
             </div>
         `;
     }

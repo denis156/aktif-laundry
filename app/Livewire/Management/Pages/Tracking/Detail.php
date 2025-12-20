@@ -11,7 +11,7 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 
-#[Title('Detail Tracking Kurir')]
+#[Title('Detail Lacak Kurir')]
 #[Layout('layouts.management.app')]
 class Detail extends Component
 {

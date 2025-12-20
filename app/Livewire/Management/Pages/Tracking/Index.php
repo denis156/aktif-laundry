@@ -19,6 +19,8 @@ class Index extends Component
 
     public int $activeKurirCount = 0;
 
+    public int $selectedKurirId = 0;
+
     public function mount(): void
     {
         $this->updateActiveKurir();
@@ -52,6 +54,44 @@ class Index extends Component
 
         // Dispatch event to JavaScript with active kurir data
         $this->dispatch('kurir-locations-updated', activeKurir: $activeKurir);
+    }
+
+    /**
+     * Get kurir options for choices component
+     */
+    public function getKurirOptionsProperty(): array
+    {
+        return collect($this->activeKurir)->map(function ($kurir) {
+            return [
+                'id' => $kurir['kurir_id'],
+                'name' => $kurir['nama'],
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Handle kurir selection change
+     */
+    public function updatedSelectedKurirId(int $value): void
+    {
+        if ($value > 0) {
+            // Find selected kurir data
+            $selectedKurir = collect($this->activeKurir)->firstWhere('kurir_id', $value);
+
+            if ($selectedKurir) {
+                // Dispatch event to zoom to selected kurir
+                $this->dispatch('zoom-to-kurir', kurirData: $selectedKurir);
+            }
+        }
+    }
+
+    /**
+     * Reset kurir selection and zoom
+     */
+    public function resetSelection(): void
+    {
+        $this->selectedKurirId = 0;
+        $this->dispatch('reset-zoom');
     }
 
     public function render(): View
