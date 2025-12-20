@@ -38,9 +38,12 @@
             $totalBerat = $transaksi->total_berat > 0 ? number_format($transaksi->total_berat, 1) . ' kg' : null;
             $totalItem = $transaksi->total_item > 0 ? $transaksi->total_item . ' pcs' : null;
             $quantity = $totalBerat ?? $totalItem ?? '-';
+
+            // Get route berdasarkan status dan tracking cache
+            $transaksiRoute = $this->getTransaksiRoute($transaksi);
             @endphp
 
-            <a href="{{ route('detail-pesanan.pelanggan', $transaksi->id) }}" wire:navigate class="block">
+            <a href="{{ $transaksiRoute }}" wire:navigate class="block">
                 <x-card wire:key="transaksi-{{ $transaksi->id }}" title="{{ $transaksi->kode_transaksi }}"
                     subtitle="{{ $transaksi->tanggal_masuk->locale('id')->isoFormat('DD MMMM YYYY, HH:mm') }}"
                     class="shadow-lg border border-b-4 border-r-4 border-primary active:border-0 active:shadow-sm transition-all cursor-pointer">

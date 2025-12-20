@@ -8,6 +8,7 @@ use App\Helper\AvatarPlaceholder;
 use App\Models\Transaksi;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
@@ -173,6 +174,28 @@ class Index extends Component
             $transaksi->pelanggan->nama,
             256
         );
+    }
+
+    /**
+     * Get route untuk transaksi berdasarkan ketersediaan tracking cache
+     */
+    public function getTransaksiRoute(Transaksi $transaksi): string
+    {
+        // Cek kurir yang sedang handle (prioritas: kurir antar > kurir jemput)
+        $kurirId = $transaksi->kurir_antar_id ?? $transaksi->kurir_jemput_id;
+
+        if ($kurirId) {
+            $cacheKey = 'kurir_tracking_'.$kurirId;
+            $trackingData = Cache::get($cacheKey);
+
+            // Jika ada cache tracking, arahkan ke kurir position
+            if ($trackingData) {
+                return route('kurir-position.pelanggan', $transaksi->id);
+            }
+        }
+
+        // Default: arahkan ke detail pesanan
+        return route('detail-pesanan.pelanggan', $transaksi->id);
     }
 
     public function render(): mixed

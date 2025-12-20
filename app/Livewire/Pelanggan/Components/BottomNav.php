@@ -65,7 +65,7 @@ class BottomNav extends Component
         $routeMapping = [
             'pesanan.pelanggan' => ['pesanan-form.pelanggan', 'edit-pesanan.pelanggan'],
             'pengaturan.pelanggan' => ['profile.pelanggan'],
-            'riwayat.pelanggan' => ['detail-pesanan.pelanggan'],
+            'riwayat.pelanggan' => ['detail-pesanan.pelanggan', 'kurir-position.pelanggan'],
         ];
 
         if (isset($routeMapping[$routeName]) && in_array($currentRoute, $routeMapping[$routeName])) {

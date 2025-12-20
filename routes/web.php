@@ -71,6 +71,7 @@ use App\Livewire\Pelanggan\Pages\Pesanan\Create as PelangganBuatPesanan;
 use App\Livewire\Pelanggan\Pages\Pesanan\Detail as PelangganDetailPesanan;
 use App\Livewire\Pelanggan\Pages\Pesanan\Edit as PelangganEditPesanan;
 use App\Livewire\Pelanggan\Pages\Pesanan\Index as PelangganRiwayat;
+use App\Livewire\Pelanggan\Pages\Pesanan\KurirPosition as PelangganKurirPosition;
 use App\Livewire\Pelanggan\Pages\Profile as PelangganProfile;
 use App\Livewire\Pelanggan\Pages\Promo\Detail as PelangganDetailPromo;
 use Illuminate\Foundation\Auth\EmailVerificationRequest;
@@ -289,6 +290,7 @@ Route::middleware(['auth:pelanggan', 'verified.pelanggan'])->prefix('pelanggan')
     // Riwayat
     Route::get('/riwayat', PelangganRiwayat::class)->name('riwayat.pelanggan');
     Route::get('/riwayat/{id}', PelangganDetailPesanan::class)->name('detail-pesanan.pelanggan');
+    Route::get('/riwayat/{id}/kurir', PelangganKurirPosition::class)->name('kurir-position.pelanggan');
 
     // Chat
     Route::get('/chat', PelangganChatIndex::class)->name('chat.pelanggan');
