@@ -114,4 +114,47 @@ return [
         'token' => env('MAPBOX_TOKEN'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Firebase Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk Firebase Cloud Messaging (FCM) dan Firebase Services
+    | Digunakan untuk push notifications ke web, iOS, dan Android
+    |
+    | Setup:
+    | 1. Buka Firebase Console: https://console.firebase.google.com/
+    | 2. Buat atau pilih project yang ada
+    | 3. Download Firebase Admin SDK credentials (JSON file)
+    | 4. Simpan ke storage/app/firebase/
+    | 5. Di Project Settings > Cloud Messaging, dapatkan VAPID Key
+    | 6. Copy semua credentials ke .env file
+    |
+    | Fitur yang tersedia:
+    | - Push notifications untuk web (PWA)
+    | - Push notifications untuk mobile apps
+    | - Multi-device token management
+    | - Firebase Realtime Database
+    | - Firebase Authentication
+    |
+    */
+
+    'firebase' => [
+        // Admin SDK credentials for backend/server
+        'credentials' => env('FIREBASE_CREDENTIALS'),
+        'vapid_key' => env('FIREBASE_VAPID_KEY'),
+
+        // Web/PWA configuration for frontend
+        'web' => [
+            'api_key' => env('FIREBASE_API_KEY'),
+            'auth_domain' => env('FIREBASE_AUTH_DOMAIN'),
+            'database_url' => env('FIREBASE_DATABASE_URL'),
+            'project_id' => env('FIREBASE_PROJECT_ID'),
+            'storage_bucket' => env('FIREBASE_STORAGE_BUCKET'),
+            'messaging_sender_id' => env('FIREBASE_MESSAGING_SENDER_ID'),
+            'app_id' => env('FIREBASE_APP_ID'),
+            'measurement_id' => env('FIREBASE_MEASUREMENT_ID'),
+        ],
+    ],
+
 ];

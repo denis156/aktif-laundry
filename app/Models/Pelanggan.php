@@ -36,7 +36,7 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
         'email',
         'email_verified_at',
         'password',
-        'device_token',
+        'fcm_token',
         // Alamat lengkap
         'alamat',
         'detail_alamat',
@@ -59,7 +59,7 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
     // * Hidden attributes (sensitive data)
     protected $hidden = [
         'password',
-        'device_token',
+        'fcm_token',
     ];
 
     // * Casts
@@ -113,6 +113,6 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new PelangganVerifyEmailNotification());
+        $this->notify(new PelangganVerifyEmailNotification);
     }
 }
