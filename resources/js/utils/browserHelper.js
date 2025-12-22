@@ -11,11 +11,11 @@ export function detectWebView() {
     const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
     // Detect WebView patterns
-    // React Native: includes "ReactNative"
+    // React Native: includes "ReactNative" atau custom marker "AktifLaundryApp"
     // Flutter: includes "Flutter"
     // Android WebView: includes "wv" or "Version/X.X Chrome/XX (Linux; Android"
     // iOS WKWebView: no Safari in UA but has AppleWebKit
-    const isReactNative = /ReactNative/i.test(userAgent);
+    const isReactNative = /ReactNative|AktifLaundryApp/i.test(userAgent);
     const isFlutter = /Flutter/i.test(userAgent);
     const isAndroidWebView = /wv|WebView/i.test(userAgent) || (/Android/i.test(userAgent) && /Version\/[\d.]+/i.test(userAgent) && !/Chrome/i.test(userAgent));
     const isIOSWebView = /iPhone|iPad|iPod/i.test(userAgent) && /AppleWebKit/i.test(userAgent) && !/Safari/i.test(userAgent);
