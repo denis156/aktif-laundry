@@ -6,7 +6,8 @@ namespace App\Services;
 
 use Exception;
 use Google\Auth\Credentials\ServiceAccountCredentials;
-use GuzzleHttp\Client;
+use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class FirebaseService
@@ -18,11 +19,10 @@ class FirebaseService
      * @param  string  $message  Notification body/message
      * @param  array  $deviceTokens  Array of FCM device tokens
      * @param  array  $data  Additional data payload (optional)
-     * @return \Psr\Http\Message\ResponseInterface
      *
      * @throws Exception
      */
-    public function send(string $heading, string $message, array $deviceTokens, array $data = []): mixed
+    public function send(string $heading, string $message, array $deviceTokens, array $data = []): Response|array
     {
         // Filter out empty/null tokens
         $deviceTokens = array_values(array_filter($deviceTokens));
@@ -96,22 +96,17 @@ class FirebaseService
     /**
      * Send notification to single device token
      */
-    protected function sendSingleMessage(string $projectId, array $messagePayload, string $accessToken): mixed
+    protected function sendSingleMessage(string $projectId, array $messagePayload, string $accessToken): Response
     {
         $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
 
-        $client = new Client;
-
-        return $client->request('POST', $url, [
-            'headers' => [
-                'Authorization' => 'Bearer '.$accessToken,
-                'Accept' => 'application/json',
-                'Content-Type' => 'application/json',
-            ],
-            'json' => [
+        return Http::withToken($accessToken)
+            ->acceptJson()
+            ->timeout(30)
+            ->retry(2, 100)
+            ->post($url, [
                 'message' => $messagePayload,
-            ],
-        ]);
+            ]);
     }
 
     /**
@@ -120,28 +115,25 @@ class FirebaseService
     protected function sendBatchMessages(string $projectId, array $messagePayload, array $tokens, string $accessToken): array
     {
         $responses = [];
-        $client = new Client;
         $url = "https://fcm.googleapis.com/v1/projects/{$projectId}/messages:send";
 
         foreach ($tokens as $token) {
             try {
                 $messagePayload['token'] = $token;
 
-                $response = $client->request('POST', $url, [
-                    'headers' => [
-                        'Authorization' => 'Bearer '.$accessToken,
-                        'Accept' => 'application/json',
-                        'Content-Type' => 'application/json',
-                    ],
-                    'json' => [
+                $response = Http::withToken($accessToken)
+                    ->acceptJson()
+                    ->timeout(30)
+                    ->retry(2, 100)
+                    ->post($url, [
                         'message' => $messagePayload,
-                    ],
-                ]);
+                    ]);
 
                 $responses[] = [
                     'token' => $token,
-                    'success' => true,
-                    'response' => $response,
+                    'success' => $response->successful(),
+                    'response' => $response->json(),
+                    'status' => $response->status(),
                 ];
             } catch (Exception $e) {
                 Log::warning('Failed to send notification to token', [
@@ -203,7 +195,7 @@ class FirebaseService
      *
      * @throws Exception
      */
-    public function sendToUser(string $role, int $userId, string $heading, string $message, array $data = []): mixed
+    public function sendToUser(string $role, int $userId, string $heading, string $message, array $data = []): Response|array
     {
         $fcmToken = match ($role) {
             'user', 'management', 'admin' => \App\Models\User::find($userId)?->fcm_token,
@@ -230,7 +222,7 @@ class FirebaseService
      *
      * @throws Exception
      */
-    public function sendToMultipleUsers(string $role, array $userIds, string $heading, string $message, array $data = []): mixed
+    public function sendToMultipleUsers(string $role, array $userIds, string $heading, string $message, array $data = []): Response|array
     {
         $tokens = match ($role) {
             'user', 'management', 'admin' => \App\Models\User::whereIn('id', $userIds)
@@ -265,7 +257,7 @@ class FirebaseService
      *
      * @throws Exception
      */
-    public function sendToAllUsersOfRole(string $role, string $heading, string $message, array $data = []): mixed
+    public function sendToAllUsersOfRole(string $role, string $heading, string $message, array $data = []): Response|array
     {
         $tokens = match ($role) {
             'user', 'management', 'admin' => \App\Models\User::whereNotNull('fcm_token')
