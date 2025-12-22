@@ -21,7 +21,8 @@ class KurirNotification extends Notification
         public Transaksi $transaksi,
         public string $status,
         public string $type = 'status_change'
-    ) {}
+    ) {
+    }
 
     /**
      * Get the notification's delivery channels.
