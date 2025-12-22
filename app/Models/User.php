@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Notifications\UserResetPasswordNotification;
-use App\Notifications\UserVerifyEmailNotification;
+use App\Notifications\Auth\User\ResetPasswordNotification;
+use App\Notifications\Auth\User\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -79,7 +79,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new UserVerifyEmailNotification);
+        $this->notify(new VerifyEmailNotification());
     }
 
     /**
@@ -88,6 +88,6 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new UserResetPasswordNotification($token));
+        $this->notify(new ResetPasswordNotification($token));
     }
 }
