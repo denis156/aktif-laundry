@@ -32,6 +32,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'avatar_url',
         'super_admin',
         'email_verified_at',
+        'fcm_token',
         // Data Kepegawaian
         'gaji',
         'jam_masuk',
@@ -54,6 +55,7 @@ class User extends Authenticatable implements MustVerifyEmail
     protected $hidden = [
         'password',
         'remember_token',
+        'fcm_token',
     ];
 
     // * Casts
@@ -77,7 +79,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new UserVerifyEmailNotification());
+        $this->notify(new UserVerifyEmailNotification);
     }
 
     /**

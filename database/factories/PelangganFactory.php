@@ -67,7 +67,7 @@ class PelangganFactory extends Factory
             'email' => $email,
             'email_verified_at' => null,
             'password' => null,
-            'device_token' => null,
+            'fcm_token' => null,
             // Alamat lengkap
             'alamat' => $alamatLengkap,
             'detail_alamat' => $detailAlamat,
@@ -111,12 +111,12 @@ class PelangganFactory extends Factory
     }
 
     /**
-     * Indicate that the customer has a device token for push notifications.
+     * Indicate that the customer has an FCM token for push notifications.
      */
-    public function withDeviceToken(?string $token = null): static
+    public function withFcmToken(?string $token = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'device_token' => $token ?? fake()->regexify('[a-f0-9]{64}'),
+            'fcm_token' => $token ?? fake()->regexify('[a-zA-Z0-9_-]{152}'),
         ]);
     }
 
@@ -125,7 +125,7 @@ class PelangganFactory extends Factory
      */
     public function registered(?string $password = null): static
     {
-        return $this->withPassword($password)->withDeviceToken();
+        return $this->withPassword($password)->withFcmToken();
     }
 
     /**
