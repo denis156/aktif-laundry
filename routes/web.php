@@ -106,6 +106,12 @@ Route::middleware(['guest:kurir'])->prefix('kurir')->group(function () {
 Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
     // Logout
     Route::get('/logout', function () {
+        // Clear FCM token before logout
+        $kurir = Auth::guard('kurir')->user();
+        if ($kurir) {
+            $kurir->update(['fcm_token' => null]);
+        }
+
         Auth::guard('kurir')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
@@ -156,6 +162,12 @@ Route::middleware(['guest:web'])->prefix('management')->group(function () {
 Route::middleware('auth')->prefix('management')->group(function () {
     // Logout
     Route::get('/logout', function () {
+        // Clear FCM token before logout
+        $user = Auth::user();
+        if ($user) {
+            $user->update(['fcm_token' => null]);
+        }
+
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
@@ -266,6 +278,12 @@ Route::middleware(['guest:pelanggan'])->prefix('pelanggan')->group(function () {
 Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
     // Logout
     Route::get('/logout', function () {
+        // Clear FCM token before logout
+        $pelanggan = Auth::guard('pelanggan')->user();
+        if ($pelanggan) {
+            $pelanggan->update(['fcm_token' => null]);
+        }
+
         Auth::guard('pelanggan')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
