@@ -27,6 +27,7 @@ messaging.onBackgroundMessage((payload) => {
         badge: '/icons/icon-512x512.png',
         tag: payload.data?.tag || 'default',
         requireInteraction: false,
+        vibrate: [200, 100, 200], // Vibration pattern: vibrate 200ms, pause 100ms, vibrate 200ms
         data: payload.data || {}
     };
 

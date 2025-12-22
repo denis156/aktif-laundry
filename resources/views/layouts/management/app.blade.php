@@ -164,8 +164,8 @@
     {{-- Firebase Cloud Messaging --}}
     @if(Auth::check())
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-messaging.js";
 
         const firebaseConfig = {
             apiKey: "{{ config('services.firebase.web.api_key') }}",
@@ -242,6 +242,7 @@
                 body: payload.notification?.body || 'You have a new notification',
                 icon: payload.notification?.icon || '/icons/icon-512x512.png',
                 badge: '/icons/icon-512x512.png',
+                vibrate: [200, 100, 200], // Vibration pattern
                 data: payload.data || {}
             };
 
