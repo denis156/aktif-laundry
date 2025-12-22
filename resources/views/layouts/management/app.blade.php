@@ -160,6 +160,101 @@
 
     {{-- Livewire Script --}}
     @livewireScripts
+
+    {{-- Firebase Cloud Messaging --}}
+    @if(Auth::check())
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-messaging.js";
+
+        const firebaseConfig = {
+            apiKey: "{{ config('services.firebase.web.api_key') }}",
+            authDomain: "{{ config('services.firebase.web.auth_domain') }}",
+            databaseURL: "{{ config('services.firebase.web.database_url') }}",
+            projectId: "{{ config('services.firebase.web.project_id') }}",
+            storageBucket: "{{ config('services.firebase.web.storage_bucket') }}",
+            messagingSenderId: "{{ config('services.firebase.web.messaging_sender_id') }}",
+            appId: "{{ config('services.firebase.web.app_id') }}",
+            measurementId: "{{ config('services.firebase.web.measurement_id') }}"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        // Function to initialize Firebase Messaging
+        async function initFirebaseMessaging() {
+            try {
+                // Request notification permission
+                const permission = await Notification.requestPermission();
+
+                if (permission === 'granted') {
+                    console.log('Notification permission granted.');
+
+                    // Register service worker
+                    if ('serviceWorker' in navigator) {
+                        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+                        console.log('Service Worker registered:', registration);
+                    }
+
+                    // Get FCM token
+                    const token = await getToken(messaging, {
+                        vapidKey: "{{ config('services.firebase.vapid_key') }}"
+                    });
+
+                    if (token) {
+                        console.log('FCM Token obtained:', token);
+
+                        // Send token to server
+                        await fetch("{{ route('fcm.token.update') }}", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                            },
+                            body: JSON.stringify({
+                                fcm_token: token
+                            })
+                        }).then(response => response.json())
+                          .then(data => {
+                              if (data.success) {
+                                  console.log('FCM token saved successfully');
+                              }
+                          });
+                    } else {
+                        console.log('No registration token available.');
+                    }
+                } else if (permission === 'denied') {
+                    console.log('Notification permission denied.');
+                } else {
+                    console.log('Notification permission dismissed.');
+                }
+            } catch (err) {
+                console.error('Error initializing Firebase Messaging:', err);
+            }
+        }
+
+        // Handle foreground messages
+        onMessage(messaging, (payload) => {
+            console.log('Message received in foreground:', payload);
+
+            const notificationTitle = payload.notification?.title || 'Aktif Laundry';
+            const notificationOptions = {
+                body: payload.notification?.body || 'You have a new notification',
+                icon: payload.notification?.icon || '/icons/icon-512x512.png',
+                badge: '/icons/icon-512x512.png',
+                data: payload.data || {}
+            };
+
+            // Show notification if browser supports it
+            if (Notification.permission === 'granted') {
+                new Notification(notificationTitle, notificationOptions);
+            }
+        });
+
+        // Initialize on page load
+        initFirebaseMessaging();
+    </script>
+    @endif
 </body>
 
 </html>
