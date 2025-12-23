@@ -3,14 +3,13 @@ importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js")
 
 // Initialize Firebase with your config
 firebase.initializeApp({
-    apiKey: "AIzaSyCa_0FbCFzKJzb3oYMc_CVB9ODFC-G3Rao",
-    authDomain: "aktiflaunrdy.firebaseapp.com",
-    databaseURL: "https://aktiflaunrdy-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "aktiflaunrdy",
-    storageBucket: "aktiflaunrdy.firebasestorage.app",
-    messagingSenderId: "780891292368",
-    appId: "1:780891292368:web:3ae1d2e279d0b51f6bd4d5",
-    measurementId: "G-0EX9XR618C"
+    apiKey: "AIzaSyArP2I3J92Hzt_ThtOUC5mFJTwBZGZBudU",
+    authDomain: "aktiflaundry-8ce34.firebaseapp.com",
+    projectId: "aktiflaundry-8ce34",
+    storageBucket: "aktiflaundry-8ce34.firebasestorage.app",
+    messagingSenderId: "523711351540",
+    appId: "1:523711351540:web:2ea8258b264da736f4aca1",
+    measurementId: "G-GSNG5V5RSX"
 });
 
 // Retrieve an instance of Firebase Messaging
