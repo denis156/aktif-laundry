@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Notifications\PelangganResetPasswordNotification;
-use App\Notifications\PelangganVerifyEmailNotification;
+use App\Notifications\Auth\Pelanggan\ResetPasswordNotification;
+use App\Notifications\Auth\Pelanggan\VerifyEmailNotification;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -36,7 +36,7 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
         'email',
         'email_verified_at',
         'password',
-        'device_token',
+        'fcm_token',
         // Alamat lengkap
         'alamat',
         'detail_alamat',
@@ -59,7 +59,7 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
     // * Hidden attributes (sensitive data)
     protected $hidden = [
         'password',
-        'device_token',
+        'fcm_token',
     ];
 
     // * Casts
@@ -105,7 +105,7 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
      */
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(new PelangganResetPasswordNotification($token));
+        $this->notify(new ResetPasswordNotification($token));
     }
 
     /**
@@ -113,6 +113,6 @@ class Pelanggan extends Authenticatable implements MustVerifyEmail
      */
     public function sendEmailVerificationNotification(): void
     {
-        $this->notify(new PelangganVerifyEmailNotification());
+        $this->notify(new VerifyEmailNotification());
     }
 }

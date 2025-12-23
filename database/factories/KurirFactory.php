@@ -64,7 +64,7 @@ class KurirFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => null,
             'password' => static::$password ??= Hash::make('password'),
-            'device_token' => null,
+            'fcm_token' => null,
             // Alamat lengkap
             'alamat' => $alamatLengkap,
             'detail_alamat' => $detailAlamat,
@@ -104,12 +104,12 @@ class KurirFactory extends Factory
     }
 
     /**
-     * Indicate that the courier should have a device token for push notifications.
+     * Indicate that the courier should have an FCM token for push notifications.
      */
-    public function withDeviceToken(?string $token = null): static
+    public function withFcmToken(?string $token = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'device_token' => $token ?? fake()->regexify('[a-f0-9]{64}'),
+            'fcm_token' => $token ?? fake()->regexify('[a-zA-Z0-9_-]{152}'),
         ]);
     }
 

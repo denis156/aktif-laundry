@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace App\Notifications;
+namespace App\Notifications\Auth\User;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
-class UserResetPasswordNotification extends Notification
+class ResetPasswordNotification extends Notification
 {
     use Queueable;
 

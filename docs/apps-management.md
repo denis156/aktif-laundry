@@ -35,6 +35,7 @@ Aplikasi Management adalah **dashboard admin** berbasis web untuk mengelola selu
 > **Catatan**: Aplikasi Management **tidak menggunakan PWA**, berbeda dengan aplikasi Kurir dan Pelanggan yang merupakan Progressive Web Apps.
 
 ### ✨ What's New in This Documentation
+- 🔔 **Firebase Push Notifications**: Send real-time notifications ke Kurir & Pelanggan dengan FCM
 - 💬 **Chat System**: Dokumentasi lengkap chat dengan kurir, pelanggan, dan staf
 - 📍 **Real-time Tracking**: Live tracking semua kurir aktif dengan GPS metrics
 - 🗺️ **MapPicker Integration**: Mapbox Search Box API untuk location selection
@@ -280,6 +281,7 @@ Aplikasi Management dilengkapi dengan komponen-komponen custom yang dapat diguna
 ![WhatsApp](https://img.shields.io/badge/WhatsApp-Fonnte_API-25D366?style=for-the-badge&logo=whatsapp&logoColor=white)
 ![Mapbox](https://img.shields.io/badge/Mapbox-Search_API-000000?style=for-the-badge&logo=mapbox&logoColor=white)
 ![Charts](https://img.shields.io/badge/Chart.js-Visualizations-FF6384?style=for-the-badge&logo=chart.js&logoColor=white)
+![Firebase](https://img.shields.io/badge/Firebase-FCM_Push-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
 ### Maps & GPS
 ![Leaflet](https://img.shields.io/badge/Leaflet.js-Maps-199900?style=for-the-badge&logo=leaflet&logoColor=white)
@@ -329,6 +331,16 @@ Aplikasi Management dilengkapi dengan komponen-komponen custom yang dapat diguna
 - 🎯 **Proximity Bias**: Prioritize nearest results
 - 💾 **Session Tokens**: API rate limit optimization
 - ⚡ **10s Timeout**: Reliable HTTP requests
+
+#### Firebase Push Notifications
+- 🔥 **Firebase Cloud Messaging**: Server-side push notification sending
+- 📤 **FirebaseService**: Laravel service untuk FCM integration
+- 🔐 **Token Management**: Store & validate FCM tokens (users, kurir, pelanggan)
+- 📊 **Delivery Tracking**: Monitor notification delivery & open rates
+- 🎯 **Targeted Notifications**: Send to specific users atau broadcast
+- 📝 **Audit Logging**: Track all notifications sent
+- 🚫 **Rate Limiting**: Prevent notification spam
+- ⚡ **Laravel HTTP Client**: Modern HTTP client untuk FCM API
 
 ---
 
@@ -475,6 +487,82 @@ Aplikasi Management dilengkapi dengan komponen-komponen custom yang dapat diguna
 - ⚡ **10s Timeout**: HTTP request timeout untuk reliability
 - 🔍 **Query Params**: proximity, language, country, limit, types
 - 💾 **Cache Results**: Keep selected location in search results
+
+---
+
+## 🔔 Push Notification System (Firebase FCM)
+
+### Kirim Notifikasi ke Kurir & Pelanggan
+```javascript
+// Admin Push Notification Features:
+✅ Send push notifications ke Kurir untuk order assignment
+✅ Send notifications ke Pelanggan untuk order updates
+✅ Broadcast notifications ke semua users (Kurir/Pelanggan)
+✅ Targeted notifications berdasarkan user type
+✅ Custom notification payload (title, body, data)
+✅ Notification scheduling (future feature)
+✅ Delivery tracking & analytics
+✅ Failed notification retry logic
+✅ Multi-device support per user
+```
+
+### Notification Scenarios
+Admin bisa send push notifications untuk berbagai scenario:
+
+#### Untuk Kurir:
+- 📦 **New Order Assignment**: Notifikasi saat order baru di-assign
+- 🔄 **Order Update**: Update perubahan detail order
+- ⏰ **Schedule Reminder**: Reminder jadwal pickup/delivery
+- 💬 **New Message**: Notifikasi pesan chat baru dari admin/pelanggan
+- 📍 **Route Update**: Update rute atau lokasi pickup/delivery
+
+#### Untuk Pelanggan:
+- ✅ **Order Confirmed**: Konfirmasi order diterima dan diproses
+- 🚚 **Courier Assigned**: Kurir sudah di-assign untuk pickup/delivery
+- 📍 **On The Way**: Kurir dalam perjalanan ke lokasi
+- ✅ **Order Completed**: Order selesai diproses
+- 💬 **New Message**: Notifikasi pesan chat baru dari admin/kurir
+- 🎁 **Promo Alert**: Info promo baru untuk pelanggan
+
+### FirebaseService Integration
+Backend service untuk mengirim push notifications:
+
+```php
+// FirebaseService Features:
+✅ Send to single device (via FCM token)
+✅ Send to multiple devices (batch sending)
+✅ Send to topic (broadcast)
+✅ Custom notification data payload
+✅ Laravel HTTP client integration
+✅ Error handling & logging
+✅ Token validation before send
+✅ Notification delivery confirmation
+```
+
+### Notification Delivery Flow
+1. Admin trigger action (e.g., assign order ke kurir)
+2. System get FCM token dari user (Kurir/Pelanggan)
+3. FirebaseService compose notification payload
+4. Send notification via Firebase Cloud Messaging API
+5. Firebase deliver notification ke device
+6. Device show notification dengan custom vibration
+7. User click notification → app open di halaman terkait
+
+### Analytics & Monitoring
+- 📊 **Delivery Rate**: Track berapa % notification terkirim
+- 📈 **Open Rate**: Track berapa % notification dibuka
+- 🔴 **Failed Deliveries**: Log notification yang gagal terkirim
+- ⏱️ **Delivery Time**: Monitor response time notification
+- 📱 **Device Distribution**: Analytics per device type
+- 🔔 **Notification Types**: Breakdown by notification category
+
+### Security & Best Practices
+- 🔐 **Server Key Protection**: FCM server key secure di config
+- ✅ **Token Validation**: Validate FCM token sebelum send
+- 🚫 **Rate Limiting**: Prevent spam notifications
+- 📝 **Audit Trail**: Log semua notifications yang dikirim
+- 🔒 **Permission Check**: Verify user notification permission status
+- 🗑️ **Token Cleanup**: Remove invalid/expired tokens otomatis
 
 ---
 

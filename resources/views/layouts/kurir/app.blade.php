@@ -71,6 +71,111 @@
             });
         }
     </script>
+
+    {{-- Firebase Cloud Messaging --}}
+    @if(Auth::guard('kurir')->check())
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-app.js";
+        import { getMessaging, getToken, onMessage } from "https://www.gstatic.com/firebasejs/12.7.0/firebase-messaging.js";
+
+        const firebaseConfig = {
+            apiKey: "{{ config('services.firebase.web.api_key') }}",
+            authDomain: "{{ config('services.firebase.web.auth_domain') }}",
+            databaseURL: "{{ config('services.firebase.web.database_url') }}",
+            projectId: "{{ config('services.firebase.web.project_id') }}",
+            storageBucket: "{{ config('services.firebase.web.storage_bucket') }}",
+            messagingSenderId: "{{ config('services.firebase.web.messaging_sender_id') }}",
+            appId: "{{ config('services.firebase.web.app_id') }}",
+            measurementId: "{{ config('services.firebase.web.measurement_id') }}"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const messaging = getMessaging(app);
+
+        // Function to initialize Firebase Messaging
+        async function initFirebaseMessaging() {
+            try {
+                // Request notification permission
+                const permission = await Notification.requestPermission();
+
+                if (permission === 'granted') {
+                    console.log('Notification permission granted.');
+
+                    // Wait for service worker to be ready
+                    if ('serviceWorker' in navigator) {
+                        // Register Firebase service worker separately
+                        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+                            scope: '/firebase-cloud-messaging-push-scope'
+                        });
+
+                        // Wait for service worker to be active
+                        await navigator.serviceWorker.ready;
+                        console.log('Service Worker ready for FCM');
+
+                        // Get FCM token with the registration
+                        const token = await getToken(messaging, {
+                            vapidKey: "{{ config('services.firebase.vapid_key') }}",
+                            serviceWorkerRegistration: registration
+                        });
+
+                        if (token) {
+                            console.log('FCM Token obtained:', token);
+
+                            // Send token to server
+                            await fetch("{{ route('kurir.fcm.token.update') }}", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                                },
+                                body: JSON.stringify({
+                                    fcm_token: token
+                                })
+                            }).then(response => response.json())
+                              .then(data => {
+                                  if (data.success) {
+                                      console.log('FCM token saved successfully');
+                                  }
+                              });
+                        } else {
+                            console.log('No registration token available.');
+                        }
+                    }
+                } else if (permission === 'denied') {
+                    console.log('Notification permission denied.');
+                } else {
+                    console.log('Notification permission dismissed.');
+                }
+            } catch (err) {
+                console.error('Error initializing Firebase Messaging:', err);
+            }
+        }
+
+        // Handle foreground messages
+        onMessage(messaging, (payload) => {
+            console.log('Message received in foreground:', payload);
+
+            const notificationTitle = payload.notification?.title || 'Aktif Laundry';
+            const notificationOptions = {
+                body: payload.notification?.body || 'You have a new notification',
+                icon: payload.notification?.icon || '/icons/icon-512x512.png',
+                badge: '/icons/icon-512x512.png',
+                vibrate: [200, 100, 200], // Vibration pattern
+                data: payload.data || {}
+            };
+
+            // Show notification if browser supports it
+            if (Notification.permission === 'granted') {
+                new Notification(notificationTitle, notificationOptions);
+            }
+        });
+
+        // Wait a bit for page to fully load and other service workers to register
+        window.addEventListener('load', () => {
+            setTimeout(initFirebaseMessaging, 1000);
+        });
+    </script>
+    @endif
 </body>
 
 </html>

@@ -106,6 +106,12 @@ Route::middleware(['guest:kurir'])->prefix('kurir')->group(function () {
 Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
     // Logout
     Route::get('/logout', function () {
+        // Clear FCM token before logout
+        $kurir = Auth::guard('kurir')->user();
+        if ($kurir) {
+            $kurir->update(['fcm_token' => null]);
+        }
+
         Auth::guard('kurir')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
@@ -120,6 +126,10 @@ Route::middleware('auth:kurir')->prefix('kurir')->group(function () {
 
         return redirect()->route('beranda.kurir');
     })->middleware(['signed'])->name('kurir.verification.verify');
+
+    // FCM Token Management
+    Route::post('/fcm-token', [App\Http\Controllers\Kurir\FcmTokenController::class, 'update'])->name('kurir.fcm.token.update');
+    Route::delete('/fcm-token', [App\Http\Controllers\Kurir\FcmTokenController::class, 'destroy'])->name('kurir.fcm.token.destroy');
 });
 
 // Protected Routes
@@ -152,6 +162,12 @@ Route::middleware(['guest:web'])->prefix('management')->group(function () {
 Route::middleware('auth')->prefix('management')->group(function () {
     // Logout
     Route::get('/logout', function () {
+        // Clear FCM token before logout
+        $user = Auth::user();
+        if ($user) {
+            $user->update(['fcm_token' => null]);
+        }
+
         Auth::logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
@@ -166,6 +182,10 @@ Route::middleware('auth')->prefix('management')->group(function () {
 
         return redirect()->route('dashboard');
     })->middleware(['signed'])->name('verification.verify');
+
+    // FCM Token Management
+    Route::post('/fcm-token', [App\Http\Controllers\Management\FcmTokenController::class, 'update'])->name('fcm.token.update');
+    Route::delete('/fcm-token', [App\Http\Controllers\Management\FcmTokenController::class, 'destroy'])->name('fcm.token.destroy');
 });
 
 // Protected Routes
@@ -258,6 +278,12 @@ Route::middleware(['guest:pelanggan'])->prefix('pelanggan')->group(function () {
 Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
     // Logout
     Route::get('/logout', function () {
+        // Clear FCM token before logout
+        $pelanggan = Auth::guard('pelanggan')->user();
+        if ($pelanggan) {
+            $pelanggan->update(['fcm_token' => null]);
+        }
+
         Auth::guard('pelanggan')->logout();
         request()->session()->invalidate();
         request()->session()->regenerateToken();
@@ -272,6 +298,10 @@ Route::middleware('auth:pelanggan')->prefix('pelanggan')->group(function () {
 
         return redirect()->route('beranda.pelanggan');
     })->middleware(['signed'])->name('pelanggan.verification.verify');
+
+    // FCM Token Management
+    Route::post('/fcm-token', [App\Http\Controllers\Pelanggan\FcmTokenController::class, 'update'])->name('pelanggan.fcm.token.update');
+    Route::delete('/fcm-token', [App\Http\Controllers\Pelanggan\FcmTokenController::class, 'destroy'])->name('pelanggan.fcm.token.destroy');
 });
 
 // Protected Routes

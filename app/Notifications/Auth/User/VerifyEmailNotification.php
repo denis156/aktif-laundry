@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace App\Notifications;
+namespace App\Notifications\Auth\User;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Notifications\Messages\MailMessage;
@@ -11,7 +11,7 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\URL;
 
-class PelangganVerifyEmailNotification extends Notification
+class VerifyEmailNotification extends Notification
 {
     use Queueable;
 
@@ -34,8 +34,8 @@ class PelangganVerifyEmailNotification extends Notification
 
         return (new MailMessage())
             ->subject('Verifikasi Email - '.config('app.name'))
-            ->greeting('Halo '.$notifiable->nama.'!')
-            ->line('Terima kasih telah bergabung dengan '.config('app.name').'.')
+            ->greeting('Halo '.$notifiable->name.'!')
+            ->line('Terima kasih telah bergabung sebagai Staf di '.config('app.name').'.')
             ->line('Silakan klik tombol di bawah untuk memverifikasi alamat email Anda.')
             ->action('Verifikasi Email', $verificationUrl)
             ->line('Link verifikasi ini akan kadaluarsa dalam '.Config::get('auth.verification.expire', 60).' menit.')
@@ -44,12 +44,12 @@ class PelangganVerifyEmailNotification extends Notification
     }
 
     /**
-     * Get the verification URL for the pelanggan.
+     * Get the verification URL for the user.
      */
     protected function verificationUrl(object $notifiable): string
     {
         return URL::temporarySignedRoute(
-            'pelanggan.verification.verify',
+            'verification.verify',
             Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
             [
                 'id' => $notifiable->getKey(),
