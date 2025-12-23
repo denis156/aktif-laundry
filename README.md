@@ -58,8 +58,9 @@ Sistem ini terdiri dari **3 aplikasi** yang terintegrasi:
 - **Frontend**: Tailwind CSS 4, Alpine.js, Mary UI, DaisyUI
 - **PWA**: Service Worker, Web App Manifest, iOS Splash Screens
 - **Maps & GPS**: Leaflet.js, Mapbox Search Box API, Geolocation API
+- **Push Notifications**: Firebase Cloud Messaging (FCM) dengan custom vibration patterns
 - **Integration**: WhatsApp (Fonnte API), Google Maps/Waze
-- **Real-time**: Cache-based GPS Tracking, Live Chat System
+- **Real-time**: Cache-based GPS Tracking, Live Chat System, FCM Push Notifications
 
 ---
 
@@ -119,6 +120,7 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 - 🧾 Multi-service & multi-promo transaction
 - 🎁 Referral & loyalty management
 - 📱 WhatsApp notification integration
+- 🔔 **Firebase Push Notifications**: Send real-time notifications ke Kurir & Pelanggan
 - 💬 **Chat System**: Multi-participant chat dengan Kurir & Pelanggan
 - 📍 **Live Tracking**: Track semua kurir aktif di satu map real-time
 - 🗺️ **Mapbox Integration**: Search Box API untuk location picker
@@ -131,6 +133,7 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 - 🎁 Promo & referral code system
 - 💳 Member card & loyalty points
 - 📲 Installable seperti native app
+- 🔔 **Firebase Push Notifications**: Real-time notifications untuk order updates, chat, dan promo
 - 💬 **Chat with Admin**: Real-time messaging dengan file sharing
 - 📍 **Track Courier**: Live tracking posisi kurir untuk pesanan aktif
 - 👤 **Smart Profile**: Auto-detect data belum lengkap dengan validation
@@ -143,6 +146,7 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 - 📦 Multi-destination pickup/delivery
 - 📸 Upload foto bukti delivery
 - ⚡ Performance tracking & statistics
+- 🔔 **Firebase Push Notifications**: Real-time notifications untuk order assignment, chat, dengan custom vibration
 - 💬 **Dual Chat**: Chat dengan Admin/Staf & Pelanggan
 - 📤 **File Sharing**: Kirim foto & dokumen (max 5MB)
 - 🔄 **Cache-based Tracking**: 5 menit TTL untuk real-time updates
@@ -151,6 +155,23 @@ Dokumentasi lengkap tersedia untuk setiap komponen sistem:
 ---
 
 ## 🚀 Fitur Advanced
+
+### 🔔 Firebase Push Notification System
+Sistem notifikasi real-time terintegrasi menggunakan Firebase Cloud Messaging:
+
+- **Real-time Delivery**: Instant push notifications untuk semua users
+- **Multi-device Support**: Satu user bisa terima notifikasi di multiple devices
+- **Custom Vibration**: Pattern vibration berbeda untuk setiap tipe notifikasi
+- **Background & Foreground**: Smart handling untuk app state
+- **Auto Token Management**: Registration, refresh, dan cleanup otomatis
+- **WebView Detection**: Support AktifLaundryApp native wrapper
+- **Deep Linking**: Click notification langsung ke halaman terkait
+- **Delivery Analytics**: Track delivery rate dan open rate
+
+**Notification Scenarios:**
+- 📦 **Kurir**: Order assignment, status updates, chat messages, route changes
+- 👥 **Pelanggan**: Order confirmations, courier updates, promo alerts, loyalty points
+- 🔹 **Admin/Staf**: System alerts, chat messages from kurir/pelanggan
 
 ### 💬 Chat System
 Sistem chat terintegrasi untuk komunikasi real-time antar semua pengguna:
@@ -164,6 +185,7 @@ Sistem chat terintegrasi untuk komunikasi real-time antar semua pengguna:
 - **Unread Counter**: Badge untuk pesan belum dibaca
 - **Auto-delete**: Files terhapus otomatis saat conversation dihapus
 - **Storage**: `storage/app/public/chat-attachments/`
+- **Push Notification Integration**: Notifikasi pesan baru via Firebase FCM
 
 **Use Cases:**
 - 🔹 Kurir ↔ Admin/Staf: Koordinasi pengiriman

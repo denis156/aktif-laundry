@@ -40,6 +40,7 @@ erDiagram
         string no_hp UK
         timestamp email_verified_at
         string password
+        string device_token "FCM token for push notifications"
         string avatar_url
         boolean super_admin
         integer gaji
@@ -72,7 +73,7 @@ erDiagram
         string email UK
         timestamp email_verified_at
         string password
-        string device_token
+        string device_token "FCM token for push notifications"
         text alamat
         text detail_alamat
         string kelurahan
@@ -201,7 +202,7 @@ erDiagram
         string avatar_url
         string password
         timestamp email_verified_at
-        string device_token
+        string device_token "FCM token for push notifications"
         string remember_token
         timestamp created_at
         timestamp updated_at
@@ -455,6 +456,7 @@ Tabel untuk menyimpan data pengguna/kasir/staf sistem.
 - **Primary Key**: `id`
 - **Unique**: `email`, `no_hp`
 - **Notable Fields**:
+  - `device_token`: FCM (Firebase Cloud Messaging) token untuk push notifications
   - `avatar_url`: URL foto profil user
   - `super_admin`: Flag untuk super admin
   - `gaji`: Gaji pokok pegawai
@@ -473,7 +475,7 @@ Tabel untuk menyimpan data pelanggan laundry.
 - **Notable Fields**:
   - `kode_pelanggan`: Kode unik pelanggan (PLG001, PLG002, dll)
   - `password`: Password untuk login aplikasi customer (optional)
-  - `device_token`: Token untuk push notification
+  - `device_token`: FCM (Firebase Cloud Messaging) token untuk push notifications (order updates, chat, promo)
   - `loyalty_points`: Poin loyalty pelanggan
   - `member_card`: Nomor kartu member
   - `direferensikan_oleh`: ID pelanggan yang mereferensikan
@@ -556,7 +558,7 @@ Tabel untuk menyimpan data kurir.
   - `bank_name`, `bank_account_number`, `bank_account_name`: Data bank untuk penggajian
   - `emergency_contact_*`: Data kontak darurat untuk safety
   - `password`: Untuk login di app courier
-  - `device_token`: Token untuk push notification
+  - `device_token`: FCM (Firebase Cloud Messaging) token untuk push notifications (order assignment, chat, status updates)
   - Alamat lengkap dengan koordinat GPS
 - **Soft Deletes**: Ya
 - **Indexes**: `kode_kurir`, `no_hp`, `email`, `status`, composite indexes untuk status+tanggal dan koordinat
@@ -858,6 +860,22 @@ Tabel untuk queue system Laravel.
    - Auto-delete files via Observer saat conversation dihapus
    - Storage path: `storage/app/public/chat-attachments/`
    - Cache-based untuk real-time messaging performance
+
+### 14. Firebase Push Notifications
+![Firebase](https://img.shields.io/badge/Feature-Firebase_FCM-FFCA28?style=flat-square&logo=firebase&logoColor=black)
+   - **FCM Token Storage**: Field `device_token` di tabel `users`, `kurir`, dan `pelanggan`
+   - **Push Notification Support**: Real-time notifications untuk all users
+   - **Token Management**: Auto registration, refresh, dan cleanup on logout
+   - **Multi-device Support**: Satu user bisa punya multiple FCM tokens (multiple devices)
+   - **Notification Types**:
+     - **Users (Admin/Staf)**: System alerts, chat notifications
+     - **Kurir**: Order assignment, status updates, chat messages, route updates
+     - **Pelanggan**: Order confirmations, courier updates, chat messages, promo alerts
+   - **Vibration Patterns**: Custom vibration patterns per notification type
+   - **WebView Detection**: Support AktifLaundryApp WebView marker
+   - **Backend Service**: FirebaseService untuk send notifications via FCM API
+   - **Delivery Tracking**: Monitor notification delivery & open rates
+   - **Security**: Token encryption, permission-based, rate limiting
 
 ---
 

@@ -36,6 +36,7 @@ Aplikasi Customer adalah **Progressive Web App (PWA)** yang memungkinkan pelangg
 > **PWA Enabled**: Aplikasi ini dapat diinstall di perangkat mobile (Android & iOS) dan bekerja offline dengan service worker.
 
 ### ✨ What's New in This Documentation
+- 🔔 **Firebase Push Notifications**: Real-time notifications untuk order updates, chat, dan promo dengan vibration
 - 💬 **Chat System**: Dokumentasi lengkap chat dengan admin/staf
 - 📍 **Courier Tracking**: Live tracking kurir untuk transaksi Anda
 - 👤 **Profile Management Deep Dive**: Regional address system dengan validation
@@ -276,9 +277,10 @@ Aplikasi Customer dilengkapi dengan komponen-komponen custom untuk pengalaman mo
 ![PWA](https://img.shields.io/badge/PWA-Service_Worker-5A0FC8?style=for-the-badge&logo=pwa&logoColor=white)
 ![Leaflet](https://img.shields.io/badge/Leaflet.js-Maps-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 
-### Communication
+### Communication & Notifications
 ![Chat](https://img.shields.io/badge/Real--time_Chat-Livewire_Polling-4E56A6?style=for-the-badge)
 ![File Upload](https://img.shields.io/badge/File_Upload-5MB_Max-FF2D20?style=for-the-badge)
+![Firebase](https://img.shields.io/badge/Firebase-FCM_Push-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
 ### Tools
 ![Laravel Herd](https://img.shields.io/badge/Laravel_Herd-Development-FF2D20?style=for-the-badge)
@@ -309,12 +311,22 @@ Aplikasi Customer dilengkapi dengan komponen-komponen custom untuk pengalaman mo
 - 🎨 **Wire:loading**: Loading states untuk semua actions
 
 #### PWA Technologies
-- 📱 **Service Worker**: Offline caching dan background sync
+- 📱 **Service Worker**: Offline caching dan background sync, FCM message handling
 - 🎨 **Web App Manifest**: Installation prompt dan app icons
 - 🖼️ **iOS Splash Screens**: Device-specific splash screens
 - 📍 **Geolocation API**: Browser native GPS untuk maps
 - 💾 **LocalStorage**: Offline data persistence
-- 🔔 **Push Notifications**: (Future) Real-time order updates
+- 🔔 **Push Notifications**: Real-time order updates via Firebase FCM
+
+#### Firebase & Push Notifications
+- 🔥 **Firebase Cloud Messaging**: Real-time push notifications
+- 🔔 **FCM SDK**: Firebase JavaScript SDK untuk web
+- 📱 **Service Worker**: Background notification handling
+- 🔐 **Token Management**: Auto registration, refresh, dan cleanup
+- 📳 **Vibration API**: Custom vibration patterns per notification type
+- 🌐 **WebView Detection**: Custom AktifLaundryApp marker detection
+- 🎯 **Deep Linking**: Direct navigation dari notification ke halaman terkait
+- 📊 **Notification Tracking**: User engagement analytics
 
 ---
 
@@ -381,6 +393,70 @@ Aplikasi Customer dilengkapi dengan komponen-komponen custom untuk pengalaman mo
 - 🔗 **Direct URL**: `/pelanggan/riwayat/{id}/kurir`
 - 📱 **Mobile Optimized**: Full-screen map dengan controls
 - 🔄 **Real-time Updates**: Auto-refresh dengan wire:poll
+
+---
+
+## 🔔 Push Notifications & Firebase
+
+### Firebase Cloud Messaging (FCM)
+```javascript
+// Push Notification Features untuk Pelanggan:
+✅ Real-time notifications untuk order status updates
+✅ Notifikasi saat kurir di-assign untuk pickup/delivery
+✅ Notifikasi kurir dalam perjalanan ke lokasi Anda
+✅ Alert saat order selesai diproses atau siap diambil
+✅ Notifikasi pesan chat baru dari Admin
+✅ Promo alerts untuk promo baru atau referral rewards
+✅ Custom vibration patterns untuk setiap tipe notifikasi
+✅ Background & foreground notification handling
+✅ Auto token registration & management
+✅ Auto token cleanup on logout
+✅ Multi-device support
+✅ WebView detection untuk native app integration
+```
+
+### Notification Types
+- ✅ **Order Confirmed**: Notifikasi saat order diterima dan dikonfirmasi admin
+- 🚚 **Courier Assigned**: Kurir sudah di-assign untuk pickup/delivery order Anda
+- 📍 **On The Way**: Kurir dalam perjalanan ke lokasi Anda (dengan live tracking link)
+- ✅ **Order Completed**: Order selesai diproses, siap untuk diambil
+- 📦 **Ready for Pickup**: Cucian sudah selesai, siap untuk diambil
+- 💬 **New Message**: Notifikasi pesan chat baru dari Admin/Staf
+- 🎁 **Promo Alert**: Info promo baru yang tersedia untuk Anda
+- 🏆 **Referral Success**: Notifikasi saat referral Anda berhasil transaksi
+- 💰 **Loyalty Points**: Update poin loyalty setelah transaksi selesai
+
+### Vibration Patterns
+```javascript
+// Vibration patterns untuk berbagai notifikasi:
+- Order Status: [200, 100, 200] - Double vibrate (penting)
+- New Message: [100] - Single short vibrate
+- Promo Alert: [200] - Single long vibrate
+- Courier Nearby: [200, 100, 200, 100, 200] - Triple vibrate (urgent)
+```
+
+### FCM Token Management
+- 🔐 **Auto Registration**: Token otomatis register saat app load
+- 🔄 **Auto Refresh**: Token refresh saat expired
+- 💾 **Server Sync**: Token sync ke server untuk push notifications
+- 🗑️ **Auto Cleanup**: Token otomatis dihapus saat logout
+- 📱 **Multi-device**: Support multiple devices per pelanggan
+- 🌐 **WebView Support**: Deteksi AktifLaundryApp WebView marker
+
+### User Experience
+- 🔔 **Permission Request**: Clear permission prompt dengan benefits explanation
+- 🎯 **Deep Linking**: Click notification langsung ke halaman terkait (order detail, chat, promo)
+- 📊 **Notification History**: (Future) Lihat history semua notifications
+- ⚙️ **Notification Settings**: (Future) Customize notification preferences
+- 🔕 **Quiet Hours**: (Future) Set jam notifikasi tidak aktif
+- 📱 **Badge Count**: Notification badge counter di app icon
+
+### Privacy & Security
+- 🔒 **Token Encryption**: FCM token encrypted di database
+- 🚫 **Permission-based**: User control notification permission
+- 🔐 **Server-side Validation**: Token validation sebelum send notification
+- 📝 **Opt-out Anytime**: User bisa disable notifications kapan saja
+- 🗑️ **Data Deletion**: Token dihapus saat user logout atau delete account
 
 ---
 
@@ -559,11 +635,15 @@ Set GPS Coordinates → Save
 - 🏷️ **Filter by Status**: Filter berdasarkan status pesanan
 - 🗂️ **Sort**: Urutkan berdasarkan tanggal atau total
 
-### Notifications
-- 🔔 **Order Updates**: Notifikasi saat status pesanan berubah
-- 🎁 **Promo Alerts**: Notifikasi promo baru
-- 💰 **Referral Success**: Notifikasi saat referral berhasil
+### Push Notifications (Firebase FCM)
+- 🔔 **Order Updates**: Push notification real-time saat status pesanan berubah
+- 🎁 **Promo Alerts**: Notifikasi promo baru dengan vibration
+- 💰 **Referral Success**: Notifikasi saat referral berhasil dengan reward info
 - ⏰ **Pickup Reminder**: Reminder jadwal penjemputan
+- 🚚 **Courier Assigned**: Notifikasi saat kurir di-assign
+- 📍 **Courier Nearby**: Alert saat kurir dalam perjalanan
+- 💬 **New Message**: Notifikasi pesan chat baru dari Admin
+- 🏆 **Loyalty Points**: Update poin setelah transaksi selesai
 
 ---
 

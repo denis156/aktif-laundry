@@ -37,6 +37,7 @@ Aplikasi Courier adalah **Progressive Web App (PWA)** yang dirancang khusus untu
 > **PWA + GPS + Chat Enabled**: Aplikasi dapat diinstall di smartphone dan menggunakan GPS untuk tracking lokasi real-time serta menampilkan rute pengiriman di peta interaktif. Dilengkapi dengan sistem chat real-time untuk komunikasi dengan admin dan pelanggan, termasuk file sharing untuk bukti delivery.
 
 ### ✨ What's New in This Documentation
+- 🔔 **Firebase Push Notifications**: Real-time notifications dengan FCM, vibration patterns, dan auto token management
 - 💬 **Chat System**: Dokumentasi lengkap fitur chat dengan admin dan pelanggan
 - 🗺️ **Enhanced GPS Tracking**: Speed, bearing, dan accuracy monitoring
 - 📍 **Location Caching**: Public tracking API untuk pelanggan
@@ -318,9 +319,10 @@ Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operati
 ![Leaflet](https://img.shields.io/badge/Leaflet.js-Maps-199900?style=for-the-badge&logo=leaflet&logoColor=white)
 ![GPS](https://img.shields.io/badge/Geolocation_API-GPS-FF6B35?style=for-the-badge)
 
-### Communication
+### Communication & Notifications
 ![Chat](https://img.shields.io/badge/Real--time_Chat-Livewire_Polling-4E56A6?style=for-the-badge)
 ![File Upload](https://img.shields.io/badge/File_Upload-Livewire-FF2D20?style=for-the-badge)
+![Firebase](https://img.shields.io/badge/Firebase-FCM_Push-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
 
 ### Tools
 ![Laravel Herd](https://img.shields.io/badge/Laravel_Herd-Development-FF2D20?style=for-the-badge)
@@ -357,6 +359,16 @@ Aplikasi Kurir dilengkapi dengan komponen-komponen khusus untuk delivery operati
 - 🚗 **Speed & Bearing**: GPS velocity dan direction tracking
 - 💾 **Location Cache**: Redis cache untuk real-time tracking
 - 📊 **Accuracy Metrics**: GPS precision monitoring
+
+#### Firebase & Push Notifications
+- 🔥 **Firebase Cloud Messaging**: Real-time push notifications
+- 🔔 **FCM SDK**: Firebase JavaScript SDK untuk web
+- 📱 **Service Worker**: Background notification handling
+- 🔐 **Token Management**: Auto registration, refresh, dan cleanup
+- 📳 **Vibration API**: Custom vibration patterns per notification type
+- 🌐 **WebView Detection**: Custom AktifLaundryApp marker detection
+- 📊 **Notification Analytics**: Delivery dan open rate tracking
+- 🎯 **Deep Linking**: Direct navigation dari notification
 
 ---
 
@@ -466,14 +478,17 @@ Reply Chat yang pending → Update Profile/Settings jika perlu
 
 ## 🔔 Notifications & Communication
 
-### Real-time Alerts
-- 📬 **New Assignment**: Notifikasi pesanan baru assigned
+### Real-time Push Notifications (Firebase FCM)
+- 📬 **New Assignment**: Push notification pesanan baru assigned dengan vibration
 - 📍 **Nearby Delivery**: Alert saat mendekati lokasi customer
-- ✅ **Status Update**: Konfirmasi setiap status update
+- ✅ **Status Update**: Konfirmasi setiap status update dengan custom vibration
 - 💰 **Payment Received**: Notifikasi pembayaran dari customer
 - ⏰ **Schedule Reminder**: Reminder jadwal pickup/delivery
-- 💬 **New Message**: Notifikasi pesan baru dari chat
+- 💬 **New Message**: Push notification pesan baru dari chat (Admin/Pelanggan)
 - 🔴 **Unread Count**: Badge unread message count di conversation list
+- 📱 **Multi-device**: Notification sync across multiple devices
+- 🔔 **Background/Foreground**: Smart handling untuk app state
+- 🎯 **Clickable Actions**: Click notification untuk direct access ke halaman terkait
 
 ---
 
@@ -524,6 +539,65 @@ Reply Chat yang pending → Update Profile/Settings jika perlu
 - 📊 **Efficient Queries**: ChatHelper with optimized queries
 - 🔍 **Search Index**: Search by participant name or message content
 - 📱 **Mobile Optimized**: Touch-friendly chat UI
+
+---
+
+## 🔔 Push Notifications & Firebase
+
+### Firebase Cloud Messaging (FCM)
+```javascript
+// Push Notification Features:
+✅ Real-time push notifications untuk pesanan baru
+✅ Notifikasi perubahan status pesanan
+✅ Notifikasi pesan chat baru dari Admin/Pelanggan
+✅ Custom vibration patterns untuk setiap tipe notifikasi
+✅ Background & foreground notification handling
+✅ Auto token registration & management
+✅ Auto token cleanup on logout
+✅ WebView detection untuk native app integration
+✅ Notification permission request
+✅ Token refresh handling
+✅ Multi-device support
+```
+
+### Notification Types
+- 🔔 **New Order Assignment**: Notifikasi pesanan baru assigned ke kurir
+- 📦 **Order Status Update**: Update status pesanan (Dijadwalkan, Dalam Perjalanan, Selesai)
+- 💬 **New Message**: Notifikasi pesan chat baru dari Admin atau Pelanggan
+- ⏰ **Schedule Reminder**: Reminder jadwal pickup/delivery yang akan datang
+- 📍 **Location Alert**: Alert saat mendekati lokasi customer
+- ✅ **Task Completed**: Konfirmasi penyelesaian task
+
+### Vibration Patterns
+```javascript
+// Vibration patterns untuk berbagai notifikasi:
+- New Order: [200, 100, 200] - Double vibrate
+- New Message: [100] - Single short vibrate
+- Status Update: [200] - Single long vibrate
+- Urgent Alert: [200, 100, 200, 100, 200] - Triple vibrate
+```
+
+### FCM Token Management
+- 🔐 **Auto Registration**: Token otomatis register saat app load
+- 🔄 **Auto Refresh**: Token refresh saat expired
+- 💾 **Server Sync**: Token sync ke server untuk push notifications
+- 🗑️ **Auto Cleanup**: Token otomatis dihapus saat logout
+- 📱 **Multi-device**: Support multiple devices per kurir
+- 🌐 **WebView Support**: Deteksi AktifLaundryApp WebView marker
+
+### Firebase Service Worker
+- 📡 **Background Notifications**: Receive notifications saat app di background
+- 🔔 **Foreground Handling**: Custom handling saat app aktif
+- 🖼️ **Rich Notifications**: Support icon, image, badge
+- 🎯 **Clickable**: Click notification untuk buka app di halaman terkait
+- 📊 **Analytics**: Track notification delivery & open rates
+
+### Security & Privacy
+- 🔒 **Token Encryption**: FCM token encrypted di database
+- 🚫 **Permission-based**: User harus grant notification permission
+- 🔐 **Server-side Validation**: Token validation sebelum send notification
+- 📝 **Audit Trail**: Log semua notification yang dikirim
+- 🗑️ **Privacy Compliant**: Token dihapus saat user logout
 
 ---
 
