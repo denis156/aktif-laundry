@@ -3,13 +3,14 @@ importScripts("https://www.gstatic.com/firebasejs/8.10.1/firebase-messaging.js")
 
 // Initialize Firebase with your config
 firebase.initializeApp({
-    apiKey: "AIzaSyArP2I3J92Hzt_ThtOUC5mFJTwBZGZBudU",
+    apiKey: "AIzaSyAWkQmro1JLDjcI2Xtr7Pz77zxrFdniZKc",
     authDomain: "aktiflaundry-8ce34.firebaseapp.com",
+    databaseURL: "https://aktiflaundry-8ce34-default-rtdb.asia-southeast1.firebasedatabase.app",
     projectId: "aktiflaundry-8ce34",
     storageBucket: "aktiflaundry-8ce34.firebasestorage.app",
     messagingSenderId: "523711351540",
-    appId: "1:523711351540:web:2ea8258b264da736f4aca1",
-    measurementId: "G-GSNG5V5RSX"
+    appId: "1:523711351540:web:f820c918bf2fa91ef4aca1",
+    measurementId: "G-2DVZT9RGLY"
 });
 
 // Retrieve an instance of Firebase Messaging
