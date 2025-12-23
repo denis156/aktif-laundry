@@ -190,38 +190,45 @@
                 if (permission === 'granted') {
                     console.log('Notification permission granted.');
 
-                    // Register service worker
+                    // Wait for service worker to be ready
                     if ('serviceWorker' in navigator) {
-                        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
-                        console.log('Service Worker registered:', registration);
-                    }
+                        // Register Firebase service worker separately
+                        const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+                            scope: '/firebase-cloud-messaging-push-scope'
+                        });
 
-                    // Get FCM token
-                    const token = await getToken(messaging, {
-                        vapidKey: "{{ config('services.firebase.vapid_key') }}"
-                    });
+                        // Wait for service worker to be active
+                        await navigator.serviceWorker.ready;
+                        console.log('Service Worker ready for FCM');
 
-                    if (token) {
-                        console.log('FCM Token obtained:', token);
+                        // Get FCM token with the registration
+                        const token = await getToken(messaging, {
+                            vapidKey: "{{ config('services.firebase.vapid_key') }}",
+                            serviceWorkerRegistration: registration
+                        });
 
-                        // Send token to server
-                        await fetch("{{ route('fcm.token.update') }}", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
-                                fcm_token: token
-                            })
-                        }).then(response => response.json())
-                          .then(data => {
-                              if (data.success) {
-                                  console.log('FCM token saved successfully');
-                              }
-                          });
-                    } else {
-                        console.log('No registration token available.');
+                        if (token) {
+                            console.log('FCM Token obtained:', token);
+
+                            // Send token to server
+                            await fetch("{{ route('fcm.token.update') }}", {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+                                },
+                                body: JSON.stringify({
+                                    fcm_token: token
+                                })
+                            }).then(response => response.json())
+                              .then(data => {
+                                  if (data.success) {
+                                      console.log('FCM token saved successfully');
+                                  }
+                              });
+                        } else {
+                            console.log('No registration token available.');
+                        }
                     }
                 } else if (permission === 'denied') {
                     console.log('Notification permission denied.');
