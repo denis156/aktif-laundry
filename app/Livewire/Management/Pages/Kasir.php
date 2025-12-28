@@ -532,11 +532,11 @@ class Kasir extends Component
     protected function calculateTanggalSelesaiFromMultiLayanan(): void
     {
         // Create temporary transaksi object untuk menggunakan TransaksiHelper
-        $tempTransaksi = new Transaksi();
+        $tempTransaksi = new Transaksi;
         $tempTransaksi->tanggal_masuk = $this->formData['tanggal_masuk'];
         $tempTransaksi->setRelation('transaksiLayanan', collect($this->multiLayananData['items'])->map(function ($item) {
             if (! empty($item['layanan_id'])) {
-                $tempTransaksiLayanan = new TransaksiLayanan();
+                $tempTransaksiLayanan = new TransaksiLayanan;
                 $tempTransaksiLayanan->setRelation('layanan', Layanan::find($item['layanan_id']));
 
                 return $tempTransaksiLayanan;
@@ -633,6 +633,7 @@ class Kasir extends Component
         foreach ($this->multiLayananData['items'] as $index => $item) {
             if (! empty($item['layanan_id'])) {
                 if ($item['tipe_layanan'] === 'per_kg') {
+                    // Validasi berat minimal untuk layanan per kg
                     if (empty($item['berat_kg']) || $item['berat_kg'] < $minBeratKg) {
                         Log::warning('Kasir validation failed: berat_kg invalid', [
                             'layanan_index' => $index,
@@ -644,16 +645,10 @@ class Kasir extends Component
 
                         return;
                     }
-                    if (empty($item['jenis_pakaian']) || count($item['jenis_pakaian']) === 0) {
-                        Log::warning('Kasir validation failed: jenis_pakaian kosong', [
-                            'layanan_index' => $index,
-                            'layanan_nama' => $item['nama_layanan'] ?? '',
-                        ]);
-                        $this->error('Jenis pakaian wajib diisi untuk layanan '.$item['nama_layanan'].'!', position: 'toast-bottom');
-
-                        return;
-                    }
+                    // ! REMOVED: Validasi jenis_pakaian - sekarang OPTIONAL (tidak wajib diisi)
+                    // User bisa langsung input berat saja tanpa harus pilih jenis pakaian
                 } else {
+                    // Validasi jumlah minimal untuk layanan per satuan
                     if (empty($item['jumlah_satuan']) || $item['jumlah_satuan'] < 1) {
                         Log::warning('Kasir validation failed: jumlah_satuan invalid', [
                             'layanan_index' => $index,

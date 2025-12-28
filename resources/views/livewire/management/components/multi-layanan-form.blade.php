@@ -91,7 +91,9 @@
             <div class="space-y-3 mt-3">
                 <!-- Jenis Pakaian -->
                 <div class="border border-base-300 rounded-lg p-3 bg-base-50">
-                    <label class="block text-sm font-medium mb-2">Jenis Pakaian & Jumlah</label>
+                    <label class="block text-sm font-medium mb-2">
+                        Jenis Pakaian & Jumlah <span class="text-xs font-normal text-base-content/60">(Opsional)</span>
+                    </label>
                     <div class="space-y-2">
                         @foreach($item['jenis_pakaian'] as $idx => $jp)
                         @php
@@ -128,7 +130,7 @@
                     <button type="button" wire:click="addJenisPakaian({{ $index }})"
                         class="btn btn-outline btn-sm btn-primary w-full mt-2">
                         <x-icon name="o-plus" class="w-4 h-4" />
-                        Tambah Jenis Pakaian
+                        Tambah Jenis Pakaian (Opsional)
                     </button>
                 </div>
             </div>

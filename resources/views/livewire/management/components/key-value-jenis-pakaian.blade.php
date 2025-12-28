@@ -1,7 +1,7 @@
 <div class="space-y-3">
     <label class="block text-sm font-semibold">
         <x-icon name="o-tag" class="inline-block w-4 h-4 mr-1" />
-        Jenis Pakaian & Jumlah
+        Jenis Pakaian & Jumlah <span class="text-xs font-normal text-base-content/60">(Opsional)</span>
     </label>
 
     @foreach($items as $index => $item)
@@ -44,7 +44,7 @@
         Tambah Jenis Pakaian
     </button>
 
-    <p class="text-xs text-gray-500">Pilih jenis pakaian dan masukkan jumlahnya</p>
+    <p class="text-xs text-gray-500">Pilih jenis pakaian dan masukkan jumlahnya (tidak wajib diisi)</p>
 
     {{-- Hidden input untuk form submission --}}
     <input type="hidden" wire:model="outputString" name="jenis_pakaian_detail" />

@@ -27,23 +27,26 @@ class TransaksiLayananHelper
     }
 
     // * Ambil array jenis pakaian (untuk per_kg layanan)
+    // ! OPTIONAL: Jenis pakaian tidak wajib diisi, bisa kosong array []
     public static function getJenisPakaian(TransaksiLayanan $transaksiLayanan): array
     {
         return $transaksiLayanan->jenis_pakaian ?? [];
     }
 
     // * Set array jenis pakaian (untuk per_kg layanan)
-    public static function setJenisPakaian(TransaksiLayanan $transaksiLayanan, array $jenisPakaian): void
+    // ! OPTIONAL: Jenis pakaian tidak wajib diisi, bisa di-set ke empty array [] atau null
+    public static function setJenisPakaian(TransaksiLayanan $transaksiLayanan, ?array $jenisPakaian): void
     {
         $transaksiLayanan->jenis_pakaian = $jenisPakaian;
     }
 
     // ! Rules validasi
+    // ! PENTING: jenis_pakaian adalah OPTIONAL (nullable) - tidak wajib diisi
     public static function validationRules(): array
     {
         return [
             'catatan_khusus' => 'nullable|string',
-            'jenis_pakaian' => 'nullable|array',
+            'jenis_pakaian' => 'nullable|array', // OPTIONAL: Bisa kosong atau null
             'berat_kg' => 'nullable|numeric|min:0',
             'jumlah_satuan' => 'nullable|integer|min:0',
             'harga_per_kg' => 'nullable|integer|min:0',

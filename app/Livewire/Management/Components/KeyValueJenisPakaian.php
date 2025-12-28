@@ -23,11 +23,12 @@ class KeyValueJenisPakaian extends Component
     {
         $this->loadJenisPakaianOptions();
 
+        // ! OPTIONAL: Jenis pakaian tidak wajib diisi
         // Parse initial value jika ada (format: "Kemeja (3), Celana (2)")
         if (! empty($value)) {
             $this->parseInitialValue($value);
         } else {
-            // Default: 1 baris kosong
+            // Default: 1 baris kosong (user bisa hapus atau isi sesuai kebutuhan)
             $this->addRow();
         }
     }
@@ -137,6 +138,7 @@ class KeyValueJenisPakaian extends Component
 
     protected function updateOutput(): void
     {
+        // ! OPTIONAL: Jenis pakaian tidak wajib diisi - filter hanya yang terisi
         $validItems = array_filter(
             $this->items,
             fn (array $item) => ! empty($item['jenis_id']) && ! empty($item['nama']) && $item['jumlah'] > 0
@@ -151,6 +153,7 @@ class KeyValueJenisPakaian extends Component
             $validItems
         );
 
+        // Output akan kosong jika tidak ada jenis pakaian yang dipilih (dan itu OK - optional field)
         $this->outputString = json_encode(array_values($jsonData), JSON_THROW_ON_ERROR);
         $this->dispatch('jenisPakaianUpdated', $this->outputString);
     }

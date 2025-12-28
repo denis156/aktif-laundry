@@ -31,6 +31,7 @@ class MultiLayananForm extends Component
         if (! empty($items)) {
             foreach ($items as $key => $item) {
                 if (isset($item['tipe_layanan']) && $item['tipe_layanan'] === 'per_kg') {
+                    // ! OPTIONAL: Jenis pakaian tidak wajib diisi, default ke empty array jika tidak ada
                     if (! isset($item['jenis_pakaian'])) {
                         $items[$key]['jenis_pakaian'] = [];
                     }
@@ -121,7 +122,7 @@ class MultiLayananForm extends Component
             'layanan_id' => '',
             'nama_layanan' => '',
             'tipe_layanan' => '',
-            'jenis_pakaian' => [],
+            'jenis_pakaian' => [], // OPTIONAL: Bisa dikosongkan, tidak wajib diisi
             'berat_kg' => '',
             'harga_per_kg' => 0,
             'jumlah_satuan' => 1,
@@ -140,6 +141,7 @@ class MultiLayananForm extends Component
 
     public function addJenisPakaian(int $layananIndex): void
     {
+        // ! OPTIONAL: Jenis pakaian tidak wajib diisi - ini hanya helper untuk menambahkan jika user mau
         if (! isset($this->items[$layananIndex]['jenis_pakaian'])) {
             $this->items[$layananIndex]['jenis_pakaian'] = [];
         }
@@ -159,6 +161,7 @@ class MultiLayananForm extends Component
 
     public function removeJenisPakaian(int $layananIndex, int $jenisIndex): void
     {
+        // ! OPTIONAL: Menghapus jenis pakaian dari array - bisa sampai kosong (optional field)
         if (isset($this->items[$layananIndex]['jenis_pakaian'][$jenisIndex])) {
             unset($this->items[$layananIndex]['jenis_pakaian'][$jenisIndex]);
             $this->items[$layananIndex]['jenis_pakaian'] = array_values(
