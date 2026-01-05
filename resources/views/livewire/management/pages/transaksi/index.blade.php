@@ -93,8 +93,14 @@
             @endif
             @endscope
 
+            @scope('cell_status_bayar', $item)
+            <x-badge value="{{ $item->status_bayar }}"
+                class="badge-sm {{ \App\Helper\Database\TransaksiHelper::getStatusBayarBadgeClass($item->status_bayar) }} truncate" />
+            @endscope
+
             @scope('cell_status', $item)
-            <x-badge value="{{ $item->status }}" class="badge-sm {{ \App\Helper\Database\TransaksiHelper::getStatusBadgeClass($item->status) }}" />
+            <x-badge value="{{ $item->status }}"
+                class="badge-sm {{ \App\Helper\Database\TransaksiHelper::getStatusBadgeClass($item->status) }}" />
             @endscope
 
             @scope('actions', $item)
@@ -115,11 +121,17 @@
         <div class="space-y-5">
             @php
             $statusOptionsWithAll = array_merge([['id' => '', 'name' => 'Semua Status']], $statusOptions);
-            $metodePembayaranOptionsWithAll = array_merge([['id' => '', 'name' => 'Semua Metode']], $metodePembayaranOptions);
+            $statusBayarOptionsWithAll = array_merge([['id' => '', 'name' => 'Semua Status Bayar']],
+            $statusBayarOptions);
+            $metodePembayaranOptionsWithAll = array_merge([['id' => '', 'name' => 'Semua Metode']],
+            $metodePembayaranOptions);
             @endphp
 
             <x-select label="Status Transaksi" wire:model.live="statusFilter" icon="o-flag"
                 :options="$statusOptionsWithAll" option-value="id" option-label="name" />
+
+            <x-select label="Status Bayar" wire:model.live="statusBayarFilter" icon="o-banknotes"
+                :options="$statusBayarOptionsWithAll" option-value="id" option-label="name" />
 
             <x-select label="Metode Pembayaran" wire:model.live="metodePembayaranFilter" icon="o-credit-card"
                 :options="$metodePembayaranOptionsWithAll" option-value="id" option-label="name" />

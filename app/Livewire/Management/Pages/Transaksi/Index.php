@@ -38,6 +38,8 @@ class Index extends Component
 
     public string $statusFilter = '';
 
+    public string $statusBayarFilter = '';
+
     public string $metodePembayaranFilter = '';
 
     public string $tanggalMulai = '';
@@ -50,7 +52,7 @@ class Index extends Component
 
     public function clear(): void
     {
-        $this->reset(['search', 'statusFilter', 'metodePembayaranFilter', 'tanggalMulai', 'tanggalAkhir']);
+        $this->reset(['search', 'statusFilter', 'statusBayarFilter', 'metodePembayaranFilter', 'tanggalMulai', 'tanggalAkhir']);
         $this->success('Filter berhasil dibersihkan.', position: 'toast-bottom');
     }
 
@@ -110,6 +112,7 @@ class Index extends Component
             ['key' => 'total', 'label' => 'Total', 'class' => 'w-28'],
             ['key' => 'metode_pembayaran', 'label' => 'Metode Bayar', 'class' => 'w-28', 'sortable' => false],
             ['key' => 'tipe_bayar', 'label' => 'Tipe Bayar', 'class' => 'w-24', 'sortable' => false],
+            ['key' => 'status_bayar', 'label' => 'Status Bayar', 'class' => 'w-28', 'sortable' => false],
             ['key' => 'status', 'label' => 'Status', 'class' => 'w-24', 'sortable' => false],
         ];
     }
@@ -135,6 +138,9 @@ class Index extends Component
             ->when($this->statusFilter, function ($query) {
                 $query->where('status', $this->statusFilter);
             })
+            ->when($this->statusBayarFilter, function ($query) {
+                $query->where('status_bayar', $this->statusBayarFilter);
+            })
             ->when($this->metodePembayaranFilter, function ($query) {
                 $query->where('metode_pembayaran', $this->metodePembayaranFilter);
             })
@@ -153,6 +159,11 @@ class Index extends Component
         return TransaksiHelper::getStatusOptions();
     }
 
+    public function getStatusBayarOptions(): array
+    {
+        return TransaksiHelper::getStatusBayarOptions();
+    }
+
     public function getMetodePembayaranOptions(): array
     {
         return TransaksiHelper::getMetodePembayaranOptions();
@@ -164,6 +175,7 @@ class Index extends Component
             'transaksi' => $this->getTransaksi(),
             'headers' => $this->headers(),
             'statusOptions' => $this->getStatusOptions(),
+            'statusBayarOptions' => $this->getStatusBayarOptions(),
             'metodePembayaranOptions' => $this->getMetodePembayaranOptions(),
         ]);
     }
