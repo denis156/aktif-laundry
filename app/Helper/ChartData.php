@@ -21,7 +21,7 @@ class ChartData
 
             return [
                 'label' => $date->locale('id')->isoFormat('ddd, D MMM'),
-                'count' => Transaksi::whereDate('tanggal_masuk', $date)->count(),
+                'count' => Transaksi::where('status', '!=', 'Batal')->whereDate('tanggal_masuk', $date)->count(),
                 'berat' => self::getTotalBeratForDate($date),
                 'item' => self::getTotalItemForDate($date),
             ];
@@ -40,7 +40,7 @@ class ChartData
 
             return [
                 'label' => $date->locale('id')->isoFormat('ddd, D MMM'),
-                'count' => Transaksi::whereDate('tanggal_masuk', $date)->count(),
+                'count' => Transaksi::where('status', '!=', 'Batal')->whereDate('tanggal_masuk', $date)->count(),
                 'berat' => self::getTotalBeratForDate($date),
                 'item' => self::getTotalItemForDate($date),
             ];
@@ -55,6 +55,8 @@ class ChartData
         return (float) DB::table('transaksi_layanan')
             ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
             ->whereDate('transaksi.tanggal_masuk', $date)
+            ->where('transaksi.status', '!=', 'Batal')
+            ->whereNull('transaksi.deleted_at')
             ->whereNull('transaksi_layanan.deleted_at')
             ->sum('transaksi_layanan.berat_kg');
     }
@@ -67,6 +69,8 @@ class ChartData
         return (int) DB::table('transaksi_layanan')
             ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
             ->whereDate('transaksi.tanggal_masuk', $date)
+            ->where('transaksi.status', '!=', 'Batal')
+            ->whereNull('transaksi.deleted_at')
             ->whereNull('transaksi_layanan.deleted_at')
             ->sum('transaksi_layanan.jumlah_satuan');
     }
@@ -84,7 +88,7 @@ class ChartData
 
             return [
                 'label' => $date->locale('id')->isoFormat('D MMM'),
-                'count' => Transaksi::whereDate('tanggal_masuk', $date)->count(),
+                'count' => Transaksi::where('status', '!=', 'Batal')->whereDate('tanggal_masuk', $date)->count(),
                 'berat' => self::getTotalBeratForDate($date),
                 'item' => self::getTotalItemForDate($date),
             ];
@@ -104,7 +108,7 @@ class ChartData
 
             return [
                 'label' => $currentDate->locale('id')->isoFormat('D MMM'),
-                'count' => Transaksi::whereDate('tanggal_masuk', $currentDate)->count(),
+                'count' => Transaksi::where('status', '!=', 'Batal')->whereDate('tanggal_masuk', $currentDate)->count(),
                 'berat' => self::getTotalBeratForDate($currentDate),
                 'item' => self::getTotalItemForDate($currentDate),
             ];
@@ -121,7 +125,8 @@ class ChartData
 
             return [
                 'label' => $date->locale('id')->isoFormat('MMM YYYY'),
-                'count' => Transaksi::whereMonth('tanggal_masuk', $date->month)
+                'count' => Transaksi::where('status', '!=', 'Batal')
+                    ->whereMonth('tanggal_masuk', $date->month)
                     ->whereYear('tanggal_masuk', $date->year)
                     ->count(),
                 'berat' => self::getTotalBeratForMonth($date),
@@ -143,7 +148,8 @@ class ChartData
 
             return [
                 'label' => $date->locale('id')->isoFormat('MMM'),
-                'count' => Transaksi::whereMonth('tanggal_masuk', $month)
+                'count' => Transaksi::where('status', '!=', 'Batal')
+                    ->whereMonth('tanggal_masuk', $month)
                     ->whereYear('tanggal_masuk', $year)
                     ->count(),
                 'berat' => self::getTotalBeratForMonth($date),
@@ -161,6 +167,8 @@ class ChartData
             ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
             ->whereMonth('transaksi.tanggal_masuk', $date->month)
             ->whereYear('transaksi.tanggal_masuk', $date->year)
+            ->where('transaksi.status', '!=', 'Batal')
+            ->whereNull('transaksi.deleted_at')
             ->whereNull('transaksi_layanan.deleted_at')
             ->sum('transaksi_layanan.berat_kg');
     }
@@ -174,6 +182,8 @@ class ChartData
             ->join('transaksi', 'transaksi_layanan.transaksi_id', '=', 'transaksi.id')
             ->whereMonth('transaksi.tanggal_masuk', $date->month)
             ->whereYear('transaksi.tanggal_masuk', $date->year)
+            ->where('transaksi.status', '!=', 'Batal')
+            ->whereNull('transaksi.deleted_at')
             ->whereNull('transaksi_layanan.deleted_at')
             ->sum('transaksi_layanan.jumlah_satuan');
     }
@@ -192,5 +202,37 @@ class ChartData
                     'count' => $item->total,
                 ];
             });
+    }
+
+    /**
+     * Get data transaksi untuk date range tertentu
+     */
+    public static function getDateRangeData(Carbon $from, Carbon $to): Collection
+    {
+        // Copy and normalize to date only (ignore time)
+        $from = $from->copy()->startOfDay();
+        $to = $to->copy()->startOfDay();
+
+        // Ensure from is before or equal to to
+        if ($from->gt($to)) {
+            [$from, $to] = [$to, $from];
+        }
+
+        // Calculate days (add 1 to include both start and end date)
+        $days = (int) $from->diffInDays($to) + 1;
+
+        // Ensure at least 1 day to prevent collect()->times(0) error
+        $days = max(1, $days);
+
+        return collect()->times($days, function ($i) use ($from) {
+            $date = $from->copy()->addDays($i - 1);
+
+            return [
+                'label' => $date->locale('id')->isoFormat('D MMM'),
+                'count' => Transaksi::where('status', '!=', 'Batal')->whereDate('tanggal_masuk', $date)->count(),
+                'berat' => self::getTotalBeratForDate($date),
+                'item' => self::getTotalItemForDate($date),
+            ];
+        });
     }
 }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Livewire\WithPagination;
 use Mary\Traits\Toast;
 
 #[Title('Dashboard')]
@@ -18,12 +19,17 @@ use Mary\Traits\Toast;
 class Dashboard extends Component
 {
     use Toast;
+    use WithPagination;
 
     public string $currentDateTime = '';
 
     public string $chartType = 'line'; // line, bar, area
 
-    public string $chartPeriod = 'monthly'; // Format: weekly-YYYY-MM-DD, monthly-YYYY-MM, yearly-YYYY
+    public string $chartDateFrom = '';
+
+    public string $chartDateTo = '';
+
+    public string $searchPiutang = '';
 
     // Chart data - Line/Bar Chart
     public array $transaksiChart = [
@@ -99,15 +105,18 @@ class Dashboard extends Component
     public array $statusChart = [
         'type' => 'doughnut',
         'data' => [
-            'labels' => ['Menunggu', 'Proses', 'Selesai'],
+            'labels' => ['Menunggu', 'Proses', 'Pengerjaan', 'Selesai', 'Diambil', 'Batal'],
             'datasets' => [
                 [
                     'label' => 'Status Transaksi',
                     'data' => [],
                     'backgroundColor' => [
-                        'rgba(234, 179, 8, 0.8)',   // Warning - Menunggu
-                        'rgba(59, 130, 246, 0.8)',  // Info - Proses
-                        'rgba(34, 197, 94, 0.8)',   // Success - Selesai
+                        'rgba(115, 115, 115, 0.85)',   // Secondary - Menunggu (Warm Gray oklch(45% 0.015 0))
+                        'rgba(245, 158, 11, 0.85)',    // Warning - Proses (Warm Amber oklch(72% 0.18 80))
+                        'rgba(59, 130, 246, 0.85)',    // Info - Pengerjaan (Trust Blue oklch(56% 0.15 240))
+                        'rgba(34, 197, 94, 0.85)',     // Success - Selesai (Fresh Green oklch(58% 0.18 145))
+                        'rgba(38, 38, 38, 0.85)',      // Neutral - Diambil (Pure Black oklch(0% 0 0) → darker gray)
+                        'rgba(220, 38, 38, 0.85)',     // Error - Batal (Alert Red oklch(54% 0.2 25))
                     ],
                     'borderWidth' => 2,
                 ],
@@ -116,7 +125,7 @@ class Dashboard extends Component
         'options' => [
             'responsive' => true,
             'maintainAspectRatio' => true,
-            'aspectRatio' => 1.3,
+            'aspectRatio' => 1.0,
             'plugins' => [
                 'legend' => [
                     'display' => true,
@@ -133,8 +142,8 @@ class Dashboard extends Component
                 'padding' => [
                     'top' => 15,
                     'bottom' => 10,
-                    'left' => 25,
-                    'right' => 25,
+                    'left' => 15,
+                    'right' => 15,
                 ],
             ],
         ],
@@ -142,8 +151,9 @@ class Dashboard extends Component
 
     public function mount(): void
     {
-        // Set default to current month
-        $this->chartPeriod = 'monthly-'.now()->format('Y-m');
+        // Set default to last 30 days
+        $this->chartDateFrom = now()->subDays(29)->format('Y-m-d');
+        $this->chartDateTo = now()->format('Y-m-d');
         $this->updateDateTime();
         $this->loadChartData();
         $this->loadStatusChart();
@@ -156,27 +166,16 @@ class Dashboard extends Component
 
     public function loadChartData(): void
     {
-        // Parse period: {type}-{date}
-        $parts = explode('-', $this->chartPeriod);
-        $periodType = $parts[0]; // weekly, monthly, yearly
-
-        // Load data based on selected period
-        if ($periodType === 'weekly' && count($parts) === 4) {
-            // Format: weekly-YYYY-MM-DD
-            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-{$parts[3]}");
-            $data = ChartData::getWeekData($date);
-        } elseif ($periodType === 'monthly' && count($parts) === 3) {
-            // Format: monthly-YYYY-MM
-            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-01");
-            $data = ChartData::getMonthData($date);
-        } elseif ($periodType === 'yearly' && count($parts) === 2) {
-            // Format: yearly-YYYY
-            $date = Carbon::parse("{$parts[1]}-01-01");
-            $data = ChartData::getYearData($date);
-        } else {
-            // Default to current month
-            $data = ChartData::getMonthData(now());
+        // Validate date range
+        if (empty($this->chartDateFrom) || empty($this->chartDateTo)) {
+            return;
         }
+
+        $from = Carbon::parse($this->chartDateFrom);
+        $to = Carbon::parse($this->chartDateTo);
+
+        // Get data for date range (swap handled in ChartData helper)
+        $data = ChartData::getDateRangeData($from, $to);
 
         // Set chart type (area chart is line chart with fill)
         if ($this->chartType === 'area') {
@@ -201,8 +200,8 @@ class Dashboard extends Component
 
     public function loadStatusChart(): void
     {
-        // Get count by status (only Menunggu, Proses, Selesai)
-        $statuses = ['Menunggu', 'Proses', 'Selesai'];
+        // Get count by status (semua status transaksi)
+        $statuses = ['Menunggu', 'Proses', 'Pengerjaan', 'Selesai', 'Diambil', 'Batal'];
         $statusCounts = [];
 
         foreach ($statuses as $status) {
@@ -218,9 +217,15 @@ class Dashboard extends Component
         $this->loadChartData();
     }
 
-    public function updatedChartPeriod(): void
+    public function updatedChartDateFrom(): void
     {
-        // Reload chart data when period changes
+        // Reload chart data when date range changes
+        $this->loadChartData();
+    }
+
+    public function updatedChartDateTo(): void
+    {
+        // Reload chart data when date range changes
         $this->loadChartData();
     }
 
@@ -235,85 +240,19 @@ class Dashboard extends Component
 
     public function getChartTitle(): string
     {
-        // Parse period type
-        $parts = explode('-', $this->chartPeriod);
-        $periodType = $parts[0];
-
-        if ($periodType === 'weekly' && count($parts) === 4) {
-            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-{$parts[3]}");
-            $endDate = $date->copy()->addDays(6);
-
-            return 'Transaksi Mingguan';
-        } elseif ($periodType === 'monthly' && count($parts) === 3) {
-            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-01");
-
-            return 'Transaksi Bulanan';
-        } elseif ($periodType === 'yearly' && count($parts) === 2) {
-            return 'Transaksi Tahunan';
-        }
-
         return 'Grafik Transaksi';
     }
 
     public function getChartSubtitle(): string
     {
-        // Parse period type
-        $parts = explode('-', $this->chartPeriod);
-        $periodType = $parts[0];
-
-        if ($periodType === 'weekly' && count($parts) === 4) {
-            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-{$parts[3]}");
-            $endDate = $date->copy()->addDays(6);
-
-            return $date->locale('id')->isoFormat('D MMM').' - '.$endDate->locale('id')->isoFormat('D MMM YYYY');
-        } elseif ($periodType === 'monthly' && count($parts) === 3) {
-            $date = Carbon::parse("{$parts[1]}-{$parts[2]}-01");
-
-            return 'Periode '.$date->locale('id')->isoFormat('MMMM YYYY');
-        } elseif ($periodType === 'yearly' && count($parts) === 2) {
-            return 'Periode Tahun '.$parts[1];
+        if (empty($this->chartDateFrom) || empty($this->chartDateTo)) {
+            return 'Data transaksi laundry';
         }
 
-        return 'Data transaksi laundry';
-    }
+        $from = Carbon::parse($this->chartDateFrom);
+        $to = Carbon::parse($this->chartDateTo);
 
-    public function getPeriodOptions(): array
-    {
-        $options = [
-            'Minggu' => [],
-            'Bulan' => [],
-            'Tahun' => [],
-        ];
-
-        // Generate last 8 weeks (including current week)
-        for ($i = 0; $i < 8; $i++) {
-            $date = now()->subWeeks($i)->startOfWeek();
-            $endDate = $date->copy()->endOfWeek();
-            $options['Minggu'][] = [
-                'id' => 'weekly-'.$date->format('Y-m-d'),
-                'name' => $date->locale('id')->isoFormat('D MMM').' - '.$endDate->locale('id')->isoFormat('D MMM YYYY'),
-            ];
-        }
-
-        // Generate last 12 months (including current month)
-        for ($i = 0; $i < 12; $i++) {
-            $date = now()->subMonths($i);
-            $options['Bulan'][] = [
-                'id' => 'monthly-'.$date->format('Y-m'),
-                'name' => $date->locale('id')->isoFormat('MMMM YYYY'),
-            ];
-        }
-
-        // Generate last 5 years (including current year)
-        for ($i = 0; $i < 5; $i++) {
-            $year = now()->year - $i;
-            $options['Tahun'][] = [
-                'id' => 'yearly-'.$year,
-                'name' => 'Tahun '.$year,
-            ];
-        }
-
-        return $options;
+        return $from->locale('id')->isoFormat('D MMM YYYY').' - '.$to->locale('id')->isoFormat('D MMM YYYY');
     }
 
     public function calendarEvents(): array
@@ -346,19 +285,15 @@ class Dashboard extends Component
 
     public function render()
     {
-        // Statistics Transaksi
-        $totalTransaksi = Transaksi::count();
-        $transaksiBulanIni = Transaksi::whereMonth('tanggal_masuk', now()->month)
-            ->whereYear('tanggal_masuk', now()->year)
-            ->count();
-        $transaksiHariIni = Transaksi::whereDate('tanggal_masuk', today())->count();
-
-        // Statistics Pendapatan
-        $totalPendapatan = Transaksi::sum('total');
-        $pendapatanBulanIni = Transaksi::whereMonth('tanggal_masuk', now()->month)
-            ->whereYear('tanggal_masuk', now()->year)
+        // Statistics
+        $totalTransaksi = Transaksi::where('status', '!=', 'Batal')->count();
+        $totalPendapatan = Transaksi::where('status', '!=', 'Batal')->sum('total');
+        $totalPendapatanSudahBayar = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Sudah Bayar')
             ->sum('total');
-        $pendapatanHariIni = Transaksi::whereDate('tanggal_masuk', today())->sum('total');
+        $totalPendapatanBelumBayar = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Belum Bayar')
+            ->sum('total');
 
         // Top 5 Layanan Terpopuler
         $topLayanan = DB::table('transaksi_layanan')
@@ -374,21 +309,26 @@ class Dashboard extends Component
             ->limit(5)
             ->get();
 
-        // 5 Transaksi Terakhir
-        $recentTransaksi = Transaksi::with('pelanggan')
+        // Transaksi Piutang (Belum Bayar) dengan pagination
+        $transaksiPiutang = Transaksi::with(['pelanggan', 'transaksiLayanan', 'kasir'])
+            ->where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Belum Bayar')
+            ->when($this->searchPiutang, function ($query) {
+                $query->where(function ($q) {
+                    $q->where('kode_transaksi', 'like', "%{$this->searchPiutang}%")
+                        ->orWhere('nama_pelanggan', 'like', "%{$this->searchPiutang}%");
+                });
+            })
             ->orderBy('tanggal_masuk', 'desc')
-            ->limit(5)
-            ->get();
+            ->paginate(5);
 
         return view('livewire.management.pages.dashboard', [
             'totalTransaksi' => $totalTransaksi,
-            'transaksiBulanIni' => $transaksiBulanIni,
-            'transaksiHariIni' => $transaksiHariIni,
             'totalPendapatan' => $totalPendapatan,
-            'pendapatanBulanIni' => $pendapatanBulanIni,
-            'pendapatanHariIni' => $pendapatanHariIni,
+            'totalPendapatanSudahBayar' => $totalPendapatanSudahBayar,
+            'totalPendapatanBelumBayar' => $totalPendapatanBelumBayar,
             'topLayanan' => $topLayanan,
-            'recentTransaksi' => $recentTransaksi,
+            'transaksiPiutang' => $transaksiPiutang,
             'events' => $this->calendarEvents(),
         ]);
     }
