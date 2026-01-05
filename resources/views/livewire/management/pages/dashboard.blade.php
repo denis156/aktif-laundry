@@ -16,49 +16,6 @@
     </x-header>
 
     <section class="space-y-6">
-        {{-- STATISTICS --}}
-        <div class="bg-base-100 stats stats-vertical lg:stats-horizontal shadow w-full">
-            {{-- Jumlah Transaksi --}}
-            <div class="stat place-items-center">
-                <div class="stat-figure text-primary">
-                    <x-icon name="o-clipboard-document-list" class="w-8 h-8" />
-                </div>
-                <div class="stat-title">Jumlah Transaksi</div>
-                <div class="stat-value text-primary">{{ number_format($totalTransaksi) }}</div>
-                <div class="stat-desc">Total seluruh transaksi</div>
-            </div>
-
-            {{-- Total Pendapatan --}}
-            <div class="stat place-items-center">
-                <div class="stat-figure text-base-content">
-                    <x-icon name="o-banknotes" class="w-8 h-8" />
-                </div>
-                <div class="stat-title">Total Pendapatan</div>
-                <div class="stat-value text-base-content">Rp {{ number_format($totalPendapatan / 1000, 0) }}K</div>
-                <div class="stat-desc">Belum dan sudah bayar</div>
-            </div>
-
-            {{-- Pendapatan --}}
-            <div class="stat place-items-center">
-                <div class="stat-figure text-success">
-                    <x-icon name="o-check-circle" class="w-8 h-8" />
-                </div>
-                <div class="stat-title">Pendapatan</div>
-                <div class="stat-value text-success">Rp {{ number_format($totalPendapatanSudahBayar / 1000, 0) }}K</div>
-                <div class="stat-desc">Transaksi sudah bayar</div>
-            </div>
-
-            {{-- Piutang --}}
-            <div class="stat place-items-center">
-                <div class="stat-figure text-error">
-                    <x-icon name="o-exclamation-triangle" class="w-8 h-8" />
-                </div>
-                <div class="stat-title">Piutang</div>
-                <div class="stat-value text-error">Rp {{ number_format($totalPendapatanBelumBayar / 1000, 0) }}K</div>
-                <div class="stat-desc">Transaksi belum bayar</div>
-            </div>
-        </div>
-
         {{-- DONUT STATUS & TRANSAKSI PIUTANG --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             {{-- DONUT CHART STATUS (1 KOLOM) --}}
@@ -142,6 +99,130 @@
                 @endif
             </x-card>
         </div>
+
+        {{-- STATISTICS CARD --}}
+        <x-card title="Statistik Bisnis" subtitle="Ringkasan performa laundry secara menyeluruh" class="shadow-sm">
+            <div class="space-y-4">
+                {{-- STATISTICS - TOTAL TRANSAKSI & PENDAPATAN --}}
+                <div class="stats stats-vertical lg:stats-horizontal shadow-lg w-full">
+                    {{-- Total Transaksi --}}
+                    <div class="stat place-items-center bg-linear-to-t from-secondary via-secondary/90 to-secondary/60">
+                        <div class="stat-figure text-secondary-content">
+                            <x-icon name="o-clipboard-document-list" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-secondary-content">Total Transaksi</div>
+                        <div class="stat-value text-secondary-content">{{ number_format($totalTransaksi, 0, ',', '.') }}
+                        </div>
+                        <div class="stat-desc text-secondary-content/80">Total seluruh transaksi</div>
+                    </div>
+
+                    {{-- Total Pendapatan --}}
+                    <div class="stat place-items-center bg-linear-to-t from-secondary via-secondary/90 to-secondary/60">
+                        <div class="stat-figure text-secondary-content">
+                            <x-icon name="o-banknotes" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-secondary-content">Total Pendapatan</div>
+                        <div class="stat-value text-secondary-content">Rp {{
+                            \App\Helper\NumberFormat::formatRupiah($totalPendapatan) }}</div>
+                        <div class="stat-desc text-secondary-content/80">Total pendapatan & piutang</div>
+                    </div>
+                </div>
+
+                {{-- STATISTICS - STATUS BAYAR & PENDAPATAN --}}
+                <div class="stats stats-vertical lg:stats-horizontal shadow-lg w-full">
+                    {{-- Transaksi Sudah Bayar --}}
+                    <div class="stat bg-linear-to-br from-success via-success/85 to-success/70">
+                        <div class="stat-figure text-success-content">
+                            <x-icon name="o-check-circle" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-success-content">Transaksi Sudah Bayar</div>
+                        <div class="stat-value text-success-content">{{ number_format($transaksiSudahBayar, 0, ',', '.')
+                            }}</div>
+                        <div class="stat-desc text-success-content/80">Transaksi lunas</div>
+                    </div>
+
+                    {{-- Transaksi Belum Bayar --}}
+                    <div class="stat bg-linear-to-bl from-error via-error/85 to-error/70">
+                        <div class="stat-figure text-error-content">
+                            <x-icon name="o-exclamation-triangle" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-error-content">Transaksi Belum Bayar</div>
+                        <div class="stat-value text-error-content">{{ number_format($transaksiBelumBayar, 0, ',', '.')
+                            }}</div>
+                        <div class="stat-desc text-error-content/80">Transaksi belum lunas</div>
+                    </div>
+
+                    {{-- Pendapatan --}}
+                    <div class="stat bg-linear-to-br from-success via-success/85 to-success/70">
+                        <div class="stat-figure text-success-content">
+                            <x-icon name="o-check-circle" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-success-content">Pendapatan</div>
+                        <div class="stat-value text-success-content">Rp {{
+                            \App\Helper\NumberFormat::formatRupiah($totalPendapatanSudahBayar) }}</div>
+                        <div class="stat-desc text-success-content/80">Transaksi yang sudah lunas</div>
+                    </div>
+
+                    {{-- Piutang --}}
+                    <div class="stat bg-linear-to-bl from-error via-error/85 to-error/70">
+                        <div class="stat-figure text-error-content">
+                            <x-icon name="o-exclamation-triangle" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-error-content">Piutang</div>
+                        <div class="stat-value text-error-content">Rp {{
+                            \App\Helper\NumberFormat::formatRupiah($totalPendapatanBelumBayar) }}</div>
+                        <div class="stat-desc text-error-content/80">Transaksi yang belum lunas</div>
+                    </div>
+                </div>
+
+                {{-- STATISTICS - BULAN INI & HARI INI --}}
+                <div class="stats stats-vertical lg:stats-horizontal shadow-lg w-full">
+                    {{-- Pendapatan Bulan Ini --}}
+                    <div class="stat bg-linear-to-br from-success to-success/70">
+                        <div class="stat-figure text-success-content">
+                            <x-icon name="o-calendar" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-success-content">Pendapatan Bulan Ini</div>
+                        <div class="stat-value text-success-content">Rp {{
+                            \App\Helper\NumberFormat::formatRupiah($pendapatanBulanIni) }}</div>
+                        <div class="stat-desc text-success-content/80">Transaksi lunas bulan ini</div>
+                    </div>
+
+                    {{-- Piutang Bulan Ini --}}
+                    <div class="stat bg-linear-to-br from-error to-error/70">
+                        <div class="stat-figure text-error-content">
+                            <x-icon name="o-calendar" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-error-content">Piutang Bulan Ini</div>
+                        <div class="stat-value text-error-content">Rp {{
+                            \App\Helper\NumberFormat::formatRupiah($piutangBulanIni) }}</div>
+                        <div class="stat-desc text-error-content/80">Transaksi belum lunas bulan ini</div>
+                    </div>
+
+                    {{-- Pendapatan Hari Ini --}}
+                    <div class="stat bg-linear-to-br from-success to-success/70">
+                        <div class="stat-figure text-success-content">
+                            <x-icon name="o-clock" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-success-content">Pendapatan Hari Ini</div>
+                        <div class="stat-value text-success-content">Rp {{
+                            \App\Helper\NumberFormat::formatRupiah($pendapatanHariIni) }}</div>
+                        <div class="stat-desc text-success-content/80">Transaksi lunas hari ini</div>
+                    </div>
+
+                    {{-- Piutang Hari Ini --}}
+                    <div class="stat bg-linear-to-br from-error to-error/70">
+                        <div class="stat-figure text-error-content">
+                            <x-icon name="o-clock" class="w-8 h-8" />
+                        </div>
+                        <div class="stat-title text-error-content">Piutang Hari Ini</div>
+                        <div class="stat-value text-error-content">Rp {{
+                            \App\Helper\NumberFormat::formatRupiah($piutangHariIni) }}</div>
+                        <div class="stat-desc text-error-content/80">Transaksi belum lunas hari ini</div>
+                    </div>
+                </div>
+            </div>
+        </x-card>
 
         {{-- KALENDER & TOP 5 LAYANAN --}}
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">

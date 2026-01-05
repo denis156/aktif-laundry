@@ -285,14 +285,44 @@ class Dashboard extends Component
 
     public function render()
     {
-        // Statistics
+        // Statistics - Total Transaksi
         $totalTransaksi = Transaksi::where('status', '!=', 'Batal')->count();
+        $transaksiSudahBayar = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Sudah Bayar')
+            ->count();
+        $transaksiBelumBayar = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Belum Bayar')
+            ->count();
+
+        // Statistics - All Time (Pendapatan)
         $totalPendapatan = Transaksi::where('status', '!=', 'Batal')->sum('total');
         $totalPendapatanSudahBayar = Transaksi::where('status', '!=', 'Batal')
             ->where('status_bayar', 'Sudah Bayar')
             ->sum('total');
         $totalPendapatanBelumBayar = Transaksi::where('status', '!=', 'Batal')
             ->where('status_bayar', 'Belum Bayar')
+            ->sum('total');
+
+        // Statistics - Bulan Ini
+        $pendapatanBulanIni = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Sudah Bayar')
+            ->whereMonth('tanggal_masuk', now()->month)
+            ->whereYear('tanggal_masuk', now()->year)
+            ->sum('total');
+        $piutangBulanIni = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Belum Bayar')
+            ->whereMonth('tanggal_masuk', now()->month)
+            ->whereYear('tanggal_masuk', now()->year)
+            ->sum('total');
+
+        // Statistics - Hari Ini
+        $pendapatanHariIni = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Sudah Bayar')
+            ->whereDate('tanggal_masuk', now())
+            ->sum('total');
+        $piutangHariIni = Transaksi::where('status', '!=', 'Batal')
+            ->where('status_bayar', 'Belum Bayar')
+            ->whereDate('tanggal_masuk', now())
             ->sum('total');
 
         // Top 5 Layanan Terpopuler
@@ -324,9 +354,15 @@ class Dashboard extends Component
 
         return view('livewire.management.pages.dashboard', [
             'totalTransaksi' => $totalTransaksi,
+            'transaksiSudahBayar' => $transaksiSudahBayar,
+            'transaksiBelumBayar' => $transaksiBelumBayar,
             'totalPendapatan' => $totalPendapatan,
             'totalPendapatanSudahBayar' => $totalPendapatanSudahBayar,
             'totalPendapatanBelumBayar' => $totalPendapatanBelumBayar,
+            'pendapatanBulanIni' => $pendapatanBulanIni,
+            'piutangBulanIni' => $piutangBulanIni,
+            'pendapatanHariIni' => $pendapatanHariIni,
+            'piutangHariIni' => $piutangHariIni,
             'topLayanan' => $topLayanan,
             'transaksiPiutang' => $transaksiPiutang,
             'events' => $this->calendarEvents(),
