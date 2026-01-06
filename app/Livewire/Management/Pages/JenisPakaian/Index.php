@@ -32,7 +32,7 @@ class Index extends Component
 
     public string $deleteName = '';
 
-    public array $sortBy = ['column' => 'kode_jenis', 'direction' => 'desc'];
+    public array $sortBy = ['column' => 'created_at', 'direction' => 'desc'];
 
     public string $statusFilter = '';
 

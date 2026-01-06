@@ -34,7 +34,7 @@ class Index extends Component
 
     public string $deleteName = '';
 
-    public array $sortBy = ['column' => 'kode_pelanggan', 'direction' => 'desc'];
+    public array $sortBy = ['column' => 'created_at', 'direction' => 'desc'];
 
     public string $statusFilter = '';
 
@@ -125,10 +125,7 @@ class Index extends Component
 
     public function render(): mixed
     {
-        $pelanggan = $this->pelanggan();
-
-        // Format nomor HP untuk display
-        $pelanggan->getCollection()->transform(function ($item) {
+        $pelanggan = $this->pelanggan()->through(function ($item) {
             $item->no_hp_display = PhoneNumber::formatLocal($item->no_hp) ?? $item->no_hp;
 
             return $item;
