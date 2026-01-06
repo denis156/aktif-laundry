@@ -384,23 +384,51 @@ class TransaksiHelper
             $prefix = PengaturanHelper::getValue('format_id_transaksi', 'TRX');
             $prefixLength = strlen($prefix);
 
-            $lastTransaksi = Transaksi::withTrashed()->orderBy('kode_transaksi', 'desc')->first();
+            // Gunakan raw query untuk mendapatkan nomor tertinggi dari kode transaksi
+            // CAST ke unsigned untuk sorting numerik yang benar
+            $lastTransaksi = Transaksi::withTrashed()
+                ->where('kode_transaksi', 'LIKE', $prefix.'%')
+                ->orderByRaw('CAST(SUBSTRING(kode_transaksi, '.($prefixLength + 1).') AS UNSIGNED) DESC')
+                ->first();
 
             if (! $lastTransaksi) {
                 return $prefix.'001';
             }
 
-            $lastNumber = (int) substr($lastTransaksi->kode_transaksi, $prefixLength);
+            // Ekstrak nomor dari kode transaksi terakhir
+            $lastKode = $lastTransaksi->kode_transaksi;
+            $lastNumber = (int) substr($lastKode, $prefixLength);
 
-            // Check if there are any gaps in the numbering by finding the next available number
+            // Mulai dari nomor berikutnya
             $nextNumber = $lastNumber + 1;
 
-            // Verify if this number is already used (in case of deletions)
+            // Pastikan kode belum digunakan (cek ulang untuk menghindari race condition)
+            $attempts = 0;
+            $maxAttempts = 100; // Batasi untuk mencegah infinite loop
+
             while (Transaksi::where('kode_transaksi', $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT))->exists()) {
                 $nextNumber++;
+                $attempts++;
+
+                if ($attempts >= $maxAttempts) {
+                    Log::error('TransaksiHelper: Max attempts reached for generating kode transaksi', [
+                        'last_attempt' => $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT),
+                        'prefix' => $prefix,
+                    ]);
+                    throw new \Exception('Gagal generate kode transaksi setelah '.$maxAttempts.' percobaan');
+                }
             }
 
-            return $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+            $newKode = $prefix.str_pad((string) $nextNumber, 3, '0', STR_PAD_LEFT);
+
+            Log::info('TransaksiHelper: Generated new kode transaksi', [
+                'new_kode' => $newKode,
+                'last_kode' => $lastTransaksi->kode_transaksi ?? null,
+                'last_number' => $lastNumber,
+                'next_number' => $nextNumber,
+            ]);
+
+            return $newKode;
         } catch (\Exception $e) {
             Log::error('Failed to generate kode transaksi', [
                 'error' => $e->getMessage(),
