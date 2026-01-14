@@ -6,10 +6,10 @@ namespace App\Livewire\Management\Components;
 
 use App\Helper\Database\PengaturanHelper;
 use App\Helper\Database\TransaksiLayananHelper;
-use App\Helper\FonnteHelper;
 use App\Helper\PhoneNumber;
 use App\Models\Message;
 use App\Models\Transaksi;
+use App\Services\FonnteService;
 use Livewire\Component;
 use Mary\Traits\Toast;
 
@@ -24,6 +24,13 @@ class WhatsAppButton extends Component
     public string $size = 'sm'; // default sm, bisa di-override dengan md, lg
 
     public string $btnClass = 'btn-success'; // default success, bisa btn-primary, btn-soft-success, dll
+
+    protected FonnteService $fonnteService;
+
+    public function boot(FonnteService $fonnteService): void
+    {
+        $this->fonnteService = $fonnteService;
+    }
 
     public function mount(int $transaksiId, string $size = 'sm', string $btnClass = 'btn-success'): void
     {
@@ -60,42 +67,15 @@ class WhatsAppButton extends Component
         }
 
         try {
-            // Get connected device from Fonnte
-            $fonnte = new FonnteHelper();
-            $devicesResponse = $fonnte->getAllDevices();
-
-            if (! $devicesResponse['status']) {
-                $this->error('Gagal mengambil daftar device: '.($devicesResponse['error'] ?? 'Unknown error'), position: 'toast-bottom');
-
-                return;
-            }
-
-            // Find first connected device
-            $connectedDevice = null;
-            if (isset($devicesResponse['data']['data'])) {
-                foreach ($devicesResponse['data']['data'] as $device) {
-                    if ($device['status'] === 'connect') {
-                        $connectedDevice = $device;
-                        break;
-                    }
-                }
-            }
-
-            if (! $connectedDevice) {
-                $this->error('Tidak ada device WhatsApp yang terhubung. Silakan hubungkan device terlebih dahulu.', position: 'toast-bottom');
-
-                return;
-            }
-
-            // Send message via Fonnte using connected device token
-            $response = $fonnte->sendMessage(
-                phoneNumber: $normalizedPhone,
-                message: $message,
-                deviceToken: $connectedDevice['token']
+            // Send message via Fonnte using device token from config
+            $sendResponse = $this->fonnteService->sendMessage(
+                target: $normalizedPhone,
+                message: $message
             );
 
-            if (! $response['status']) {
-                $errorMessage = $response['error'] ?? 'Gagal mengirim pesan WhatsApp';
+            if (! $sendResponse->successful()) {
+                $errorData = $sendResponse->json();
+                $errorMessage = $errorData['reason'] ?? $errorData['error'] ?? 'Gagal mengirim pesan WhatsApp';
                 $this->error($errorMessage, position: 'toast-bottom');
 
                 return;

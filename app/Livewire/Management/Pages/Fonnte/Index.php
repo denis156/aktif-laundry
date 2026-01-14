@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pages\Fonnte;
 
-use App\Helper\FonnteHelper;
+use App\Services\FonnteService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Computed;
@@ -21,11 +21,11 @@ class Index extends Component
 
     public bool $loading = true;
 
-    protected FonnteHelper $fonnte;
+    protected FonnteService $fonnteService;
 
-    public function boot(FonnteHelper $fonnte): void
+    public function boot(FonnteService $fonnteService): void
     {
-        $this->fonnte = $fonnte;
+        $this->fonnteService = $fonnteService;
     }
 
     public function mount(): void
@@ -38,7 +38,7 @@ class Index extends Component
     {
         try {
             $this->loading = true;
-            $response = $this->fonnte->getAllDevices();
+            $response = $this->fonnteService->getAllDevices();
 
             // Check if response is successful
             if (! $response['status']) {
@@ -94,7 +94,7 @@ class Index extends Component
     public function loadDevices(): void
     {
         // Clear cache untuk mendapatkan data terbaru
-        $this->fonnte->clearDevicesCache();
+        $this->fonnteService->clearDevicesCache();
 
         // Trigger computed property refresh
         unset($this->devices);

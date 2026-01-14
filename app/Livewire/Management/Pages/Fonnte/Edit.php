@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pages\Fonnte;
 
-use App\Helper\FonnteHelper;
+use App\Services\FonnteService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
@@ -34,11 +34,11 @@ class Edit extends Component
     // Modals
     public bool $disconnectModal = false;
 
-    protected FonnteHelper $fonnte;
+    protected FonnteService $fonnteService;
 
-    public function boot(FonnteHelper $fonnte): void
+    public function boot(FonnteService $fonnteService): void
     {
-        $this->fonnte = $fonnte;
+        $this->fonnteService = $fonnteService;
     }
 
     public function mount(string $token): void
@@ -51,9 +51,9 @@ class Edit extends Component
     {
         try {
             // Clear cache untuk mendapatkan data device terbaru
-            $this->fonnte->clearDeviceProfileCache($this->token);
+            $this->fonnteService->clearDeviceProfileCache($this->token);
 
-            $response = $this->fonnte->getDeviceProfile($this->token);
+            $response = $this->fonnteService->getDeviceProfile($this->token);
 
             if ($response['status']) {
                 $this->device = $response['data'];
@@ -85,7 +85,7 @@ class Edit extends Component
         }
 
         try {
-            $response = $this->fonnte->updateDevice($this->token, $this->name);
+            $response = $this->fonnteService->updateDevice($this->token, $this->name);
 
             if ($response['status']) {
                 $this->success('Device berhasil diupdate!', position: 'toast-bottom');
@@ -111,7 +111,7 @@ class Edit extends Component
         }
 
         try {
-            $response = $this->fonnte->requestQRActivation(
+            $response = $this->fonnteService->requestQRActivation(
                 $this->device['device'],
                 $this->token
             );
@@ -144,7 +144,7 @@ class Edit extends Component
         }
 
         try {
-            $response = $this->fonnte->disconnectDevice($this->token);
+            $response = $this->fonnteService->disconnectDevice($this->token);
 
             if ($response['status']) {
                 $this->success('Device berhasil didisconnect!', position: 'toast-bottom');

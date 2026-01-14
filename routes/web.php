@@ -93,6 +93,9 @@ Route::get('/privacy-policy', function () {
 Route::get('/manifest-kurir.json', fn () => response()->json(ManifestHelper::kurirManifest()))->name('manifest.kurir');
 Route::get('/manifest-pelanggan.json', fn () => response()->json(ManifestHelper::pelangganManifest()))->name('manifest.pelanggan');
 
+// WhatsApp Webhook for AI Chatbot
+Route::post('/webhook/whatsapp', [App\Http\Controllers\WhatsAppWebhookController::class, 'handle'])->name('webhook.whatsapp');
+
 /*
 |--------------------------------------------------------------------------
 | Kurir Routes

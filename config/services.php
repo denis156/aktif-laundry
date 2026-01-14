@@ -69,9 +69,10 @@ return [
     |
     | Setup:
     | 1. Daftar akun di: https://fonnte.com/
-    | 2. Dapatkan API token dari dashboard Fonnte
-    | 3. Copy token ke .env file sebagai FONNTE_TOKEN
-    | 4. Gunakan helper app/Helper/FonnteHelper.php untuk integrasi
+    | 2. Dapatkan API token dari dashboard Fonnte (Account Token)
+    | 3. Dapatkan Device Token dari device yang sudah ditambahkan
+    | 4. Copy tokens ke .env file sebagai FONNTE_TOKEN dan FONNTE_DEVICE_TOKEN
+    | 5. Gunakan service app/Services/FonnteService.php untuk integrasi
     |
     | Fitur yang tersedia:
     | - Kirim pesan WhatsApp melalui device yang terdaftar
@@ -84,6 +85,7 @@ return [
 
     'fonnte' => [
         'fonnte_token' => env('FONNTE_TOKEN'),
+        'device_token' => env('FONNTE_DEVICE_TOKEN'),
     ],
 
     /*
@@ -155,6 +157,36 @@ return [
             'app_id' => env('FIREBASE_APP_ID'),
             'measurement_id' => env('FIREBASE_MEASUREMENT_ID'),
         ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Z.AI Configuration
+    |--------------------------------------------------------------------------
+    |
+    | Konfigurasi untuk Z.AI API (Anthropic Compatible)
+    | Digunakan untuk AI Chatbot WhatsApp yang menjawab pertanyaan pelanggan
+    |
+    | Setup:
+    | 1. Daftar akun di: https://z.ai/
+    | 2. Dapatkan API key dari dashboard Z.AI
+    | 3. Copy API key ke .env file sebagai ZAI_API_KEY
+    |
+    | Fitur yang tersedia:
+    | - AI chatbot dengan model GLM-4.6 flagship
+    | - Response natural dan kontekstual
+    | - Support Anthropic format untuk compatibility
+    | - Konfigurasi temperature, max tokens, dan timeout
+    |
+    */
+
+    'zai' => [
+        'api_key' => env('ZAI_API_KEY'),
+        'model' => env('ZAI_MODEL', 'glm-4.6'),
+        'max_tokens' => env('ZAI_MAX_TOKENS', 65536),
+        'temperature' => env('ZAI_TEMPERATURE', 0.7),
+        'timeout' => env('ZAI_TIMEOUT', 25),
+        'api_url' => 'https://api.z.ai/api/anthropic/v1/messages',
     ],
 
 ];

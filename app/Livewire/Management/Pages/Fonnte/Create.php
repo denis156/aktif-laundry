@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace App\Livewire\Management\Pages\Fonnte;
 
-use App\Helper\FonnteHelper;
 use App\Helper\PhoneNumber;
+use App\Services\FonnteService;
 use Exception;
 use Illuminate\Support\Facades\Log;
 use Livewire\Attributes\Layout;
@@ -23,11 +23,11 @@ class Create extends Component
 
     public string $devicePhone = '';
 
-    protected FonnteHelper $fonnte;
+    protected FonnteService $fonnteService;
 
-    public function boot(FonnteHelper $fonnte): void
+    public function boot(FonnteService $fonnteService): void
     {
-        $this->fonnte = $fonnte;
+        $this->fonnteService = $fonnteService;
     }
 
     public function save(): void
@@ -50,7 +50,7 @@ class Create extends Component
         $phoneForApi = '62'.$normalizedPhone;
 
         try {
-            $response = $this->fonnte->addDevice($this->deviceName, $phoneForApi);
+            $response = $this->fonnteService->addDevice($this->deviceName, $phoneForApi);
 
             if ($response['status']) {
                 $this->success('Device berhasil ditambahkan!', position: 'toast-bottom');

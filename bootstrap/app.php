@@ -17,6 +17,11 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->trustProxies(at: '*');
 
+        // Exclude webhook routes from CSRF protection
+        $middleware->validateCsrfTokens(except: [
+            '/webhook/*',
+        ]);
+
         // Custom redirect for unauthenticated users based on request path
         $middleware->redirectGuestsTo(function () {
             $request = request();
