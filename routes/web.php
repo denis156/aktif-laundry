@@ -23,6 +23,7 @@ use App\Livewire\Management\Pages\Auth\ResetPassword;
 use App\Livewire\Management\Pages\Auth\VerifyEmail;
 use App\Livewire\Management\Pages\Chat\Index as ChatIndex;
 use App\Livewire\Management\Pages\Chat\Room as ChatRoom;
+use App\Livewire\Management\Pages\Chatbot\Pengaturan as ChatbotPengaturan;
 use App\Livewire\Management\Pages\Dashboard;
 use App\Livewire\Management\Pages\Fonnte\Create as FonnteCreate;
 use App\Livewire\Management\Pages\Fonnte\Edit as FonnteEdit;
@@ -264,6 +265,8 @@ Route::middleware(['auth', 'verified'])->prefix('management')->group(function ()
         Route::get('/fonnte', FonnteIndex::class)->name('fonnte.index');
         Route::get('/fonnte/create', FonnteCreate::class)->name('fonnte.create');
         Route::get('/fonnte/edit/{token}', FonnteEdit::class)->name('fonnte.edit');
+
+        Route::get('/chatbot/pengaturan', ChatbotPengaturan::class)->name('chatbot.pengaturan');
     });
 });
 

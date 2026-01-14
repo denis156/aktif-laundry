@@ -4,54 +4,82 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Models\ChatbotSetting;
 use Exception;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class ZaiService
 {
-    protected string $systemPrompt = <<<'PROMPT'
-Kamu adalah asisten WhatsApp yang profesional, ringkas, dan membantu.
-
-Aturan WAJIB:
-- Gunakan teks polos (tanpa markdown)
-- Langsung ke inti pembahasan, JANGAN menggunakan sapaan di setiap jawaban
-- Maksimal 3 paragraf pendek
-- Jika menggunakan poin, WAJIB memakai tanda "-" (dash)
-- DILARANG menggunakan simbol "*", "**", "•", atau format markdown apa pun
-- Gunakan bahasa Indonesia yang baik dan benar
-- Gunakan bahasa yang sopan dan ramah
-- Hindari penggunaan kata-kata yang terlalu teknis atau sulit dipahami
-- Berisifat Lucu dan Menghibur
-- Gunakan variasi kosakata yang menarik dan tidak monoton
-- Berikan informasi yang akurat dan terpercaya
-- Jika tidak tahu jawabannya, katakan "Maaf, saya tidak tahu jawabannya."
-- Akhiri jawaban dengan satu kalimat ajakan bertanya dan emoticon 🙂 saja
-PROMPT;
+    /**
+     * Get chatbot settings from database with caching
+     */
+    protected function getActiveChatbotSetting(): ?ChatbotSetting
+    {
+        return Cache::remember('active_chatbot_setting', 300, function () {
+            return ChatbotSetting::getActive();
+        });
+    }
 
     /**
-     * Send message to Z.AI and get response
+     * Get system prompt from active chatbot setting
+     */
+    protected function getSystemPrompt(): ?string
+    {
+        $setting = $this->getActiveChatbotSetting();
+
+        return $setting?->system_prompt;
+    }
+
+    /**
+     * Get settings for Z.AI API request
+     *
+     * @return array{max_tokens: int, temperature: float, timeout: int}
+     */
+    protected function getApiSettings(): array
+    {
+        $setting = $this->getActiveChatbotSetting();
+
+        return [
+            'max_tokens' => $setting?->max_tokens ?? (int) config('services.zai.max_tokens'),
+            'temperature' => $setting?->temperature ?? (float) config('services.zai.temperature'),
+            'timeout' => $setting?->timeout ?? (int) config('services.zai.timeout'),
+        ];
+    }
+
+    /**
+     * Send message to Z.AI and get response with context
      *
      * @param  string  $message  User message to send to AI
+     * @param  string|null  $contextData  Additional context data to inject
      * @return string AI response text
      *
      * @throws Exception
      */
-    public function chat(string $message): string
+    public function chat(string $message, ?string $contextData = null): string
     {
         try {
+            $settings = $this->getApiSettings();
+            $systemPrompt = $this->getSystemPrompt();
+
+            // Inject context data into system prompt if provided
+            if ($contextData && $systemPrompt) {
+                $systemPrompt .= "\n\n".$contextData;
+            }
+
             $payload = [
                 'model' => config('services.zai.model'),
-                'max_tokens' => config('services.zai.max_tokens'),
-                'system' => $this->systemPrompt,
+                'max_tokens' => $settings['max_tokens'],
+                'system' => $systemPrompt,
                 'messages' => [
                     [
                         'role' => 'user',
                         'content' => $message,
                     ],
                 ],
-                'temperature' => config('services.zai.temperature'),
+                'temperature' => $settings['temperature'],
             ];
 
             $response = Http::withHeaders([
@@ -59,7 +87,7 @@ PROMPT;
                 'anthropic-version' => '2023-06-01',
                 'x-api-key' => config('services.zai.api_key'),
             ])
-                ->timeout((int) config('services.zai.timeout'))
+                ->timeout($settings['timeout'])
                 ->connectTimeout(10)
                 ->post(config('services.zai.api_url'), $payload);
 
@@ -114,18 +142,10 @@ PROMPT;
     }
 
     /**
-     * Get system prompt for chatbot
+     * Clear cached chatbot settings
      */
-    public function getSystemPrompt(): string
+    public static function clearCache(): void
     {
-        return $this->systemPrompt;
-    }
-
-    /**
-     * Set custom system prompt
-     */
-    public function setSystemPrompt(string $prompt): void
-    {
-        $this->systemPrompt = $prompt;
+        Cache::forget('active_chatbot_setting');
     }
 }

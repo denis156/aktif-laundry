@@ -127,6 +127,8 @@
                         wire:navigate.hover />
                     <x-menu-item title="Fonnte WhatsApp" icon="o-chat-bubble-bottom-center-text" link="{{ route('fonnte.index') }}"
                         wire:navigate.hover />
+                    <x-menu-item title="Chatbot AI" icon="o-cpu-chip" link="{{ route('chatbot.pengaturan') }}"
+                        wire:navigate.hover exact />
                     <x-menu-item title="Konfigurasi" icon="o-adjustments-horizontal" link="{{ route('pengaturan') }}"
                         wire:navigate.hover />
                 </x-menu-sub>
@@ -138,7 +140,7 @@
                     <x-menu-item title="Profil Saya" icon="o-user" link="{{ route('profile') }}"
                         wire:navigate.hover />
                     <x-menu-item title="Chat" icon="o-chat-bubble-left-right" link="{{ route('chat.index') }}"
-                        wire:navigate.hover />
+                        wire:navigate.hover exact />
                 </x-menu-sub>
 
                 <x-menu-separator />
