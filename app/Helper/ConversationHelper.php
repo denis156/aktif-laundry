@@ -24,6 +24,31 @@ class ConversationHelper
         $existingCustomer = self::findCustomerByPhone($phoneNumber);
 
         if ($existingCustomer) {
+            // Check if existing customer wants to place an order
+            // Keywords: pesan, order, mau pesan, beli, cuci
+            $normalizedMessage = strtolower(trim($message));
+            $orderKeywords = ['pesan', 'order', 'mau pesan', 'beli', 'cuci lipat', 'cuci kering', 'setrika'];
+
+            $isOrderIntent = false;
+            foreach ($orderKeywords as $keyword) {
+                if (str_contains($normalizedMessage, $keyword)) {
+                    $isOrderIntent = true;
+                    break;
+                }
+            }
+
+            // Check if message contains service pattern (e.g., "Cuci Lipat 3kg")
+            if (! $isOrderIntent) {
+                $isOrderIntent = OrderHelper::parseOrderMessage($message)['success'];
+            }
+
+            if ($isOrderIntent) {
+                // Existing customer wants to order - create order session
+                $session = ConversationSession::getOrCreateSession($phoneNumber, 'order');
+
+                return self::handleOrderFlow($session, $message, $existingCustomer);
+            }
+
             // Customer exists, use normal AI flow
             return [
                 'should_use_ai' => true,
@@ -481,5 +506,199 @@ class ConversationHelper
                 'avatar_url' => null,
             ]);
         });
+    }
+
+    /**
+     * Handle order flow for existing customers
+     */
+    protected static function handleOrderFlow(ConversationSession $session, string $message, Pelanggan $pelanggan): array
+    {
+        // Step handling for order flow
+        return match ($session->current_step) {
+            'ask_order_service' => self::handleOrderServiceStep($session, $message, $pelanggan),
+            'confirm_order' => self::handleConfirmOrderStep($session, $message, $pelanggan),
+            default => self::initiateOrderFlow($session, $message, $pelanggan),
+        };
+    }
+
+    /**
+     * Initiate order flow - parse first message or show available services
+     */
+    protected static function initiateOrderFlow(ConversationSession $session, string $message, Pelanggan $pelanggan): array
+    {
+        // Try to parse order from initial message
+        $parseResult = OrderHelper::parseOrderMessage($message);
+
+        if ($parseResult['success']) {
+            // Message contains order pattern
+            $matchResult = OrderHelper::matchServices($parseResult['services']);
+
+            if ($matchResult['success']) {
+                // Valid services found - show confirmation
+                $total = array_sum(array_column($matchResult['matched'], 'subtotal'));
+                $session->updateData([
+                    'matched_services' => $matchResult['matched'],
+                    'total' => $total,
+                ], 'confirm_order');
+
+                $summary = OrderHelper::formatOrderSummary($matchResult['matched'], $total);
+
+                return [
+                    'should_use_ai' => false,
+                    'response' => $summary,
+                    'session' => $session,
+                ];
+            } else {
+                // Errors in matching services
+                $errorMessage = "Maaf, ada masalah dengan pesanan kak:\n\n";
+                foreach ($matchResult['errors'] as $error) {
+                    $errorMessage .= "- {$error}\n";
+                }
+                $errorMessage .= "\n".OrderHelper::getAvailableServicesText();
+
+                $session->updateData([], 'ask_order_service');
+
+                return [
+                    'should_use_ai' => false,
+                    'response' => $errorMessage,
+                    'session' => $session,
+                ];
+            }
+        }
+
+        // Message doesn't contain order pattern - show available services
+        $session->updateData([], 'ask_order_service');
+
+        $response = "Hai Kak {$pelanggan->nama}! 😊\n\n";
+        $response .= "Silakan pilih layanan yang kakak mau pesan ya!\n\n";
+        $response .= OrderHelper::getAvailableServicesText();
+
+        return [
+            'should_use_ai' => false,
+            'response' => $response,
+            'session' => $session,
+        ];
+    }
+
+    /**
+     * Handle order service selection step
+     */
+    protected static function handleOrderServiceStep(ConversationSession $session, string $message, Pelanggan $pelanggan): array
+    {
+        // Parse order message
+        $parseResult = OrderHelper::parseOrderMessage($message);
+
+        if (! $parseResult['success']) {
+            return [
+                'should_use_ai' => false,
+                'response' => "{$parseResult['error']}\n\n".OrderHelper::getAvailableServicesText(),
+                'session' => $session,
+            ];
+        }
+
+        // Match services
+        $matchResult = OrderHelper::matchServices($parseResult['services']);
+
+        if (! $matchResult['success']) {
+            $errorMessage = "Maaf, ada masalah dengan pesanan kak:\n\n";
+            foreach ($matchResult['errors'] as $error) {
+                $errorMessage .= "- {$error}\n";
+            }
+            $errorMessage .= "\n".OrderHelper::getAvailableServicesText();
+
+            return [
+                'should_use_ai' => false,
+                'response' => $errorMessage,
+                'session' => $session,
+            ];
+        }
+
+        // Valid services - show confirmation
+        $total = array_sum(array_column($matchResult['matched'], 'subtotal'));
+        $session->updateData([
+            'matched_services' => $matchResult['matched'],
+            'total' => $total,
+        ], 'confirm_order');
+
+        $summary = OrderHelper::formatOrderSummary($matchResult['matched'], $total);
+
+        return [
+            'should_use_ai' => false,
+            'response' => $summary,
+            'session' => $session,
+        ];
+    }
+
+    /**
+     * Handle order confirmation step
+     */
+    protected static function handleConfirmOrderStep(ConversationSession $session, string $message, Pelanggan $pelanggan): array
+    {
+        $normalizedMessage = strtolower(trim($message));
+
+        if (str_contains($normalizedMessage, 'ya') || str_contains($normalizedMessage, 'iya') || str_contains($normalizedMessage, 'benar')) {
+            // Confirm order - create transaksi
+            $matchedServices = $session->getData('matched_services', []);
+
+            if (empty($matchedServices)) {
+                return [
+                    'should_use_ai' => false,
+                    'response' => 'Maaf kak, data pesanan tidak ditemukan. Silakan pesan ulang ya! 😊',
+                    'session' => $session,
+                ];
+            }
+
+            try {
+                $orderResult = OrderHelper::createOrder($pelanggan, $matchedServices);
+
+                if ($orderResult['success']) {
+                    $session->markCompleted();
+
+                    $successMessage = OrderHelper::formatOrderSuccessMessage($orderResult['transaksi']);
+
+                    return [
+                        'should_use_ai' => false,
+                        'response' => $successMessage,
+                        'session' => $session,
+                    ];
+                } else {
+                    return [
+                        'should_use_ai' => false,
+                        'response' => "Maaf kak, terjadi kesalahan saat membuat pesanan: {$orderResult['error']}\n\nSilakan coba lagi nanti ya! 🙏",
+                        'session' => $session,
+                    ];
+                }
+            } catch (Exception $e) {
+                Log::error('Failed to create order in conversation flow', [
+                    'session' => $session->toArray(),
+                    'pelanggan_id' => $pelanggan->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                return [
+                    'should_use_ai' => false,
+                    'response' => 'Maaf kak, terjadi kesalahan teknis. Silakan coba lagi nanti ya! 🙏',
+                    'session' => $session,
+                ];
+            }
+        }
+
+        if (str_contains($normalizedMessage, 'batal') || str_contains($normalizedMessage, 'tidak')) {
+            // Cancel order
+            $session->markCancelled();
+
+            return [
+                'should_use_ai' => false,
+                'response' => 'Oke kak, pesanan dibatalkan. Kalau mau pesan lagi nanti, tinggal chat aja ya! 😊',
+                'session' => $session,
+            ];
+        }
+
+        // Invalid response
+        return [
+            'should_use_ai' => false,
+            'response' => "Maaf kak, aku nggak ngerti 😅\n\nTolong ketik:\n✅ YA - untuk konfirmasi pesanan\n❌ BATAL - untuk membatalkan",
+            'session' => $session,
+        ];
     }
 }
